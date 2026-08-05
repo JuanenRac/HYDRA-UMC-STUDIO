@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --color-hydra-dark: #0f172a;
+  --color-hydra-panel: #1e293b;
+  --color-hydra-accent: #38bdf8;
+  --color-hydra-success: #10b981;
+  --color-hydra-danger: #ef4444;
+}
+
+body {
+  background-color: var(--color-hydra-dark);
+  color: #f8fafc;
+  overflow: hidden;
+}
+
+/* Custom Scrollbar for 7-inch screen compact layout */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
