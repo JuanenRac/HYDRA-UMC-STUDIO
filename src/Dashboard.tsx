@@ -24,27 +24,27 @@ export default function Dashboard() {
   const activeRobot = robots.find(r => r.id === selectedRobotId);
 
   return (
-    <div className="h-screen w-screen bg-slate-950 text-slate-200 flex flex-col font-sans overflow-hidden">
-      {/* Header */}
-      <header className="h-12 shrink-0 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 z-20">
-        <div className="flex items-center gap-2">
-          <Cpu className="text-sky-400" size={24} />
-          <h1 className="text-lg font-bold tracking-wider text-slate-100">HYDRA-UMC <span className="text-sky-400 font-medium">Studio</span></h1>
+    <div className="h-screen w-screen max-w-[1280px] max-h-[800px] aspect-[16/10] bg-slate-950 text-slate-200 flex flex-col font-sans overflow-hidden mx-auto shadow-2xl selection:bg-sky-500/30 touch-none">
+      {/* Header - larger for touch */}
+      <header className="h-16 shrink-0 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 z-20">
+        <div className="flex items-center gap-3">
+          <Cpu className="text-sky-400" size={32} />
+          <h1 className="text-2xl font-bold tracking-wider text-slate-100">HYDRA-UMC <span className="text-sky-400 font-medium">Studio</span></h1>
         </div>
-        <div className="flex items-center gap-4 text-xs font-medium">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-emerald-400">System Online</span>
+        <div className="flex items-center gap-8 text-base font-medium">
+          <div className="flex items-center gap-3">
+            <span className="w-4 h-4 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+            <span className="text-emerald-400 tracking-wide">System Online</span>
           </div>
-          <div className="px-2 py-1 rounded bg-slate-800 border border-slate-700">
+          <div className="px-4 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50 font-mono text-slate-300">
             FDCAN: 1000 kbps
           </div>
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden h-[calc(100vh-3rem)]">
-        {/* Sidebar Nav */}
-        <nav className="w-48 shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col p-3 gap-1 z-10 overflow-y-auto">
+      <div className="flex flex-1 overflow-hidden h-[calc(100%-4rem)]">
+        {/* Sidebar Nav - larger targets for 10" touch */}
+        <nav className="w-64 shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col p-4 gap-3 z-10 overflow-y-auto custom-scrollbar">
           <NavItem 
             icon={<Activity size={18} />} 
             label="Overview" 
@@ -62,17 +62,17 @@ export default function Dashboard() {
                 setActiveTab('robot');
               }}
               className={cn(
-                "flex items-center justify-between px-3 py-2 min-h-[44px] rounded text-xs transition-colors text-left",
+                "flex items-center justify-between px-3 py-3 min-h-[50px] rounded-lg text-sm transition-all text-left",
                 activeTab === 'robot' && selectedRobotId === r.id
                   ? "bg-sky-500/10 text-sky-400 border border-sky-500/20"
-                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-transparent"
               )}
             >
               <div className="flex items-center gap-2 min-w-0">
                 <div className={cn("w-2 h-2 rounded-full shrink-0", r.online ? "bg-emerald-500" : "bg-slate-700")} />
-                <span className="truncate">{r.name}</span>
+                <span className="truncate font-medium">{r.name}</span>
               </div>
-              <span className="text-[9px] uppercase font-mono opacity-50 shrink-0 ml-1">{r.model}</span>
+              <span className="text-[10px] uppercase font-mono opacity-60 shrink-0 ml-1">{r.model}</span>
             </button>
           ))}
           
@@ -110,9 +110,9 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, labe
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 min-h-[44px] rounded font-medium text-xs transition-colors",
+        "flex items-center gap-4 px-4 py-4 min-h-[64px] rounded-xl font-medium text-lg transition-all",
         active 
-          ? "bg-sky-500 text-slate-950 shadow shadow-sky-500/20" 
+          ? "bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20" 
           : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
       )}
     >
@@ -123,7 +123,7 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, labe
 }
 
 function OverviewPanel() {
-  const { robots, xyTable } = useHydraStore();
+  const { robots } = useHydraStore();
   
   return (
     <div className="max-w-6xl mx-auto space-y-4">
@@ -162,7 +162,7 @@ function OverviewPanel() {
               </div>
             )}
             
-            {xyTable.assignedRobotId === r.id && (
+            {r.hasXYTable && (
               <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-amber-400 bg-amber-400/10 p-1 rounded border border-amber-500/20">
                 <Focus size={10} /> XY Assigned
               </div>

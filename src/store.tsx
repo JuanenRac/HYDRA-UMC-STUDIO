@@ -38,23 +38,21 @@ export interface RobotState {
   role: RobotRole;
   tool: ToolType;
   pos: { x: number; y: number; z: number; a: number; b: number; c: number };
-  valves: [boolean, boolean]; // electrovalvulas
-  pumps: [boolean, boolean]; // bombas
-  endstops: { x: boolean; y: boolean; z: boolean }; // finales de carrera
+  joints: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number };
+  valves: [boolean, boolean];
+  pumps: [boolean, boolean];
+  endstops: { x: boolean; y: boolean; z: boolean };
   recordedPoints: { x: number; y: number; z: number; a: number; b: number; c: number; tx?: number; ty?: number }[];
-}
-
-export interface XYTableState {
-  assignedRobotId: number | null;
-  pos: { x: number; y: number };
-  tableSize: { width: number; length: number };
+  hasXYTable: boolean;
+  xyTable: {
+    pos: { x: number; y: number };
+    tableSize: { width: number; length: number };
+  };
 }
 
 interface HydraStoreContextType {
   robots: RobotState[];
-  xyTable: XYTableState;
   updateRobot: (id: number, updates: Partial<RobotState>) => void;
-  updateXYTable: (updates: Partial<XYTableState>) => void;
   saveKinematics: (id: number) => void;
   loadKinematics: (id: number, e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -67,14 +65,21 @@ const defaultRobots: RobotState[] = Array.from({ length: 8 }, (_, i) => ({
   role: 'Idle',
   tool: 'None',
   pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 },
+  joints: { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 },
   valves: [false, false],
   pumps: [false, false],
   endstops: { x: false, y: false, z: false },
   recordedPoints: [],
+  hasXYTable: false,
+  xyTable: {
+    pos: { x: 0, y: 0 },
+    tableSize: { width: 500, length: 500 },
+  },
 }));
 
 defaultRobots[0].role = 'PnP';
 defaultRobots[0].tool = 'Vacuum Nozzle';
+defaultRobots[0].hasXYTable = true;
 defaultRobots[1].role = 'CNC';
 defaultRobots[1].tool = '10W Optical Laser';
 defaultRobots[2].role = 'Inspection';
@@ -84,18 +89,9 @@ const HydraContext = createContext<HydraStoreContextType | null>(null);
 
 export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [robots, setRobots] = useState<RobotState[]>(defaultRobots);
-  const [xyTable, setXyTable] = useState<XYTableState>({
-    assignedRobotId: null,
-    pos: { x: 0, y: 0 },
-    tableSize: { width: 500, length: 500 },
-  });
 
   const updateRobot = (id: number, updates: Partial<RobotState>) => {
     setRobots((prev) => prev.map((r) => (r.id === id ? { ...r, ...updates } : r)));
-  };
-
-  const updateXYTable = (updates: Partial<XYTableState>) => {
-    setXyTable((prev) => ({ ...prev, ...updates }));
   };
 
   const saveKinematics = (id: number) => {
@@ -130,11 +126,11 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     };
     reader.readAsText(file);
-    e.target.value = ''; // Reset input
+    e.target.value = '';
   };
 
   return (
-    <HydraContext.Provider value={{ robots, xyTable, updateRobot, updateXYTable, saveKinematics, loadKinematics }}>
+    <HydraContext.Provider value={{ robots, updateRobot, saveKinematics, loadKinematics }}>
       {children}
     </HydraContext.Provider>
   );
@@ -145,3 +141,4 @@ export const useHydraStore = () => {
   if (!ctx) throw new Error('useHydraStore must be used within HydraProvider');
   return ctx;
 };
+
