@@ -86,8 +86,8 @@ export function XYTableConfig() {
   if (!selectedRobot) return null;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="h-full flex flex-col space-y-4">
+      <div className="flex items-center justify-between shrink-0">
         <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
           <Crosshair className="text-amber-400" size={20} /> XY Table Configuration
         </h2>
@@ -103,7 +103,7 @@ export function XYTableConfig() {
       </div>
 
       {!selectedRobot.hasXYTable ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-lg p-8 flex flex-col items-center justify-center text-center">
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-8 flex flex-col items-center justify-center text-center flex-1">
           <Crosshair className="text-slate-600 mb-3" size={48} />
           <h3 className="text-slate-200 font-medium mb-2">No XY Table Assigned</h3>
           <p className="text-slate-400 text-sm max-w-md mb-6">
@@ -118,8 +118,8 @@ export function XYTableConfig() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0">
+          <div className="space-y-4 overflow-y-auto custom-scrollbar pr-2">
             <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium text-slate-200">Table Settings</h3>

@@ -30,6 +30,21 @@ export type ToolType =
   | 'Rotary Tool (Dremel)'
   | 'Custom Tool';
 
+export type ATCType = 'vertical_panel' | 'horizontal_panel' | 'revolver';
+export type ATCGrid = '1x1' | '1x2' | '2x1' | '2x2' | '2x3' | '3x2' | '3x3' | '3x4' | '4x3' | '4x4';
+
+export interface ATCConfig {
+  type: ATCType;
+  panelGrid: ATCGrid;
+  revolverSlots: number;
+  revolverPos?: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number; tx?: number; ty?: number };
+  tools: {
+    slot: number;
+    tool: ToolType;
+    pos?: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number; tx?: number; ty?: number };
+  }[];
+}
+
 export interface RobotState {
   id: number;
   name: string;
@@ -43,6 +58,7 @@ export interface RobotState {
   pumps: [boolean, boolean];
   endstops: { x: boolean; y: boolean; z: boolean };
   recordedPoints: { x: number; y: number; z: number; a: number; b: number; c: number; tx?: number; ty?: number }[];
+  atc?: ATCConfig;
   hasXYTable: boolean;
   xyTable: {
     pos: { x: number; y: number };
@@ -87,12 +103,14 @@ defaultRobots[2].tool = 'Microscope Camera';
 
 const HydraContext = createContext<HydraStoreContextType | null>(null);
 
+
 export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [robots, setRobots] = useState<RobotState[]>(defaultRobots);
 
   const updateRobot = (id: number, updates: Partial<RobotState>) => {
     setRobots((prev) => prev.map((r) => (r.id === id ? { ...r, ...updates } : r)));
   };
+
 
   const saveKinematics = (id: number) => {
     const robot = robots.find(r => r.id === id);
@@ -121,7 +139,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         } else if (json && typeof json.x === 'number') {
           updateRobot(id, { pos: { ...json } });
         }
-      } catch (err) {
+      } catch {
         console.error('Invalid kinematics file');
       }
     };
@@ -136,6 +154,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useHydraStore = () => {
   const ctx = useContext(HydraContext);
   if (!ctx) throw new Error('useHydraStore must be used within HydraProvider');

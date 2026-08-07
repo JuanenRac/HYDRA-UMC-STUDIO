@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useHydraStore } from './store';
 import { 
   Activity, Cpu, Crosshair, 
-  Video, Focus
+  Video, Focus, Settings, Menu
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -15,23 +15,107 @@ function cn(...inputs: ClassValue[]) {
 import { RobotDetail } from './components/RobotDetail';
 import { CamerasView } from './components/CamerasView';
 import { XYTableConfig } from './components/XYTableConfig';
+import { ATCToolsConfig } from './components/ATCToolsConfig';
 
 export default function Dashboard() {
   const { robots } = useHydraStore();
-  const [activeTab, setActiveTab] = useState<'overview' | 'robot' | 'cameras' | 'xytable'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'robot' | 'cameras' | 'xytable' | 'atc'>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const activeRobot = robots.find(r => r.id === selectedRobotId);
 
   return (
-    <div className="h-screen w-screen max-w-[1280px] max-h-[800px] aspect-[16/10] bg-slate-950 text-slate-200 flex flex-col font-sans overflow-hidden mx-auto shadow-2xl selection:bg-sky-500/30 touch-none">
+    <div className="w-[1280px] h-[800px] bg-slate-950 text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
+      {isSettingsOpen && (
+        <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[600px] max-w-full overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <Settings className="text-sky-400" size={20} /> System Configuration
+              </h2>
+              <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-slate-200 p-1">
+                &times;
+              </button>
+            </div>
+            <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Network Settings</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">CAN Bus Bitrate</label>
+                    <select className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-500 outline-none">
+                      <option>1000 kbps</option>
+                      <option>500 kbps</option>
+                      <option>250 kbps</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Master IP Address</label>
+                    <input type="text" defaultValue="192.168.1.100" className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-500 outline-none" />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">System Preferences</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Theme</label>
+                    <select className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-500 outline-none">
+                      <option>Dark Mode (Default)</option>
+                      <option>High Contrast</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Telemetry Sync Interval</label>
+                    <select className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-500 outline-none">
+                      <option>10 ms (Real-time)</option>
+                      <option>50 ms</option>
+                      <option>100 ms</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Emergency Protocol</h3>
+                <div className="flex gap-4">
+                  <button className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/50 text-rose-400 py-3 rounded-lg font-bold tracking-widest uppercase transition-colors">
+                    Global E-Stop
+                  </button>
+                  <button className="flex-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 py-3 rounded-lg font-bold tracking-widest uppercase transition-colors">
+                    Reboot Controller
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 border-t border-slate-800 bg-slate-950 flex justify-end gap-3">
+              <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200 transition-colors">Cancel</button>
+              <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold rounded shadow transition-colors">Save Changes</button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header - larger for touch */}
       <header className="h-16 shrink-0 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 z-20">
         <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 -ml-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
+          >
+            <Menu size={24} />
+          </button>
           <Cpu className="text-sky-400" size={32} />
           <h1 className="text-2xl font-bold tracking-wider text-slate-100">HYDRA-UMC <span className="text-sky-400 font-medium">Studio</span></h1>
         </div>
-        <div className="flex items-center gap-8 text-base font-medium">
+        <div className="flex items-center gap-6 text-base font-medium">
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-colors"
+          >
+            <Settings size={18} />
+            <span className="text-sm">Config</span>
+          </button>
           <div className="flex items-center gap-3">
             <span className="w-4 h-4 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
             <span className="text-emerald-400 tracking-wide">System Online</span>
@@ -44,7 +128,10 @@ export default function Dashboard() {
 
       <div className="flex flex-1 overflow-hidden h-[calc(100%-4rem)]">
         {/* Sidebar Nav - larger targets for 10" touch */}
-        <nav className="w-64 shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col p-4 gap-3 z-10 overflow-y-auto custom-scrollbar">
+        <nav className={cn(
+          "shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col gap-3 z-10 overflow-y-auto custom-scrollbar transition-all duration-300 ease-in-out",
+          isSidebarOpen ? "w-64 p-4 opacity-100" : "w-0 p-0 opacity-0 overflow-hidden border-none"
+        )}>
           <NavItem 
             icon={<Activity size={18} />} 
             label="Overview" 
@@ -86,6 +173,12 @@ export default function Dashboard() {
             onClick={() => setActiveTab('xytable')} 
           />
           <NavItem 
+            icon={<Focus size={18} />} 
+            label="ATC Tools" 
+            active={activeTab === 'atc'} 
+            onClick={() => setActiveTab('atc')} 
+          />
+          <NavItem 
             icon={<Video size={18} />} 
             label="Vision / Cameras" 
             active={activeTab === 'cameras'} 
@@ -94,11 +187,12 @@ export default function Dashboard() {
         </nav>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-slate-950 p-4">
+        <main className="flex-1 flex flex-col overflow-hidden bg-slate-950 p-4">
           {activeTab === 'overview' && <OverviewPanel />}
           {activeTab === 'robot' && activeRobot && <RobotDetail robot={activeRobot} />}
           {activeTab === 'cameras' && <CamerasView />}
           {activeTab === 'xytable' && <XYTableConfig />}
+          {activeTab === 'atc' && <ATCToolsConfig />}
         </main>
       </div>
     </div>
@@ -165,6 +259,11 @@ function OverviewPanel() {
             {r.hasXYTable && (
               <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-amber-400 bg-amber-400/10 p-1 rounded border border-amber-500/20">
                 <Focus size={10} /> XY Assigned
+              </div>
+            )}
+            {r.atc && (
+              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-sky-400 bg-sky-400/10 p-1 rounded border border-sky-500/20">
+                <Settings size={10} /> ATC: {r.atc.type.replace("_", " ")}
               </div>
             )}
           </div>

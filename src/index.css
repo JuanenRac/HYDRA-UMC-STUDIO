@@ -14,18 +14,10 @@ body {
   overflow: hidden;
 }
 
-/* Custom Scrollbar for 7-inch screen compact layout */
+/* Hide all scrollbars per user request */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  display: none;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+* {
+  scrollbar-width: none;
 }

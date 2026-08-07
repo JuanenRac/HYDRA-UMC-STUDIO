@@ -1,8 +1,15 @@
+import { useState } from 'react';
 import { useHydraStore } from '../store';
-import { Video, Maximize2, Camera as CameraIcon } from 'lucide-react';
+import { Video, Maximize2, Minimize2, Camera as CameraIcon } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export function CamerasView() {
   const { robots } = useHydraStore();
+  const [fullScreenId, setFullScreenId] = useState<number | null>(null);
 
   return (
     <div className="max-w-6xl mx-auto h-full flex flex-col space-y-4">
@@ -20,17 +27,23 @@ export function CamerasView() {
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-3 min-h-0">
-        {robots.map((r, i) => (
-          <div key={r.id} className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden flex flex-col relative group">
-            <div className="flex items-center justify-between p-2 border-b border-slate-800 bg-slate-900/80 shrink-0">
-              <span className="text-[11px] font-medium text-slate-200">Cam {i + 1} - {r.name}</span>
-              <button className="text-slate-500 hover:text-slate-300">
-                <Maximize2 size={12} />
-              </button>
-            </div>
-            
-            <div className="flex-1 bg-slate-950 flex flex-col items-center justify-center relative min-h-[100px]">
+      <div className="flex-1 min-h-0 pb-4">
+        <div className={cn("grid h-full", fullScreenId ? "grid-cols-1 gap-0" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2")}>
+          {robots.map((r, i) => {
+            if (fullScreenId && fullScreenId !== r.id) return null;
+            return (
+            <div key={r.id} className={cn("bg-slate-900 border border-slate-800 flex flex-col relative group h-full transition-all", fullScreenId ? "rounded-none border-0" : "rounded-lg overflow-hidden")}>
+              <div className="flex items-center justify-between p-2 border-b border-slate-800 bg-slate-900/80 shrink-0 w-full z-10">
+                <span className="text-[11px] font-medium text-slate-200">Cam {i + 1} - {r.name}</span>
+                <button 
+                  onClick={() => setFullScreenId(fullScreenId === r.id ? null : r.id)} 
+                  className="text-slate-500 hover:text-slate-300"
+                >
+                  {fullScreenId === r.id ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+                </button>
+              </div>
+              
+              <div className="flex-1 bg-slate-950 flex flex-col items-center justify-center relative">
               {r.online ? (
                 <>
                   {r.tool.includes('Camera') ? (
@@ -57,7 +70,9 @@ export function CamerasView() {
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
+        </div>
       </div>
     </div>
   );

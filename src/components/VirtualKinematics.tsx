@@ -93,10 +93,10 @@ function RobotArm({ robot }: { robot: RobotState }) {
     <group ref={group} position={[0, 0, 0]}>
       {/* Base Pedestal (Parol6 has a flared/sturdy base) */}
       <Cylinder args={[0.07, 0.09, 0.04]} position={[0, 0.02, 0]} material-color={colorSecondary} castShadow receiveShadow {...rubberProps} />
-      <Cylinder args={[0.065, 0.07, 0.10]} position={[0, 0.09, 0]} material-color={colorSecondary} castShadow receiveShadow {...matProps} />
+      <Cylinder args={[0.065, 0.07, 0.13]} position={[0, 0.105, 0]} material-color={colorSecondary} castShadow receiveShadow {...matProps} />
       
       {/* Joint 1 (Z-axis rotation, mapped to Y in ThreeJS) */}
-      <group position={[0, 0.14, 0]} rotation={[0, -j1, 0]}>
+      <group position={[0, 0.17, 0]} rotation={[0, j1, 0]}>
         {/* Shoulder Base Swivel */}
         <Cylinder args={[0.065, 0.065, 0.04]} position={[0, 0.02, 0]} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
         
@@ -104,10 +104,8 @@ function RobotArm({ robot }: { robot: RobotState }) {
         <RoundedBox args={[0.09, 0.08, 0.10]} position={[0, 0.08, 0]} radius={0.015} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
         
         {/* Joint 2 (Z-axis rotation, bends arm along X) */}
-        {/* Parol6 J2 is offset slightly to the side, let's keep it centered for IK simplicity but styled better */}
         <group position={[0, 0.12, 0]}>
-          {/* Note: pseudo IK shifted j2 by -90, so we add Math.PI/2 to compensate visually */}
-          <group rotation={[0, 0, -(j2 + Math.PI/2)]}>
+          <group rotation={[0, 0, j2]}>
             {/* J2 Motor Housing */}
             <Cylinder args={[0.05, 0.05, 0.12]} rotation={[Math.PI/2, 0, 0]} material-color={colorJoint} castShadow receiveShadow {...matProps} />
             <Cylinder args={[0.052, 0.052, 0.02]} position={[0, 0, 0.05]} rotation={[Math.PI/2, 0, 0]} material-color={colorAccent} castShadow receiveShadow {...matProps} />
@@ -118,7 +116,7 @@ function RobotArm({ robot }: { robot: RobotState }) {
             
             {/* Joint 3 */}
             <group position={[0, 0.16, 0]}>
-              <group rotation={[0, 0, (j3 - Math.PI/2)]}>
+              <group rotation={[0, 0, -j3]}>
                 {/* J3 Motor Housing */}
                 <Cylinder args={[0.045, 0.045, 0.10]} rotation={[Math.PI/2, 0, 0]} material-color={colorJoint} castShadow receiveShadow {...matProps} />
                 
@@ -132,7 +130,7 @@ function RobotArm({ robot }: { robot: RobotState }) {
                   
                   {/* Joint 5 (Pitch) */}
                   <group position={[0, 0.20, 0]}>
-                    <group rotation={[0, 0, -(j5 + Math.PI/2)]}>
+                    <group rotation={[0, 0, j5]}>
                       {/* J5 Motor/Wrist Pitch */}
                       <Cylinder args={[0.035, 0.035, 0.08]} rotation={[Math.PI/2, 0, 0]} material-color={colorJoint} castShadow receiveShadow {...matProps} />
                       <RoundedBox args={[0.05, 0.05, 0.05]} position={[0, 0.025, 0]} radius={0.01} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
@@ -247,10 +245,11 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
           fadeDistance={5} 
         />
         
-        <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
-
         {hasXYTable ? (
           <group position={[-tableW/2, 0, -tableL/2]}>
+            <group position={[0, 0.08, 0]}>
+              <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
+            </group>
             {/* Table Bed */}
             <Box args={[tableW, 0.02, tableL]} position={[tableW/2, 0.01, tableL/2]} material-color="#1e293b" castShadow receiveShadow />
             
@@ -260,14 +259,17 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
             
             {/* Robot Base Mount on XY table */}
             <group position={[px, 0.04, py]}>
-              <Box args={[0.2, 0.02, 0.2]} position={[0, 0.01, 0]} material-color="#475569" castShadow receiveShadow />
-              <group position={[0, 0.02, 0]}>
+              <Box args={[0.2, 0.04, 0.2]} position={[0, 0.02, 0]} material-color="#475569" castShadow receiveShadow />
+              <group position={[0, 0.04, 0]}>
                 <RobotArm robot={robot} />
               </group>
             </group>
           </group>
         ) : (
-          <RobotArm robot={robot} />
+          <group>
+            <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
+            <RobotArm robot={robot} />
+          </group>
         )}
 
         <OrbitControls makeDefault maxPolarAngle={Math.PI / 2 + 0.1} minDistance={0.5} maxDistance={6} target={hasXYTable ? [0, 0.4, 0] : [0, 0.4, 0]} />

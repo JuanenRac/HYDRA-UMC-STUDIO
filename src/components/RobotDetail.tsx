@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { type RobotState, useHydraStore, type RobotRole, type ToolType, type RobotModel } from '../store';
-import { Power, Droplets, ArrowUp, ArrowDown, ShieldAlert, Save, Plus, Play, Square, Crosshair, RefreshCw, Upload } from 'lucide-react';
+import { Power, Droplets, ArrowUp, ArrowDown, ShieldAlert, Save, Plus, Play, Square, Crosshair, RefreshCw, Upload, Maximize2, Minimize2, Camera as CameraIcon, Trash2 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { VirtualKinematics } from './VirtualKinematics';
@@ -29,6 +29,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const isPlayingRef = useRef(false);
   const [rightTab, setRightTab] = useState<'trajectories' | 'config' | 'io'>('trajectories');
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const hasXYTable = robot.hasXYTable;
   const xyTable = robot.xyTable;
@@ -66,8 +67,12 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
   const computePseudoIK = (pos: RobotState['pos']) => {
     const r = Math.sqrt(pos.x*pos.x + pos.y*pos.y);
     const j1_angle = Math.atan2(pos.y, pos.x) * 180 / Math.PI;
-    // Base is 140mm + 120mm to Joint 2 = 260mm total Z offset
-    const zOff = pos.z - 260;
+    
+    // Tool tip offset: the wrist J5 to tool tip is approx 135mm.
+    // So the wrist target Z is pos.z + 135.
+    // Base is 170mm + 120mm to Joint 2 = 290mm total Z offset from floor to J2.
+    // Therefore, Z distance from J2 to wrist is: (pos.z + 135) - 290
+    const zOff = (pos.z + 135) - 290;
     
     const d = Math.sqrt(r*r + zOff*zOff);
     const L1 = 160;
@@ -84,12 +89,23 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
     const cosBeta = (L1*L1 + dClamped*dClamped - L2*L2) / (2*L1*dClamped);
     const beta = Math.acos(Math.max(-1, Math.min(1, cosBeta)));
     
+    const j2_deg = (alpha + beta) * 180 / Math.PI - 90; // offset so 0 is pointing up
+    const j3_deg = 180 - (elbowAngle * 180 / Math.PI);
+    
+    // Force the tool to point straight down (global Z rotation = -180 deg)
+    // Global angle = j2_deg - j3_deg + j5_deg = -180
+    let j5_deg = -180 - j2_deg + j3_deg;
+    
+    // Normalize j5 to be between -180 and 180
+    while (j5_deg <= -180) j5_deg += 360;
+    while (j5_deg > 180) j5_deg -= 360;
+
     return {
       j1: j1_angle,
-      j2: (alpha + beta) * 180 / Math.PI - 90, // offset so 0 is pointing up (or straight out)
-      j3: 180 - (elbowAngle * 180 / Math.PI),
+      j2: j2_deg,
+      j3: j3_deg,
       j4: pos.a,
-      j5: pos.b,
+      j5: j5_deg,
       j6: pos.c,
     };
   };
@@ -216,6 +232,12 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
     isPlayingRef.current = false;
   };
 
+  const handleRemovePoint = (index: number) => {
+    updateRobot(robot.id, {
+      recordedPoints: robot.recordedPoints.filter((_, i) => i !== index)
+    });
+  };
+
   if (!robot.online) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-slate-500">
@@ -260,14 +282,37 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
         {/* Left Col: Kinematics & 3D */}
-        <div className="lg:col-span-2 flex flex-col gap-4 h-full">
+        <div className="lg:col-span-2 flex flex-col gap-4 h-full min-h-0">
           {/* 3D View */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-1 overflow-hidden flex-1 min-h-[300px] relative shadow-inner">
+          <div className={cn(
+            "bg-slate-900 border border-slate-800 rounded-xl p-1 overflow-hidden flex-1 min-h-[300px] relative shadow-inner",
+            isFullscreen && "fixed inset-0 z-50 rounded-none border-none"
+          )}>
             <VirtualKinematics robot={robot} />
-            <div className="absolute top-4 right-4 pointer-events-none">
+            
+            <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-auto">
               <span className="bg-slate-950/80 backdrop-blur font-mono font-bold text-slate-300 text-xs px-3 py-1.5 rounded border border-slate-800 shadow-md">
                 Points: {robot.recordedPoints.length}
               </span>
+              <button 
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                className="bg-slate-950/80 hover:bg-slate-900 backdrop-blur text-slate-300 p-1.5 rounded border border-slate-800 shadow-md"
+              >
+                {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+            </div>
+
+            {/* Picture-in-Picture Camera Stream */}
+            <div className="absolute bottom-4 right-4 w-48 h-36 bg-slate-950 border-2 border-slate-800 rounded-lg overflow-hidden shadow-2xl pointer-events-none flex flex-col items-center justify-center">
+              <CameraIcon size={24} className={cn("mb-1", robot.tool.includes('Camera') ? "opacity-50 text-slate-500" : "opacity-20 text-slate-700")} />
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500">
+                {robot.tool.includes('Camera') ? 'Live View' : 'No Camera'}
+              </span>
+              {robot.tool.includes('Camera') && (
+                <div className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[9px] font-mono text-emerald-500 bg-slate-900/80 px-1 rounded border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> REC
+                </div>
+              )}
             </div>
           </div>
 
@@ -317,11 +362,11 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                     <div className="text-xs font-bold text-slate-500 uppercase">{axis}</div>
                     <div className="text-base font-mono font-bold text-sky-400 mb-2">{robot.pos[axis].toFixed(2)}</div>
                     <div className="flex gap-2 w-full justify-between">
-                      <button onClick={() => handleJog(axis, -1)} className="p-3 min-h-[56px] min-w-[56px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
-                        <ArrowDown size={24} />
+                      <button onClick={() => handleJog(axis, -1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
+                        <ArrowDown size={20} />
                       </button>
-                      <button onClick={() => handleJog(axis, 1)} className="p-3 min-h-[56px] min-w-[56px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
-                        <ArrowUp size={24} />
+                      <button onClick={() => handleJog(axis, 1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
+                        <ArrowUp size={20} />
                       </button>
                     </div>
                   </div>
@@ -335,8 +380,8 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                       <div className="text-xs font-bold text-slate-500 uppercase">J{i+1}</div>
                       <div className="text-sm font-mono font-bold text-sky-400">{robot.joints[joint].toFixed(1)}°</div>
                     </div>
-                    <button onClick={() => handleJointJog(joint, -1)} className="p-3 min-h-[56px] min-w-[56px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 shrink-0">
-                      <ArrowDown size={24} />
+                    <button onClick={() => handleJointJog(joint, -1)} className="p-2 min-h-[48px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 shrink-0">
+                      <ArrowDown size={20} />
                     </button>
                     <input 
                       type="range"
@@ -345,10 +390,10 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                       step={0.1}
                       value={robot.joints[joint]}
                       onChange={(e) => handleJointSlider(joint, Number(e.target.value))}
-                      className="flex-1 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500"
+                      className="flex-1 min-w-[40px] h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500"
                     />
-                    <button onClick={() => handleJointJog(joint, 1)} className="p-3 min-h-[56px] min-w-[56px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 shrink-0">
-                      <ArrowUp size={24} />
+                    <button onClick={() => handleJointJog(joint, 1)} className="p-2 min-h-[48px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 shrink-0">
+                      <ArrowUp size={20} />
                     </button>
                   </div>
                 ))}
@@ -363,11 +408,11 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                     <div className="text-xs font-bold text-slate-500 uppercase">Table X</div>
                     <div className="text-base font-mono font-bold text-amber-400">{xyTable.pos.x.toFixed(2)} mm</div>
                     <div className="flex gap-2 w-full justify-between">
-                      <button onClick={() => handleTableJog('x', -1)} className="p-3 min-h-[56px] min-w-[56px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
-                        <ArrowDown size={24} />
+                      <button onClick={() => handleTableJog('x', -1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
+                        <ArrowDown size={20} />
                       </button>
-                      <button onClick={() => handleTableJog('x', 1)} className="p-3 min-h-[56px] min-w-[56px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
-                        <ArrowUp size={24} />
+                      <button onClick={() => handleTableJog('x', 1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
+                        <ArrowUp size={20} />
                       </button>
                     </div>
                   </div>
@@ -375,11 +420,11 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                     <div className="text-xs font-bold text-slate-500 uppercase">Table Y</div>
                     <div className="text-base font-mono font-bold text-amber-400">{xyTable.pos.y.toFixed(2)} mm</div>
                     <div className="flex gap-2 w-full justify-between">
-                      <button onClick={() => handleTableJog('y', -1)} className="p-3 min-h-[56px] min-w-[56px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
-                        <ArrowDown size={24} />
+                      <button onClick={() => handleTableJog('y', -1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
+                        <ArrowDown size={20} />
                       </button>
-                      <button onClick={() => handleTableJog('y', 1)} className="p-3 min-h-[56px] min-w-[56px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
-                        <ArrowUp size={24} />
+                      <button onClick={() => handleTableJog('y', 1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">
+                        <ArrowUp size={20} />
                       </button>
                     </div>
                   </div>
@@ -390,7 +435,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
         </div>
 
         {/* Right Col: Tools & I/O */}
-        <div className="md:col-span-1 flex flex-col h-full bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+        <div className="lg:col-span-1 flex flex-col h-full bg-slate-900 border border-slate-800 rounded-lg overflow-hidden min-h-0">
           
           <div className="flex gap-2 p-2 border-b border-slate-800 bg-slate-950">
             <button 
@@ -415,7 +460,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
 
           <div className="p-4 overflow-y-auto custom-scrollbar flex-1">
             {rightTab === 'trajectories' && (
-              <div className="space-y-6">
+              <div className="space-y-6 h-full flex flex-col">
                 <div>
                   <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Load Example Kinematics</label>
                   <select 
@@ -446,8 +491,48 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                     className="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                   />
                 </div>
+
+                <div className="flex-1 min-h-[150px] overflow-y-auto custom-scrollbar border border-slate-800 rounded-lg bg-slate-950">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-slate-900 sticky top-0 z-10 border-b border-slate-800">
+                      <tr>
+                        <th className="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase">#</th>
+                        <th className="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase text-right">Robot J1-J6 / XYZABC (mm/°)</th>
+                        {hasXYTable && <th className="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase text-right">Table XY (mm)</th>}
+                        <th className="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase text-right"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {robot.recordedPoints.map((pt, i) => (
+                        <tr key={i} className="border-b border-slate-800/50 hover:bg-slate-900/50 group">
+                          <td className="px-3 py-2 text-xs font-mono text-slate-400">{i + 1}</td>
+                          <td className="px-3 py-2 text-xs font-mono text-slate-300 text-right">
+                            {pt.x.toFixed(1)}, {pt.y.toFixed(1)}, {pt.z.toFixed(1)} <br/> {pt.a.toFixed(1)}°, {pt.b.toFixed(1)}°, {pt.c.toFixed(1)}°
+                          </td>
+                          {hasXYTable && (
+                            <td className="px-3 py-2 text-xs font-mono text-amber-400/80 text-right">
+                              {pt.tx?.toFixed(1) ?? '0.0'}, {pt.ty?.toFixed(1) ?? '0.0'}
+                            </td>
+                          )}
+                          <td className="px-3 py-2 text-right">
+                            <button onClick={() => handleRemovePoint(i)} className="text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity p-1">
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {robot.recordedPoints.length === 0 && (
+                        <tr>
+                          <td colSpan={hasXYTable ? 4 : 3} className="px-3 py-8 text-center text-xs text-slate-500">
+                            No points recorded.<br/>Jog the robot and click "Record Point".
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
                 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 shrink-0">
                   <button 
                     onClick={() => saveKinematics(robot.id)}
                     disabled={robot.recordedPoints.length === 0 || isPlaying}
