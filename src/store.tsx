@@ -39,6 +39,7 @@ export interface RackConfig {
   capacity: number;
   usableSlots: boolean[];
   renderPos?: { x: number; y: number };
+  renderRot?: number;
   basePickupPos: {
     j1: number; j2: number; j3: number; j4: number; j5: number; j6: number;
     tx: number; ty: number;
@@ -50,6 +51,7 @@ export interface ATCConfig {
   panelGrid: ATCGrid;
   revolverSlots: number;
   renderPos?: { x: number; y: number };
+  renderRot?: number;
   revolverPos?: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number; tx?: number; ty?: number };
   tools: {
     slot: number;
@@ -82,6 +84,7 @@ export interface RobotState {
   xyTable: {
     pos: { x: number; y: number };
     worldPos?: { x: number; y: number };
+    worldRot?: number;
     tableSize: { width: number; length: number };
   };
 }

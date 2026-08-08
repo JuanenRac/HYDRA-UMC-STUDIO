@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useHydraStore } from '../store';
 import { TransformControls } from '@react-three/drei';
@@ -255,34 +255,41 @@ function ATC3DView({ atc }: { atc: any }) {
 }
 
 
+
 function Rack3DView({ rack, type }: { rack: any, type: string }) {
   const cap = rack.capacity || 24;
-  const cols = 6;
-  const rows = Math.ceil(cap / cols);
-  const cellW = 0.04;
-  const cellH = 0.04;
-  const w = cols * cellW;
-  const h = rows * cellH;
+  const plateThickness = 0.002;
+  const pitch = 0.01;
+  const w = 0.16;
+  const d = 0.16;
   const color = type === 'Input' ? "#0ea5e9" : type === 'Output' ? "#10b981" : "#64748b";
+  
   return (
     <group>
-      <Box args={[w, 0.05, h]} position={[w/2 - cellW/2, 0.025, h/2 - cellH/2]} material-color={color} material-transparent material-opacity={0.8} castShadow receiveShadow />
+      {/* Base */}
+      <Box args={[w + 0.02, 0.02, d + 0.02]} position={[0, 0.01, 0]} material-color="#334155" castShadow receiveShadow />
+      
+      {/* Side walls (vertical) */}
+      <Box args={[0.01, cap * pitch + 0.04, d]} position={[-w/2 - 0.005, (cap * pitch + 0.04)/2, 0]} material-color="#1e293b" castShadow receiveShadow />
+      <Box args={[0.01, cap * pitch + 0.04, d]} position={[w/2 + 0.005, (cap * pitch + 0.04)/2, 0]} material-color="#1e293b" castShadow receiveShadow />
+      
+      {/* Plates / Slots */}
       {Array.from({ length: cap }).map((_, i) => {
-        const r = Math.floor(i / cols);
-        const c = i % cols;
+        const y = 0.04 + i * pitch; // Start slightly above base
         const valid = rack.usableSlots?.[i] ?? true;
         return (
-          <group key={i} position={[c * cellW, 0.05, r * cellH]}>
-            <Cylinder args={[0.015, 0.015, 0.01]} position={[0, 0.005, 0]} material-color={valid ? "#ffffff" : "#ff0000"} material-transparent material-opacity={0.2} />
+          <group key={i} position={[0, y, 0]}>
+            {/* Slot indicator / plate */}
+            <Box args={[w, plateThickness, d]} position={[0, 0, 0]} material-color={valid ? color : "#ff0000"} material-transparent material-opacity={valid ? 0.6 : 0.2} />
           </group>
         );
       })}
     </group>
   );
 }
-
 export function VirtualKinematics({ robot }: { robot: RobotState }) {
   const { updateRobot } = useHydraStore();
+  const [controlMode, setControlMode] = useState<'translate' | 'rotate'>('translate');
   const hasXYTable = robot.hasXYTable;
   const xyTable = robot.xyTable;
 
@@ -297,6 +304,20 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
   return (
     <div className="w-full h-full bg-slate-950 relative rounded-xl overflow-hidden">
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-1 pointer-events-none">
+        <div className="pointer-events-auto mb-2 flex gap-2">
+          <button 
+            className={`px-3 py-1.5 text-xs font-semibold rounded shadow-lg ${controlMode === 'translate' ? 'bg-sky-500 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+            onClick={() => setControlMode('translate')}
+          >
+            Move
+          </button>
+          <button 
+            className={`px-3 py-1.5 text-xs font-semibold rounded shadow-lg ${controlMode === 'rotate' ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+            onClick={() => setControlMode('rotate')}
+          >
+            Rotate
+          </button>
+        </div>
         <span className="text-xs font-mono bg-slate-900/80 text-sky-400 px-2 py-1 rounded border border-sky-500/20 backdrop-blur shadow-lg shadow-black/20">
           Model: {robot.model}
         </span>
@@ -335,11 +356,11 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
         {/* ATC Visualization */}
         {robot.atc && (
           <TransformControls
-            size={2}
-            mode="translate"
+            size={3}
+            mode={controlMode}
             showY={false}
             position={[(robot.atc.renderPos?.x || -300) / 1000, 0, (robot.atc.renderPos?.y || 200) / 1000]}
-            onObjectChange={(e: any) => {
+            onMouseUp={(e: any) => {
               if (e.target.object) {
                 updateRobot(robot.id, {
                   atc: {
@@ -347,14 +368,15 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
                     renderPos: {
                       x: e.target.object.position.x * 1000,
                       y: e.target.object.position.z * 1000
-                    }
+                    },
+                    renderRot: e.target.object.rotation.y
                   }
                 });
               }
             }}
           >
             <group>
-              <ATC3DView atc={robot.atc} />
+              <group scale={[2, 2, 2]} rotation={[0, robot.atc.renderRot || 0, 0]}><ATC3DView atc={robot.atc} /></group>
             </group>
           </TransformControls>
         )}
@@ -362,11 +384,11 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
         {/* Rack 1 */}
         {robot.rackSystem?.enabled && robot.rackSystem.rack1.type !== 'None' && (
           <TransformControls
-            size={2}
-            mode="translate"
+            size={3}
+            mode={controlMode}
             showY={false}
             position={[(robot.rackSystem.rack1.renderPos?.x || 300) / 1000, 0, (robot.rackSystem.rack1.renderPos?.y || 200) / 1000]}
-            onObjectChange={(e: any) => {
+            onMouseUp={(e: any) => {
               if (e.target.object) {
                 updateRobot(robot.id, {
                   rackSystem: {
@@ -376,7 +398,8 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
                       renderPos: {
                         x: e.target.object.position.x * 1000,
                         y: e.target.object.position.z * 1000
-                      }
+                      },
+                      renderRot: e.target.object.rotation.y
                     }
                   }
                 });
@@ -384,7 +407,7 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
             }}
           >
             <group>
-              <Rack3DView rack={robot.rackSystem.rack1} type={robot.rackSystem.rack1.type} />
+              <group scale={[2, 2, 2]} rotation={[0, robot.rackSystem.rack1.renderRot || 0, 0]}><Rack3DView rack={robot.rackSystem.rack1} type={robot.rackSystem.rack1.type} /></group>
             </group>
           </TransformControls>
         )}
@@ -392,11 +415,11 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
         {/* Rack 2 */}
         {robot.rackSystem?.enabled && robot.rackSystem.rack2.type !== 'None' && (
           <TransformControls
-            size={2}
-            mode="translate"
+            size={3}
+            mode={controlMode}
             showY={false}
             position={[(robot.rackSystem.rack2.renderPos?.x || 300) / 1000, 0, (robot.rackSystem.rack2.renderPos?.y || -200) / 1000]}
-            onObjectChange={(e: any) => {
+            onMouseUp={(e: any) => {
               if (e.target.object) {
                 updateRobot(robot.id, {
                   rackSystem: {
@@ -406,7 +429,8 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
                       renderPos: {
                         x: e.target.object.position.x * 1000,
                         y: e.target.object.position.z * 1000
-                      }
+                      },
+                      renderRot: e.target.object.rotation.y
                     }
                   }
                 });
@@ -414,18 +438,18 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
             }}
           >
             <group>
-              <Rack3DView rack={robot.rackSystem.rack2} type={robot.rackSystem.rack2.type} />
+              <group scale={[2, 2, 2]} rotation={[0, robot.rackSystem.rack2.renderRot || 0, 0]}><Rack3DView rack={robot.rackSystem.rack2} type={robot.rackSystem.rack2.type} /></group>
             </group>
           </TransformControls>
         )}
 
         {hasXYTable ? (
           <TransformControls
-            size={2}
-            mode="translate"
+            size={3}
+            mode={controlMode}
             showY={false}
             position={[(robot.xyTable?.worldPos?.x || -tableW * 500) / 1000, 0, (robot.xyTable?.worldPos?.y || -tableL * 500) / 1000]}
-            onObjectChange={(e: any) => {
+            onMouseUp={(e: any) => {
               if (e.target.object) {
                 updateRobot(robot.id, {
                   xyTable: {
@@ -433,30 +457,32 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
                     worldPos: {
                       x: e.target.object.position.x * 1000,
                       y: e.target.object.position.z * 1000
-                    }
+                    },
+                    worldRot: e.target.object.rotation.y
                   }
                 });
               }
             }}
           >
-          <group position={[0, 0, 0]}>
-            <group position={[0, 0.08, 0]}>
-              <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
+          <group position={[0, 0, 0]} rotation={[0, robot.xyTable?.worldRot || 0, 0]}>
+            <group scale={[2, 2, 2]}>
+              <group position={[0, 0.08, 0]}>
+                <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
+              </group>
+              {/* Table Bed */}
+              <Box args={[tableW, 0.02, tableL]} position={[tableW/2, 0.01, tableL/2]} material-color="#121720" castShadow receiveShadow />
+              
+              {/* Rails */}
+              <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, 0.05]} material-color="#2D3748" />
+              <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, tableL - 0.05]} material-color="#2D3748" />
             </group>
-            {/* Table Bed */}
-            <Box args={[tableW, 0.02, tableL]} position={[tableW/2, 0.01, tableL/2]} material-color="#121720" castShadow receiveShadow />
-            
-            {/* Rails */}
-            <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, 0.05]} material-color="#2D3748" />
-            <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, tableL - 0.05]} material-color="#2D3748" />
-            
             {/* Robot Base Mount on XY table */}
             <TransformControls
-            size={2} 
-              mode="translate"
+            size={3} 
+              mode={controlMode}
               showY={false}
               position={[px, 0.04, py]}
-              onObjectChange={(e: any) => {
+              onMouseUp={(e: any) => {
                 if (e.target.object) {
                   const newX = e.target.object.position.x * 1000;
                   const newY = e.target.object.position.z * 1000;
@@ -482,11 +508,11 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
           <group>
             <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
             <TransformControls
-            size={2} 
-              mode="translate"
+            size={3} 
+              mode={controlMode}
               showY={false}
               position={[(robot.pos?.tx || 0) / 1000, 0, (robot.pos?.ty || 0) / 1000]}
-              onObjectChange={(e: any) => {
+              onMouseUp={(e: any) => {
                  if (e.target.object) {
                     const newTx = e.target.object.position.x * 1000;
                     const newTy = e.target.object.position.z * 1000;
