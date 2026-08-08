@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { useHydraStore } from './store';
 import { 
-  Activity, Cpu, Crosshair, 
+  Activity, Crosshair, Layers, 
   Video, Focus, Settings, Menu
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -16,18 +17,23 @@ import { RobotDetail } from './components/RobotDetail';
 import { CamerasView } from './components/CamerasView';
 import { XYTableConfig } from './components/XYTableConfig';
 import { ATCToolsConfig } from './components/ATCToolsConfig';
+import { RackConfigView } from './components/RackConfigView';
 
 export default function Dashboard() {
-  const { robots } = useHydraStore();
-  const [activeTab, setActiveTab] = useState<'overview' | 'robot' | 'cameras' | 'xytable' | 'atc'>('overview');
+  const { robots, cameras, updateCamera, settings, updateSettings, updateRobot } = useHydraStore();
+  const [activeTab, setActiveTab] = useState<'overview' | 'robot' | 'cameras' | 'xytable' | 'atc' | 'rack'>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const activeRobot = robots.find(r => r.id === selectedRobotId);
 
+  useEffect(() => {
+    document.body.dataset.theme = settings.theme;
+  }, [settings.theme]);
+
   return (
-    <div className="w-[1280px] h-[800px] bg-slate-950 text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
+    <div className="w-[1280px] h-[800px] bg-slate-950 bg-electric-grid text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
       {isSettingsOpen && (
         <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
           <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[600px] max-w-full overflow-hidden flex flex-col">
@@ -40,20 +46,36 @@ export default function Dashboard() {
               </button>
             </div>
             <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+              
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Network Settings</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Network Settings</h3>
+                  <button 
+                    onClick={() => {
+                      robots.forEach(r => updateRobot(r.id, { online: true, urtcConnected: true }));
+                      cameras.forEach(c => updateCamera(c.id, { connected: true }));
+                    }}
+                    className="px-3 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/30 rounded text-xs font-bold uppercase tracking-wider hover:bg-sky-500/20 transition-colors">
+                    Detect Hardware
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">CAN Bus Bitrate</label>
-                    <select className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-500 outline-none">
-                      <option>1000 kbps</option>
-                      <option>500 kbps</option>
-                      <option>250 kbps</option>
+                    <select value={settings.fdcanBaudrate} onChange={(e) => updateSettings({ fdcanBaudrate: parseInt(e.target.value) })} className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all">
+                      <option value={1000}>1000 kbps</option>
+                      <option value={500}>500 kbps</option>
+                      <option value={250}>250 kbps</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Master IP Address</label>
-                    <input type="text" defaultValue="192.168.1.100" className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-500 outline-none" />
+                    <label className="block text-xs text-slate-400 mb-1">FDCAN Data Baudrate</label>
+                    <select value={settings.fdcanDataBaudrate} onChange={(e) => updateSettings({ fdcanDataBaudrate: parseInt(e.target.value) })} className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all">
+                      <option value={5000}>5000 kbps</option>
+                      <option value={4000}>4000 kbps</option>
+                      <option value={2000}>2000 kbps</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -62,14 +84,13 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Theme</label>
-                    <select className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-500 outline-none">
-                      <option>Dark Mode (Default)</option>
-                      <option>High Contrast</option>
+                    <select value={settings.theme} onChange={(e) => updateSettings({ theme: e.target.value })} className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all">
+                      <option value="Dark Mode (Default)">Dark Mode (Default)</option>\n                      <option value="High Contrast">High Contrast</option>\n                      <option value="Cyberpunk">Cyberpunk</option>\n                      <option value="Oceanic">Oceanic</option>\n                      <option value="Matrix">Matrix</option>\n                      <option value="Crimson Red">Crimson Red</option>\n                      <option value="Solarized Dark">Solarized Dark</option>\n                      <option value="Dracula">Dracula</option>\n                      <option value="Neon Purple">Neon Purple</option>\n                      <option value="Monokai">Monokai</option>\n                      <option value="Synthwave">Synthwave</option>\n                      <option value="Sunset">Sunset</option>\n                      <option value="Obsidian Black">Obsidian Black</option>\n                      <option value="Midnight Blue">Midnight Blue</option>\n                      <option value="Forest Green">Forest Green</option>\n                      <option value="Gold Rush">Gold Rush</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Telemetry Sync Interval</label>
-                    <select className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-500 outline-none">
+                    <select className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all">
                       <option>10 ms (Real-time)</option>
                       <option>50 ms</option>
                       <option>100 ms</option>
@@ -80,18 +101,18 @@ export default function Dashboard() {
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Emergency Protocol</h3>
                 <div className="flex gap-4">
-                  <button className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/50 text-rose-400 py-3 rounded-lg font-bold tracking-widest uppercase transition-colors">
+                  <button className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 glow-border-rose hover:shadow-[0_0_20px_rgba(255,102,0,0.4)] py-3 rounded-lg font-bold tracking-widest uppercase transition-colors">
                     Global E-Stop
                   </button>
-                  <button className="flex-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 py-3 rounded-lg font-bold tracking-widest uppercase transition-colors">
+                  <button className="flex-1 bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 py-3 rounded-lg font-bold tracking-widest uppercase transition-colors">
                     Reboot Controller
                   </button>
                 </div>
               </div>
             </div>
             <div className="p-4 border-t border-slate-800 bg-slate-950 flex justify-end gap-3">
-              <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200 transition-colors">Cancel</button>
-              <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold rounded shadow transition-colors">Save Changes</button>
+              <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm text-slate-400 hover:text-rose-400 transition-colors hover:glow-border-rose px-4 py-2 rounded">Cancel</button>
+              <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded transition-colors shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400 hover:shadow-[0_0_20px_rgba(0,229,255,0.8)]">Save Changes</button>
             </div>
           </div>
         </div>
@@ -105,19 +126,19 @@ export default function Dashboard() {
           >
             <Menu size={24} />
           </button>
-          <Cpu className="text-sky-400" size={32} />
-          <h1 className="text-2xl font-bold tracking-wider text-slate-100">HYDRA-UMC <span className="text-sky-400 font-medium">Studio</span></h1>
+          <img src={HydraIcon} alt="Hydra Logo" className="w-8 h-8 object-contain" />
+          <h1 className="text-2xl font-bold tracking-wider text-slate-100">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span></h1>
         </div>
         <div className="flex items-center gap-6 text-base font-medium">
           <button 
             onClick={() => setIsSettingsOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 transition-colors"
           >
             <Settings size={18} />
             <span className="text-sm">Config</span>
           </button>
           <div className="flex items-center gap-3">
-            <span className="w-4 h-4 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+            <span className="w-4 h-4 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(0,255,102,0.5)]" />
             <span className="text-emerald-400 tracking-wide">System Online</span>
           </div>
           <div className="px-4 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50 font-mono text-slate-300">
@@ -151,8 +172,8 @@ export default function Dashboard() {
               className={cn(
                 "flex items-center justify-between px-3 py-3 min-h-[50px] rounded-lg text-sm transition-all text-left",
                 activeTab === 'robot' && selectedRobotId === r.id
-                  ? "bg-sky-500/10 text-sky-400 border border-sky-500/20"
-                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-transparent"
+                  ? "bg-sky-500/10 text-sky-400 glow-border-sky"
+                  : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
               )}
             >
               <div className="flex items-center gap-2 min-w-0">
@@ -184,15 +205,22 @@ export default function Dashboard() {
             active={activeTab === 'cameras'} 
             onClick={() => setActiveTab('cameras')} 
           />
+          <NavItem 
+            icon={<Layers size={18} />} 
+            label="RACK Config" 
+            active={activeTab === 'rack'} 
+            onClick={() => setActiveTab('rack')} 
+          />
         </nav>
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-slate-950 p-4">
+        <main className="flex-1 flex flex-col overflow-hidden bg-slate-950/80 p-4 backdrop-blur-sm">
           {activeTab === 'overview' && <OverviewPanel />}
           {activeTab === 'robot' && activeRobot && <RobotDetail robot={activeRobot} />}
           {activeTab === 'cameras' && <CamerasView />}
           {activeTab === 'xytable' && <XYTableConfig />}
           {activeTab === 'atc' && <ATCToolsConfig />}
+          {activeTab === 'rack' && <RackConfigView />}
         </main>
       </div>
     </div>
@@ -206,8 +234,8 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, labe
       className={cn(
         "flex items-center gap-4 px-4 py-4 min-h-[64px] rounded-xl font-medium text-lg transition-all",
         active 
-          ? "bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20" 
-          : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+          ? "bg-sky-500 text-slate-950 shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400" 
+          : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
       )}
     >
       {icon}
@@ -217,7 +245,7 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, labe
 }
 
 function OverviewPanel() {
-  const { robots } = useHydraStore();
+  const { robots, cameras, updateRobot } = useHydraStore();
   
   return (
     <div className="max-w-6xl mx-auto space-y-4">
@@ -226,17 +254,15 @@ function OverviewPanel() {
         {robots.map(r => (
           <div key={r.id} className={cn(
             "p-3 rounded-lg border flex flex-col gap-2",
-            r.online ? "bg-slate-900 border-slate-700 shadow-lg shadow-black/20" : "bg-slate-900/50 border-slate-800 opacity-60"
+            r.online ? "bg-slate-900 border-slate-700 hover:glow-border-emerald transition-all duration-300 shadow-lg" : "bg-slate-900/50 border-slate-800 opacity-60"
           )}>
             <div className="flex items-center justify-between">
               <span className="font-semibold text-sm text-slate-200 flex items-center gap-2 truncate">
                 {r.name}
               </span>
-              {r.online ? (
-                <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">Online</span>
-              ) : (
-                <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-500 shrink-0">Offline</span>
-              )}
+              <button onClick={(e) => { e.stopPropagation(); updateRobot(r.id, { online: !r.online }) }} className={cn("px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider transition-colors", r.online ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20" : "bg-slate-800 text-slate-500 hover:text-slate-300 border border-slate-700 hover:border-slate-500")}>
+    {r.online ? 'Online' : 'Connect'}
+  </button>
             </div>
             
             <div className="text-[11px] text-slate-400 grid grid-cols-[40px_1fr] gap-x-1 gap-y-1">
@@ -264,6 +290,20 @@ function OverviewPanel() {
             {r.atc && (
               <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-sky-400 bg-sky-400/10 p-1 rounded border border-sky-500/20">
                 <Settings size={10} /> ATC: {r.atc.type.replace("_", " ")}
+              </div>
+            )}
+            {r.rackSystem?.enabled && (
+              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-rose-400 bg-rose-400/10 p-1 rounded border border-rose-500/20">
+                <Layers size={10} /> Rack Active
+              </div>
+            )}
+            {cameras.find(c => c.id === r.id)?.connected ? (
+              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-emerald-400 bg-emerald-500/10 p-1 rounded border border-emerald-500/20">
+                <Video size={10} /> Camera Active
+              </div>
+            ) : (
+              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-slate-500 bg-slate-800 p-1 rounded border border-slate-700">
+                <Video size={10} /> Camera Offline
               </div>
             )}
           </div>

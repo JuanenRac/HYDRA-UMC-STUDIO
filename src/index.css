@@ -1,23 +1,212 @@
 @import "tailwindcss";
 
 @theme {
-  --color-hydra-dark: #0f172a;
-  --color-hydra-panel: #1e293b;
-  --color-hydra-accent: #38bdf8;
-  --color-hydra-success: #10b981;
-  --color-hydra-danger: #ef4444;
+  --color-slate-950: #07090C;
+  --color-slate-900: #0A0D12;
+  --color-slate-800: #121720;
+  --color-slate-700: #1A202C;
+  --color-slate-600: #2D3748;
+  
+  --color-sky-300: #33FFFF;
+  --color-sky-400: #00E5FF;
+  --color-sky-500: #00B8CC;
+  
+  --color-emerald-400: #33FF85;
+  --color-emerald-500: #00FF66;
+  --color-emerald-600: #009933;
+
+  --color-rose-400: #FF8533;
+  --color-rose-500: #FF6600;
+  --color-rose-600: #FF3300;
 }
 
 body {
-  background-color: var(--color-hydra-dark);
+  background-color: var(--color-slate-950);
   color: #f8fafc;
   overflow: hidden;
 }
 
-/* Hide all scrollbars per user request */
+/* Electric Background Pattern */
+.bg-electric-grid {
+  background-image: 
+    linear-gradient(to right, rgba(0, 229, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center center;
+}
+
+/* Glowing borders */
+.glow-border-sky {
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.25), inset 0 0 8px rgba(0, 229, 255, 0.15);
+  border: 1px solid rgba(0, 229, 255, 0.6);
+}
+
+.glow-border-rose {
+  box-shadow: 0 0 12px rgba(255, 102, 0, 0.25), inset 0 0 8px rgba(255, 102, 0, 0.15);
+  border: 1px solid rgba(255, 102, 0, 0.6);
+}
+
+.glow-border-emerald {
+  box-shadow: 0 0 12px rgba(0, 255, 102, 0.25), inset 0 0 8px rgba(0, 255, 102, 0.15);
+  border: 1px solid rgba(0, 255, 102, 0.6);
+}
+
+.glow-text-sky {
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.7);
+}
+
+.glow-text-emerald {
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.7);
+}
+
+.glow-text-rose {
+  text-shadow: 0 0 10px rgba(255, 102, 0, 0.7);
+}
+
+/* Hide all scrollbars */
 ::-webkit-scrollbar {
   display: none;
 }
 * {
   scrollbar-width: none;
+}
+
+
+body[data-theme="Cyberpunk"] {
+  --color-slate-950: #0d0221;
+  --color-slate-900: #1a0933;
+  --color-slate-800: #2c1259;
+  --color-slate-700: #421e82;
+  --color-slate-600: #5c2bad;
+  --color-sky-300: #ff55ff;
+  --color-sky-400: #ff00ff;
+  --color-sky-500: #cc00cc;
+  --color-emerald-400: #00ffff;
+  --color-emerald-500: #00cccc;
+}
+
+body[data-theme="Oceanic"] {
+  --color-slate-950: #001220;
+  --color-slate-900: #001f33;
+  --color-slate-800: #00334d;
+  --color-slate-700: #004d66;
+  --color-slate-600: #006b85;
+}
+
+body[data-theme="Matrix"] {
+  --color-slate-950: #020a02;
+  --color-slate-900: #051405;
+  --color-slate-800: #0a290a;
+  --color-slate-700: #0f3d0f;
+  --color-slate-600: #145214;
+  --color-sky-300: #66ff66;
+  --color-sky-400: #00ff00;
+  --color-sky-500: #00cc00;
+}
+
+body[data-theme="Crimson Red"] {
+  --color-slate-950: #1a0505;
+  --color-slate-900: #330a0a;
+  --color-slate-800: #4d0f0f;
+  --color-slate-700: #661414;
+  --color-slate-600: #801a1a;
+  --color-emerald-400: #ff3333;
+  --color-emerald-500: #cc0000;
+  --color-sky-400: #ff6666;
+  --color-sky-500: #cc3333;
+}
+
+body[data-theme="Solarized Dark"] {
+  --color-slate-950: #002b36;
+  --color-slate-900: #073642;
+  --color-slate-800: #586e75;
+  --color-slate-700: #657b83;
+  --color-slate-600: #839496;
+}
+
+body[data-theme="Dracula"] {
+  --color-slate-950: #282a36;
+  --color-slate-900: #44475a;
+  --color-slate-800: #6272a4;
+  --color-slate-700: #8be9fd;
+  --color-sky-400: #bd93f9;
+  --color-sky-500: #ff79c6;
+  --color-emerald-400: #50fa7b;
+  --color-emerald-500: #50fa7b;
+}
+
+body[data-theme="Neon Purple"] {
+  --color-slate-950: #0a001a;
+  --color-slate-900: #140033;
+  --color-slate-800: #290066;
+  --color-sky-400: #9933ff;
+  --color-sky-500: #7a00cc;
+  --color-emerald-400: #ff00ff;
+  --color-emerald-500: #cc00cc;
+}
+
+body[data-theme="Monokai"] {
+  --color-slate-950: #272822;
+  --color-slate-900: #3e3d32;
+  --color-slate-800: #49483e;
+  --color-sky-400: #a6e22e;
+  --color-sky-500: #f92672;
+}
+
+body[data-theme="Synthwave"] {
+  --color-slate-950: #2b213a;
+  --color-slate-900: #241b2f;
+  --color-slate-800: #262335;
+  --color-sky-400: #f92a82;
+  --color-sky-500: #f92a82;
+  --color-emerald-400: #36f9f6;
+  --color-emerald-500: #36f9f6;
+}
+
+body[data-theme="Sunset"] {
+  --color-slate-950: #1a0f14;
+  --color-slate-900: #331f29;
+  --color-slate-800: #4d2e3d;
+  --color-sky-400: #ff6666;
+  --color-sky-500: #cc3333;
+  --color-emerald-400: #ffcc00;
+  --color-emerald-500: #cc9900;
+}
+
+body[data-theme="Obsidian Black"] {
+  --color-slate-950: #000000;
+  --color-slate-900: #050505;
+  --color-slate-800: #111111;
+  --color-slate-700: #222222;
+  --color-sky-400: #ffffff;
+  --color-sky-500: #cccccc;
+}
+
+body[data-theme="Midnight Blue"] {
+  --color-slate-950: #030a1a;
+  --color-slate-900: #081533;
+  --color-slate-800: #0d204d;
+}
+
+body[data-theme="Forest Green"] {
+  --color-slate-950: #05140a;
+  --color-slate-900: #0a2914;
+  --color-slate-800: #0f3d1f;
+}
+
+body[data-theme="High Contrast"] {
+  --color-slate-950: #000000;
+  --color-slate-900: #000000;
+  --color-slate-800: #000000;
+  --color-slate-700: #ffffff;
+  --color-sky-400: #ffff00;
+  --color-sky-500: #cccc00;
+}
+
+body[data-theme="Gold Rush"] {
+  --color-slate-950: #1a1500;
+  --color-slate-900: #332b00;
+  --color-slate-800: #4d4000;
+  --color-sky-400: #ffcc00;
+  --color-sky-500: #cca300;
 }

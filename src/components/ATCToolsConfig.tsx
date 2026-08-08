@@ -10,13 +10,32 @@ function cnm(...inputs: ClassValue[]) {
 }
 
 const URTC_TOOLS: ToolType[] = [
-  'None', 'Vacuum Nozzle', '10W Optical Laser', '20W Optical Laser', '40W CO2 Laser',
-  'Hotend Extruder (0.4mm)', 'Hotend Extruder (High Flow)', 'Dual Extruder',
-  'Microscope Camera', '4K Vision Camera', '2-Finger Parallel Gripper',
-  '3-Finger Adaptive Gripper', 'Pneumatic Suction Array', 'Solder Paste Dispenser',
-  'Glue Dispenser', 'Soldering Iron', 'Automatic Screwdriver', 'Pen / Marker Holder',
-  'Touch Probe', 'ER11 CNC Spindle', 'Polishing Wheel', 'Air Blow Gun',
-  'Electromagnet', 'UV Curing Lamp', 'Rotary Tool (Dremel)', 'Custom Tool'
+  'None',
+  'Soldering Station (T12)',
+  'SMT Solder Paste Dispenser',
+  'Thermal Paste / Liquid Dispenser',
+  'Smart Electric Screwdriver',
+  'Vacuum / Pneumatic Gripper',
+  'Drill (BL4260)',
+  'Gimbal Gripper',
+  'NEMA Gripper',
+  'AOI (Automated Optical Inspection) System',
+  'Engraving Laser Diode (10W optical)',
+  '3D Printing Hotend',
+  '3D Scanner Probe',
+  'SMT Pick & Place Head',
+  'Heavy-Duty Electromagnet',
+  'Spot Welder Head',
+  'Conformal Coating Airbrush',
+  'Large-Format Vacuum Gripper',
+  'Functional Testing Head',
+  'UV Curing Head',
+  'Hot Air Rework Nozzle',
+  'Pneumatic Press-Fit Inserter',
+  'Wire Harnessing / Crimping Actuator',
+  'PCB Advanced Inspection',
+  'Solder Paste Jetting Valve',
+  'Ultrasonic Welder / Packaging Sealer'
 ];
 
 const defaultAtcConfig: ATCConfig = {
@@ -218,7 +237,7 @@ export function ATCToolsConfig() {
         
         <div className="flex items-center gap-2">
           <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={loadConfig} />
-          <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-colors border border-slate-700">
+          <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-200 text-xs font-semibold rounded-lg transition-colors border border-slate-700">
             <Upload size={14} /> Load Config
           </button>
           <button onClick={saveConfig} className="flex items-center gap-2 px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-xs font-semibold rounded-lg transition-colors border border-sky-500/30">

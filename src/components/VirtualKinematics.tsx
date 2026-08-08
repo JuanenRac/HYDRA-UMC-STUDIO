@@ -16,7 +16,7 @@ function Toolhead({ tool }: { tool: string }) {
   if (tool.includes('Extruder')) {
     return (
       <group position={[0, 0, 0]}>
-        <Box args={[0.04, 0.06, 0.04]} position={[0, 0.03, 0]} material-color="#38bdf8" castShadow />
+        <Box args={[0.04, 0.06, 0.04]} position={[0, 0.03, 0]} material-color="#00E5FF" castShadow />
         <Cylinder args={[0.01, 0.005, 0.02]} position={[0, 0.07, 0]} material-color="#f59e0b" castShadow />
       </group>
     );
@@ -24,8 +24,8 @@ function Toolhead({ tool }: { tool: string }) {
   if (tool.includes('Vacuum') || tool.includes('Suction')) {
     return (
       <group position={[0, 0, 0]}>
-        <Cylinder args={[0.02, 0.02, 0.06]} position={[0, 0.03, 0]} material-color="#64748b" castShadow />
-        <Cylinder args={[0.005, 0.005, 0.02]} position={[0, 0.07, 0]} material-color="#334155" castShadow />
+        <Cylinder args={[0.02, 0.02, 0.06]} position={[0, 0.03, 0]} material-color="#2D3748" castShadow />
+        <Cylinder args={[0.005, 0.005, 0.02]} position={[0, 0.07, 0]} material-color="#2D3748" castShadow />
       </group>
     );
   }
@@ -33,15 +33,15 @@ function Toolhead({ tool }: { tool: string }) {
     return (
       <group position={[0, 0, 0]}>
         <Box args={[0.04, 0.02, 0.02]} position={[0, 0.01, 0]} material-color="#94a3b8" castShadow />
-        <Box args={[0.008, 0.04, 0.01]} position={[-0.016, 0.03, 0]} material-color="#cbd5e1" castShadow />
-        <Box args={[0.008, 0.04, 0.01]} position={[0.016, 0.03, 0]} material-color="#cbd5e1" castShadow />
+        <Box args={[0.008, 0.04, 0.01]} position={[-0.016, 0.03, 0]} material-color="#00FF66" castShadow />
+        <Box args={[0.008, 0.04, 0.01]} position={[0.016, 0.03, 0]} material-color="#00FF66" castShadow />
       </group>
     );
   }
   if (tool.includes('Camera') || tool.includes('Microscope')) {
     return (
       <group position={[0, 0, 0]}>
-        <Box args={[0.04, 0.04, 0.04]} position={[0, 0.02, 0]} material-color="#1e293b" castShadow />
+        <Box args={[0.04, 0.04, 0.04]} position={[0, 0.02, 0]} material-color="#121720" castShadow />
         <Cylinder args={[0.01, 0.01, 0.02]} position={[0, 0.04, 0.02]} rotation={[Math.PI/2, 0, 0]} material-color="#0284c7" castShadow />
         <Cylinder args={[0.008, 0.008, 0.005]} position={[0, 0.04, 0.035]} rotation={[Math.PI/2, 0, 0]} material-color="#f8fafc" castShadow />
       </group>
@@ -50,7 +50,7 @@ function Toolhead({ tool }: { tool: string }) {
   if (tool.includes('Spindle') || tool.includes('Rotary')) {
     return (
       <group position={[0, 0, 0]}>
-        <Cylinder args={[0.02, 0.02, 0.08]} position={[0, 0.04, 0]} material-color="#cbd5e1" castShadow />
+        <Cylinder args={[0.02, 0.02, 0.08]} position={[0, 0.04, 0]} material-color="#00FF66" castShadow />
         <Cylinder args={[0.005, 0.005, 0.02]} position={[0, 0.09, 0]} material-color="#94a3b8" castShadow />
       </group>
     );
@@ -82,10 +82,10 @@ function RobotArm({ robot }: { robot: RobotState }) {
   const j5 = robot.joints.j5 * Math.PI / 180;
   const j6 = robot.joints.j6 * Math.PI / 180;
 
-  const colorPrimary = '#fb923c'; // Brighter orange for Parol6
-  const colorSecondary = '#0f172a'; // Darker base
-  const colorJoint = '#334155'; // Metallic dark gray
-  const colorAccent = '#cbd5e1'; // Silver accents
+  const colorPrimary = '#FF6600'; // Brighter orange for Parol6
+  const colorSecondary = '#1A202C'; // Darker base
+  const colorJoint = '#2D3748'; // Metallic dark gray
+  const colorAccent = '#00FF66'; // Silver accents
   const matProps = { roughness: 0.3, metalness: 0.6, clearcoat: 0.5 };
   const rubberProps = { roughness: 0.9, metalness: 0.1 };
   
@@ -182,14 +182,14 @@ function PathVisualizer({ points, hasXYTable }: { points: RobotState['recordedPo
     <group>
       <Line
         points={linePoints}
-        color="#06b6d4"
+        color="#00E5FF"
         lineWidth={4}
         dashed={false}
       />
       {linePoints.map((pt, i) => (
         <mesh key={i} position={pt}>
           <sphereGeometry args={[0.007, 16, 16]} />
-          <meshBasicMaterial color={i === 0 ? "#22c55e" : i === linePoints.length - 1 ? "#ef4444" : "#06b6d4"} />
+          <meshBasicMaterial color={i === 0 ? "#22c55e" : i === linePoints.length - 1 ? "#ef4444" : "#00E5FF"} />
         </mesh>
       ))}
     </group>
@@ -221,16 +221,16 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
       <Canvas shadows className="w-full h-full outline-none touch-none">
         <PerspectiveCamera makeDefault position={[0.4, 0.4, 0.6]} fov={45} />
         <OrbitControls target={[0.1, 0.1, 0]} makeDefault enableDamping dampingFactor={0.05} />
-        <color attach="background" args={['#020617']} />
+        <color attach="background" args={['#07090C']} />
         
         <ambientLight intensity={0.4} />
         <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
-        <pointLight position={[-5, 5, -5]} intensity={0.5} color="#38bdf8" />
+        <pointLight position={[-5, 5, -5]} intensity={0.5} color="#00E5FF" />
         
         {/* Floor */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
           <planeGeometry args={[10, 10]} />
-          <meshStandardMaterial color="#020617" />
+          <meshStandardMaterial color="#07090C" />
         </mesh>
 
         <Grid 
@@ -241,7 +241,7 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
           cellThickness={0.5} 
           sectionSize={0.5} 
           sectionThickness={1} 
-          sectionColor="#334155" 
+          sectionColor="#2D3748" 
           fadeDistance={5} 
         />
         
@@ -251,11 +251,11 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
               <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
             </group>
             {/* Table Bed */}
-            <Box args={[tableW, 0.02, tableL]} position={[tableW/2, 0.01, tableL/2]} material-color="#1e293b" castShadow receiveShadow />
+            <Box args={[tableW, 0.02, tableL]} position={[tableW/2, 0.01, tableL/2]} material-color="#121720" castShadow receiveShadow />
             
             {/* Rails */}
-            <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, 0.05]} material-color="#64748b" />
-            <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, tableL - 0.05]} material-color="#64748b" />
+            <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, 0.05]} material-color="#2D3748" />
+            <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, tableL - 0.05]} material-color="#2D3748" />
             
             {/* Robot Base Mount on XY table */}
             <group position={[px, 0.04, py]}>

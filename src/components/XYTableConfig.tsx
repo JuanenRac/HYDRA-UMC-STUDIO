@@ -187,10 +187,10 @@ export function XYTableConfig() {
                   <div className="text-[10px] font-bold text-slate-500 uppercase">X Axis</div>
                   <div className="text-lg font-mono text-amber-400">{xyTable?.pos.x.toFixed(2) || '0.00'}</div>
                   <div className="flex gap-2 mt-1 w-full justify-center">
-                    <button onClick={() => handleJog('x', -1)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 rounded text-slate-300">
+                    <button onClick={() => handleJog('x', -1)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded text-slate-300">
                       <ArrowLeft size={20} />
                     </button>
-                    <button onClick={() => handleJog('x', 1)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 rounded text-slate-300">
+                    <button onClick={() => handleJog('x', 1)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded text-slate-300">
                       <ArrowRight size={20} />
                     </button>
                   </div>
@@ -200,10 +200,10 @@ export function XYTableConfig() {
                   <div className="text-[10px] font-bold text-slate-500 uppercase">Y Axis</div>
                   <div className="text-lg font-mono text-amber-400">{xyTable?.pos.y.toFixed(2) || '0.00'}</div>
                   <div className="flex gap-2 mt-1 w-full justify-center">
-                    <button onClick={() => handleJog('y', -1)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 rounded text-slate-300">
+                    <button onClick={() => handleJog('y', -1)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded text-slate-300">
                       <ArrowDown size={20} />
                     </button>
-                    <button onClick={() => handleJog('y', 1)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 rounded text-slate-300">
+                    <button onClick={() => handleJog('y', 1)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded text-slate-300">
                       <ArrowUp size={20} />
                     </button>
                   </div>
@@ -211,7 +211,7 @@ export function XYTableConfig() {
               </div>
               
               <div className="mt-4 flex justify-end">
-                <button className="flex items-center justify-center gap-2 min-h-[44px] bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded transition-colors text-xs font-medium">
+                <button className="flex items-center justify-center gap-2 min-h-[44px] bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-200 px-4 py-2 rounded transition-colors text-xs font-medium">
                   <Save size={16} /> Save Table Calibration
                 </button>
               </div>
