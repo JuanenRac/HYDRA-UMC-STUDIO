@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
-import { useHydraStore } from './store';
+import { useHydraStore, createDefaultRobots, createDefaultCameras } from './store';
 import { 
   Activity, Crosshair, Layers, 
-  Video, Focus, Settings, Menu
+  Video, Focus, Settings, Menu, Plus, Trash2, Search
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -20,11 +20,12 @@ import { ATCToolsConfig } from './components/ATCToolsConfig';
 import { RackConfigView } from './components/RackConfigView';
 
 export default function Dashboard() {
-  const { robots, cameras, updateCamera, settings, updateSettings, updateRobot } = useHydraStore();
+  const { controllers, activeControllerId, setActiveControllerId, activeController, updateController, robots, cameras, updateCamera, settings, updateSettings, updateRobot, addController, removeController } = useHydraStore();
   const [activeTab, setActiveTab] = useState<'overview' | 'robot' | 'cameras' | 'xytable' | 'atc' | 'rack'>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isScanning, setIsScanning] = useState(false);
 
   const activeRobot = robots.find(r => r.id === selectedRobotId);
 
@@ -33,7 +34,7 @@ export default function Dashboard() {
   }, [settings.theme]);
 
   return (
-    <div className="w-[1280px] h-[800px] bg-slate-950 bg-electric-grid text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
+    <div className="w-full h-screen bg-slate-950 bg-electric-grid text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
       {isSettingsOpen && (
         <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
           <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[600px] max-w-full overflow-hidden flex flex-col">
@@ -48,8 +49,114 @@ export default function Dashboard() {
             <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
               
               <div className="space-y-4">
+                <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Network Settings</h3>
+                  <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Controller Management (Ethernet/IP)</h3>
+                </div>
+
+                <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-slate-900 border-b border-slate-800">
+                      <tr>
+                        <th className="px-4 py-2 font-medium text-slate-400">Name</th>
+                        <th className="px-4 py-2 font-medium text-slate-400">IP Address</th>
+                        <th className="px-4 py-2 font-medium text-slate-400">Status</th>
+                        <th className="px-4 py-2 text-right"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {controllers.map(c => (
+                        <tr key={c.id} className="border-b border-slate-800/50 hover:bg-slate-900/50">
+                          <td className="px-4 py-2">
+                            <input
+                              value={c.name}
+                              onChange={e => updateController(c.id, { name: e.target.value })}
+                              className="bg-transparent border-none outline-none text-slate-200 w-full"
+                            />
+                          </td>
+                          <td className="px-4 py-2">
+                            <input
+                              value={c.ip}
+                              onChange={e => updateController(c.id, { ip: e.target.value })}
+                              className="bg-transparent border-none outline-none font-mono text-slate-300 w-full"
+                            />
+                          </td>
+                          <td className="px-4 py-2">
+                            <select 
+                              value={c.status}
+                              onChange={e => updateController(c.id, { status: e.target.value as any })}
+                              className="bg-transparent border-none outline-none font-bold text-xs uppercase tracking-wider"
+                              style={{ color: c.status === 'online' ? '#34d399' : '#f87171' }}
+                            >
+                              <option value="online">Online</option>
+                              <option value="offline">Offline</option>
+                            </select>
+                          </td>
+                          <td className="px-4 py-2 text-right">
+                            <button
+                              onClick={() => removeController(c.id)}
+                              disabled={controllers.length <= 1}
+                              className="text-slate-500 hover:text-rose-400 transition-colors disabled:opacity-30 p-1"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div className="p-2 border-t border-slate-800 bg-slate-900/50 flex items-center justify-between">
+                    <button
+                      onClick={() => {
+                        const ip = `192.168.1.${100 + controllers.length}`;
+                        addController({
+                          id: Date.now().toString(),
+                          name: `HYDRA-UMC Node ${controllers.length + 1}`,
+                          ip,
+                          status: 'offline',
+                          fdcanBaudrate: 1000,
+                          fdcanDataBaudrate: 5000,
+                          robots: createDefaultRobots().map(r => ({ ...r, online: false, urtcConnected: false })),
+                          cameras: createDefaultCameras().map(cam => ({ ...cam, connected: false }))
+                        });
+                      }}
+                      className="flex items-center gap-2 text-sky-400 hover:text-sky-300 text-xs font-bold uppercase tracking-wider p-2"
+                    >
+                      <Plus size={14} /> Add Controller
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsScanning(true);
+                        setTimeout(() => {
+                          setIsScanning(false);
+                          const ip = `192.168.1.${Math.floor(Math.random() * 200) + 20}`;
+                          const hasExisting = controllers.find(c => c.ip === ip);
+                          if (!hasExisting) {
+                            addController({
+                              id: Date.now().toString(),
+                              name: `HYDRA-UMC Node (Auto-Discovered)`,
+                              ip,
+                              status: 'online',
+                              fdcanBaudrate: 1000,
+                              fdcanDataBaudrate: 5000,
+                              robots: createDefaultRobots().map((r, i) => ({ ...r, online: i < 2, urtcConnected: i < 2 })),
+                              cameras: createDefaultCameras().map((cam, i) => ({ ...cam, connected: i < 1 }))
+                            });
+                          }
+                        }, 2000);
+                      }}
+                      disabled={isScanning}
+                      className={cn("flex items-center gap-2 text-xs font-bold uppercase tracking-wider p-2 transition-colors", isScanning ? "text-emerald-400 opacity-80" : "text-emerald-500 hover:text-emerald-400")}
+                    >
+                      <Search size={14} className={cn(isScanning && "animate-pulse")} /> 
+                      {isScanning ? "Scanning Network..." : "Auto-Discover IP"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{activeController?.name} Settings</h3>
                   <button 
                     onClick={() => {
                       robots.forEach(r => updateRobot(r.id, { online: true, urtcConnected: true }));
@@ -63,7 +170,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">CAN Bus Bitrate</label>
-                    <select value={settings.fdcanBaudrate} onChange={(e) => updateSettings({ fdcanBaudrate: parseInt(e.target.value) })} className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all">
+                    <select value={activeController?.fdcanBaudrate || 1000} onChange={(e) => updateController(activeControllerId, { fdcanBaudrate: parseInt(e.target.value) })} className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all">
                       <option value={1000}>1000 kbps</option>
                       <option value={500}>500 kbps</option>
                       <option value={250}>250 kbps</option>
@@ -71,7 +178,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">FDCAN Data Baudrate</label>
-                    <select value={settings.fdcanDataBaudrate} onChange={(e) => updateSettings({ fdcanDataBaudrate: parseInt(e.target.value) })} className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all">
+                    <select value={activeController?.fdcanDataBaudrate || 5000} onChange={(e) => updateController(activeControllerId, { fdcanDataBaudrate: parseInt(e.target.value) })} className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all">
                       <option value={5000}>5000 kbps</option>
                       <option value={4000}>4000 kbps</option>
                       <option value={2000}>2000 kbps</option>
@@ -138,12 +245,24 @@ export default function Dashboard() {
             <span className="text-sm">Config</span>
           </button>
           <div className="flex items-center gap-3">
-            <span className="w-4 h-4 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(0,255,102,0.5)]" />
-            <span className="text-emerald-400 tracking-wide">System Online</span>
+            <span className={cn("w-4 h-4 rounded-full animate-pulse", activeController?.status === 'online' ? "bg-emerald-500 shadow-[0_0_10px_rgba(0,255,102,0.5)]" : "bg-rose-500 shadow-[0_0_10px_rgba(255,102,0,0.5)]")} />
+            <span className={cn("tracking-wide font-bold", activeController?.status === 'online' ? "text-emerald-400" : "text-rose-400")}>{activeController?.status === 'online' ? 'System Online' : 'System Offline'}</span>
           </div>
-          <div className="px-4 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50 font-mono text-slate-300">
-            FDCAN: 1000 kbps
-          </div>
+          <select
+            value={activeControllerId}
+            onChange={(e) => {
+              setActiveControllerId(e.target.value);
+              setSelectedRobotId(1); // Reset selected robot
+              setActiveTab('overview');
+            }}
+            className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 font-mono text-slate-200 outline-none focus:border-sky-400 focus:glow-border-sky transition-all appearance-none cursor-pointer"
+          >
+            {controllers.map(c => (
+              <option key={c.id} value={c.id}>
+                {c.name} ({c.ip})
+              </option>
+            ))}
+          </select>
         </div>
       </header>
 
@@ -248,9 +367,9 @@ function OverviewPanel() {
   const { robots, cameras, updateRobot } = useHydraStore();
   
   return (
-    <div className="max-w-6xl mx-auto space-y-4">
-      <h2 className="text-xl font-semibold text-slate-100">Micro-Factory Status</h2>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="w-full mx-auto space-y-6 px-2 2xl:px-8">
+      <h2 className="text-2xl font-semibold text-slate-100">Micro-Factory Status</h2>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 2xl:gap-6">
         {robots.map(r => (
           <div key={r.id} className={cn(
             "p-3 rounded-lg border flex flex-col gap-2",

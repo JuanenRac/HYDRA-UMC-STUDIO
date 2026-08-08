@@ -1,5 +1,7 @@
 import { useRef, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
+import { useHydraStore } from '../store';
+import { TransformControls } from '@react-three/drei';
 import { OrbitControls, Grid, Box, Cylinder, Line, RoundedBox, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { type RobotState } from '../store';
@@ -196,7 +198,91 @@ function PathVisualizer({ points, hasXYTable }: { points: RobotState['recordedPo
   );
 }
 
+
+function ATC3DView({ atc }: { atc: any }) {
+  if (atc.type === 'vertical_panel' || atc.type === 'horizontal_panel') {
+    const [rows, cols] = atc.panelGrid.split('x').map(Number);
+    const cellW = 0.08;
+    const cellH = 0.08;
+    const w = cols * cellW;
+    const h = rows * cellH;
+    return (
+      <group>
+        <Box args={[w, 0.05, h]} position={[w/2 - cellW/2, 0.025, h/2 - cellH/2]} material-color="#334155" castShadow receiveShadow />
+        {Array.from({ length: rows * cols }).map((_, i) => {
+          const r = Math.floor(i / cols);
+          const c = i % cols;
+          const tool = atc.tools.find((t: any) => t.slot === i)?.tool || 'None';
+          return (
+            <group key={i} position={[c * cellW, 0.05, r * cellH]}>
+              <Cylinder args={[0.015, 0.015, 0.01]} position={[0, 0.005, 0]} material-color="#0f172a" />
+              {tool !== 'None' && (
+                <group position={[0, 0.01, 0]}>
+                  <Toolhead tool={tool} />
+                </group>
+              )}
+            </group>
+          );
+        })}
+      </group>
+    );
+  } else {
+    const slots = atc.revolverSlots;
+    const radius = Math.max(0.1, slots * 0.015);
+    return (
+      <group>
+        <Cylinder args={[radius, radius, 0.05]} position={[0, 0.025, 0]} material-color="#334155" castShadow receiveShadow />
+        <Cylinder args={[0.02, 0.02, 0.1]} position={[0, 0.05, 0]} material-color="#1e293b" castShadow receiveShadow />
+        {Array.from({ length: slots }).map((_, i) => {
+          const angle = (i / slots) * Math.PI * 2;
+          const cx = Math.cos(angle) * radius * 0.8;
+          const cy = Math.sin(angle) * radius * 0.8;
+          const tool = atc.tools.find((t: any) => t.slot === i)?.tool || 'None';
+          return (
+            <group key={i} position={[cx, 0.05, cy]}>
+              <Cylinder args={[0.015, 0.015, 0.02]} position={[0, 0.01, 0]} material-color="#0f172a" />
+              {tool !== 'None' && (
+                <group position={[0, 0.02, 0]}>
+                  <Toolhead tool={tool} />
+                </group>
+              )}
+            </group>
+          );
+        })}
+      </group>
+    );
+  }
+}
+
+
+function Rack3DView({ rack, type }: { rack: any, type: string }) {
+  const cap = rack.capacity || 24;
+  const cols = 6;
+  const rows = Math.ceil(cap / cols);
+  const cellW = 0.04;
+  const cellH = 0.04;
+  const w = cols * cellW;
+  const h = rows * cellH;
+  const color = type === 'Input' ? "#0ea5e9" : type === 'Output' ? "#10b981" : "#64748b";
+  return (
+    <group>
+      <Box args={[w, 0.05, h]} position={[w/2 - cellW/2, 0.025, h/2 - cellH/2]} material-color={color} material-transparent material-opacity={0.8} castShadow receiveShadow />
+      {Array.from({ length: cap }).map((_, i) => {
+        const r = Math.floor(i / cols);
+        const c = i % cols;
+        const valid = rack.usableSlots?.[i] ?? true;
+        return (
+          <group key={i} position={[c * cellW, 0.05, r * cellH]}>
+            <Cylinder args={[0.015, 0.015, 0.01]} position={[0, 0.005, 0]} material-color={valid ? "#ffffff" : "#ff0000"} material-transparent material-opacity={0.2} />
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
 export function VirtualKinematics({ robot }: { robot: RobotState }) {
+  const { updateRobot } = useHydraStore();
   const hasXYTable = robot.hasXYTable;
   const xyTable = robot.xyTable;
 
@@ -220,7 +306,7 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
       </div>
       <Canvas shadows className="w-full h-full outline-none touch-none">
         <PerspectiveCamera makeDefault position={[0.4, 0.4, 0.6]} fov={45} />
-        <OrbitControls target={[0.1, 0.1, 0]} makeDefault enableDamping dampingFactor={0.05} />
+        
         <color attach="background" args={['#07090C']} />
         
         <ambientLight intensity={0.4} />
@@ -245,8 +331,115 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
           fadeDistance={5} 
         />
         
+        
+        {/* ATC Visualization */}
+        {robot.atc && (
+          <TransformControls
+            size={2}
+            mode="translate"
+            showY={false}
+            position={[(robot.atc.renderPos?.x || -300) / 1000, 0, (robot.atc.renderPos?.y || 200) / 1000]}
+            onObjectChange={(e: any) => {
+              if (e.target.object) {
+                updateRobot(robot.id, {
+                  atc: {
+                    ...robot.atc as any,
+                    renderPos: {
+                      x: e.target.object.position.x * 1000,
+                      y: e.target.object.position.z * 1000
+                    }
+                  }
+                });
+              }
+            }}
+          >
+            <group>
+              <ATC3DView atc={robot.atc} />
+            </group>
+          </TransformControls>
+        )}
+
+        {/* Rack 1 */}
+        {robot.rackSystem?.enabled && robot.rackSystem.rack1.type !== 'None' && (
+          <TransformControls
+            size={2}
+            mode="translate"
+            showY={false}
+            position={[(robot.rackSystem.rack1.renderPos?.x || 300) / 1000, 0, (robot.rackSystem.rack1.renderPos?.y || 200) / 1000]}
+            onObjectChange={(e: any) => {
+              if (e.target.object) {
+                updateRobot(robot.id, {
+                  rackSystem: {
+                    ...robot.rackSystem,
+                    rack1: {
+                      ...robot.rackSystem.rack1,
+                      renderPos: {
+                        x: e.target.object.position.x * 1000,
+                        y: e.target.object.position.z * 1000
+                      }
+                    }
+                  }
+                });
+              }
+            }}
+          >
+            <group>
+              <Rack3DView rack={robot.rackSystem.rack1} type={robot.rackSystem.rack1.type} />
+            </group>
+          </TransformControls>
+        )}
+
+        {/* Rack 2 */}
+        {robot.rackSystem?.enabled && robot.rackSystem.rack2.type !== 'None' && (
+          <TransformControls
+            size={2}
+            mode="translate"
+            showY={false}
+            position={[(robot.rackSystem.rack2.renderPos?.x || 300) / 1000, 0, (robot.rackSystem.rack2.renderPos?.y || -200) / 1000]}
+            onObjectChange={(e: any) => {
+              if (e.target.object) {
+                updateRobot(robot.id, {
+                  rackSystem: {
+                    ...robot.rackSystem,
+                    rack2: {
+                      ...robot.rackSystem.rack2,
+                      renderPos: {
+                        x: e.target.object.position.x * 1000,
+                        y: e.target.object.position.z * 1000
+                      }
+                    }
+                  }
+                });
+              }
+            }}
+          >
+            <group>
+              <Rack3DView rack={robot.rackSystem.rack2} type={robot.rackSystem.rack2.type} />
+            </group>
+          </TransformControls>
+        )}
+
         {hasXYTable ? (
-          <group position={[-tableW/2, 0, -tableL/2]}>
+          <TransformControls
+            size={2}
+            mode="translate"
+            showY={false}
+            position={[(robot.xyTable?.worldPos?.x || -tableW * 500) / 1000, 0, (robot.xyTable?.worldPos?.y || -tableL * 500) / 1000]}
+            onObjectChange={(e: any) => {
+              if (e.target.object) {
+                updateRobot(robot.id, {
+                  xyTable: {
+                    ...robot.xyTable as any,
+                    worldPos: {
+                      x: e.target.object.position.x * 1000,
+                      y: e.target.object.position.z * 1000
+                    }
+                  }
+                });
+              }
+            }}
+          >
+          <group position={[0, 0, 0]}>
             <group position={[0, 0.08, 0]}>
               <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
             </group>
@@ -258,17 +451,57 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
             <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, tableL - 0.05]} material-color="#2D3748" />
             
             {/* Robot Base Mount on XY table */}
-            <group position={[px, 0.04, py]}>
-              <Box args={[0.2, 0.04, 0.2]} position={[0, 0.02, 0]} material-color="#475569" castShadow receiveShadow />
-              <group position={[0, 0.04, 0]}>
-                <RobotArm robot={robot} />
+            <TransformControls
+            size={2} 
+              mode="translate"
+              showY={false}
+              position={[px, 0.04, py]}
+              onObjectChange={(e: any) => {
+                if (e.target.object) {
+                  const newX = e.target.object.position.x * 1000;
+                  const newY = e.target.object.position.z * 1000;
+                  updateRobot(robot.id, { 
+                    xyTable: { 
+                      ...robot.xyTable, 
+                      pos: { x: newX, y: newY } 
+                    } 
+                  });
+                }
+              }}
+            >
+              <group>
+                <Box args={[0.2, 0.04, 0.2]} position={[0, 0.02, 0]} material-color="#475569" castShadow receiveShadow />
+                <group position={[0, 0.04, 0]}>
+                  <RobotArm robot={robot} />
+                </group>
               </group>
-            </group>
+            </TransformControls>
           </group>
+          </TransformControls>
         ) : (
           <group>
             <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
-            <RobotArm robot={robot} />
+            <TransformControls
+            size={2} 
+              mode="translate"
+              showY={false}
+              position={[(robot.pos?.tx || 0) / 1000, 0, (robot.pos?.ty || 0) / 1000]}
+              onObjectChange={(e: any) => {
+                 if (e.target.object) {
+                    const newTx = e.target.object.position.x * 1000;
+                    const newTy = e.target.object.position.z * 1000;
+                    updateRobot(robot.id, {
+                        pos: {
+                            ...robot.pos,
+                            tx: newTx,
+                            ty: newTy
+                        }
+                    });
+                 }
+              }}
+            >
+              <RobotArm robot={robot} />
+            </TransformControls>
           </group>
         )}
 

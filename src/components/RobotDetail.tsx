@@ -69,6 +69,43 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
   }, []);
 
   const [jogMode, setJogMode] = useState<'cartesian' | 'joint'>('joint');
+  const [pipPos, setPipPos] = useState({ x: 20, y: 20 });
+  const [isDraggingPip, setIsDraggingPip] = useState(false);
+  const [pipSize, setPipSize] = useState({ w: 192, h: 144 }); // 48rem width equivalent is 192px
+  const [isResizingPip, setIsResizingPip] = useState(false);
+  const resizeStartRef = useRef({ w: 0, h: 0, x: 0, y: 0 });
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const pipInitialRef = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMove = (e: PointerEvent) => {
+      if (isDraggingPip) {
+        const dx = e.clientX - dragStartRef.current.x;
+        const dy = e.clientY - dragStartRef.current.y;
+        setPipPos({ x: pipInitialRef.current.x - dx, y: pipInitialRef.current.y - dy });
+      } else if (isResizingPip) {
+        const dx = resizeStartRef.current.x - e.clientX;
+        const dy = resizeStartRef.current.y - e.clientY;
+        setPipSize({ 
+          w: Math.max(120, resizeStartRef.current.w + dx), 
+          h: Math.max(90, resizeStartRef.current.h + dy) 
+        });
+      }
+    };
+    const handleUp = () => { setIsDraggingPip(false); setIsResizingPip(false); };
+    
+    if (isDraggingPip || isResizingPip) {
+      window.addEventListener('pointermove', handleMove);
+      window.addEventListener('pointerup', handleUp);
+    }
+    return () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+    };
+  }, [isDraggingPip, isResizingPip]);
+
+  const [pipConnected, setPipConnected] = useState(false);
+
   
   const handleJointJog = (joint: keyof RobotState['joints'], direction: number) => {
     const newValue = Math.min(180, Math.max(-180, robot.joints[joint] + (direction * jogStep)));
@@ -131,7 +168,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
   };
 
   const handleJog = (axis: keyof RobotState['pos'], direction: number) => {
-    const newPos = { ...robot.pos, [axis]: robot.pos[axis] + (direction * jogStep) };
+    const newPos = { ...robot.pos, [axis]:  (robot.pos[axis] || 0) + (direction * jogStep) };
     updateRobot(robot.id, {
       pos: newPos,
       joints: computePseudoIK(newPos)
@@ -279,6 +316,13 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
         
         <div className="flex items-center gap-3">
           <button 
+            onClick={() => updateRobot(robot.id, { online: false })}
+            className="flex items-center gap-2 px-6 py-3 min-h-[48px] bg-red-600 hover:bg-red-500 border border-red-400 text-white text-sm font-black uppercase tracking-widest rounded-lg transition-all shadow-[0_0_20px_rgba(220,38,38,0.6)] hover:shadow-[0_0_30px_rgba(220,38,38,0.9)] animate-pulse"
+          >
+            <ShieldAlert size={18} className="fill-white/20" /> E-STOP
+          </button>
+          
+          <button 
             onClick={handleResetPos}
             className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-200 text-sm font-semibold rounded-lg transition-colors shadow-md"
           >
@@ -323,16 +367,55 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
             </div>
 
             {/* Picture-in-Picture Camera Stream */}
-            <div className="absolute bottom-4 right-4 w-48 h-36 bg-slate-950 border-2 border-slate-800 rounded-lg overflow-hidden shadow-2xl pointer-events-none flex flex-col items-center justify-center">
-              <CameraIcon size={24} className={cn("mb-1", robot.tool.includes('Camera') ? "opacity-50 text-slate-500" : "opacity-20 text-slate-700")} />
-              <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500">
-                {robot.tool.includes('Camera') ? 'Live View' : 'No Camera'}
-              </span>
-              {robot.tool.includes('Camera') && (
-                <div className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[9px] font-mono text-emerald-500 bg-slate-900/80 px-1 rounded border border-emerald-500/20">
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> REC
-                </div>
+            <div 
+              onPointerDown={(e) => {
+                if ((e.target as HTMLElement).closest('.resize-handle')) return;
+                e.preventDefault();
+                setIsDraggingPip(true);
+                dragStartRef.current = { x: e.clientX, y: e.clientY };
+                pipInitialRef.current = pipPos;
+              }}
+              onDoubleClick={() => {
+                if (!pipConnected) {
+                  setPipConnected(true);
+                }
+              }}
+              style={{ bottom: pipPos.y, right: pipPos.x, width: pipSize.w, height: pipSize.h }}
+              className={cn("absolute bg-slate-950 border-2 border-slate-800 rounded-lg overflow-hidden shadow-2xl pointer-events-auto flex flex-col items-center justify-center cursor-move z-10 select-none group", 
+                robot.tool.includes('Camera') && !pipConnected && "hover:border-sky-500/50 transition-colors"
+              )}>
+              
+              {robot.tool.includes('Camera') && pipConnected ? (
+                <>
+                  <div className="w-full h-full bg-black/40 flex items-center justify-center relative overflow-hidden">
+                    <CameraIcon size={32} className="text-slate-800" />
+                    <div className="absolute inset-0 bg-electric-grid opacity-30 mix-blend-screen pointer-events-none" />
+                    <div className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[9px] font-mono text-emerald-500 bg-slate-900/80 px-1 rounded border border-emerald-500/20">
+                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> LIVE
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <CameraIcon size={Math.min(32, pipSize.w / 4)} className={cn("mb-1", robot.tool.includes('Camera') ? "opacity-50 text-slate-500" : "opacity-20 text-slate-700")} />
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 text-center px-2">
+                    {robot.tool.includes('Camera') ? 'Dbl Click to Connect' : 'No Camera'}
+                  </span>
+                </>
               )}
+
+              {/* Resize Handle */}
+              <div 
+                className="resize-handle absolute top-0 left-0 w-6 h-6 cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity z-50 flex items-start justify-start p-1"
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setIsResizingPip(true);
+                  resizeStartRef.current = { w: pipSize.w, h: pipSize.h, x: e.clientX, y: e.clientY };
+                }}
+              >
+                <div className="w-2 h-2 border-l-2 border-t-2 border-slate-400" />
+              </div>
             </div>
           </div>
 
@@ -380,7 +463,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                 {(['x', 'y', 'z', 'a', 'b', 'c'] as const).map((axis) => (
                   <div key={axis} className="bg-slate-950 border border-slate-800 rounded-lg p-2 flex flex-col items-center gap-1">
                     <div className="text-xs font-bold text-slate-500 uppercase">{axis}</div>
-                    <div className="text-base font-mono font-bold text-sky-400 mb-2">{robot.pos[axis].toFixed(2)}</div>
+                    <div className="text-base font-mono font-bold text-sky-400 mb-2">{ (robot.pos[axis] || 0).toFixed(2)}</div>
                     <div className="flex gap-2 w-full justify-between">
                       <button onClick={() => handleJog(axis, -1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded-lg text-slate-300">
                         <ArrowDown size={20} />

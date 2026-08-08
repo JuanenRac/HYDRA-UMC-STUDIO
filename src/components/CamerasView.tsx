@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useHydraStore } from '../store';
-import { Video, Maximize2, Minimize2, Camera as CameraIcon, Power, ScanLine } from 'lucide-react';
+import { Video, Maximize2, Minimize2, Camera as CameraIcon, Power, ScanLine, CircleDot, RefreshCw } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -11,6 +11,38 @@ function cn(...inputs: ClassValue[]) {
 export function CamerasView() {
   const { cameras, updateCamera } = useHydraStore();
   const [fullScreenId, setFullScreenId] = useState<number | null>(null);
+  const [recordingIds, setRecordingIds] = useState<Set<number>>(new Set());
+  const [connectingIds, setConnectingIds] = useState<Set<number>>(new Set());
+  const [flashId, setFlashId] = useState<number | null>(null);
+
+  const toggleRecording = (id: number) => {
+    setRecordingIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const takePhoto = (id: number) => {
+    setFlashId(id);
+    setTimeout(() => setFlashId(null), 150);
+  };
+
+  const retryConnection = (id: number) => {
+    setConnectingIds(prev => new Set(prev).add(id));
+    setTimeout(() => {
+      setConnectingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      const cam = cameras.find(c => c.id === id);
+      if (cam && !cam.connected) {
+        updateCamera(id, { connected: true });
+      }
+    }, 1500);
+  };
 
   const toggleConnection = (id: number) => {
     const cam = cameras.find(c => c.id === id);
@@ -67,6 +99,17 @@ export function CamerasView() {
                   <button onClick={() => toggleYolo(c.id)} disabled={!c.connected} className={cn("p-1.5 rounded transition-colors disabled:opacity-50", c.yoloEnabled ? "text-sky-400 hover:text-sky-300 bg-sky-500/10 border border-sky-500/30 glow-border-sky" : "text-slate-500 hover:text-sky-400 border border-transparent")}>
                     <ScanLine size={14} />
                   </button>
+                  <button onClick={() => takePhoto(c.id)} disabled={!c.connected} className={cn("p-1.5 rounded transition-colors disabled:opacity-50", "text-slate-500 hover:text-slate-200 border border-transparent")}>
+                    <CameraIcon size={14} />
+                  </button>
+                  <button onClick={() => toggleRecording(c.id)} disabled={!c.connected} className={cn("p-1.5 rounded transition-colors disabled:opacity-50", recordingIds.has(c.id) ? "text-rose-400 hover:text-rose-300 bg-rose-500/10 border border-rose-500/30 glow-border-rose" : "text-slate-500 hover:text-rose-400 border border-transparent")}>
+                    <CircleDot size={14} />
+                  </button>
+                  {!c.connected && (
+                    <button onClick={() => retryConnection(c.id)} disabled={connectingIds.has(c.id)} className="p-1.5 rounded transition-colors disabled:opacity-50 text-slate-500 hover:text-sky-400 border border-transparent">
+                      <RefreshCw size={14} className={cn(connectingIds.has(c.id) && "animate-spin text-sky-400")} />
+                    </button>
+                  )}
                   <button 
                     onClick={() => setFullScreenId(fullScreenId === c.id ? null : c.id)} 
                     className="p-1.5 text-slate-500 hover:text-slate-300 rounded border border-transparent hover:glow-border-sky"
@@ -118,18 +161,24 @@ export function CamerasView() {
                         </div>
                       )}
 
-                      <div className="absolute bottom-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute bottom-2 right-2 flex items-center gap-1.5 transition-opacity">
                         <span className="text-[9px] font-mono text-emerald-400/70">1080p 60fps</span>
-                        <div className="flex items-center gap-1 text-[9px] text-emerald-400/70 font-mono">
-                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> REC
-                        </div>
+                        {recordingIds.has(c.id) && (
+                          <div className="flex items-center gap-1 text-[10px] text-rose-400 font-bold font-mono">
+                            <span className="w-2 h-2 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]" /> REC
+                          </div>
+                        )}
                       </div>
+                      
+                      {flashId === c.id && (
+                        <div className="absolute inset-0 bg-white z-50 animate-out fade-out duration-150" />
+                      )}
                     </div>
                   </>
                 ) : (
                   <div className="w-full h-full border border-slate-800/50 border-dashed rounded flex flex-col items-center justify-center gap-2 text-slate-600 bg-slate-950/50">
                     <Video size={24} />
-                    <span className="text-xs font-mono">NO SIGNAL</span>
+                    <span className="text-xs font-mono">{connectingIds.has(c.id) ? 'CONNECTING...' : 'NO SIGNAL'}</span>
                   </div>
                 )}
               </div>

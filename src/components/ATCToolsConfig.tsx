@@ -395,7 +395,7 @@ function ATCGraphics({ config }: { config: ATCConfig }) {
   } else {
     // Revolver Graphic
     const slots = config.revolverSlots;
-    const radius = Math.max(60, slots * 6);
+    const radius = Math.max(90, slots * 9);
     
     return (
       <div className="relative" style={{ width: radius * 2.5, height: radius * 2.5 }}>

@@ -4,14 +4,16 @@ Hydra-UMC Studio is a web-based, full-featured control panel designed to monitor
 
 ## 🛠️ Features
 
-- **Multi-Robot Dashboard:** Overview of up to 8 robotic arms with online/offline status, current roles, tools, and ATC configurations.
-- **Virtual Kinematics:** 3D rendering of the robotic arm movements in real-time, showing visual representations of attached tools.
-- **Joint Controls:** Granular jogging of individual joints with step sizes from 0.01° to 10.00°.
-- **XY Table Configuration:** Fully interactive 3D setup for global XY stages, assignable to specific robots for advanced positioning.
+- **Multi-Controller Architecture (Ethernet/IP):** Connect to multiple HYDRA-UMC boards simultaneously via IP. Each controller can manage its own isolated FDCAN network.
+- **Multi-Robot Dashboard:** Overview of up to 8 robotic arms per controller with online/offline status, current roles, tools, and ATC configurations. Fully responsive 1920x1080 layout.
+- **Virtual Kinematics:** 3D rendering of the robotic arm movements in real-time, showing visual representations of 26 different attachable tools (Lasers, Extruders, Grippers, Spindles, etc).
+- **Advanced Jogging (Joint & Cartesian):** Granular jogging of individual joints with step sizes from 0.01° to 45.00°. Includes Pseudo-Inverse Kinematics for smooth Cartesian (XYZ ABC) jogging.
+- **XY Table Configuration:** Fully interactive 3D setup for global XY stages, assignable to specific robots for advanced positioning and interpolation.
 - **Automatic Tool Changer (ATC):** Configure Vertical Panel, Horizontal Panel, or Revolver ATC types. Assign tools to slots and define pickup coordinates (XYZABC + XY Table).
-- **Vision Matrix (Cameras):** Multi-camera view matrix with full-screen toggling. Picture-in-Picture (PiP) live view in individual robot dashboards.
-- **Trajectory Management:** Record waypoints, load preset kinematic examples, and export trajectories as JSON.
-- **System Configuration:** Manage network settings (CAN Bus Bitrate, Master IP), preferences (Telemetry interval, Theme), and execute emergency protocols (Global E-Stop, Controller Reboot).
+- **Input/Output Rack System:** Configure custom PCB/Pallet racks for Pick & Place scenarios, complete with capacity, usable slots, and pickup calibration.
+- **Vision Matrix (Cameras):** Multi-camera view matrix with full-screen toggling, Picture-in-Picture (PiP) live view, and YOLOv8 Object Detection overlay support.
+- **Trajectory Management:** Record waypoints manually, or load from over 25+ preset kinematic examples (Spirals, Raster Scans, XY Sync patterns). Export and import trajectories as JSON. Variable speed playback.
+- **System Configuration:** Manage network settings (CAN Bus Bitrate, Master IP), 16+ custom themes (Cyberpunk, Matrix, Dracula, etc.), and execute emergency protocols (Global E-Stop, Controller Reboot).
 - **I/O Control:** Monitor and actuate valves, pumps, and endstops directly from the robot detail view.
 
 ## 🚀 Installation & Setup
