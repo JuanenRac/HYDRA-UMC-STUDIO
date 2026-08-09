@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
 
-export type RobotModel = 'Parol6' | 'Faze4' | 'Generic';
-export type RobotRole = 'PnP' | 'CNC' | '3D_Print' | 'Inspection' | 'Idle';
+export type RobotModel = 'Parol6 (6-DOF)' | 'Faze4 (6-DOF)' | 'AR3 (6-DOF)' | 'AR4 (6-DOF)' | 'Generic (6-DOF)';
+export type RobotRole = 'Idle' | 'CNC' | 'Laser' | 'Pnp' | '3D printing' | 'Inspection';
 export type ToolType = 
   | 'None'
   | 'Soldering Station (T12)'
@@ -149,7 +149,7 @@ export const createDefaultRobots = (): RobotState[] => {
     id: i + 1,
     name: `Robot A${i + 1}`,
     online: i < 3,
-    model: i % 2 === 0 ? 'Parol6' : 'Faze4' as RobotModel,
+    model: (i % 2 === 0 ? 'Parol6 (6-DOF)' : 'Faze4 (6-DOF)') as RobotModel,
     role: 'Idle' as RobotRole,
     tool: 'None' as ToolType,
     urtcConnected: i < 3,
@@ -180,7 +180,7 @@ export const createDefaultRobots = (): RobotState[] => {
       tableSize: { width: 500, length: 500 },
     },
   }));
-  bots[0].role = 'PnP';
+  bots[0].role = 'Pnp';
   bots[0].tool = 'Vacuum / Pneumatic Gripper';
   bots[0].hasXYTable = true;
   bots[1].role = 'CNC';

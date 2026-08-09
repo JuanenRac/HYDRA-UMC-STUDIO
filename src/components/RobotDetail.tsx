@@ -388,9 +388,9 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
+      <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
         {/* Left Col: Kinematics & 3D */}
-        <div className="lg:col-span-2 flex flex-col gap-4 h-full min-h-0">
+        <div className="flex-1 flex flex-col gap-4 min-h-0 min-w-0">
           {/* 3D View */}
           <div className={cn(
             "bg-slate-900 border border-slate-800 rounded-xl p-1 overflow-hidden flex-1 min-h-[300px] relative shadow-inner",
@@ -503,10 +503,17 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
               <div className="flex items-center gap-3">
                 <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Step:</span>
                 
-                    <select value={jogStep} onChange={e => setJogStep(Number(e.target.value))} className="bg-slate-950 border border-slate-800 rounded p-1 text-sm outline-none">
-                  <option value={1}>1mm / 1°</option>
-                  <option value={5}>5mm / 5°</option>
-                  <option value={10}>10mm / 10°</option>
+                    <select value={jogStep} onChange={e => setJogStep(Number(e.target.value))} className="bg-slate-950 border border-slate-800 rounded p-1 text-sm outline-none font-mono">
+                  <option value={0.1}>0.1</option>
+                  <option value={1}>1</option>
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={22.5}>22.5</option>
+                  <option value={25}>25</option>
+                  <option value={45}>45</option>
+                  <option value={50}>50</option>
+                  <option value={90}>90</option>
+                  <option value={100}>100</option>
                 </select>
               </div>
             </div>
@@ -544,6 +551,27 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                 ))}
               </div>
             )}
+
+            {hasXYTable && (
+              <div className="mt-4 pt-4 border-t border-slate-800">
+                <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wider"><Crosshair size={16} /> XY Table Controls</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {(['tx', 'ty'] as const).map(axis => (
+                    <div key={axis} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-slate-400 uppercase">{axis}</span>
+                        <span className="text-xs font-mono text-sky-400">{robot.pos[axis]?.toFixed(2) || 0}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: (robot.pos[axis] || 0) - jogStep } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">-</button>
+                        <input type="range" min="-1000" max="1000" value={robot.pos[axis] || 0} onChange={e => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: Number(e.target.value) } })} className="flex-1" />
+                        <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: (robot.pos[axis] || 0) + jogStep } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">+</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -573,6 +601,35 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 relative">
             {rightTab === 'trajectories' && (
               <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Examples</label>
+                  <select 
+                    className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
+                    value={selectedExample}
+                    onChange={(e) => loadExample(e.target.value)}
+                    disabled={isPlaying}
+                  >
+                    <option value="">-- Select --</option>
+                    {examples.map(e => (
+                      <option key={e.id} value={e.id}>{e.name} ({e.points.length} pts)</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">
+                    <span>Speed</span>
+                    <span className="text-sky-400">{playbackSpeed}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="10" 
+                    max="300" 
+                    step="10" 
+                    value={playbackSpeed} 
+                    onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
+                    className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500"
+                  />
+                </div>
                 <div className="flex gap-2">
                   <button 
                     onClick={handleAddPoint}
@@ -613,13 +670,62 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
 
             {rightTab === 'config' && (
               <div className="space-y-6">
+                
+                <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 mt-4">
+                  <h4 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Model & Tools</h4>
+                  
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Model</label>
+                    <select 
+                      value={robot.model}
+                      onChange={e => updateRobot(robot.id, { model: e.target.value as any })}
+                      className="bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
+                    >
+                      <option value="Parol6 (6-DOF)">Parol6 (6-DOF)</option>
+                      <option value="Faze4 (6-DOF)">Faze4 (6-DOF)</option>
+                      <option value="AR3 (6-DOF)">AR3 (6-DOF)</option>
+                      <option value="AR4 (6-DOF)">AR4 (6-DOF)</option>
+                      <option value="Generic (6-DOF)">Generic (6-DOF)</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Role</label>
+                    <select 
+                      value={robot.role}
+                      onChange={e => updateRobot(robot.id, { role: e.target.value as any })}
+                      className="bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
+                    >
+                      <option value="Idle">Idle</option>
+                      <option value="CNC">CNC</option>
+                      <option value="Laser">Laser</option>
+                      <option value="Pnp">Pnp</option>
+                      <option value="3D printing">3D printing</option>
+                      <option value="Inspection">Inspection</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">URTC Tool</label>
+                    <select 
+                      value={robot.tool}
+                      onChange={e => updateRobot(robot.id, { tool: e.target.value as any })}
+                      className="bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
+                    >
+                      {URTC_TOOLS.map(t => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
                 <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 mt-4">
                   <h4 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Virtual Environment</h4>
                   <div className="flex flex-col gap-2">
                     <span className="text-sm font-semibold text-slate-400">Combine with Robot</span>
                     
                     <div className="flex flex-col gap-2">
-                      {robots.filter(r => r.id !== robot.id).map(r => (
+                      {robots.filter(r => r.id !== robot.id && r.online).map(r => (
                         <label key={r.id} className="flex items-center gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 

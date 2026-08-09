@@ -301,13 +301,13 @@ type DraggableGizmoProps = {
 
 function DraggableGizmo({ position, controlMode, onMouseUp, children, initialRotation = 0, scale = [1, 1, 1] }: DraggableGizmoProps) {
   const coordRef = React.useRef<HTMLDivElement>(null);
-  const objRef = React.useRef<THREE.Group>(null as any);
+  const [targetObj, setTargetObj] = React.useState<THREE.Group | null>(null);
 
   return (
     <>
-      {controlMode !== 'none' && (
+      {controlMode !== 'none' && targetObj && (
         <TransformControls
-          object={objRef}
+          object={targetObj}
           size={controlMode === 'rotate' ? 0.75 : 1.5}
           mode={controlMode as 'translate' | 'rotate' | 'scale'}
           showX={controlMode === 'translate'}
@@ -324,7 +324,7 @@ function DraggableGizmo({ position, controlMode, onMouseUp, children, initialRot
           onMouseUp={onMouseUp}
         />
       )}
-      <group ref={objRef} position={position} scale={scale}>
+      <group ref={setTargetObj} position={position} scale={scale}>
         {controlMode !== 'none' && (
           <Html position={[0, 0.4, 0]} center zIndexRange={[100, 0]}>
             <div 
@@ -373,6 +373,13 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
         
         <color attach="background" args={[settings.theme.includes('Light') ? '#e2e8f0' : '#07090C']} />
         
+        {/* Global Floor / Table Area */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+          <planeGeometry args={[5, 5]} />
+          <meshStandardMaterial color="#e2e8f0" />
+        </mesh>
+        <gridHelper args={[5, 50, '#cbd5e1', '#cbd5e1']} position={[0, -0.005, 0]} />
+
         <ambientLight intensity={0.4} />
         <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
         <pointLight position={[-5, 5, -5]} intensity={0.5} color="#00E5FF" />
@@ -398,7 +405,7 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
               }
             }}
           >
-            <group scale={[2, 2, 2]} rotation={[0, robot.atc.renderRot || 0, 0]}><ATC3DView atc={robot.atc} /></group>
+            <group scale={[0.5, 0.5, 0.5]} rotation={[0, robot.atc.renderRot || 0, 0]}><ATC3DView atc={robot.atc} /></group>
           </DraggableGizmo>
         )}
 
@@ -426,7 +433,7 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
               }
             }}
           >
-            <group scale={[2, 2, 2]} rotation={[0, robot.rackSystem.rack1.renderRot || 0, 0]}><Rack3DView rack={robot.rackSystem.rack1} type={robot.rackSystem.rack1.type} /></group>
+            <group scale={[0.75, 0.75, 0.75]} rotation={[0, robot.rackSystem.rack1.renderRot || 0, 0]}><Rack3DView rack={robot.rackSystem.rack1} type={robot.rackSystem.rack1.type} /></group>
           </DraggableGizmo>
         )}
 
@@ -454,16 +461,16 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
               }
             }}
           >
-            <group scale={[2, 2, 2]} rotation={[0, robot.rackSystem.rack2.renderRot || 0, 0]}><Rack3DView rack={robot.rackSystem.rack2} type={robot.rackSystem.rack2.type} /></group>
+            <group scale={[0.75, 0.75, 0.75]} rotation={[0, robot.rackSystem.rack2.renderRot || 0, 0]}><Rack3DView rack={robot.rackSystem.rack2} type={robot.rackSystem.rack2.type} /></group>
           </DraggableGizmo>
         )}
 
         
-        {combinedRobots.map(combinedRobot => (
+        {combinedRobots.map((combinedRobot, i) => (
           <DraggableGizmo
               key={combinedRobot.id}
-              position={[(combinedRobot.pos?.tx || 500) / 1000, 0, (combinedRobot.pos?.ty || 500) / 1000]}
-              scale={[combinedRobot.renderScale || 0.5, combinedRobot.renderScale || 0.5, combinedRobot.renderScale || 0.5]}
+              position={[(combinedRobot.pos?.tx ?? (500 + i * 300)) / 1000, 0, (combinedRobot.pos?.ty ?? 500) / 1000]}
+              scale={[combinedRobot.renderScale || 0.75, combinedRobot.renderScale || 0.75, combinedRobot.renderScale || 0.75]}
               controlMode={controlMode}
               initialRotation={combinedRobot.pos?.trz || 0}
               onMouseUp={(e: any) => {
@@ -509,21 +516,19 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
             }}
           >
             <group position={[0, 0, 0]} rotation={[0, robot.xyTable?.worldRot || 0, 0]}>
-              <group scale={[2, 2, 2]}>
-                <group position={[0, 0.08, 0]}>
-                  <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
-                </group>
-                {/* Table Bed */}
-                <Box args={[tableW, 0.02, tableL]} position={[tableW/2, 0.01, tableL/2]} material-color="#121720" castShadow receiveShadow />
-                  
-                {/* Rails */}
-                <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, 0.05]} material-color="#2D3748" />
-                <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, tableL - 0.05]} material-color="#2D3748" />
+              <group position={[0, 0.08, 0]}>
+                <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
               </group>
+              {/* Table Bed */}
+              <Box args={[tableW, 0.02, tableL]} position={[tableW/2, 0.01, tableL/2]} material-color="#121720" castShadow receiveShadow />
+                
+              {/* Rails */}
+              <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, 0.05]} material-color="#2D3748" />
+              <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, tableL - 0.05]} material-color="#2D3748" />
               {/* Robot Base Mount on XY table */}
               <DraggableGizmo
                 position={[px, 0.04, py]}
-                scale={[robot.renderScale || 0.5, robot.renderScale || 0.5, robot.renderScale || 0.5]}
+                scale={[robot.renderScale || 0.75, robot.renderScale || 0.75, robot.renderScale || 0.75]}
                 controlMode={controlMode}
                 onMouseUp={(e: any) => {
                   if (e.target.object) {
@@ -551,7 +556,7 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
             <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
             <DraggableGizmo
               position={[(robot.pos?.tx || 0) / 1000, 0, (robot.pos?.ty || 0) / 1000]}
-              scale={[robot.renderScale || 0.5, robot.renderScale || 0.5, robot.renderScale || 0.5]}
+              scale={[robot.renderScale || 0.75, robot.renderScale || 0.75, robot.renderScale || 0.75]}
               controlMode={controlMode}
               initialRotation={robot.pos?.trz || 0}
               onMouseUp={(e: any) => {

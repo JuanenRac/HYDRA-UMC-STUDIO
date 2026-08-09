@@ -3,7 +3,7 @@ import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { useHydraStore, createDefaultRobots, createDefaultCameras } from './store';
 import { 
   Activity, Crosshair, Layers, 
-  Video, Focus, Settings, Menu, Plus, Trash2
+  Video, Focus, Settings, Menu, Plus, Trash2, Search, AlertTriangle, Power
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -118,21 +118,68 @@ export default function Dashboard() {
                       </table>
                     </div>
                     
-                    <button 
-                      onClick={() => addController({
-                        id: 'new-' + Date.now(),
-                        name: 'New Controller',
-                        ip: '192.168.1.xxx',
-                        status: 'offline',
-                        fdcanBaudrate: 1000,
-                        fdcanDataBaudrate: 5000,
-                        robots: createDefaultRobots(),
-                        cameras: createDefaultCameras()
-                      })}
-                      className="flex items-center gap-2 px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold rounded transition-colors w-full justify-center border border-slate-700"
-                    >
-                      <Plus size={16} /> Add Controller Node
-                    </button>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => addController({
+                          id: 'new-' + Date.now(),
+                          name: 'New Controller',
+                          ip: '192.168.1.xxx',
+                          status: 'offline',
+                          fdcanBaudrate: 1000,
+                          fdcanDataBaudrate: 5000,
+                          robots: createDefaultRobots(),
+                          cameras: createDefaultCameras()
+                        })}
+                        className="flex-1 flex items-center gap-2 px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold rounded transition-colors justify-center border border-slate-700"
+                      >
+                        <Plus size={16} /> Add Node
+                      </button>
+                      <button 
+                        className="flex-1 flex items-center gap-2 px-4 py-2 text-sm bg-sky-900/40 hover:bg-sky-800/60 text-sky-400 font-bold rounded transition-colors justify-center border border-sky-700/50"
+                      >
+                        <Search size={16} /> Auto-Search HYDRA-UMC
+                      </button>
+                    </div>
+
+                    <div className="mt-6 space-y-4">
+                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Advanced Config</h3>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">FDCAN Config</label>
+                          <select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
+                            <option>Classic CAN</option>
+                            <option>FDCAN</option>
+                          </select>
+                        </div>
+                        <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">CANBUS Bitrate</label>
+                          <select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
+                            <option>500 kbps</option>
+                            <option>1 Mbps</option>
+                            <option>2 Mbps</option>
+                            <option>5 Mbps</option>
+                          </select>
+                        </div>
+                        <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Telemetry</label>
+                          <select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
+                            <option>10ms (100Hz)</option>
+                            <option>20ms (50Hz)</option>
+                            <option>50ms (20Hz)</option>
+                            <option>100ms (10Hz)</option>
+                          </select>
+                        </div>
+                        <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 flex flex-col justify-center gap-2">
+                          <button className="w-full py-2 bg-rose-900/40 hover:bg-rose-800/60 text-rose-400 border border-rose-700/50 rounded text-sm font-bold uppercase transition-colors flex items-center justify-center gap-2">
+                            <AlertTriangle size={16} /> Global E-Stop
+                          </button>
+                          <button className="w-full py-2 bg-amber-900/40 hover:bg-amber-800/60 text-amber-400 border border-amber-700/50 rounded text-sm font-bold uppercase transition-colors flex items-center justify-center gap-2">
+                            <Power size={16} /> Reboot Controller
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
                 
@@ -497,11 +544,15 @@ function OverviewPanel() {
             </div>
             
             
-            {r.combinedWith && r.combinedWith.length > 0 && (
-              <div className="text-xs text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 px-2 py-1 rounded font-medium mt-1 mb-1 animate-pulse truncate" title={"Combined with: " + r.combinedWith.join(', ')}>
-                Combined with {r.combinedWith.length} robot{r.combinedWith.length > 1 ? 's' : ''}
-              </div>
-            )}
+            {(() => {
+              const hosts = robots.filter(other => other.combinedWith?.includes(r.id));
+              if (hosts.length === 0) return null;
+              return (
+                <div className="text-xs text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 px-2 py-1 rounded font-medium mt-1 mb-1 animate-pulse truncate" title={"Combined into: " + hosts.map(h => h.name).join(', ')}>
+                  Combined into {hosts.map(h => h.name).join(', ')}
+                </div>
+              );
+            })()}
             <div className="text-[11px] text-slate-400 grid grid-cols-[40px_1fr] gap-x-1 gap-y-1">
 
               <div>Model:</div>
