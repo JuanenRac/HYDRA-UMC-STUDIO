@@ -68,7 +68,7 @@ export interface RobotState {
   role: RobotRole;
   tool: ToolType;
   urtcConnected: boolean;
-  pos: { x: number; y: number; z: number; a: number; b: number; c: number; tx?: number; ty?: number };
+  pos: { x: number; y: number; z: number; a: number; b: number; c: number; tx?: number; ty?: number; trz?: number };
   joints: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number };
   valves: [boolean, boolean];
   pumps: [boolean, boolean];
@@ -81,6 +81,8 @@ export interface RobotState {
     rack2: RackConfig;
   };
   hasXYTable: boolean;
+  combinedWith?: number[];
+  renderScale?: number;
   xyTable: {
     pos: { x: number; y: number };
     worldPos?: { x: number; y: number };
@@ -111,6 +113,15 @@ export interface HydraController {
 }
 
 export interface SystemSettings {
+  visibleModules: string[];
+  integrations: {
+    openPnP: { enabled: boolean; ip: string; port: number };
+    slic3r: { enabled: boolean; ip: string; port: number };
+    prusaSlicer: { enabled: boolean; ip: string; port: number };
+    cnc: { software: string; enabled: boolean; port: number };
+    laser: { software: string; enabled: boolean; port: number };
+  };
+  customModels: string[];
   autoConnectRobots: boolean;
   theme: string;
 }
@@ -221,6 +232,15 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [controllers, setControllers] = useState<HydraController[]>(defaultControllers);
   const [activeControllerId, setActiveControllerId] = useState<string>(defaultControllers[0].id);
   const [settings, setSettings] = useState<SystemSettings>({
+    visibleModules: ['Vision/Cameras', 'Robots', 'Macros/Tasks', 'Node Network', 'Settings'],
+    integrations: {
+      openPnP: { enabled: false, ip: '127.0.0.1', port: 8080 },
+      slic3r: { enabled: false, ip: '127.0.0.1', port: 8080 },
+      prusaSlicer: { enabled: false, ip: '127.0.0.1', port: 8080 },
+      cnc: { software: 'LinuxCNC', enabled: false, port: 8080 },
+      laser: { software: 'LightBurn', enabled: false, port: 8080 },
+    },
+    customModels: [],
     autoConnectRobots: false,
     theme: "Dark Mode (Default)"
   });

@@ -3,7 +3,7 @@ import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { useHydraStore, createDefaultRobots, createDefaultCameras } from './store';
 import { 
   Activity, Crosshair, Layers, 
-  Video, Focus, Settings, Menu, Plus, Trash2, Search
+  Video, Focus, Settings, Menu, Plus, Trash2
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -20,12 +20,14 @@ import { ATCToolsConfig } from './components/ATCToolsConfig';
 import { RackConfigView } from './components/RackConfigView';
 
 export default function Dashboard() {
-  const { controllers, activeControllerId, setActiveControllerId, activeController, updateController, robots, cameras, updateCamera, settings, updateSettings, updateRobot, addController, removeController } = useHydraStore();
+  const { controllers, activeControllerId, setActiveControllerId, activeController, updateController, robots, settings, updateSettings, updateRobot, addController, removeController } = useHydraStore();
   const [activeTab, setActiveTab] = useState<'overview' | 'robot' | 'cameras' | 'xytable' | 'atc' | 'rack'>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [configTab, setConfigTab] = useState<'controllers' | 'ui' | 'robots' | 'models' | 'integrations'>('controllers');
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isScanning, setIsScanning] = useState(false);
+  
 
   const activeRobot = robots.find(r => r.id === selectedRobotId);
 
@@ -35,10 +37,11 @@ export default function Dashboard() {
 
   return (
     <div className="w-full h-screen bg-slate-950 bg-electric-grid text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
-      {isSettingsOpen && (
+      
+            {isSettingsOpen && (
         <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[600px] max-w-full overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[800px] max-w-full overflow-hidden flex flex-col h-[600px]">
+            <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
               <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
                 <Settings className="text-sky-400" size={20} /> System Configuration
               </h2>
@@ -46,185 +49,283 @@ export default function Dashboard() {
                 &times;
               </button>
             </div>
-            <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
-              
-              <div className="space-y-4">
-                <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Controller Management (Ethernet/IP)</h3>
-                </div>
+            
+            <div className="flex flex-1 overflow-hidden">
+              <div className="w-48 bg-slate-950 border-r border-slate-800 flex flex-col">
+                <button onClick={() => setConfigTab('controllers')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'controllers' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>Controllers</button>
+                <button onClick={() => setConfigTab('ui')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'ui' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>UI & Themes</button>
+                <button onClick={() => setConfigTab('robots')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'robots' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>Robot Names</button>
+                <button onClick={() => setConfigTab('models')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'models' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>Custom Models</button>
+                <button onClick={() => setConfigTab('integrations')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'integrations' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>Integrations</button>
+              </div>
 
-                <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-slate-900 border-b border-slate-800">
-                      <tr>
-                        <th className="px-4 py-2 font-medium text-slate-400">Name</th>
-                        <th className="px-4 py-2 font-medium text-slate-400">IP Address</th>
-                        <th className="px-4 py-2 font-medium text-slate-400">Status</th>
-                        <th className="px-4 py-2 text-right"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {controllers.map(c => (
-                        <tr key={c.id} className="border-b border-slate-800/50 hover:bg-slate-900/50">
-                          <td className="px-4 py-2">
-                            <input
-                              value={c.name}
-                              onChange={e => updateController(c.id, { name: e.target.value })}
-                              className="bg-transparent border-none outline-none text-slate-200 w-full"
+              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-900">
+                {configTab === 'controllers' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Controller Management (Ethernet/IP)</h3>
+                    </div>
+                    <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden">
+                      <table className="w-full text-left text-sm">
+                        <thead className="bg-slate-900 border-b border-slate-800">
+                          <tr>
+                            <th className="px-4 py-2 font-medium text-slate-400">Name</th>
+                            <th className="px-4 py-2 font-medium text-slate-400">IP Address</th>
+                            <th className="px-4 py-2 font-medium text-slate-400">Status</th>
+                            <th className="px-4 py-2 text-right"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {controllers.map(c => (
+                            <tr key={c.id} className="border-b border-slate-800/50 hover:bg-slate-900/50">
+                              <td className="px-4 py-2">
+                                <input
+                                  value={c.name}
+                                  onChange={e => updateController(c.id, { name: e.target.value })}
+                                  className="bg-transparent border-none outline-none text-slate-200 w-full"
+                                />
+                              </td>
+                              <td className="px-4 py-2">
+                                <input
+                                  value={c.ip}
+                                  onChange={e => updateController(c.id, { ip: e.target.value })}
+                                  className="bg-transparent border-none outline-none font-mono text-slate-300 w-full"
+                                />
+                              </td>
+                              <td className="px-4 py-2">
+                                <select 
+                                  value={c.status}
+                                  onChange={e => updateController(c.id, { status: e.target.value as 'online' | 'offline' })}
+                                  className="bg-transparent border-none outline-none font-semibold w-full"
+                                  style={{ color: c.status === 'online' ? '#34d399' : '#f87171' }}
+                                >
+                                  <option value="online">Online</option>
+                                  <option value="offline">Offline</option>
+                                </select>
+                              </td>
+                              <td className="px-4 py-2 text-right">
+                                <button
+                                  onClick={() => removeController(c.id)}
+                                  disabled={controllers.length <= 1}
+                                  className="text-slate-500 hover:text-rose-400 transition-colors disabled:opacity-30 p-1"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    <button 
+                      onClick={() => addController({
+                        id: 'new-' + Date.now(),
+                        name: 'New Controller',
+                        ip: '192.168.1.xxx',
+                        status: 'offline',
+                        fdcanBaudrate: 1000,
+                        fdcanDataBaudrate: 5000,
+                        robots: createDefaultRobots(),
+                        cameras: createDefaultCameras()
+                      })}
+                      className="flex items-center gap-2 px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold rounded transition-colors w-full justify-center border border-slate-700"
+                    >
+                      <Plus size={16} /> Add Controller Node
+                    </button>
+                  </div>
+                )}
+                
+                {configTab === 'ui' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">UI Theme</h3>
+                      <select 
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 min-h-[48px] text-sm text-slate-200 outline-none focus:border-sky-400 focus:glow-border-sky"
+                        value={settings.theme}
+                        onChange={(e) => updateSettings({ theme: e.target.value })}
+                      >
+                        <option value="Dark Mode (Default)">Dark Mode (Default)</option>
+                        <option value="Light Mode (White)">Light Mode (White)</option>
+                        <option value="Light Gray">Light Gray</option>
+                        <option value="High Contrast">High Contrast</option>
+                        <option value="Cyberpunk">Cyberpunk</option>
+                        <option value="Ocean">Ocean</option>
+                        <option value="Matrix">Matrix</option>
+                        <option value="Sunset">Sunset</option>
+                        <option value="Hacker">Hacker</option>
+                        <option value="Synthwave">Synthwave</option>
+                      </select>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Shared Resources Visibility</h3>
+                      <div className="space-y-2 bg-slate-950 p-4 rounded-lg border border-slate-800">
+                        {['Vision/Cameras', 'XY Table config', 'ATC Tools', 'Rack Config'].map(module => (
+                          <label key={module} className="flex items-center gap-3">
+                            <input 
+                              type="checkbox" 
+                              checked={settings.visibleModules.includes(module)}
+                              onChange={(e) => {
+                                let newModules = [...settings.visibleModules];
+                                if (e.target.checked) newModules.push(module);
+                                else newModules = newModules.filter(m => m !== module);
+                                updateSettings({ visibleModules: newModules });
+                              }}
+                              disabled={module === 'Vision/Cameras'}
+                              className="w-4 h-4 rounded border-slate-700 text-sky-500 focus:ring-sky-500 bg-slate-900"
                             />
-                          </td>
-                          <td className="px-4 py-2">
-                            <input
-                              value={c.ip}
-                              onChange={e => updateController(c.id, { ip: e.target.value })}
-                              className="bg-transparent border-none outline-none font-mono text-slate-300 w-full"
-                            />
-                          </td>
-                          <td className="px-4 py-2">
-                            <select 
-                              value={c.status}
-                              onChange={e => updateController(c.id, { status: e.target.value as any })}
-                              className="bg-transparent border-none outline-none font-bold text-xs uppercase tracking-wider"
-                              style={{ color: c.status === 'online' ? '#34d399' : '#f87171' }}
-                            >
-                              <option value="online">Online</option>
-                              <option value="offline">Offline</option>
-                            </select>
-                          </td>
-                          <td className="px-4 py-2 text-right">
-                            <button
-                              onClick={() => removeController(c.id)}
-                              disabled={controllers.length <= 1}
-                              className="text-slate-500 hover:text-rose-400 transition-colors disabled:opacity-30 p-1"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </td>
-                        </tr>
+                            <span className="text-sm text-slate-300">{module} {module === 'Vision/Cameras' && '(Required)'}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {configTab === 'robots' && (
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Rename Robots</h3>
+                    <div className="space-y-2">
+                      {activeController.robots.map(r => (
+                        <div key={r.id} className="flex items-center gap-3 bg-slate-950 p-3 rounded-lg border border-slate-800">
+                          <span className="text-slate-400 font-mono text-xs w-8">#{r.id}</span>
+                          <input 
+                            value={r.name}
+                            onChange={(e) => updateRobot(r.id, { name: e.target.value })}
+                            className="bg-transparent border-none outline-none text-slate-200 flex-1 text-sm font-semibold"
+                            placeholder="Robot Name"
+                          />
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
-                  <div className="p-2 border-t border-slate-800 bg-slate-900/50 flex items-center justify-between">
-                    <button
-                      onClick={() => {
-                        const ip = `192.168.1.${100 + controllers.length}`;
-                        addController({
-                          id: Date.now().toString(),
-                          name: `HYDRA-UMC Node ${controllers.length + 1}`,
-                          ip,
-                          status: 'offline',
-                          fdcanBaudrate: 1000,
-                          fdcanDataBaudrate: 5000,
-                          robots: createDefaultRobots().map(r => ({ ...r, online: false, urtcConnected: false })),
-                          cameras: createDefaultCameras().map(cam => ({ ...cam, connected: false }))
-                        });
-                      }}
-                      className="flex items-center gap-2 text-sky-400 hover:text-sky-300 text-xs font-bold uppercase tracking-wider p-2"
-                    >
-                      <Plus size={14} /> Add Controller
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsScanning(true);
-                        setTimeout(() => {
-                          setIsScanning(false);
-                          const ip = `192.168.1.${Math.floor(Math.random() * 200) + 20}`;
-                          const hasExisting = controllers.find(c => c.ip === ip);
-                          if (!hasExisting) {
-                            addController({
-                              id: Date.now().toString(),
-                              name: `HYDRA-UMC Node (Auto-Discovered)`,
-                              ip,
-                              status: 'online',
-                              fdcanBaudrate: 1000,
-                              fdcanDataBaudrate: 5000,
-                              robots: createDefaultRobots().map((r, i) => ({ ...r, online: i < 2, urtcConnected: i < 2 })),
-                              cameras: createDefaultCameras().map((cam, i) => ({ ...cam, connected: i < 1 }))
-                            });
-                          }
-                        }, 2000);
-                      }}
-                      disabled={isScanning}
-                      className={cn("flex items-center gap-2 text-xs font-bold uppercase tracking-wider p-2 transition-colors", isScanning ? "text-emerald-400 opacity-80" : "text-emerald-500 hover:text-emerald-400")}
-                    >
-                      <Search size={14} className={cn(isScanning && "animate-pulse")} /> 
-                      {isScanning ? "Scanning Network..." : "Auto-Discover IP"}
-                    </button>
+                    </div>
                   </div>
-                </div>
-              </div>
+                )}
+                
+                {configTab === 'models' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Custom Models</h3>
+                    </div>
+                    <div className="space-y-2">
+                      {settings.customModels.map((model, idx) => (
+                        <div key={idx} className="flex items-center gap-3 bg-slate-950 p-3 rounded-lg border border-slate-800">
+                          <input 
+                            value={model}
+                            onChange={(e) => {
+                              const newModels = [...settings.customModels];
+                              newModels[idx] = e.target.value;
+                              updateSettings({ customModels: newModels });
+                            }}
+                            className="bg-transparent border-none outline-none text-slate-200 flex-1 text-sm font-semibold"
+                            placeholder="Model Name"
+                          />
+                          <button 
+                            onClick={() => {
+                              const newModels = settings.customModels.filter((_, i) => i !== idx);
+                              updateSettings({ customModels: newModels });
+                            }}
+                            className="text-slate-500 hover:text-rose-400"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                      <button 
+                        onClick={() => updateSettings({ customModels: [...settings.customModels, 'New Custom Model'] })}
+                        className="flex items-center gap-2 px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold rounded transition-colors w-full justify-center border border-slate-700"
+                      >
+                        <Plus size={16} /> Add Custom Model
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-              <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{activeController?.name} Settings</h3>
-                  <button 
-                    onClick={() => {
-                      robots.forEach(r => updateRobot(r.id, { online: true, urtcConnected: true }));
-                      cameras.forEach(c => updateCamera(c.id, { connected: true }));
-                    }}
-                    className="px-3 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/30 rounded text-xs font-bold uppercase tracking-wider hover:bg-sky-500/20 transition-colors">
-                    Detect Hardware
-                  </button>
-                </div>
+                {configTab === 'integrations' && (
+                  <div className="space-y-6">
+                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Software Integrations</h3>
+                    
+                    {/* OpenPNP */}
+                    <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-bold text-sky-400">OpenPNP (Pick & Place)</span>
+                        <label className="flex items-center gap-2 text-sm">
+                          <input type="checkbox" checked={settings.integrations?.openPnP?.enabled} 
+                            onChange={(e) => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, enabled: e.target.checked } } })}
+                            className="rounded bg-slate-900 border-slate-700 text-sky-500 focus:ring-sky-500" />
+                          Enabled
+                        </label>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <input placeholder="IP Address" value={settings.integrations?.openPnP?.ip} 
+                          onChange={(e) => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, ip: e.target.value } } })}
+                          className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-sky-500 text-slate-200" />
+                        <input placeholder="Port" type="number" value={settings.integrations?.openPnP?.port} 
+                          onChange={(e) => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, port: parseInt(e.target.value) } } })}
+                          className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-sky-500 text-slate-200" />
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">CAN Bus Bitrate</label>
-                    <select value={activeController?.fdcanBaudrate || 1000} onChange={(e) => updateController(activeControllerId, { fdcanBaudrate: parseInt(e.target.value) })} className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all">
-                      <option value={1000}>1000 kbps</option>
-                      <option value={500}>500 kbps</option>
-                      <option value={250}>250 kbps</option>
-                    </select>
+                    {/* Slic3r / PrusaSlicer */}
+                    <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-bold text-orange-400">PrusaSlicer / Slic3r (3D Print)</span>
+                        <label className="flex items-center gap-2 text-sm">
+                          <input type="checkbox" checked={settings.integrations?.prusaSlicer?.enabled} 
+                            onChange={(e) => updateSettings({ integrations: { ...settings.integrations, prusaSlicer: { ...settings.integrations?.prusaSlicer, enabled: e.target.checked } } })}
+                            className="rounded bg-slate-900 border-slate-700 text-orange-500 focus:ring-orange-500" />
+                          Enabled
+                        </label>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <input placeholder="IP Address" value={settings.integrations?.prusaSlicer?.ip} 
+                          onChange={(e) => updateSettings({ integrations: { ...settings.integrations, prusaSlicer: { ...settings.integrations?.prusaSlicer, ip: e.target.value } } })}
+                          className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-orange-500 text-slate-200" />
+                        <input placeholder="Port" type="number" value={settings.integrations?.prusaSlicer?.port} 
+                          onChange={(e) => updateSettings({ integrations: { ...settings.integrations, prusaSlicer: { ...settings.integrations?.prusaSlicer, port: parseInt(e.target.value) } } })}
+                          className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-orange-500 text-slate-200" />
+                      </div>
+                    </div>
+
+                    {/* CNC / Laser */}
+                    <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-bold text-rose-400">CNC / Laser Software</span>
+                        <label className="flex items-center gap-2 text-sm">
+                          <input type="checkbox" checked={settings.integrations?.cnc?.enabled} 
+                            onChange={(e) => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, enabled: e.target.checked } } })}
+                            className="rounded bg-slate-900 border-slate-700 text-rose-500 focus:ring-rose-500" />
+                          Enabled
+                        </label>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <select 
+                          value={settings.integrations?.cnc?.software}
+                          onChange={(e) => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, software: e.target.value } } })}
+                          className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-rose-500 text-slate-200"
+                        >
+                          <option value="LinuxCNC">LinuxCNC</option>
+                          <option value="Mach3">Mach3</option>
+                          <option value="LightBurn">LightBurn</option>
+                          <option value="LaserGRBL">LaserGRBL</option>
+                        </select>
+                        <input placeholder="Port" type="number" value={settings.integrations?.cnc?.port} 
+                          onChange={(e) => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, port: parseInt(e.target.value) } } })}
+                          className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-rose-500 text-slate-200" />
+                      </div>
+                    </div>
+
                   </div>
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">FDCAN Data Baudrate</label>
-                    <select value={activeController?.fdcanDataBaudrate || 5000} onChange={(e) => updateController(activeControllerId, { fdcanDataBaudrate: parseInt(e.target.value) })} className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all">
-                      <option value={5000}>5000 kbps</option>
-                      <option value={4000}>4000 kbps</option>
-                      <option value={2000}>2000 kbps</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">System Preferences</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">Theme</label>
-                    <select value={settings.theme} onChange={(e) => updateSettings({ theme: e.target.value })} className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all">
-                      <option value="Dark Mode (Default)">Dark Mode (Default)</option>\n                      <option value="High Contrast">High Contrast</option>\n                      <option value="Cyberpunk">Cyberpunk</option>\n                      <option value="Oceanic">Oceanic</option>\n                      <option value="Matrix">Matrix</option>\n                      <option value="Crimson Red">Crimson Red</option>\n                      <option value="Solarized Dark">Solarized Dark</option>\n                      <option value="Dracula">Dracula</option>\n                      <option value="Neon Purple">Neon Purple</option>\n                      <option value="Monokai">Monokai</option>\n                      <option value="Synthwave">Synthwave</option>\n                      <option value="Sunset">Sunset</option>\n                      <option value="Obsidian Black">Obsidian Black</option>\n                      <option value="Midnight Blue">Midnight Blue</option>\n                      <option value="Forest Green">Forest Green</option>\n                      <option value="Gold Rush">Gold Rush</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">Telemetry Sync Interval</label>
-                    <select className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all">
-                      <option>10 ms (Real-time)</option>
-                      <option>50 ms</option>
-                      <option>100 ms</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Emergency Protocol</h3>
-                <div className="flex gap-4">
-                  <button className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 glow-border-rose hover:shadow-[0_0_20px_rgba(255,102,0,0.4)] py-3 rounded-lg font-bold tracking-widest uppercase transition-colors">
-                    Global E-Stop
-                  </button>
-                  <button className="flex-1 bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 py-3 rounded-lg font-bold tracking-widest uppercase transition-colors">
-                    Reboot Controller
-                  </button>
-                </div>
+                )}
               </div>
             </div>
-            <div className="p-4 border-t border-slate-800 bg-slate-950 flex justify-end gap-3">
-              <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm text-slate-400 hover:text-rose-400 transition-colors hover:glow-border-rose px-4 py-2 rounded">Cancel</button>
-              <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded transition-colors shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400 hover:shadow-[0_0_20px_rgba(0,229,255,0.8)]">Save Changes</button>
+
+            <div className="p-4 border-t border-slate-800 flex justify-end gap-3 bg-slate-950 shrink-0">
+              <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded transition-colors shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400 hover:shadow-[0_0_20px_rgba(0,229,255,0.8)]">Done</button>
             </div>
           </div>
         </div>
       )}
-      {/* Header - larger for touch */}
+{/* Header - larger for touch */}
       <header className="h-16 shrink-0 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 z-20">
         <div className="flex items-center gap-3">
           <button 
@@ -306,30 +407,41 @@ export default function Dashboard() {
           <div className="mt-3 mb-1 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
             Shared Resources
           </div>
-          <NavItem 
-            icon={<Crosshair size={18} />} 
-            label="XY Table config" 
-            active={activeTab === 'xytable'} 
-            onClick={() => setActiveTab('xytable')} 
-          />
-          <NavItem 
-            icon={<Focus size={18} />} 
-            label="ATC Tools" 
-            active={activeTab === 'atc'} 
-            onClick={() => setActiveTab('atc')} 
-          />
-          <NavItem 
-            icon={<Video size={18} />} 
-            label="Vision / Cameras" 
-            active={activeTab === 'cameras'} 
-            onClick={() => setActiveTab('cameras')} 
-          />
-          <NavItem 
-            icon={<Layers size={18} />} 
-            label="RACK Config" 
-            active={activeTab === 'rack'} 
-            onClick={() => setActiveTab('rack')} 
-          />
+          
+          {/* Vision/Cameras is always first if enabled (it is forced enabled in UI but let's check array) */}
+          {settings.visibleModules?.includes('Vision/Cameras') && (
+            <NavItem 
+              icon={<Video size={18} />} 
+              label="Vision / Cameras" 
+              active={activeTab === 'cameras'} 
+              onClick={() => setActiveTab('cameras')} 
+            />
+          )}
+          {settings.visibleModules?.includes('XY Table config') && (
+            <NavItem 
+              icon={<Crosshair size={18} />} 
+              label="XY Table config" 
+              active={activeTab === 'xytable'} 
+              onClick={() => setActiveTab('xytable')} 
+            />
+          )}
+          {settings.visibleModules?.includes('ATC Tools') && (
+            <NavItem 
+              icon={<Focus size={18} />} 
+              label="ATC Tools" 
+              active={activeTab === 'atc'} 
+              onClick={() => setActiveTab('atc')} 
+            />
+          )}
+          {settings.visibleModules?.includes('Rack Config') && (
+            <NavItem 
+              icon={<Layers size={18} />} 
+              label="Rack Config" 
+              active={activeTab === 'rack'} 
+              onClick={() => setActiveTab('rack')} 
+            />
+          )}
+
         </nav>
 
         {/* Main Content Area */}
@@ -384,7 +496,14 @@ function OverviewPanel() {
   </button>
             </div>
             
+            
+            {r.combinedWith && r.combinedWith.length > 0 && (
+              <div className="text-xs text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 px-2 py-1 rounded font-medium mt-1 mb-1 animate-pulse truncate" title={"Combined with: " + r.combinedWith.join(', ')}>
+                Combined with {r.combinedWith.length} robot{r.combinedWith.length > 1 ? 's' : ''}
+              </div>
+            )}
             <div className="text-[11px] text-slate-400 grid grid-cols-[40px_1fr] gap-x-1 gap-y-1">
+
               <div>Model:</div>
               <div className="text-slate-200 font-medium">{r.model}</div>
               <div>Role:</div>

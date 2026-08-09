@@ -40,7 +40,7 @@ const URTC_TOOLS: ToolType[] = [
 ];
 
 export function RobotDetail({ robot }: { robot: RobotState }) {
-  const { updateRobot, saveKinematics, loadKinematics } = useHydraStore();
+  const { updateRobot, saveKinematics, loadKinematics, settings, robots } = useHydraStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [jogStep, setJogStep] = useState<number>(1);
   const [selectedExample, setSelectedExample] = useState<string>('');
@@ -49,6 +49,8 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
   const isPlayingRef = useRef(false);
   const [rightTab, setRightTab] = useState<'trajectories' | 'config' | 'io'>('trajectories');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [controlMode, setControlMode] = useState<'translate' | 'rotate' | 'scale' | 'none'>('none');
+  const toggleControl = (mode: 'translate' | 'rotate' | 'scale') => setControlMode(prev => prev === mode ? 'none' : mode);
 
   const hasXYTable = robot.hasXYTable;
   const xyTable = robot.xyTable;
@@ -306,7 +308,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
   }
 
   return (
-    <div className="w-full h-full flex flex-col gap-3">
+    <div className={cn("w-full h-full flex flex-col gap-3", isFullscreen && "fixed inset-0 z-50 bg-slate-950 p-4")}>
       {/* Detail Header */}
       <div className="flex items-center justify-between shrink-0">
         <h2 className="text-xl font-bold text-slate-100 flex items-center gap-3">
@@ -321,13 +323,55 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
           >
             <ShieldAlert size={18} className="fill-white/20" /> E-STOP
           </button>
+
+          <button 
+            onClick={() => updateRobot(robot.id, { joints: { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0 }, pos: { ...robot.pos, tx: 0, ty: 0, trz: 0 } })}
+            className="flex items-center gap-2 px-6 py-3 min-h-[48px] bg-yellow-400 hover:bg-yellow-300 border border-yellow-300 text-slate-950 text-sm font-black uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(250,204,21,0.8)] hover:shadow-[0_0_20px_rgba(250,204,21,1)]"
+          >
+            HOME
+          </button>
+          {robot.hasXYTable && (
+            <button 
+              onClick={() => updateRobot(robot.id, { xyTable: { ...robot.xyTable, pos: { x: 0, y: 0 }, worldPos: { x: 0, y: 0 } } })}
+              className="flex items-center gap-2 px-6 py-3 min-h-[48px] bg-yellow-400 hover:bg-yellow-300 border border-yellow-300 text-slate-950 text-sm font-black uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(250,204,21,0.8)] hover:shadow-[0_0_20px_rgba(250,204,21,1)]"
+            >
+              HOME XY
+            </button>
+          )}
+
           
+          {isPlaying ? (
+            <button 
+              onClick={stopTrajectory}
+              className="flex justify-center items-center gap-2 px-6 py-3 min-h-[48px] bg-rose-500 text-slate-950 font-bold text-sm uppercase tracking-widest rounded-lg transition-colors shadow-[0_0_15px_rgba(255,102,0,0.6)] border border-rose-400"
+            >
+              <Square size={16} className="fill-slate-950" /> Stop
+            </button>
+          ) : (
+            <button 
+              onClick={startTrajectory}
+              disabled={robot.recordedPoints.length === 0}
+              className="flex justify-center items-center gap-2 px-6 py-3 min-h-[48px] bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold text-sm uppercase tracking-widest rounded-lg transition-colors shadow-[0_0_15px_rgba(0,255,102,0.6)] border border-emerald-400"
+            >
+              <Play size={16} className="fill-slate-950" /> Start
+            </button>
+          )}
+
           <button 
             onClick={handleResetPos}
-            className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-200 text-sm font-semibold rounded-lg transition-colors shadow-md"
+            className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(6,182,212,0.5)] border border-cyan-400"
           >
-            <RefreshCw size={16} /> Reset
+            <RefreshCw size={16} className="fill-slate-950" /> Reset
           </button>
+          
+          <button 
+            onClick={() => saveKinematics(robot.id)}
+            disabled={robot.recordedPoints.length === 0 || isPlaying}
+            className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(99,102,241,0.5)] border border-indigo-400"
+          >
+            <Save size={16} /> Export
+          </button>
+          
           <input 
             type="file" 
             accept=".json" 
@@ -337,9 +381,9 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
           />
           <button 
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-200 text-sm font-semibold rounded-lg transition-colors shadow-md"
+            className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-fuchsia-500 hover:bg-fuchsia-400 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(217,70,239,0.5)] border border-fuchsia-400"
           >
-            <Upload size={16} /> Load JSON
+            <Upload size={16} /> Load
           </button>
         </div>
       </div>
@@ -350,11 +394,31 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
           {/* 3D View */}
           <div className={cn(
             "bg-slate-900 border border-slate-800 rounded-xl p-1 overflow-hidden flex-1 min-h-[300px] relative shadow-inner",
-            isFullscreen && "fixed inset-0 z-50 rounded-none border-none"
+            isFullscreen && "fixed inset-x-0 bottom-0 top-[140px] z-40 rounded-none border-none bg-slate-950"
           )}>
-            <VirtualKinematics robot={robot} />
+            <VirtualKinematics robot={robot} controlMode={controlMode} />
             
             <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-auto">
+              <button 
+                className={`px-3 py-1.5 text-xs font-semibold rounded shadow-md border ${controlMode === 'translate' ? 'bg-sky-500 text-white border-sky-400' : 'bg-slate-950/80 backdrop-blur text-slate-300 hover:bg-slate-900 border-slate-800'}`}
+                onClick={() => toggleControl('translate')}
+              >
+                Move
+              </button>
+              <button 
+                className={`px-3 py-1.5 text-xs font-semibold rounded shadow-md border ${controlMode === 'rotate' ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-slate-950/80 backdrop-blur text-slate-300 hover:bg-slate-900 border-slate-800'}`}
+                onClick={() => toggleControl('rotate')}
+              >
+                Rotate
+              </button>
+
+              <button 
+                className={`px-3 py-1.5 text-xs font-semibold rounded shadow-md border ${controlMode === 'scale' ? 'bg-amber-500 text-white border-amber-400' : 'bg-slate-950/80 backdrop-blur text-slate-300 hover:bg-slate-900 border-slate-800'}`}
+                onClick={() => toggleControl('scale')}
+              >
+                Resize
+              </button>
+
               <span className="bg-slate-950/80 backdrop-blur font-mono font-bold text-slate-300 text-xs px-3 py-1.5 rounded border border-slate-800 shadow-md">
                 Points: {robot.recordedPoints.length}
               </span>
@@ -438,226 +502,110 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Step:</span>
-                <select 
-                  className="bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 min-h-[48px] text-sm text-sky-400 font-mono font-bold focus:outline-none focus:border-sky-500"
-                  value={jogStep}
-                  onChange={(e) => setJogStep(Number(e.target.value))}
-                >
-                  <option value={0.1}>0.1</option>
-                  <option value={1}>1.0</option>
-                  <option value={5}>5.0</option>
-                  <option value={10}>10.0</option>
-                  <option value={45}>45.0</option>
+                
+                    <select value={jogStep} onChange={e => setJogStep(Number(e.target.value))} className="bg-slate-950 border border-slate-800 rounded p-1 text-sm outline-none">
+                  <option value={1}>1mm / 1°</option>
+                  <option value={5}>5mm / 5°</option>
+                  <option value={10}>10mm / 10°</option>
                 </select>
-                <button 
-                  onClick={handleAddPoint}
-                  className="flex items-center gap-2 px-5 py-3 min-h-[48px] bg-sky-500 text-slate-950 text-sm font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400"
-                >
-                  <Plus size={20} /> Add Point
-                </button>
               </div>
             </div>
             
-            {jogMode === 'cartesian' ? (
-              <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
-                {(['x', 'y', 'z', 'a', 'b', 'c'] as const).map((axis) => (
-                  <div key={axis} className="bg-slate-950 border border-slate-800 rounded-lg p-2 flex flex-col items-center gap-1">
-                    <div className="text-xs font-bold text-slate-500 uppercase">{axis}</div>
-                    <div className="text-base font-mono font-bold text-sky-400 mb-2">{ (robot.pos[axis] || 0).toFixed(2)}</div>
-                    <div className="flex gap-2 w-full justify-between">
-                      <button onClick={() => handleJog(axis, -1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded-lg text-slate-300">
-                        <ArrowDown size={20} />
-                      </button>
-                      <button onClick={() => handleJog(axis, 1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded-lg text-slate-300">
-                        <ArrowUp size={20} />
-                      </button>
+            {jogMode === 'joint' ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {(['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const).map(j => (
+                  <div key={j} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-slate-400 uppercase">{j}</span>
+                      <span className="text-xs font-mono text-sky-400">{robot.joints[j as keyof typeof robot.joints]?.toFixed(2)}°</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => updateRobot(robot.id, { joints: { ...robot.joints, [j]: robot.joints[j as keyof typeof robot.joints] - jogStep } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">-</button>
+                      <input type="range" min="-180" max="180" value={robot.joints[j as keyof typeof robot.joints]} onChange={e => updateRobot(robot.id, { joints: { ...robot.joints, [j]: Number(e.target.value) } })} className="flex-1" />
+                      <button onClick={() => updateRobot(robot.id, { joints: { ...robot.joints, [j]: robot.joints[j as keyof typeof robot.joints] + jogStep } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">+</button>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                {(['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const).map((joint, i) => (
-                  <div key={joint} className="bg-slate-950 border border-slate-800 rounded-lg p-2 flex items-center gap-3">
-                    <div className="w-14 text-center shrink-0">
-                      <div className="text-xs font-bold text-slate-500 uppercase">J{i+1}</div>
-                      <div className="text-sm font-mono font-bold text-sky-400">{robot.joints[joint].toFixed(1)}°</div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {(['x', 'y', 'z', 'a', 'b', 'c'] as const).map(axis => (
+                  <div key={axis} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-slate-400 uppercase">{axis}</span>
+                      <span className="text-xs font-mono text-sky-400">{robot.pos[axis as keyof typeof robot.pos]?.toFixed(2) || 0}</span>
                     </div>
-                    <button onClick={() => handleJointJog(joint, -1)} className="p-2 min-h-[48px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded-lg text-slate-300 shrink-0">
-                      <ArrowDown size={20} />
-                    </button>
-                    <input 
-                      type="range"
-                      min="-180"
-                      max="180"
-                      step={0.1}
-                      value={robot.joints[joint]}
-                      onChange={(e) => handleJointSlider(joint, Number(e.target.value))}
-                      className="flex-1 min-w-[40px] h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500"
-                    />
-                    <button onClick={() => handleJointJog(joint, 1)} className="p-2 min-h-[48px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded-lg text-slate-300 shrink-0">
-                      <ArrowUp size={20} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: (robot.pos[axis as keyof typeof robot.pos] || 0) - jogStep } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">-</button>
+                      <input type="range" min="-500" max="500" value={robot.pos[axis as keyof typeof robot.pos] || 0} onChange={e => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: Number(e.target.value) } })} className="flex-1" />
+                      <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: (robot.pos[axis as keyof typeof robot.pos] || 0) + jogStep } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">+</button>
+                    </div>
                   </div>
                 ))}
-              </div>
-            )}
-
-            {hasXYTable && (
-              <div className="mt-4 pt-4 border-t border-slate-800">
-                <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wider"><Crosshair size={16} /> XY Table Controls</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-slate-950 border border-slate-800 rounded-lg p-2 flex flex-col items-center gap-1">
-                    <div className="text-xs font-bold text-slate-500 uppercase">Table X</div>
-                    <div className="text-base font-mono font-bold text-amber-400">{xyTable.pos.x.toFixed(2)} mm</div>
-                    <div className="flex gap-2 w-full justify-between">
-                      <button onClick={() => handleTableJog('x', -1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded-lg text-slate-300">
-                        <ArrowDown size={20} />
-                      </button>
-                      <button onClick={() => handleTableJog('x', 1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded-lg text-slate-300">
-                        <ArrowUp size={20} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="bg-slate-950 border border-slate-800 rounded-lg p-2 flex flex-col items-center gap-1">
-                    <div className="text-xs font-bold text-slate-500 uppercase">Table Y</div>
-                    <div className="text-base font-mono font-bold text-amber-400">{xyTable.pos.y.toFixed(2)} mm</div>
-                    <div className="flex gap-2 w-full justify-between">
-                      <button onClick={() => handleTableJog('y', -1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded-lg text-slate-300">
-                        <ArrowDown size={20} />
-                      </button>
-                      <button onClick={() => handleTableJog('y', 1)} className="p-2 min-h-[48px] min-w-[40px] flex items-center justify-center flex-1 bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded-lg text-slate-300">
-                        <ArrowUp size={20} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right Col: Tools & I/O */}
-        <div className="lg:col-span-1 flex flex-col h-full bg-slate-900 border border-slate-800 rounded-lg overflow-hidden min-h-0">
-          
-          <div className="flex gap-2 p-2 border-b border-slate-800 bg-slate-950">
+        {/* Right Panel */}
+        <div className={cn("w-full lg:w-80 flex flex-col shrink-0 min-h-0 bg-slate-950 border border-slate-800 rounded-xl overflow-hidden", isFullscreen && "hidden")}>
+          <div className="flex items-center border-b border-slate-800 bg-slate-900 overflow-x-auto custom-scrollbar shrink-0">
             <button 
-              onClick={() => setRightTab('trajectories')}
-              className={cn("flex-1 py-3 px-3 rounded-lg text-sm font-semibold transition-colors", rightTab === 'trajectories' ? "bg-emerald-500/20 text-emerald-400 glow-border-emerald" : "text-slate-400 hover:text-slate-300 hover:bg-slate-900 border border-transparent")}
+              onClick={() => setRightTab('trajectories')} 
+              className={cn("flex-1 py-3 px-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors", rightTab === 'trajectories' ? "text-sky-400 border-b-2 border-sky-400 bg-slate-800" : "text-slate-400 hover:text-slate-300")}
             >
-              Trajectories
+              Points
             </button>
             <button 
-              onClick={() => setRightTab('config')}
-              className={cn("flex-1 py-3 px-3 rounded-lg text-sm font-semibold transition-colors", rightTab === 'config' ? "bg-sky-500/20 text-sky-400 glow-border-sky" : "text-slate-400 hover:text-slate-300 hover:bg-slate-900 border border-transparent")}
+              onClick={() => setRightTab('config')} 
+              className={cn("flex-1 py-3 px-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors", rightTab === 'config' ? "text-sky-400 border-b-2 border-sky-400 bg-slate-800" : "text-slate-400 hover:text-slate-300")}
             >
               Config
             </button>
             <button 
-              onClick={() => setRightTab('io')}
-              className={cn("flex-1 py-3 px-3 rounded-lg text-sm font-semibold transition-colors", rightTab === 'io' ? "bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-sm" : "text-slate-400 hover:text-slate-300 hover:bg-slate-900 border border-transparent")}
+              onClick={() => setRightTab('io')} 
+              className={cn("flex-1 py-3 px-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors", rightTab === 'io' ? "text-sky-400 border-b-2 border-sky-400 bg-slate-800" : "text-slate-400 hover:text-slate-300")}
             >
               I/O
             </button>
           </div>
 
-          <div className="p-4 overflow-y-auto custom-scrollbar flex-1">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 relative">
             {rightTab === 'trajectories' && (
-              <div className="space-y-6 h-full flex flex-col">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Load Example Kinematics</label>
-                  <select 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 min-h-[48px] text-sm text-slate-200 focus:outline-none focus:border-emerald-500"
-                    value={selectedExample}
-                    onChange={(e) => loadExample(e.target.value)}
-                    disabled={isPlaying}
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <button 
+                    onClick={handleAddPoint}
+                    className="flex-1 py-2 bg-sky-500/20 hover:bg-sky-500/30 text-sky-400 border border-sky-500/30 rounded text-sm font-bold uppercase tracking-wider transition-colors"
                   >
-                    <option value="">-- Select Example --</option>
-                    {examples.map(e => (
-                      <option key={e.id} value={e.id}>{e.name} ({e.points.length} pts)</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs font-semibold text-slate-400 mb-3 uppercase tracking-wider">
-                    <span>Playback Speed</span>
-                    <span className="text-emerald-400">{playbackSpeed}%</span>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="10" 
-                    max="300" 
-                    step="10" 
-                    value={playbackSpeed} 
-                    onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
-                    className="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                  />
-                </div>
-
-                <div className="flex-1 min-h-[150px] overflow-y-auto custom-scrollbar border border-slate-800 rounded-lg bg-slate-950">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-slate-900 sticky top-0 z-10 border-b border-slate-800">
-                      <tr>
-                        <th className="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase">#</th>
-                        <th className="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase text-right">Robot J1-J6 / XYZABC (mm/°)</th>
-                        {hasXYTable && <th className="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase text-right">Table XY (mm)</th>}
-                        <th className="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase text-right"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {robot.recordedPoints.map((pt, i) => (
-                        <tr key={i} className="border-b border-slate-800/50 hover:bg-slate-900/50 group">
-                          <td className="px-3 py-2 text-xs font-mono text-slate-400">{i + 1}</td>
-                          <td className="px-3 py-2 text-xs font-mono text-slate-300 text-right">
-                            {pt.x.toFixed(1)}, {pt.y.toFixed(1)}, {pt.z.toFixed(1)} <br/> {pt.a.toFixed(1)}°, {pt.b.toFixed(1)}°, {pt.c.toFixed(1)}°
-                          </td>
-                          {hasXYTable && (
-                            <td className="px-3 py-2 text-xs font-mono text-amber-400/80 text-right">
-                              {pt.tx?.toFixed(1) ?? '0.0'}, {pt.ty?.toFixed(1) ?? '0.0'}
-                            </td>
-                          )}
-                          <td className="px-3 py-2 text-right">
-                            <button onClick={() => handleRemovePoint(i)} className="text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity p-1">
-                              <Trash2 size={14} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                      {robot.recordedPoints.length === 0 && (
-                        <tr>
-                          <td colSpan={hasXYTable ? 4 : 3} className="px-3 py-8 text-center text-xs text-slate-500">
-                            No points recorded.<br/>Jog the robot and click "Record Point".
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                    + Add Point
+                  </button>
+                  <button 
+                    onClick={() => updateRobot(robot.id, { recordedPoints: [] })}
+                    className="py-2 px-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-sm font-bold uppercase tracking-wider transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3 shrink-0">
-                  <button 
-                    onClick={() => saveKinematics(robot.id)}
-                    disabled={robot.recordedPoints.length === 0 || isPlaying}
-                    className="flex justify-center items-center gap-2 px-4 py-3 min-h-[48px] bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700 text-slate-200 text-sm font-semibold rounded-lg transition-colors"
-                  >
-                    <Save size={16} /> Export
-                  </button>
-                  {isPlaying ? (
-                    <button 
-                      onClick={stopTrajectory}
-                      className="flex justify-center items-center gap-2 px-4 py-3 min-h-[48px] bg-rose-500 text-slate-950 font-bold text-sm rounded-lg transition-colors shadow-[0_0_15px_rgba(255,102,0,0.6)] border border-rose-400"
-                    >
-                      <Square size={16} className="fill-white" /> Stop
-                    </button>
-                  ) : (
-                    <button 
-                      onClick={startTrajectory}
-                      disabled={robot.recordedPoints.length === 0}
-                      className="flex justify-center items-center gap-2 px-4 py-3 min-h-[48px] bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold text-sm rounded-lg transition-colors shadow-[0_0_15px_rgba(0,255,102,0.6)] border border-emerald-400"
-                    >
-                      <Play size={16} className="fill-white" /> Start
-                    </button>
+                <div className="space-y-2">
+                  {robot.recordedPoints.map((pt, i) => (
+                    <div key={i} className="bg-slate-900 border border-slate-800 rounded p-2 text-xs flex justify-between items-center">
+                      <span className="font-mono text-slate-400">P{i}</span>
+                      <span className="font-mono text-sky-400">X:{pt.x.toFixed(0)} Y:{pt.y.toFixed(0)} Z:{pt.z.toFixed(0)}</span>
+                      <button onClick={() => {
+                        const newPts = [...robot.recordedPoints];
+                        newPts.splice(i, 1);
+                        updateRobot(robot.id, { recordedPoints: newPts });
+                      }} className="text-slate-500 hover:text-rose-400">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  {robot.recordedPoints.length === 0 && (
+                    <div className="text-center text-slate-500 py-4 text-sm">
+                      No points recorded
+                    </div>
                   )}
                 </div>
               </div>
@@ -665,62 +613,41 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
 
             {rightTab === 'config' && (
               <div className="space-y-6">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Model</label>
-                  <select 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 min-h-[48px] text-sm text-slate-200 focus:outline-none focus:border-sky-400 focus:glow-border-sky transition-all"
-                    value={robot.model}
-                    onChange={(e) => updateRobot(robot.id, { model: e.target.value as RobotModel })}
-                  >
-                    <option value="Parol6">Parol6 (6-DOF)</option>
-                    <option value="Faze4">Faze4 (6-DOF)</option>
-                    <option value="Generic">Generic (6-DOF)</option>
-                  </select>
-                </div>
+                <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 mt-4">
+                  <h4 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Virtual Environment</h4>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-sm font-semibold text-slate-400">Combine with Robot</span>
+                    
+                    <div className="flex flex-col gap-2">
+                      {robots.filter(r => r.id !== robot.id).map(r => (
+                        <label key={r.id} className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            checked={(robot.combinedWith || []).includes(r.id)}
+                            onChange={(e) => {
+                              const current = robot.combinedWith || [];
+                              if (e.target.checked) {
+                                updateRobot(robot.id, { combinedWith: [...current, r.id] });
+                              } else {
+                                updateRobot(robot.id, { combinedWith: current.filter(id => id !== r.id) });
+                              }
+                            }}
+                            className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-sky-500 focus:ring-sky-500 focus:ring-opacity-50 focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer appearance-none checked:bg-sky-500 checked:border-sky-500 transition-colors relative"
+                          />
+                          <span className="text-sm text-slate-300">{r.name} (ID: {r.id})</span>
+                        </label>
+                      ))}
+                      {robots.length <= 1 && <span className="text-xs text-slate-500">No other robots available.</span>}
+                    </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Role</label>
-                  <select 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 min-h-[48px] text-sm text-slate-200 focus:outline-none focus:border-sky-400 focus:glow-border-sky transition-all"
-                    value={robot.role}
-                    onChange={(e) => updateRobot(robot.id, { role: e.target.value as RobotRole })}
-                  >
-                    <option value="Idle">Idle</option>
-                    <option value="PnP">Pick & Place</option>
-                    <option value="CNC">CNC / Laser</option>
-                    <option value="3D_Print">3D Printing</option>
-                    <option value="Inspection">Inspection</option>
-                  </select>
-                </div>
-
-                
-                <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50">
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                      <Crosshair size={14} className={robot.urtcConnected ? "text-emerald-400" : "text-slate-500"} /> 
-                      URTC Tool Interface
-                    </label>
-                    <button 
-                      onClick={() => updateRobot(robot.id, { urtcConnected: !robot.urtcConnected })}
-                      className={cn("px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-colors", robot.urtcConnected ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30" : "bg-slate-800 text-slate-500 border border-slate-700")}
-                    >
-                      {robot.urtcConnected ? 'Linked' : 'Offline'}
-                    </button>
                   </div>
-                  <select 
-                    disabled={!robot.urtcConnected}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 min-h-[48px] text-sm text-slate-200 focus:outline-none focus:border-sky-400 focus:glow-border-sky transition-all disabled:opacity-50"
-
-                    value={robot.tool}
-                    onChange={(e) => updateRobot(robot.id, { tool: e.target.value as ToolType })}
-                  >
-                    {URTC_TOOLS.map(t => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Shows the selected robot in the 3D view. Parameters are configured in its own menu.
+                  </p>
                 </div>
               </div>
             )}
+
 
             {rightTab === 'io' && (
               <div className="space-y-6">

@@ -1,8 +1,9 @@
-import { useRef, useMemo, useState } from 'react';
+import React from 'react';
+import { useRef, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useHydraStore } from '../store';
 import { TransformControls } from '@react-three/drei';
-import { OrbitControls, Grid, Box, Cylinder, Line, RoundedBox, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, Box, Cylinder, Line, RoundedBox, PerspectiveCamera, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { type RobotState } from '../store';
 
@@ -287,9 +288,62 @@ function Rack3DView({ rack, type }: { rack: any, type: string }) {
     </group>
   );
 }
-export function VirtualKinematics({ robot }: { robot: RobotState }) {
-  const { updateRobot } = useHydraStore();
-  const [controlMode, setControlMode] = useState<'translate' | 'rotate'>('translate');
+
+
+type DraggableGizmoProps = {
+  position: [number, number, number];
+  controlMode: 'translate' | 'rotate' | 'scale' | 'none';
+  onMouseUp: (e: any) => void;
+  children: React.ReactNode;
+  initialRotation?: number;
+  scale?: [number, number, number];
+};
+
+function DraggableGizmo({ position, controlMode, onMouseUp, children, initialRotation = 0, scale = [1, 1, 1] }: DraggableGizmoProps) {
+  const coordRef = React.useRef<HTMLDivElement>(null);
+  const objRef = React.useRef<THREE.Group>(null as any);
+
+  return (
+    <>
+      {controlMode !== 'none' && (
+        <TransformControls
+          object={objRef}
+          size={controlMode === 'rotate' ? 0.75 : 1.5}
+          mode={controlMode as 'translate' | 'rotate' | 'scale'}
+          showX={controlMode === 'translate'}
+          showY={controlMode === 'rotate'}
+          showZ={controlMode === 'translate'}
+          onChange={(e: any) => {
+            if (e?.target?.object && coordRef.current) {
+              const x = (e.target.object.position.x * 1000).toFixed(0);
+              const y = (e.target.object.position.z * 1000).toFixed(0);
+              const r = (e.target.object.rotation.y * 180 / Math.PI).toFixed(0);
+              if (controlMode === 'scale') { coordRef.current.innerText = `Scale: ${e?.target?.object?.scale?.x?.toFixed(2)}`; } else { coordRef.current.innerText = `X: ${x} Y: ${y} R: ${r}°`; }
+            }
+          }}
+          onMouseUp={onMouseUp}
+        />
+      )}
+      <group ref={objRef} position={position} scale={scale}>
+        {controlMode !== 'none' && (
+          <Html position={[0, 0.4, 0]} center zIndexRange={[100, 0]}>
+            <div 
+              ref={coordRef}
+              className="bg-slate-950/90 backdrop-blur text-sky-400 font-mono text-[10px] font-bold px-2 py-1 rounded border border-slate-700 whitespace-nowrap pointer-events-none shadow-lg"
+            >
+              X: {(position[0] * 1000).toFixed(0)} Y: {(position[2] * 1000).toFixed(0)} R: {(initialRotation * 180 / Math.PI).toFixed(0)}°
+            </div>
+          </Html>
+        )}
+        {children}
+      </group>
+    </>
+  );
+}
+
+export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; controlMode: 'translate' | 'rotate' | 'scale' | 'none' }) {
+  const { updateRobot, settings, robots } = useHydraStore();
+
   const hasXYTable = robot.hasXYTable;
   const xyTable = robot.xyTable;
 
@@ -301,23 +355,12 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
   const px = xyTable ? (Math.max(0, Math.min(xyTable.pos.x, xyTable.tableSize.width)) / 1000) : 0;
   const py = xyTable ? (Math.max(0, Math.min(xyTable.pos.y, xyTable.tableSize.length)) / 1000) : 0;
 
+  const combinedRobots = robot.combinedWith ? robots.filter(r => robot.combinedWith?.includes(r.id)) : [];
+
+
   return (
     <div className="w-full h-full bg-slate-950 relative rounded-xl overflow-hidden">
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-1 pointer-events-none">
-        <div className="pointer-events-auto mb-2 flex gap-2">
-          <button 
-            className={`px-3 py-1.5 text-xs font-semibold rounded shadow-lg ${controlMode === 'translate' ? 'bg-sky-500 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
-            onClick={() => setControlMode('translate')}
-          >
-            Move
-          </button>
-          <button 
-            className={`px-3 py-1.5 text-xs font-semibold rounded shadow-lg ${controlMode === 'rotate' ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
-            onClick={() => setControlMode('rotate')}
-          >
-            Rotate
-          </button>
-        </div>
         <span className="text-xs font-mono bg-slate-900/80 text-sky-400 px-2 py-1 rounded border border-sky-500/20 backdrop-blur shadow-lg shadow-black/20">
           Model: {robot.model}
         </span>
@@ -328,38 +371,18 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
       <Canvas shadows className="w-full h-full outline-none touch-none">
         <PerspectiveCamera makeDefault position={[0.4, 0.4, 0.6]} fov={45} />
         
-        <color attach="background" args={['#07090C']} />
+        <color attach="background" args={[settings.theme.includes('Light') ? '#e2e8f0' : '#07090C']} />
         
         <ambientLight intensity={0.4} />
         <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
         <pointLight position={[-5, 5, -5]} intensity={0.5} color="#00E5FF" />
-        
-        {/* Floor */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-          <planeGeometry args={[10, 10]} />
-          <meshStandardMaterial color="#07090C" />
-        </mesh>
 
-        <Grid 
-          renderOrder={-1} 
-          position={[0, 0, 0]} 
-          infiniteGrid 
-          cellSize={0.1} 
-          cellThickness={0.5} 
-          sectionSize={0.5} 
-          sectionThickness={1} 
-          sectionColor="#2D3748" 
-          fadeDistance={5} 
-        />
-        
-        
         {/* ATC Visualization */}
         {robot.atc && (
-          <TransformControls
-            size={3}
-            mode={controlMode}
-            showY={false}
+          <DraggableGizmo 
             position={[(robot.atc.renderPos?.x || -300) / 1000, 0, (robot.atc.renderPos?.y || 200) / 1000]}
+            controlMode={controlMode}
+            initialRotation={robot.atc.renderRot || 0}
             onMouseUp={(e: any) => {
               if (e.target.object) {
                 updateRobot(robot.id, {
@@ -375,19 +398,16 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
               }
             }}
           >
-            <group>
-              <group scale={[2, 2, 2]} rotation={[0, robot.atc.renderRot || 0, 0]}><ATC3DView atc={robot.atc} /></group>
-            </group>
-          </TransformControls>
+            <group scale={[2, 2, 2]} rotation={[0, robot.atc.renderRot || 0, 0]}><ATC3DView atc={robot.atc} /></group>
+          </DraggableGizmo>
         )}
 
         {/* Rack 1 */}
         {robot.rackSystem?.enabled && robot.rackSystem.rack1.type !== 'None' && (
-          <TransformControls
-            size={3}
-            mode={controlMode}
-            showY={false}
+          <DraggableGizmo 
             position={[(robot.rackSystem.rack1.renderPos?.x || 300) / 1000, 0, (robot.rackSystem.rack1.renderPos?.y || 200) / 1000]}
+            controlMode={controlMode}
+            initialRotation={robot.rackSystem.rack1.renderRot || 0}
             onMouseUp={(e: any) => {
               if (e.target.object) {
                 updateRobot(robot.id, {
@@ -406,19 +426,16 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
               }
             }}
           >
-            <group>
-              <group scale={[2, 2, 2]} rotation={[0, robot.rackSystem.rack1.renderRot || 0, 0]}><Rack3DView rack={robot.rackSystem.rack1} type={robot.rackSystem.rack1.type} /></group>
-            </group>
-          </TransformControls>
+            <group scale={[2, 2, 2]} rotation={[0, robot.rackSystem.rack1.renderRot || 0, 0]}><Rack3DView rack={robot.rackSystem.rack1} type={robot.rackSystem.rack1.type} /></group>
+          </DraggableGizmo>
         )}
 
         {/* Rack 2 */}
         {robot.rackSystem?.enabled && robot.rackSystem.rack2.type !== 'None' && (
-          <TransformControls
-            size={3}
-            mode={controlMode}
-            showY={false}
+          <DraggableGizmo 
             position={[(robot.rackSystem.rack2.renderPos?.x || 300) / 1000, 0, (robot.rackSystem.rack2.renderPos?.y || -200) / 1000]}
+            controlMode={controlMode}
+            initialRotation={robot.rackSystem.rack2.renderRot || 0}
             onMouseUp={(e: any) => {
               if (e.target.object) {
                 updateRobot(robot.id, {
@@ -437,18 +454,45 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
               }
             }}
           >
-            <group>
-              <group scale={[2, 2, 2]} rotation={[0, robot.rackSystem.rack2.renderRot || 0, 0]}><Rack3DView rack={robot.rackSystem.rack2} type={robot.rackSystem.rack2.type} /></group>
-            </group>
-          </TransformControls>
+            <group scale={[2, 2, 2]} rotation={[0, robot.rackSystem.rack2.renderRot || 0, 0]}><Rack3DView rack={robot.rackSystem.rack2} type={robot.rackSystem.rack2.type} /></group>
+          </DraggableGizmo>
         )}
 
+        
+        {combinedRobots.map(combinedRobot => (
+          <DraggableGizmo
+              key={combinedRobot.id}
+              position={[(combinedRobot.pos?.tx || 500) / 1000, 0, (combinedRobot.pos?.ty || 500) / 1000]}
+              scale={[combinedRobot.renderScale || 0.5, combinedRobot.renderScale || 0.5, combinedRobot.renderScale || 0.5]}
+              controlMode={controlMode}
+              initialRotation={combinedRobot.pos?.trz || 0}
+              onMouseUp={(e: any) => {
+                 if (e.target.object) {
+                    const newTx = e.target.object.position.x * 1000;
+                    const newTy = e.target.object.position.z * 1000;
+                    updateRobot(combinedRobot.id, {
+                        pos: {
+                            ...combinedRobot.pos,
+                            tx: newTx,
+                            ty: newTy,
+                            trz: e.target.object.rotation.y
+                        },
+                        renderScale: e.target.object.scale.x
+                    });
+                 }
+              }}
+            >
+              <group rotation={[0, combinedRobot.pos?.trz || 0, 0]}>
+                <RobotArm robot={combinedRobot} />
+              </group>
+          </DraggableGizmo>
+        ))}
+
         {hasXYTable ? (
-          <TransformControls
-            size={3}
-            mode={controlMode}
-            showY={false}
+          <DraggableGizmo
             position={[(robot.xyTable?.worldPos?.x || -tableW * 500) / 1000, 0, (robot.xyTable?.worldPos?.y || -tableL * 500) / 1000]}
+            controlMode={controlMode}
+            initialRotation={robot.xyTable?.worldRot || 0}
             onMouseUp={(e: any) => {
               if (e.target.object) {
                 updateRobot(robot.id, {
@@ -464,54 +508,52 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
               }
             }}
           >
-          <group position={[0, 0, 0]} rotation={[0, robot.xyTable?.worldRot || 0, 0]}>
-            <group scale={[2, 2, 2]}>
-              <group position={[0, 0.08, 0]}>
-                <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
+            <group position={[0, 0, 0]} rotation={[0, robot.xyTable?.worldRot || 0, 0]}>
+              <group scale={[2, 2, 2]}>
+                <group position={[0, 0.08, 0]}>
+                  <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
+                </group>
+                {/* Table Bed */}
+                <Box args={[tableW, 0.02, tableL]} position={[tableW/2, 0.01, tableL/2]} material-color="#121720" castShadow receiveShadow />
+                  
+                {/* Rails */}
+                <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, 0.05]} material-color="#2D3748" />
+                <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, tableL - 0.05]} material-color="#2D3748" />
               </group>
-              {/* Table Bed */}
-              <Box args={[tableW, 0.02, tableL]} position={[tableW/2, 0.01, tableL/2]} material-color="#121720" castShadow receiveShadow />
-              
-              {/* Rails */}
-              <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, 0.05]} material-color="#2D3748" />
-              <Cylinder args={[0.01, 0.01, tableW]} rotation={[0, 0, Math.PI/2]} position={[tableW/2, 0.04, tableL - 0.05]} material-color="#2D3748" />
-            </group>
-            {/* Robot Base Mount on XY table */}
-            <TransformControls
-            size={3} 
-              mode={controlMode}
-              showY={false}
-              position={[px, 0.04, py]}
-              onMouseUp={(e: any) => {
-                if (e.target.object) {
-                  const newX = e.target.object.position.x * 1000;
-                  const newY = e.target.object.position.z * 1000;
-                  updateRobot(robot.id, { 
-                    xyTable: { 
-                      ...robot.xyTable, 
-                      pos: { x: newX, y: newY } 
-                    } 
-                  });
-                }
-              }}
-            >
-              <group>
+              {/* Robot Base Mount on XY table */}
+              <DraggableGizmo
+                position={[px, 0.04, py]}
+                scale={[robot.renderScale || 0.5, robot.renderScale || 0.5, robot.renderScale || 0.5]}
+                controlMode={controlMode}
+                onMouseUp={(e: any) => {
+                  if (e.target.object) {
+                    const newX = e.target.object.position.x * 1000;
+                    const newY = e.target.object.position.z * 1000;
+                    updateRobot(robot.id, { 
+                      xyTable: { 
+                        ...robot.xyTable, 
+                        pos: { x: newX, y: newY } 
+                      },
+                      renderScale: e.target.object.scale.x
+                    });
+                  }
+                }}
+              >
                 <Box args={[0.2, 0.04, 0.2]} position={[0, 0.02, 0]} material-color="#475569" castShadow receiveShadow />
                 <group position={[0, 0.04, 0]}>
                   <RobotArm robot={robot} />
                 </group>
-              </group>
-            </TransformControls>
-          </group>
-          </TransformControls>
+              </DraggableGizmo>
+            </group>
+          </DraggableGizmo>
         ) : (
           <group>
             <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
-            <TransformControls
-            size={3} 
-              mode={controlMode}
-              showY={false}
+            <DraggableGizmo
               position={[(robot.pos?.tx || 0) / 1000, 0, (robot.pos?.ty || 0) / 1000]}
+              scale={[robot.renderScale || 0.5, robot.renderScale || 0.5, robot.renderScale || 0.5]}
+              controlMode={controlMode}
+              initialRotation={robot.pos?.trz || 0}
               onMouseUp={(e: any) => {
                  if (e.target.object) {
                     const newTx = e.target.object.position.x * 1000;
@@ -520,14 +562,18 @@ export function VirtualKinematics({ robot }: { robot: RobotState }) {
                         pos: {
                             ...robot.pos,
                             tx: newTx,
-                            ty: newTy
-                        }
+                            ty: newTy,
+                            trz: e.target.object.rotation.y
+                        },
+                        renderScale: e.target.object.scale.x
                     });
                  }
               }}
             >
-              <RobotArm robot={robot} />
-            </TransformControls>
+              <group rotation={[0, robot.pos?.trz || 0, 0]}>
+                <RobotArm robot={robot} />
+              </group>
+            </DraggableGizmo>
           </group>
         )}
 
