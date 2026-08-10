@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useHydraStore } from '../store';
+import { useTranslation } from 'react-i18next';
 import { Video, Maximize2, Minimize2, Camera as CameraIcon, Power, ScanLine, CircleDot, RefreshCw } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -10,6 +11,7 @@ function cn(...inputs: ClassValue[]) {
 
 export function CamerasView() {
   const { cameras, updateCamera } = useHydraStore();
+  const { t } = useTranslation();
   const [fullScreenId, setFullScreenId] = useState<number | null>(null);
   const [recordingIds, setRecordingIds] = useState<Set<number>>(new Set());
   const [connectingIds, setConnectingIds] = useState<Set<number>>(new Set());
@@ -62,7 +64,7 @@ export function CamerasView() {
     <div className="w-full h-full flex flex-col space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-          <Video className="text-emerald-400" size={20} /> <span className="glow-text-emerald">Octal Vision Matrix</span>
+          <Video className="text-emerald-400" size={20} /> <span className="glow-text-emerald">{t('cameras.title', 'Octal Vision Matrix')}</span>
         </h2>
         <div className="flex items-center gap-2 text-[11px] text-slate-400">
           <div className="px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono">
@@ -84,9 +86,9 @@ export function CamerasView() {
               <div className="flex flex-col gap-2 p-2 border-b border-slate-800 bg-slate-900/80 shrink-0 w-full z-10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-medium text-slate-200">Cam {i + 1}</span>
+                    <span className="text-[11px] font-medium text-slate-200">{t('cameras.cam', 'Cam')} {i + 1}</span>
                     {c.connected && (
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">LIVE</span>
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{t('cameras.live', 'LIVE')}</span>
                     )}
                     {c.yoloEnabled && (
                       <span className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20">YOLOv8</span>
@@ -124,10 +126,10 @@ export function CamerasView() {
                     onChange={(e) => updateCamera(c.id, { type: e.target.value as any })}
                     className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[10px] text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all"
                   >
-                    <option value="USB Vision Camera">USB Vision Camera</option>
-                    <option value="Thermal (MLX90640)">Thermal (MLX90640)</option>
-                    <option value="Thermal (MLX90641)">Thermal (MLX90641)</option>
-                    <option value="Thermal (MLX90642)">Thermal (MLX90642)</option>
+                    <option value="USB Vision Camera">{t('cameras.usb_vision', 'USB Vision Camera')}</option>
+                    <option value="Thermal (MLX90640)">{t('cameras.thermal_mlx90640', 'Thermal (MLX90640)')}</option>
+                    <option value="Thermal (MLX90641)">{t('cameras.thermal_mlx90641', 'Thermal (MLX90641)')}</option>
+                    <option value="Thermal (MLX90642)">{t('cameras.thermal_mlx90642', 'Thermal (MLX90642)')}</option>
                   </select>
                 </div>
               </div>
@@ -157,7 +159,7 @@ export function CamerasView() {
 
                       {c.yoloEnabled && c.detections.length === 0 && (
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-sky-400/50 text-[10px] font-mono animate-pulse">Running Inference...</span>
+                          <span className="text-sky-400/50 text-[10px] font-mono animate-pulse">{t('cameras.running_inference', 'Running Inference...')}</span>
                         </div>
                       )}
 
@@ -165,7 +167,7 @@ export function CamerasView() {
                         <span className="text-[9px] font-mono text-emerald-400/70">1080p 60fps</span>
                         {recordingIds.has(c.id) && (
                           <div className="flex items-center gap-1 text-[10px] text-rose-400 font-bold font-mono">
-                            <span className="w-2 h-2 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]" /> REC
+                            <span className="w-2 h-2 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]" /> {t('cameras.rec', 'REC')}
                           </div>
                         )}
                       </div>
@@ -178,7 +180,7 @@ export function CamerasView() {
                 ) : (
                   <div className="w-full h-full border border-slate-800/50 border-dashed rounded flex flex-col items-center justify-center gap-2 text-slate-600 bg-slate-950/50">
                     <Video size={24} />
-                    <span className="text-xs font-mono">{connectingIds.has(c.id) ? 'CONNECTING...' : 'NO SIGNAL'}</span>
+                    <span className="text-xs font-mono">{connectingIds.has(c.id) ? t('cameras.connecting', 'CONNECTING...') : t('cameras.no_signal', 'NO SIGNAL')}</span>
                   </div>
                 )}
               </div>

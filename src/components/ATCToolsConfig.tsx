@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useRef, useEffect } from 'react';
 import { useHydraStore, type ATCGrid, type ToolType, type ATCConfig } from '../store';
 import { RotateCcw, Settings, Grid3X3, CircleDashed, MapPin, ChevronDown, ChevronUp, Save, Upload, Server } from 'lucide-react';
@@ -46,6 +47,7 @@ const defaultAtcConfig: ATCConfig = {
 };
 
 export function ATCToolsConfig() {
+  const { t } = useTranslation();
   const { robots, updateRobot } = useHydraStore();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(robots[0]?.id || 1);
   const [editingSlot, setEditingSlot] = useState<number | 'revolver' | null>(null);
@@ -255,8 +257,7 @@ export function ATCToolsConfig() {
             <Upload size={14} /> Load Config
           </button>
           <button onClick={saveConfig} className="flex items-center gap-2 px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-xs font-semibold rounded-lg transition-colors border border-sky-500/30">
-            <Save size={14} /> Save Config
-          </button>
+            <Save size={14} />{t('modules.save_config', 'Save Config')}</button>
           <button onClick={disableATC} className="flex items-center gap-2 px-3 py-1.5 text-rose-400 text-xs font-semibold hover:text-rose-300 ml-2">
             Remove ATC
           </button>

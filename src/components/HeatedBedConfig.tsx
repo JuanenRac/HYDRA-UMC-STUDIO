@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useHydraStore } from '../store';
+import { useTranslation } from 'react-i18next';
 import { RotateCcw, Thermometer, Maximize2, Plus, Power } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Box } from '@react-three/drei';
@@ -9,6 +10,7 @@ import SharedModule3DView from './3d/SharedModule3DView';
 
 
 export function HeatedBedConfig() {
+  const { t } = useTranslation();
   const { robots, updateRobot } = useHydraStore();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const selectedRobot = robots.find(r => r.id === selectedRobotId);

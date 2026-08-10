@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { type RobotState, useHydraStore, type RobotRole, type ToolType, type RobotModel } from '../store';
 import { RotateCcw,  Power, Droplets, ArrowUp, ArrowDown, ShieldAlert, Save, Plus, Play, Square, Crosshair, RefreshCw, Upload, Maximize2, Minimize2, Camera as CameraIcon, Trash2  } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -40,11 +41,44 @@ const URTC_TOOLS: ToolType[] = [
 ];
 
 export function RobotDetail({ robot }: { robot: RobotState }) {
-  const { updateRobot, saveKinematics, loadKinematics, settings, robots } = useHydraStore();
+  const { t } = useTranslation();
+  const { updateRobot, saveKinematics, loadKinematics, settings, robots, updateSettings } = useHydraStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [jogStep, setJogStep] = useState<number>(1);
   const [selectedExample, setSelectedExample] = useState<string>('');
   
+  const [rightPanelWidth, setRightPanelWidth] = useState(settings.uiLayout?.rightPanelWidth || 320);
+  const [isResizingRightPanel, setIsResizingRightPanel] = useState(false);
+  const rightPanelResizeStartRef = useRef({ width: 0, x: 0 });
+
+  useEffect(() => {
+    const handleMove = (e: PointerEvent) => {
+      if (isResizingRightPanel) {
+        const dx = rightPanelResizeStartRef.current.x - e.clientX;
+        const newWidth = Math.max(250, Math.min(800, rightPanelResizeStartRef.current.width + dx));
+        setRightPanelWidth(newWidth);
+      }
+    };
+    const handleUp = () => {
+      setIsResizingRightPanel(false);
+      updateSettings({
+        uiLayout: {
+          ...settings.uiLayout,
+          rightPanelWidth: rightPanelWidth,
+        }
+      });
+    };
+    
+    if (isResizingRightPanel) {
+      window.addEventListener('pointermove', handleMove);
+      window.addEventListener('pointerup', handleUp);
+    }
+    return () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+    };
+  }, [isResizingRightPanel, rightPanelWidth, settings.uiLayout, updateSettings]);
+
   const [isPlaying, setIsPlaying] = useState(false);
   const isPlayingRef = useRef(false);
   const [rightTab, setRightTab] = useState<'trajectories' | 'config' | 'io'>('trajectories');
@@ -322,6 +356,32 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
       const duration = baseDuration / (playbackSpeedRef.current / 100);
       const steps = Math.max(1, Math.floor(duration / 16)); // ~60fps
       
+      // We use a Web Worker to act as an unthrottled timer for background tab playback
+      const workerCode = `
+        let timer;
+        self.onmessage = function(e) {
+          if (e.data === 'start') {
+            timer = setInterval(() => self.postMessage('tick'), 16);
+          } else if (e.data === 'stop') {
+            clearInterval(timer);
+          }
+        };
+      `;
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      const workerUrl = URL.createObjectURL(blob);
+      const timerWorker = new Worker(workerUrl);
+      
+      timerWorker.postMessage('start');
+      
+      let stepCount = 0;
+      const stepPromise = () => new Promise<void>(resolve => {
+        const handler = () => {
+          timerWorker.removeEventListener('message', handler);
+          resolve();
+        };
+        timerWorker.addEventListener('message', handler);
+      });
+
       for (let step = 1; step <= steps; step++) {
         if (!isPlayingRef.current) break;
         const t = step / steps;
@@ -397,8 +457,12 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
           updateRobot(c.id, cPayload);
         });
         
-        await new Promise(r => setTimeout(r, 16));
+        await stepPromise();
       }
+      
+      timerWorker.postMessage('stop');
+      timerWorker.terminate();
+      URL.revokeObjectURL(workerUrl);
 
       currentPos = { 
         x: targetPt.x, y: targetPt.y, z: targetPt.z, 
@@ -461,7 +525,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
       <div className="flex items-center justify-between shrink-0">
         <h2 className="text-xl font-bold text-slate-100 flex items-center gap-3">
           {robot.name}
-          <span className="px-2 py-1 rounded font-semibold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">Online</span>
+          <span className="px-2 py-1 rounded font-semibold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">{robot.online ? t('robot_detail.status.connected', 'Online') : t('robot_detail.status.disconnected', 'Offline')}</span>
         </h2>
         
         <div className="flex items-center gap-3">
@@ -469,21 +533,21 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
             onClick={() => updateRobot(robot.id, { online: false })}
             className="flex items-center gap-2 px-6 py-3 min-h-[48px] bg-red-600 hover:bg-red-500 border border-red-400 text-white text-sm font-black uppercase tracking-widest rounded-lg transition-all shadow-[0_0_20px_rgba(220,38,38,0.6)] hover:shadow-[0_0_30px_rgba(220,38,38,0.9)] animate-pulse"
           >
-            <ShieldAlert size={18} className="fill-white/20" /> E-STOP
+            <ShieldAlert size={18} className="fill-white/20" /> {t('robot_detail.estop', 'E-STOP')}
           </button>
 
           <button 
             onClick={() => updateRobot(robot.id, { joints: { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0 }, pos: { ...robot.pos, tx: 0, ty: 0, trz: 0 } })}
             className="flex items-center gap-2 px-6 py-3 min-h-[48px] bg-yellow-400 hover:bg-yellow-300 border border-yellow-300 text-slate-950 text-sm font-black uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(250,204,21,0.8)] hover:shadow-[0_0_20px_rgba(250,204,21,1)]"
           >
-            HOME
+            {t('robot_detail.home', 'HOME')}
           </button>
           {robot.hasXYTable && (
             <button 
               onClick={() => updateRobot(robot.id, { xyTable: { ...robot.xyTable, pos: { x: 0, y: 0 }, worldPos: { x: 0, y: 0 } } })}
               className="flex items-center gap-2 px-6 py-3 min-h-[48px] bg-yellow-400 hover:bg-yellow-300 border border-yellow-300 text-slate-950 text-sm font-black uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(250,204,21,0.8)] hover:shadow-[0_0_20px_rgba(250,204,21,1)]"
             >
-              HOME XY
+              {t('robot_detail.home_xy', 'HOME XY')}
             </button>
           )}
 
@@ -493,7 +557,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
               onClick={stopTrajectory}
               className="flex justify-center items-center gap-2 px-6 py-3 min-h-[48px] bg-rose-500 text-slate-950 font-bold text-sm uppercase tracking-widest rounded-lg transition-colors shadow-[0_0_15px_rgba(255,102,0,0.6)] border border-rose-400"
             >
-              <Square size={16} className="fill-slate-950" /> Stop
+              <Square size={16} className="fill-slate-950" /> {t('robot_detail.stop', 'Stop')}
             </button>
           ) : (
             <button 
@@ -501,7 +565,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
               disabled={!hasAnyPoints}
               className="flex justify-center items-center gap-2 px-6 py-3 min-h-[48px] bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold text-sm uppercase tracking-widest rounded-lg transition-colors shadow-[0_0_15px_rgba(0,255,102,0.6)] border border-emerald-400"
             >
-              <Play size={16} className="fill-slate-950" /> {isStartAll ? 'Start All' : 'Start'}
+              <Play size={16} className="fill-slate-950" /> {isStartAll ? t('robot_detail.start_all', 'Start All') : t('robot_detail.start', 'Start')}
             </button>
           )}
 
@@ -557,20 +621,20 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                 className={`px-3 py-1.5 text-xs font-semibold rounded shadow-md border ${controlMode === 'translate' ? 'bg-sky-500 text-white border-sky-400' : 'bg-slate-950/80 backdrop-blur text-slate-300 hover:bg-slate-900 border-slate-800'}`}
                 onClick={() => toggleControl('translate')}
               >
-                Move
+                {t('robot_detail.move', 'Move')}
               </button>
               <button 
                 className={`px-3 py-1.5 text-xs font-semibold rounded shadow-md border ${controlMode === 'rotate' ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-slate-950/80 backdrop-blur text-slate-300 hover:bg-slate-900 border-slate-800'}`}
                 onClick={() => toggleControl('rotate')}
               >
-                Rotate
+                {t('robot_detail.rotate', 'Rotate')}
               </button>
 
               <button 
                 className={`px-3 py-1.5 text-xs font-semibold rounded shadow-md border ${controlMode === 'scale' ? 'bg-amber-500 text-white border-amber-400' : 'bg-slate-950/80 backdrop-blur text-slate-300 hover:bg-slate-900 border-slate-800'}`}
                 onClick={() => toggleControl('scale')}
               >
-                Resize
+                {t('robot_detail.resize', 'Resize')}
               </button>
 
               <span className="bg-slate-950/80 backdrop-blur font-mono font-bold text-slate-300 text-xs px-3 py-1.5 rounded border border-slate-800 shadow-md">
@@ -638,37 +702,70 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
           </div>
 
           {/* Joint Controls */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shrink-0 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
-              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
-                <button
-                  onClick={() => setJogMode('joint')}
-                  className={cn("px-6 py-2 min-h-[44px] rounded-md text-sm font-bold uppercase tracking-wider transition-colors", jogMode === 'joint' ? "bg-sky-500/20 text-sky-400 glow-border-sky" : "text-slate-400 hover:text-slate-300")}
-                >
-                  Joints
-                </button>
-                <button
-                  onClick={() => setJogMode('cartesian')}
-                  className={cn("px-6 py-2 min-h-[44px] rounded-md text-sm font-bold uppercase tracking-wider transition-colors", jogMode === 'cartesian' ? "bg-sky-500/20 text-sky-400 glow-border-sky" : "text-slate-400 hover:text-slate-300")}
-                >
-                  Cartesian
-                </button>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Step:</span>
+          <div className={cn("bg-slate-900 border border-slate-800 rounded-xl p-4 shrink-0 shadow-sm", isFullscreen && "hidden")}>
+            <div className="flex flex-wrap items-center justify-between mb-4 gap-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                  <button
+                    onClick={() => setJogMode('joint')}
+                    className={cn("px-6 py-2 min-h-[44px] rounded-md text-sm font-bold uppercase tracking-wider transition-colors", jogMode === 'joint' ? "bg-sky-500/20 text-sky-400 glow-border-sky" : "text-slate-400 hover:text-slate-300")}
+                  >
+                    {t('robot_detail.joints', 'Joints')}
+                  </button>
+                  <button
+                    onClick={() => setJogMode('cartesian')}
+                    className={cn("px-6 py-2 min-h-[44px] rounded-md text-sm font-bold uppercase tracking-wider transition-colors", jogMode === 'cartesian' ? "bg-sky-500/20 text-sky-400 glow-border-sky" : "text-slate-400 hover:text-slate-300")}
+                  >
+                    {t('robot_detail.cartesian', 'Cartesian')}
+                  </button>
+                </div>
                 
-                    <select value={jogStep} onChange={e => setJogStep(Number(e.target.value))} className="bg-slate-950 border border-slate-800 rounded p-1 text-sm outline-none font-mono">
-                  <option value={0.1}>0.1</option>
-                  <option value={1}>1</option>
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={22.5}>22.5</option>
-                  <option value={25}>25</option>
-                  <option value={45}>45</option>
-                  <option value={50}>50</option>
-                  <option value={90}>90</option>
-                  <option value={100}>100</option>
-                </select>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={handleAddPoint}
+                    className="px-4 py-2 min-h-[44px] bg-sky-500/20 hover:bg-sky-500/30 text-sky-400 border border-sky-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors"
+                  >
+                    {t('robot_detail.add_point', '+ Add Point')}
+                  </button>
+                  <button 
+                    onClick={() => updateRobot(robot.id, { recordedPoints: [] })}
+                    className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 min-h-[44px]">
+                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('robot_detail.speed', 'Speed:')}</span>
+                  <input 
+                    type="range" 
+                    min="10" 
+                    max="300" 
+                    step="10" 
+                    value={playbackSpeed} 
+                    onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
+                    className="w-24 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500"
+                  />
+                  <span className="text-xs font-mono text-sky-400 w-8">{playbackSpeed}%</span>
+                </div>
+
+                <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 min-h-[44px]">
+                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('robot_detail.step', 'Step:')}</span>
+                  <select value={jogStep} onChange={e => setJogStep(Number(e.target.value))} className="bg-transparent border-none text-sm outline-none font-mono text-slate-200">
+                    <option value={0.1}>0.1</option>
+                    <option value={1}>1</option>
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={22.5}>22.5</option>
+                    <option value={25}>25</option>
+                    <option value={45}>45</option>
+                    <option value={50}>50</option>
+                    <option value={90}>90</option>
+                    <option value={100}>100</option>
+                  </select>
+                </div>
               </div>
             </div>
             
@@ -708,190 +805,120 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
 
             {hasXYTable && (
               <div className="mt-4 pt-4 border-t border-slate-800">
-                <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wider"><Crosshair size={16} /> XY Table Controls</h3>
+                <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wider"><Crosshair size={16} /> {t('robot_detail.xy_table_controls', 'XY Table Controls')}</h3>
                 <div className="grid grid-cols-2 gap-3">
-                  {(['tx', 'ty'] as const).map(axis => (
+                  {(['tx', 'ty'] as const).map(axis => {
+                    const maxVal = axis === 'tx' ? (robot.xyTable?.tableSize?.width || 500) : (robot.xyTable?.tableSize?.length || 500);
+                    return (
                     <div key={axis} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
                       <div className="flex justify-between items-center">
                         <span className="text-xs font-bold text-slate-400 uppercase">{axis}</span>
                         <span className="text-xs font-mono text-sky-400">{robot.pos[axis]?.toFixed(2) || 0}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: (robot.pos[axis] || 0) - jogStep } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">-</button>
-                        <input type="range" min="-1000" max="1000" value={robot.pos[axis] || 0} onChange={e => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: Number(e.target.value) } })} className="flex-1" />
-                        <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: (robot.pos[axis] || 0) + jogStep } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">+</button>
+                        <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: Math.max(0, (robot.pos[axis] || 0) - jogStep) } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">-</button>
+                        <input type="range" min="0" max={maxVal} value={robot.pos[axis] || 0} onChange={e => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: Number(e.target.value) } })} className="flex-1" />
+                        <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: Math.min(maxVal, (robot.pos[axis] || 0) + jogStep) } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">+</button>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right Panel */}
-        <div className={cn("w-full lg:w-80 flex flex-col shrink-0 min-h-0 bg-slate-950 border border-slate-800 rounded-xl overflow-hidden", isFullscreen && "hidden")}>
-          <div className="flex items-center border-b border-slate-800 bg-slate-900 overflow-x-auto custom-scrollbar shrink-0">
-            <button 
-              onClick={() => setRightTab('trajectories')} 
-              className={cn("flex-1 py-3 px-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors", rightTab === 'trajectories' ? "text-sky-400 border-b-2 border-sky-400 bg-slate-800" : "text-slate-400 hover:text-slate-300")}
-            >
-              Points
-            </button>
-            <button 
-              onClick={() => setRightTab('config')} 
-              className={cn("flex-1 py-3 px-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors", rightTab === 'config' ? "text-sky-400 border-b-2 border-sky-400 bg-slate-800" : "text-slate-400 hover:text-slate-300")}
-            >
-              Config
-            </button>
-            <button 
-              onClick={() => setRightTab('io')} 
-              className={cn("flex-1 py-3 px-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors", rightTab === 'io' ? "text-sky-400 border-b-2 border-sky-400 bg-slate-800" : "text-slate-400 hover:text-slate-300")}
-            >
-              I/O
-            </button>
+        {!isFullscreen && (
+          <div 
+            className="hidden lg:flex w-2 cursor-col-resize hover:bg-slate-700/50 rounded mx-[-12px] z-10 shrink-0 items-center justify-center transition-colors touch-none"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              setIsResizingRightPanel(true);
+              rightPanelResizeStartRef.current = { width: rightPanelWidth, x: e.clientX };
+            }}
+          >
+            <div className="w-0.5 h-12 bg-slate-600 rounded-full" />
           </div>
+        )}
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 relative">
-            {rightTab === 'trajectories' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Examples</label>
-                  <select 
-                    className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
-                    value={selectedExample}
-                    onChange={(e) => loadExample(e.target.value)}
-                    disabled={isPlaying}
-                  >
-                    <option value="">-- Select --</option>
-                    {examples.map(e => (
-                      <option key={e.id} value={e.id}>{e.name} ({e.points.length} pts)</option>
-                    ))}
-                  </select>
-                </div>
-                {combinedBotsInfo.length > 0 && (
-                  <div className="pt-2 border-t border-slate-800">
-                    <label className="block text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider">Combined Robots</label>
-                    <div className="space-y-3">
-                      {combinedBotsInfo.map(bot => (
-                        <div key={bot.id} className="bg-slate-900/50 p-2 rounded border border-slate-800/50">
-                          <div className="text-xs text-slate-300 font-medium mb-1">{bot.name} ({bot.recordedPoints.length} pts)</div>
-                          <select 
-                            className="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-xs text-slate-200 outline-none"
-                            onChange={(e) => loadExampleForRobot(bot.id, e.target.value)}
-                            defaultValue=""
-                            disabled={isPlaying}
-                          >
-                            <option value="">-- Select Example --</option>
-                            {examples.map(e => (
-                              <option key={e.id} value={e.id}>{e.name} ({e.points.length} pts)</option>
-                            ))}
-                          </select>
-                        </div>
+        {/* Right Panel */}
+        <div 
+          className={cn("w-full lg:w-auto flex flex-col shrink-0 min-h-0 gap-4 transition-all duration-75", isFullscreen && "hidden")}
+          style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? rightPanelWidth : '100%' }}
+        >
+          {/* Top Panel: Config, I/O, Points */}
+          <div className="flex flex-col flex-1 bg-slate-950 border border-slate-800 rounded-xl overflow-hidden min-h-0">
+            <div className="flex items-center border-b border-slate-800 bg-slate-900 overflow-x-auto custom-scrollbar shrink-0">
+              <button 
+                onClick={() => setRightTab('trajectories')} 
+                className={cn("flex-1 py-3 px-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors", rightTab === 'trajectories' ? "text-sky-400 border-b-2 border-sky-400 bg-slate-800" : "text-slate-400 hover:text-slate-300")}
+              >
+                {t('robot_detail.points', 'Points')}
+              </button>
+              <button 
+                onClick={() => setRightTab('config')} 
+                className={cn("flex-1 py-3 px-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors", rightTab === 'config' ? "text-sky-400 border-b-2 border-sky-400 bg-slate-800" : "text-slate-400 hover:text-slate-300")}
+              >
+                {t('robot_detail.config', 'Config')}
+              </button>
+              <button 
+                onClick={() => setRightTab('io')} 
+                className={cn("flex-1 py-3 px-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors", rightTab === 'io' ? "text-sky-400 border-b-2 border-sky-400 bg-slate-800" : "text-slate-400 hover:text-slate-300")}
+              >
+                {t('robot_detail.io', 'I/O')}
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 relative">
+              {rightTab === 'trajectories' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">{t('robot_detail.examples', 'Examples')}</label>
+                    <select 
+                      className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
+                      value={selectedExample}
+                      onChange={(e) => loadExample(e.target.value)}
+                      disabled={isPlaying}
+                    >
+                      <option value="">-- Select --</option>
+                      {examples.map(e => (
+                        <option key={e.id} value={e.id}>{e.name} ({e.points.length} pts)</option>
                       ))}
-                    </div>
+                    </select>
                   </div>
-                )}
-                <div>
-                  <div className="flex justify-between text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">
-                    <span>Speed</span>
-                    <span className="text-sky-400">{playbackSpeed}%</span>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="10" 
-                    max="300" 
-                    step="10" 
-                    value={playbackSpeed} 
-                    onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
-                    className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-sky-500"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={handleAddPoint}
-                    className="flex-1 py-2 bg-sky-500/20 hover:bg-sky-500/30 text-sky-400 border border-sky-500/30 rounded text-sm font-bold uppercase tracking-wider transition-colors"
-                  >
-                    + Add Point
-                  </button>
-                  <button 
-                    onClick={() => updateRobot(robot.id, { recordedPoints: [] })}
-                    className="py-2 px-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-sm font-bold uppercase tracking-wider transition-colors"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-                
-                <div className="space-y-2">
-                  {robot.recordedPoints.map((pt, i) => (
-                    <div id={`step-${robot.id}-${i}`} key={i} className={cn("bg-slate-900 border rounded p-2 text-xs flex flex-col gap-1 transition-colors", activeStep === i ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]" : "border-slate-800")}>
-                      <div className="flex justify-between items-center border-b border-slate-800/50 pb-1 mb-1">
-                        <div className="flex items-center gap-2">
-                          {activeStep === i ? (
-                            <Play size={12} className="text-emerald-400 animate-pulse fill-emerald-400" />
-                          ) : (
-                            <span className="w-3" />
-                          )}
-                          <span className={cn("font-mono font-bold", activeStep === i ? "text-emerald-400" : "text-slate-400")}>STEP {i}</span>
-                        </div>
-                        <button onClick={() => {
-                          const newPts = [...robot.recordedPoints];
-                          newPts.splice(i, 1);
-                          updateRobot(robot.id, { recordedPoints: newPts });
-                        }} className="text-slate-500 hover:text-rose-400 p-1">
-                          <Trash2 size={14} />
-                        </button>
+                  {combinedBotsInfo.length > 0 && (
+                    <div className="pt-2 border-t border-slate-800">
+                      <label className="block text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider">{t('robot_detail.combined_robots', 'Combined Robots')}</label>
+                      <div className="space-y-3">
+                        {combinedBotsInfo.map(bot => (
+                          <div key={bot.id} className="bg-slate-900/50 p-2 rounded border border-slate-800/50">
+                            <div className="text-xs text-slate-300 font-medium mb-1">{bot.name} ({bot.recordedPoints.length} pts)</div>
+                            <select 
+                              className="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-xs text-slate-200 outline-none"
+                              onChange={(e) => loadExampleForRobot(bot.id, e.target.value)}
+                              defaultValue=""
+                              disabled={isPlaying}
+                            >
+                              <option value="">-- Select Example --</option>
+                              {examples.map(e => (
+                                <option key={e.id} value={e.id}>{e.name} ({e.points.length} pts)</option>
+                              ))}
+                            </select>
+                          </div>
+                        ))}
                       </div>
-                      
-                      <div className="grid grid-cols-6 gap-x-2 gap-y-1 font-mono text-[10px]">
-                        <span className="text-slate-500 flex justify-between"><span>X:</span><span className="text-sky-400">{pt.x.toFixed(1)}</span></span>
-                        <span className="text-slate-500 flex justify-between"><span>Y:</span><span className="text-sky-400">{pt.y.toFixed(1)}</span></span>
-                        <span className="text-slate-500 flex justify-between"><span>Z:</span><span className="text-sky-400">{pt.z.toFixed(1)}</span></span>
-                        <span className="text-slate-500 flex justify-between"><span>A:</span><span className="text-sky-400">{pt.a.toFixed(1)}</span></span>
-                        <span className="text-slate-500 flex justify-between"><span>B:</span><span className="text-sky-400">{pt.b.toFixed(1)}</span></span>
-                        <span className="text-slate-500 flex justify-between"><span>C:</span><span className="text-sky-400">{pt.c.toFixed(1)}</span></span>
-                      </div>
-                      
-                      {(pt.j1 !== undefined || (pt.tx !== undefined && pt.ty !== undefined)) && (
-                        <div className="grid grid-cols-6 gap-x-2 gap-y-1 font-mono text-[10px] mt-1 border-t border-slate-800/50 pt-1">
-                          {pt.j1 !== undefined ? (
-                            <>
-                              <span className="text-slate-500 flex justify-between"><span>J1:</span><span className="text-indigo-400">{pt.j1?.toFixed(1)}</span></span>
-                              <span className="text-slate-500 flex justify-between"><span>J2:</span><span className="text-indigo-400">{pt.j2?.toFixed(1)}</span></span>
-                              <span className="text-slate-500 flex justify-between"><span>J3:</span><span className="text-indigo-400">{pt.j3?.toFixed(1)}</span></span>
-                              <span className="text-slate-500 flex justify-between"><span>J4:</span><span className="text-indigo-400">{pt.j4?.toFixed(1)}</span></span>
-                              <span className="text-slate-500 flex justify-between"><span>J5:</span><span className="text-indigo-400">{pt.j5?.toFixed(1)}</span></span>
-                              <span className="text-slate-500 flex justify-between"><span>J6:</span><span className="text-indigo-400">{pt.j6?.toFixed(1)}</span></span>
-                            </>
-                          ) : (
-                            <span className="col-span-6"></span>
-                          )}
-                          {pt.tx !== undefined && pt.ty !== undefined && (
-                            <>
-                              <span className="text-slate-500 flex justify-between col-start-1"><span>TX:</span><span className="text-amber-400">{pt.tx?.toFixed(1)}</span></span>
-                              <span className="text-slate-500 flex justify-between col-start-2"><span>TY:</span><span className="text-amber-400">{pt.ty?.toFixed(1)}</span></span>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {robot.recordedPoints.length === 0 && (
-                    <div className="text-center text-slate-500 py-4 text-sm">
-                      No points recorded
                     </div>
                   )}
                 </div>
-              </div>
-            )}
+              )}
 
-            {rightTab === 'config' && (
-              <div className="space-y-6">
-                
-                <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 mt-4">
-                  <h4 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Model & Tools</h4>
+              {rightTab === 'config' && (
+                <div className="space-y-6">
                   
-                  <div className="flex flex-col gap-2">
+                  <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 mt-4">
+                    <h4 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Model & Tools</h4>
+                    
+                    <div className="flex flex-col gap-2">
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Model</label>
                     <select 
                       value={robot.model}
@@ -969,71 +996,142 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                   </p>
                 </div>
               </div>
-            )}
+              )}
 
 
-            {rightTab === 'io' && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={() => toggleValve(0)}
-                    className={cn("flex flex-col items-center justify-center min-h-[64px] py-2 px-1 rounded-lg border transition-colors", 
-                      robot.valves[0] ? "bg-sky-500/10 text-sky-400 glow-border-sky" : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-800 hover:glow-border-sky transition-all hover:glow-border-sky hover:text-sky-400 transition-all"
-                    )}
-                  >
-                    <Droplets size={20} className="mb-2" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Valve 1</span>
-                  </button>
-                  <button 
-                    onClick={() => toggleValve(1)}
-                    className={cn("flex flex-col items-center justify-center min-h-[64px] py-2 px-1 rounded-lg border transition-colors", 
-                      robot.valves[1] ? "bg-sky-500/10 text-sky-400 glow-border-sky" : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-800 hover:glow-border-sky transition-all hover:glow-border-sky hover:text-sky-400 transition-all"
-                    )}
-                  >
-                    <Droplets size={20} className="mb-2" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Valve 2</span>
-                  </button>
-                </div>
+              {rightTab === 'io' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-3">
+                    <button 
+                      onClick={() => toggleValve(0)}
+                      className={cn("flex flex-col items-center justify-center min-h-[64px] py-2 px-1 rounded-lg border transition-colors", 
+                        robot.valves[0] ? "bg-sky-500/10 text-sky-400 glow-border-sky" : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-800 hover:glow-border-sky transition-all hover:glow-border-sky hover:text-sky-400 transition-all"
+                      )}
+                    >
+                      <Droplets size={20} className="mb-2" />
+                      <span className="text-xs font-semibold uppercase tracking-wider">Valve 1</span>
+                    </button>
+                    <button 
+                      onClick={() => toggleValve(1)}
+                      className={cn("flex flex-col items-center justify-center min-h-[64px] py-2 px-1 rounded-lg border transition-colors", 
+                        robot.valves[1] ? "bg-sky-500/10 text-sky-400 glow-border-sky" : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-800 hover:glow-border-sky transition-all hover:glow-border-sky hover:text-sky-400 transition-all"
+                      )}
+                    >
+                      <Droplets size={20} className="mb-2" />
+                      <span className="text-xs font-semibold uppercase tracking-wider">Valve 2</span>
+                    </button>
+                  </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={() => togglePump(0)}
-                    className={cn("flex flex-col items-center justify-center min-h-[64px] py-2 px-1 rounded-lg border transition-colors", 
-                      robot.pumps[0] ? "bg-amber-500/10 border-amber-500/50 text-amber-400" : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-800 hover:glow-border-sky transition-all hover:glow-border-sky hover:text-sky-400 transition-all"
-                    )}
-                  >
-                    <Power size={20} className="mb-2" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Vac 1</span>
-                  </button>
-                  <button 
-                    onClick={() => togglePump(1)}
-                    className={cn("flex flex-col items-center justify-center min-h-[64px] py-2 px-1 rounded-lg border transition-colors", 
-                      robot.pumps[1] ? "bg-amber-500/10 border-amber-500/50 text-amber-400" : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-800 hover:glow-border-sky transition-all hover:glow-border-sky hover:text-sky-400 transition-all"
-                    )}
-                  >
-                    <Power size={20} className="mb-2" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Vac 2</span>
-                  </button>
-                </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button 
+                      onClick={() => togglePump(0)}
+                      className={cn("flex flex-col items-center justify-center min-h-[64px] py-2 px-1 rounded-lg border transition-colors", 
+                        robot.pumps[0] ? "bg-amber-500/10 border-amber-500/50 text-amber-400" : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-800 hover:glow-border-sky transition-all hover:glow-border-sky hover:text-sky-400 transition-all"
+                      )}
+                    >
+                      <Power size={20} className="mb-2" />
+                      <span className="text-xs font-semibold uppercase tracking-wider">Vac 1</span>
+                    </button>
+                    <button 
+                      onClick={() => togglePump(1)}
+                      className={cn("flex flex-col items-center justify-center min-h-[64px] py-2 px-1 rounded-lg border transition-colors", 
+                        robot.pumps[1] ? "bg-amber-500/10 border-amber-500/50 text-amber-400" : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-800 hover:glow-border-sky transition-all hover:glow-border-sky hover:text-sky-400 transition-all"
+                      )}
+                    >
+                      <Power size={20} className="mb-2" />
+                      <span className="text-xs font-semibold uppercase tracking-wider">Vac 2</span>
+                    </button>
+                  </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-800">
-                  <h4 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Endstops</h4>
-                  <div className="flex gap-2">
-                    {(['x1', 'x2', 'y1', 'y2', 'z0'] as const).map(axis => (
-                      <div key={axis} className={cn(
-                        "flex-1 py-3 min-h-[48px] rounded-lg flex items-center justify-center gap-2 text-sm border font-mono font-bold uppercase",
-                        robot.endstops[axis] 
-                          ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
-                          : "bg-slate-950 border-slate-800 text-slate-500"
-                      )}>
-                        <div className={cn("w-2.5 h-2.5 rounded-full", robot.endstops[axis] ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" : "bg-slate-700")} />
-                        {axis}
-                      </div>
-                    ))}
+                  <div className="mt-4 pt-4 border-t border-slate-800">
+                    <h4 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Endstops</h4>
+                    <div className="flex gap-2">
+                      {(['x1', 'x2', 'y1', 'y2', 'z0'] as const).map(axis => (
+                        <div key={axis} className={cn(
+                          "flex-1 py-3 min-h-[48px] rounded-lg flex items-center justify-center gap-2 text-sm border font-mono font-bold uppercase",
+                          robot.endstops[axis] 
+                            ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                            : "bg-slate-950 border-slate-800 text-slate-500"
+                        )}>
+                          <div className={cn("w-2.5 h-2.5 rounded-full", robot.endstops[axis] ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" : "bg-slate-700")} />
+                          {axis}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Bottom Panel: Points & Trajectories Table */}
+          <div className="flex flex-col flex-[1.2] bg-slate-950 border border-slate-800 rounded-xl overflow-hidden min-h-0">
+            <div className="p-3 bg-slate-900 border-b border-slate-800 shrink-0">
+              <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">Points Table</span>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 relative">
+              <div className="space-y-2">
+                {robot.recordedPoints.map((pt, i) => (
+                  <div id={`step-${robot.id}-${i}`} key={i} className={cn("bg-slate-900 border rounded p-2 text-xs flex flex-col gap-1 transition-colors", activeStep === i ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]" : "border-slate-800")}>
+                    <div className="flex justify-between items-center border-b border-slate-800/50 pb-1 mb-1">
+                      <div className="flex items-center gap-2">
+                        {activeStep === i ? (
+                          <Play size={12} className="text-emerald-400 animate-pulse fill-emerald-400" />
+                        ) : (
+                          <span className="w-3" />
+                        )}
+                        <span className={cn("font-mono font-bold", activeStep === i ? "text-emerald-400" : "text-slate-400")}>STEP {i}</span>
+                      </div>
+                      <button onClick={() => {
+                        const newPts = [...robot.recordedPoints];
+                        newPts.splice(i, 1);
+                        updateRobot(robot.id, { recordedPoints: newPts });
+                      }} className="text-slate-500 hover:text-rose-400 p-1">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                    
+                    <div className="grid grid-cols-6 gap-x-2 gap-y-1 font-mono text-[10px]">
+                      <span className="text-slate-500 flex justify-between"><span>X:</span><span className="text-sky-400">{pt.x.toFixed(1)}</span></span>
+                      <span className="text-slate-500 flex justify-between"><span>Y:</span><span className="text-sky-400">{pt.y.toFixed(1)}</span></span>
+                      <span className="text-slate-500 flex justify-between"><span>Z:</span><span className="text-sky-400">{pt.z.toFixed(1)}</span></span>
+                      <span className="text-slate-500 flex justify-between"><span>A:</span><span className="text-sky-400">{pt.a.toFixed(1)}</span></span>
+                      <span className="text-slate-500 flex justify-between"><span>B:</span><span className="text-sky-400">{pt.b.toFixed(1)}</span></span>
+                      <span className="text-slate-500 flex justify-between"><span>C:</span><span className="text-sky-400">{pt.c.toFixed(1)}</span></span>
+                    </div>
+                    
+                    {(pt.j1 !== undefined || (pt.tx !== undefined && pt.ty !== undefined)) && (
+                      <div className="grid grid-cols-6 gap-x-2 gap-y-1 font-mono text-[10px] mt-1 border-t border-slate-800/50 pt-1">
+                        {pt.j1 !== undefined ? (
+                          <>
+                            <span className="text-slate-500 flex justify-between"><span>J1:</span><span className="text-indigo-400">{pt.j1?.toFixed(1)}</span></span>
+                            <span className="text-slate-500 flex justify-between"><span>J2:</span><span className="text-indigo-400">{pt.j2?.toFixed(1)}</span></span>
+                            <span className="text-slate-500 flex justify-between"><span>J3:</span><span className="text-indigo-400">{pt.j3?.toFixed(1)}</span></span>
+                            <span className="text-slate-500 flex justify-between"><span>J4:</span><span className="text-indigo-400">{pt.j4?.toFixed(1)}</span></span>
+                            <span className="text-slate-500 flex justify-between"><span>J5:</span><span className="text-indigo-400">{pt.j5?.toFixed(1)}</span></span>
+                            <span className="text-slate-500 flex justify-between"><span>J6:</span><span className="text-indigo-400">{pt.j6?.toFixed(1)}</span></span>
+                          </>
+                        ) : (
+                          <span className="col-span-6"></span>
+                        )}
+                        {pt.tx !== undefined && pt.ty !== undefined && (
+                          <>
+                            <span className="text-slate-500 flex justify-between col-start-1"><span>TX:</span><span className="text-amber-400">{pt.tx?.toFixed(1)}</span></span>
+                            <span className="text-slate-500 flex justify-between col-start-2"><span>TY:</span><span className="text-amber-400">{pt.ty?.toFixed(1)}</span></span>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {robot.recordedPoints.length === 0 && (
+                  <div className="text-center text-slate-500 py-4 text-sm">
+                    No points recorded
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

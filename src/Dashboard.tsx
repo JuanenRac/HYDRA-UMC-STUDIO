@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { useHydraStore, createDefaultRobots, createDefaultCameras } from './store';
 import { 
@@ -16,16 +17,17 @@ function cn(...inputs: ClassValue[]) {
 import { RobotDetail } from './components/RobotDetail';
 import { CamerasView } from './components/CamerasView';
 import { XYTableConfig } from './components/XYTableConfig';
-import { JuanenPnPConfig } from './components/JuanenPnPConfig';
-import { LumenPnPConfig } from './components/LumenPnPConfig';
-import { JuanenCNCConfig } from './components/JuanenCNCConfig';
-import { JuanenLaserConfig } from './components/JuanenLaserConfig';
+import { PickAndPlace } from './components/PickAndPlace';
+
+import { CNC } from './components/CNC';
+import { Laser } from './components/Laser';
 import { VacuumTableConfig } from './components/VacuumTableConfig';
 import { HeatedBedConfig } from './components/HeatedBedConfig';
 import { ATCToolsConfig } from './components/ATCToolsConfig';
 import { RackConfigView } from './components/RackConfigView';
 
 export default function Dashboard() {
+  const { t, i18n } = useTranslation();
   const { controllers, activeControllerId, setActiveControllerId, activeController, updateController, robots, settings, updateSettings, updateRobot, addController, removeController, exportScene, importScene } = useHydraStore();
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
@@ -40,7 +42,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     document.body.dataset.theme = settings.theme;
-  }, [settings.theme]);
+    if (settings.language && i18n.language !== settings.language) {
+      i18n.changeLanguage(settings.language);
+    }
+  }, [settings.theme, settings.language, i18n]);
 
   return (
     <div className="w-full h-screen bg-slate-950 bg-electric-grid text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
@@ -59,26 +64,26 @@ export default function Dashboard() {
             
             <div className="flex flex-1 overflow-hidden">
               <div className="w-48 bg-slate-950 border-r border-slate-800 flex flex-col">
-                <button onClick={() => setConfigTab('controllers')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'controllers' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>Controllers</button>
-                <button onClick={() => setConfigTab('ui')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'ui' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>UI & Themes</button>
-                <button onClick={() => setConfigTab('robots')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'robots' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>Robot Names</button>
-                <button onClick={() => setConfigTab('models')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'models' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>Custom Models</button>
-                <button onClick={() => setConfigTab('integrations')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'integrations' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>Integrations</button>
+                <button onClick={() => setConfigTab('controllers')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'controllers' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.controllers', 'Controllers')}</button>
+                <button onClick={() => setConfigTab('ui')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'ui' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.ui_themes', 'UI & Themes')}</button>
+                <button onClick={() => setConfigTab('robots')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'robots' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.robot_names', 'Robot Names')}</button>
+                <button onClick={() => setConfigTab('models')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'models' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.custom_models', 'Custom Models')}</button>
+                <button onClick={() => setConfigTab('integrations')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'integrations' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.integrations', 'Integrations')}</button>
               </div>
 
               <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-900">
                 {configTab === 'controllers' && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Controller Management (Ethernet/IP)</h3>
+                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{t('config.controller_management', 'Controller Management (Ethernet/IP)')}</h3>
                     </div>
                     <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden">
                       <table className="w-full text-left text-sm">
                         <thead className="bg-slate-900 border-b border-slate-800">
                           <tr>
-                            <th className="px-4 py-2 font-medium text-slate-400">Name</th>
-                            <th className="px-4 py-2 font-medium text-slate-400">IP Address</th>
-                            <th className="px-4 py-2 font-medium text-slate-400">Status</th>
+                            <th className="px-4 py-2 font-medium text-slate-400">{t('config.name', 'Name')}</th>
+                            <th className="px-4 py-2 font-medium text-slate-400">{t('config.ip_address', 'IP Address')}</th>
+                            <th className="px-4 py-2 font-medium text-slate-400">{t('config.status', 'Status')}</th>
                             <th className="px-4 py-2 text-right"></th>
                           </tr>
                         </thead>
@@ -113,8 +118,8 @@ export default function Dashboard() {
                                   className="bg-transparent border-none outline-none font-semibold w-full"
                                   style={{ color: c.status === 'online' ? '#34d399' : '#f87171' }}
                                 >
-                                  <option value="online">Online</option>
-                                  <option value="offline">Offline</option>
+                                    <option value="online">{t('config.online', 'Online')}</option>
+                                  <option value="offline">{t('config.offline', 'Offline')}</option>
                                 </select>
                               </td>
                               <td className="px-4 py-2 text-right">
@@ -146,17 +151,17 @@ export default function Dashboard() {
                         })}
                         className="flex-1 flex items-center gap-2 px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold rounded transition-colors justify-center border border-slate-700"
                       >
-                        <Plus size={16} /> Add Node
+                        <Plus size={16} /> {t('config.add_node', 'Add Node')}
                       </button>
                       <button 
                         className="flex-1 flex items-center gap-2 px-4 py-2 text-sm bg-sky-900/40 hover:bg-sky-800/60 text-sky-400 font-bold rounded transition-colors justify-center border border-sky-700/50"
                       >
-                        <Search size={16} /> Auto-Search HYDRA-UMC
+                        <Search size={16} /> {t('config.auto_search', 'Auto-Search HYDRA-UMC')}
                       </button>
                     </div>
 
                     <div className="mt-6 space-y-4">
-                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Advanced Config</h3>
+                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{t('config.advanced_config', 'Advanced Config')}</h3>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
@@ -200,7 +205,7 @@ export default function Dashboard() {
                 {configTab === 'ui' && (
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">UI Theme</h3>
+                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">{t('config.theme', 'UI Theme')}</h3>
                       <select 
                         className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 min-h-[48px] text-sm text-slate-200 outline-none focus:border-sky-400 focus:glow-border-sky"
                         value={settings.theme}
@@ -229,9 +234,39 @@ export default function Dashboard() {
                       </select>
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Shared Resources Visibility</h3>
+                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">{t('config.language', 'Language')}</h3>
+                      <select 
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 min-h-[48px] text-sm text-slate-200 outline-none focus:border-sky-400 focus:glow-border-sky"
+                        value={settings.language}
+                        onChange={(e) => {
+                          updateSettings({ language: e.target.value });
+                          i18n.changeLanguage(e.target.value);
+                        }}
+                      >
+                        <option value="en">{t('config.language_en', 'English')}</option>
+                        <option value="es">{t('config.language_es', 'Spanish')}</option>
+                        <option value="de">{t('config.language_de', 'German')}</option>
+                        <option value="fr">{t('config.language_fr', 'French')}</option>
+                        <option value="it">{t('config.language_it', 'Italian')}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">{t('config.shared_resources', 'Shared Resources Visibility')}</h3>
                       <div className="space-y-2 bg-slate-950 p-4 rounded-lg border border-slate-800">
-                        {['Vision/Cameras', 'XY Table', 'ATC Tools', 'Rack', 'JuanenPnP', 'LumenPnP', 'JuanenCNC', 'JuanenLaser', 'Vacuum Table', 'Heated Bed'].map(module => (
+                        {['Vision/Cameras', 'XY Table', 'ATC Tools', 'Rack', 'PickAndPlace', 'CNC', 'Laser', 'Vacuum Table', 'Heated Bed'].map(module => {
+                          const moduleTitleMap: Record<string, string> = {
+                            'Vision/Cameras': t('dashboard.vision_cameras', 'Vision / Cameras'),
+                            'XY Table': t('modules.xy_table_title', 'XY Table'),
+                            'ATC Tools': t('modules.atc_title', 'ATC Tool Changer'),
+                            'Rack': t('modules.rack_manager_title', 'Rack Manager'),
+                            'PickAndPlace': t('modules.pick_and_place_title', 'Pick & Place'),
+                            'CNC': t('modules.cnc_title', 'CNC'),
+                            'Laser': t('modules.laser_title', 'Laser'),
+                            'Vacuum Table': t('modules.vacuum_table_title', 'Vacuum Table'),
+                            'Heated Bed': t('modules.heated_bed_title', 'Heated Bed'),
+                          };
+                          
+                          return (
                           <label key={module} className="flex items-center gap-3">
                             <input 
                               type="checkbox" 
@@ -245,9 +280,9 @@ export default function Dashboard() {
                               disabled={module === 'Vision/Cameras'}
                               className="w-4 h-4 rounded border-slate-700 text-sky-500 focus:ring-sky-500 bg-slate-900"
                             />
-                            <span className="text-sm text-slate-300">{module} {module === 'Vision/Cameras' && '(Required)'}</span>
+                            <span className="text-sm text-slate-300">{moduleTitleMap[module]} {module === 'Vision/Cameras' && t('config.vision_required', '(Required)')}</span>
                           </label>
-                        ))}
+                        )})}
                       </div>
                     </div>
                   </div>
@@ -255,7 +290,7 @@ export default function Dashboard() {
 
                 {configTab === 'robots' && (
                   <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Rename Robots</h3>
+                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{t('config.rename_robots', 'Rename Robots')}</h3>
                     <div className="space-y-2">
                       {activeController.robots.map(r => (
                         <div key={r.id} className="flex items-center gap-3 bg-slate-950 p-3 rounded-lg border border-slate-800">
@@ -275,7 +310,7 @@ export default function Dashboard() {
                 {configTab === 'models' && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Custom Models</h3>
+                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{t('config.custom_models', 'Custom Models')}</h3>
                     </div>
                     <div className="space-y-2">
                       {settings.customModels.map((model, idx) => (
@@ -305,7 +340,7 @@ export default function Dashboard() {
                         onClick={() => updateSettings({ customModels: [...settings.customModels, 'New Custom Model'] })}
                         className="flex items-center gap-2 px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold rounded transition-colors w-full justify-center border border-slate-700"
                       >
-                        <Plus size={16} /> Add Custom Model
+                        <Plus size={16} /> {t('config.add_custom_model', 'Add Custom Model')}
                       </button>
                     </div>
                   </div>
@@ -313,7 +348,7 @@ export default function Dashboard() {
 
                 {configTab === 'integrations' && (
                   <div className="space-y-6">
-                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Software Integrations</h3>
+                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{t('config.software_integrations', 'Software Integrations')}</h3>
                     
                     {/* OpenPNP */}
                     <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
@@ -323,14 +358,14 @@ export default function Dashboard() {
                           <input type="checkbox" checked={settings.integrations?.openPnP?.enabled} 
                             onChange={(e) => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, enabled: e.target.checked } } })}
                             className="rounded bg-slate-900 border-slate-700 text-sky-500 focus:ring-sky-500" />
-                          Enabled
+                          {t('config.enabled', 'Enabled')}
                         </label>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <input placeholder="IP Address" value={settings.integrations?.openPnP?.ip} 
+                        <input placeholder={t('config.ip_address', 'IP Address')} value={settings.integrations?.openPnP?.ip} 
                           onChange={(e) => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, ip: e.target.value } } })}
                           className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-sky-500 text-slate-200" />
-                        <input placeholder="Port" type="number" value={settings.integrations?.openPnP?.port} 
+                        <input placeholder={t('config.port', 'Port')} type="number" value={settings.integrations?.openPnP?.port} 
                           onChange={(e) => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, port: parseInt(e.target.value) } } })}
                           className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-sky-500 text-slate-200" />
                       </div>
@@ -344,14 +379,14 @@ export default function Dashboard() {
                           <input type="checkbox" checked={settings.integrations?.prusaSlicer?.enabled} 
                             onChange={(e) => updateSettings({ integrations: { ...settings.integrations, prusaSlicer: { ...settings.integrations?.prusaSlicer, enabled: e.target.checked } } })}
                             className="rounded bg-slate-900 border-slate-700 text-orange-500 focus:ring-orange-500" />
-                          Enabled
+                          {t('config.enabled', 'Enabled')}
                         </label>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <input placeholder="IP Address" value={settings.integrations?.prusaSlicer?.ip} 
+                        <input placeholder={t('config.ip_address', 'IP Address')} value={settings.integrations?.prusaSlicer?.ip} 
                           onChange={(e) => updateSettings({ integrations: { ...settings.integrations, prusaSlicer: { ...settings.integrations?.prusaSlicer, ip: e.target.value } } })}
                           className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-orange-500 text-slate-200" />
-                        <input placeholder="Port" type="number" value={settings.integrations?.prusaSlicer?.port} 
+                        <input placeholder={t('config.port', 'Port')} type="number" value={settings.integrations?.prusaSlicer?.port} 
                           onChange={(e) => updateSettings({ integrations: { ...settings.integrations, prusaSlicer: { ...settings.integrations?.prusaSlicer, port: parseInt(e.target.value) } } })}
                           className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-orange-500 text-slate-200" />
                       </div>
@@ -365,7 +400,7 @@ export default function Dashboard() {
                           <input type="checkbox" checked={settings.integrations?.cnc?.enabled} 
                             onChange={(e) => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, enabled: e.target.checked } } })}
                             className="rounded bg-slate-900 border-slate-700 text-rose-500 focus:ring-rose-500" />
-                          Enabled
+                          {t('config.enabled', 'Enabled')}
                         </label>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
@@ -379,7 +414,7 @@ export default function Dashboard() {
                           <option value="LightBurn">LightBurn</option>
                           <option value="LaserGRBL">LaserGRBL</option>
                         </select>
-                        <input placeholder="Port" type="number" value={settings.integrations?.cnc?.port} 
+                        <input placeholder={t('config.port', 'Port')} type="number" value={settings.integrations?.cnc?.port} 
                           onChange={(e) => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, port: parseInt(e.target.value) } } })}
                           className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-rose-500 text-slate-200" />
                       </div>
@@ -391,7 +426,7 @@ export default function Dashboard() {
             </div>
 
             <div className="p-4 border-t border-slate-800 flex justify-end gap-3 bg-slate-950 shrink-0">
-              <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded transition-colors shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400 hover:shadow-[0_0_20px_rgba(0,229,255,0.8)]">Done</button>
+              <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded transition-colors shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400 hover:shadow-[0_0_20px_rgba(0,229,255,0.8)]">{t('config.done', 'DONE')}</button>
             </div>
           </div>
         </div>
@@ -416,11 +451,11 @@ export default function Dashboard() {
               title="Save Scene (All Robots)"
             >
               <Download size={18} />
-              <span className="text-sm">Save Scene</span>
+              <span className="text-sm">{t('dashboard.save_scene', 'Save Scene')}</span>
             </button>
             <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-300 cursor-pointer" title="Load Scene">
               <Upload size={18} />
-              <span className="text-sm">Load Scene</span>
+              <span className="text-sm">{t('dashboard.load_scene', 'Load Scene')}</span>
               <input type="file" accept=".json" onChange={importScene} className="hidden" />
             </label>
           </div>
@@ -429,11 +464,11 @@ export default function Dashboard() {
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 transition-colors"
           >
             <Settings size={18} />
-            <span className="text-sm">Config</span>
+            <span className="text-sm">{t('dashboard.configure', 'Config')}</span>
           </button>
           <div className="flex items-center gap-3">
             <span className={cn("w-4 h-4 rounded-full animate-pulse", activeController?.status === 'online' ? "bg-emerald-500 shadow-[0_0_10px_rgba(0,255,102,0.5)]" : "bg-rose-500 shadow-[0_0_10px_rgba(255,102,0,0.5)]")} />
-            <span className={cn("tracking-wide font-bold", activeController?.status === 'online' ? "text-emerald-400" : "text-rose-400")}>{activeController?.status === 'online' ? 'System Online' : 'System Offline'}</span>
+            <span className={cn("tracking-wide font-bold", activeController?.status === 'online' ? "text-emerald-400" : "text-rose-400")}>{activeController?.status === 'online' ? t('dashboard.status.connected', 'System Online') : t('dashboard.status.disconnected', 'System Offline')}</span>
           </div>
           <select
             value={activeControllerId}
@@ -465,51 +500,48 @@ export default function Dashboard() {
                 onClick={() => setIsModulesMenuOpen(false)}
                 className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-slate-400 hover:text-slate-200 transition-colors uppercase tracking-wider mb-2"
               >
-                ← Back
+                ← {t('dashboard.back', 'Back')}
               </button>
               
               <div className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                Modules
+                {t('dashboard.modules', 'Modules')}
               </div>
               
               {settings.visibleModules?.includes('XY Table') && (
-                <NavItem icon={<Crosshair size={18} />} label="XY Table" active={activeTab === 'xytable'} onClick={() => setActiveTab('xytable')} />
+                <NavItem icon={<Crosshair size={18} />} label={t('modules.xy_table_title', 'XY Table')} active={activeTab === 'xytable'} onClick={() => setActiveTab('xytable')} />
               )}
               {settings.visibleModules?.includes('ATC Tools') && (
-                <NavItem icon={<Focus size={18} />} label="ATC Tools" active={activeTab === 'atc'} onClick={() => setActiveTab('atc')} />
+                <NavItem icon={<Focus size={18} />} label={t('modules.atc_title', 'ATC Tools')} active={activeTab === 'atc'} onClick={() => setActiveTab('atc')} />
               )}
               {settings.visibleModules?.includes('Rack') && (
-                <NavItem icon={<Layers size={18} />} label="Rack" active={activeTab === 'rack'} onClick={() => setActiveTab('rack')} />
+                <NavItem icon={<Layers size={18} />} label={t('modules.rack_manager_title', 'Rack')} active={activeTab === 'rack'} onClick={() => setActiveTab('rack')} />
               )}
-              {settings.visibleModules?.includes('JuanenPnP') && (
-                <NavItem icon={<Cpu size={18} />} label="JuanenPnP" active={activeTab === 'juanenpnp'} onClick={() => setActiveTab('juanenpnp')} />
+              {settings.visibleModules?.includes('PickAndPlace') && (
+                <NavItem icon={<Cpu size={18} />} label={t('modules.pick_and_place_title', 'Pick & Place')} active={activeTab === 'pickandplace'} onClick={() => setActiveTab('pickandplace')} />
               )}
-              {settings.visibleModules?.includes('LumenPnP') && (
-                <NavItem icon={<Cpu size={18} />} label="LumenPnP" active={activeTab === 'lumenpnp'} onClick={() => setActiveTab('lumenpnp')} />
+              {settings.visibleModules?.includes('CNC') && (
+                <NavItem icon={<PenTool size={18} />} label={t('modules.cnc_title', 'CNC')} active={activeTab === 'cnc'} onClick={() => setActiveTab('cnc')} />
               )}
-              {settings.visibleModules?.includes('JuanenCNC') && (
-                <NavItem icon={<PenTool size={18} />} label="JuanenCNC" active={activeTab === 'juanencnc'} onClick={() => setActiveTab('juanencnc')} />
-              )}
-              {settings.visibleModules?.includes('JuanenLaser') && (
-                <NavItem icon={<Zap size={18} />} label="JuanenLaser" active={activeTab === 'juanenlaser'} onClick={() => setActiveTab('juanenlaser')} />
+              {settings.visibleModules?.includes('Laser') && (
+                <NavItem icon={<Zap size={18} />} label={t('modules.laser_title', 'Laser')} active={activeTab === 'laser'} onClick={() => setActiveTab('laser')} />
               )}
               {settings.visibleModules?.includes('Vacuum Table') && (
-                <NavItem icon={<Wind size={18} />} label="Vacuum Table" active={activeTab === 'vacuumtable'} onClick={() => setActiveTab('vacuumtable')} />
+                <NavItem icon={<Wind size={18} />} label={t('modules.vacuum_table_title', 'Vacuum Table')} active={activeTab === 'vacuumtable'} onClick={() => setActiveTab('vacuumtable')} />
               )}
               {settings.visibleModules?.includes('Heated Bed') && (
-                <NavItem icon={<Thermometer size={18} />} label="Heated Bed" active={activeTab === 'heatedbed'} onClick={() => setActiveTab('heatedbed')} />
+                <NavItem icon={<Thermometer size={18} />} label={t('modules.heated_bed_title', 'Heated Bed')} active={activeTab === 'heatedbed'} onClick={() => setActiveTab('heatedbed')} />
               )}
             </div>
           ) : (
             <div className="flex flex-col gap-3 h-full animate-in slide-in-from-left-4 fade-in duration-300">
               <NavItem 
                 icon={<Activity size={18} />} 
-                label="Overview" 
+                label={t('dashboard.overview', 'Overview')} 
                 active={activeTab === 'overview'} 
                 onClick={() => setActiveTab('overview')} 
               />
               <div className="mt-3 mb-1 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                Networked Robots
+                {t('dashboard.networked_robots', 'Networked Robots')}
               </div>
               {robots.map(r => (
                 <button
@@ -534,13 +566,13 @@ export default function Dashboard() {
               ))}
               
               <div className="mt-3 mb-1 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                Shared Resources
+                {t('dashboard.shared_resources', 'Shared Resources')}
               </div>
               
               {settings.visibleModules?.includes('Vision/Cameras') && (
                 <NavItem 
                   icon={<Video size={18} />} 
-                  label="Vision / Cameras" 
+                  label={t('dashboard.vision_cameras', 'Vision / Cameras')} 
                   active={activeTab === 'cameras'} 
                   onClick={() => setActiveTab('cameras')} 
                 />
@@ -550,13 +582,13 @@ export default function Dashboard() {
                 onClick={() => setIsModulesMenuOpen(true)}
                 className={cn(
                   "flex items-center gap-4 px-4 py-4 min-h-[64px] rounded-xl font-medium text-lg transition-all",
-                  isModulesMenuOpen || ['xytable', 'atc', 'rack', 'juanenpnp', 'lumenpnp', 'juanencnc', 'juanenlaser', 'vacuumtable', 'heatedbed'].includes(activeTab)
+                  isModulesMenuOpen || ['xytable', 'atc', 'rack', 'pickandplace', 'cnc', 'laser', 'vacuumtable', 'heatedbed'].includes(activeTab)
                     ? "bg-sky-500/10 text-sky-400 glow-border-sky" 
                     : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
                 )}
               >
                 <Layers size={18} />
-                <span className="truncate">Modules</span>
+                <span className="truncate">{t('dashboard.modules', 'Modules')}</span>
               </button>
             </div>
           )}
@@ -571,10 +603,10 @@ export default function Dashboard() {
           {activeTab === 'atc' && <ATCToolsConfig />}
           {activeTab === 'rack' && <RackConfigView />}
 
-        {activeTab === 'juanenpnp' && <JuanenPnPConfig />}
-        {activeTab === 'lumenpnp' && <LumenPnPConfig />}
-        {activeTab === 'juanencnc' && <JuanenCNCConfig />}
-        {activeTab === 'juanenlaser' && <JuanenLaserConfig />}
+        {activeTab === 'pickandplace' && <PickAndPlace />}
+        
+        {activeTab === 'cnc' && <CNC />}
+        {activeTab === 'laser' && <Laser />}
         {activeTab === 'vacuumtable' && <VacuumTableConfig />}
         {activeTab === 'heatedbed' && <HeatedBedConfig />}
 
@@ -602,11 +634,12 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, labe
 }
 
 function OverviewPanel() {
+  const { t } = useTranslation();
   const { robots, cameras, updateRobot } = useHydraStore();
   
   return (
     <div className="w-full mx-auto space-y-6 px-2 2xl:px-8">
-      <h2 className="text-2xl font-semibold text-slate-100">Micro-Factory Status</h2>
+      <h2 className="text-2xl font-semibold text-slate-100">{t('dashboard.micro_factory_status', 'Micro-Factory Status')}</h2>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 2xl:gap-6">
         {robots.map(r => (
           <div key={r.id} className={cn(
@@ -618,7 +651,7 @@ function OverviewPanel() {
                 {r.name}
               </span>
               <button onClick={(e) => { e.stopPropagation(); updateRobot(r.id, { online: !r.online }) }} className={cn("px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider transition-colors", r.online ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20" : "bg-slate-800 text-slate-500 hover:text-slate-300 border border-slate-700 hover:border-slate-500")}>
-    {r.online ? 'Online' : 'Connect'}
+    {r.online ? t('dashboard.status.online', 'Online') : t('dashboard.connect', 'Connect')}
   </button>
             </div>
             
@@ -627,18 +660,18 @@ function OverviewPanel() {
               const hosts = robots.filter(other => other.combinedWith?.includes(r.id));
               if (hosts.length === 0) return null;
               return (
-                <div className="text-xs text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 px-2 py-1 rounded font-medium mt-1 mb-1 animate-pulse truncate" title={"Combined into: " + hosts.map(h => h.name).join(', ')}>
-                  Combined into {hosts.map(h => h.name).join(', ')}
+                <div className="text-xs text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 px-2 py-1 rounded font-medium mt-1 mb-1 animate-pulse truncate" title={t('dashboard.combined_into', 'Combined into ') + hosts.map(h => h.name).join(', ')}>
+                  {t('dashboard.combined_into', 'Combined into ')} {hosts.map(h => h.name).join(', ')}
                 </div>
               );
             })()}
             <div className="text-[11px] text-slate-400 grid grid-cols-[40px_1fr] gap-x-1 gap-y-1">
 
-              <div>Model:</div>
+              <div>{t('dashboard.model', 'Model:')}</div>
               <div className="text-slate-200 font-medium">{r.model}</div>
-              <div>Role:</div>
+              <div>{t('dashboard.role', 'Role:')}</div>
               <div className="text-slate-200 truncate">{r.role}</div>
-              <div>Tool:</div>
+              <div>{t('dashboard.tool', 'Tool:')}</div>
               <div className="text-slate-200 truncate">{r.tool}</div>
             </div>
 
@@ -652,7 +685,7 @@ function OverviewPanel() {
             
             {r.hasXYTable && (
               <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-amber-400 bg-amber-400/10 p-1 rounded border border-amber-500/20">
-                <Focus size={10} /> XY Assigned
+                <Focus size={10} /> {t('dashboard.xy_assigned', 'XY Assigned')}
               </div>
             )}
             {r.atc && (
@@ -677,12 +710,12 @@ function OverviewPanel() {
             )}
             {r.juanenCNC?.enabled && (
               <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-fuchsia-400 bg-fuchsia-400/10 p-1 rounded border border-fuchsia-500/20">
-                JuanenCNC
+                CNC: JuanenCNC
               </div>
             )}
             {r.juanenLaser?.enabled && (
               <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-red-400 bg-red-400/10 p-1 rounded border border-red-500/20">
-                JuanenLaser
+                Laser: JuanenLaser
               </div>
             )}
             {r.vacuumTable?.enabled && (
@@ -697,11 +730,11 @@ function OverviewPanel() {
             )}
             {cameras.find(c => c.id === r.id)?.connected ? (
               <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-emerald-400 bg-emerald-500/10 p-1 rounded border border-emerald-500/20">
-                <Video size={10} /> Camera Active
+                <Video size={10} /> {t('dashboard.camera_active', 'Camera Active')}
               </div>
             ) : (
               <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-slate-500 bg-slate-800 p-1 rounded border border-slate-700">
-                <Video size={10} /> Camera Offline
+                <Video size={10} /> {t('dashboard.camera_offline', 'Camera Offline')}
               </div>
             )}
           </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useHydraStore } from '../store';
+import { useTranslation } from 'react-i18next';
 import { RotateCcw, Crosshair, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Save, Maximize2, Plus } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Cylinder } from '@react-three/drei';
@@ -48,6 +49,7 @@ function XYTableVisualizer({ xyTable }: { xyTable: any }) {
 }
 
 export function XYTableConfig() {
+  const { t } = useTranslation();
   const { robots, updateRobot } = useHydraStore();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(robots[0]?.id || 1);
   const [jogStep, setJogStep] = useState<number>(10);

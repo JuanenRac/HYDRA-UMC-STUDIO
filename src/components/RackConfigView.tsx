@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useHydraStore, type RackConfig } from '../store';
 import { RotateCcw, Layers, MapPin, CheckSquare, Square, Settings2 } from 'lucide-react';
@@ -9,6 +10,7 @@ function cnm(...inputs: ClassValue[]) {
 }
 
 export function RackConfigView() {
+  const { t } = useTranslation();
   const { robots, updateRobot } = useHydraStore();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const selectedRobot = robots.find(r => r.id === selectedRobotId);

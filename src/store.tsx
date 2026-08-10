@@ -159,6 +159,11 @@ export interface SystemSettings {
   customModels: string[];
   autoConnectRobots: boolean;
   theme: string;
+  language: string;
+  uiLayout?: {
+    rightPanelWidth?: number;
+    pointsTableHeight?: number;
+  };
 }
 
 interface HydraStoreContextType {
@@ -323,7 +328,12 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     },
     customModels: [],
     autoConnectRobots: false,
-    theme: "Dark Mode (Default)"
+    theme: "Dark Mode (Default)",
+    language: "en",
+    uiLayout: {
+      rightPanelWidth: 320,
+      pointsTableHeight: 300,
+    }
     };
   });
 
