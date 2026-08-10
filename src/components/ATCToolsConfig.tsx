@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useHydraStore, type ATCGrid, type ToolType, type ATCConfig } from '../store';
-import { Settings, Grid3X3, CircleDashed, MapPin, ChevronDown, ChevronUp, Save, Upload, Server } from 'lucide-react';
+import { RotateCcw, Settings, Grid3X3, CircleDashed, MapPin, ChevronDown, ChevronUp, Save, Upload, Server } from 'lucide-react';
 
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -79,13 +79,26 @@ export function ATCToolsConfig() {
   };
 
   if (!atcConfig) {
-    return (
+    
+  const handleReset = () => {
+    updateRobot(selectedRobot.id, {
+      atc: { ...defaultAtcConfig }
+    });
+  };
+
+  return (
       <div className="h-full flex flex-col space-y-4">
         <div className="flex items-center justify-between shrink-0">
           <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
             <Settings className="text-sky-400" size={20} /> ATC Tools Configuration
           </h2>
-          <select 
+          <div className="flex items-center gap-2">
+        {selectedRobot.atc && (
+          <button onClick={handleReset} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 text-sm flex items-center gap-2 transition-colors">
+            <RotateCcw size={16} /> Reset
+          </button>
+        )}
+        <select 
             className="bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-sm font-medium text-slate-200 focus:outline-none focus:border-sky-500"
             value={selectedRobotId}
             onChange={(e) => setSelectedRobotId(Number(e.target.value))}
@@ -94,6 +107,7 @@ export function ATCToolsConfig() {
               <option key={r.id} value={r.id}>{r.name} - {r.role}</option>
             ))}
           </select>
+      </div>
         </div>
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-8 flex flex-col items-center justify-center text-center flex-1">
           <Settings className="text-slate-600 mb-3" size={48} />

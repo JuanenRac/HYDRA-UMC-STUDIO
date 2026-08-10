@@ -7,6 +7,21 @@ function App() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
+    const handleInteraction = () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn('Could not request fullscreen', err);
+        });
+      }
+    };
+    document.addEventListener('click', handleInteraction, { once: true });
+    return () => {
+      document.removeEventListener('click', handleInteraction);
+    };
+  }, []);
+
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
     }, 10000);

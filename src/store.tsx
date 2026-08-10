@@ -295,6 +295,11 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return host;
   });
   const [settings, setSettings] = useState<SystemSettings>(() => {
+    let host = '192.168.1.100';
+    if (typeof window !== 'undefined' && window.location.hostname) {
+      host = window.location.hostname;
+    }
+    
     try {
       const saved = localStorage.getItem('hydra_settings');
       if (saved) return JSON.parse(saved);
@@ -302,9 +307,9 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return {
     visibleModules: ['Vision/Cameras', 'Robots', 'Macros/Tasks', 'Node Network', 'Settings'],
     integrations: {
-      openPnP: { enabled: false, ip: '127.0.0.1', port: 8080 },
-      slic3r: { enabled: false, ip: '127.0.0.1', port: 8080 },
-      prusaSlicer: { enabled: false, ip: '127.0.0.1', port: 8080 },
+      openPnP: { enabled: false, ip: host, port: 8080 },
+      slic3r: { enabled: false, ip: host, port: 8080 },
+      prusaSlicer: { enabled: false, ip: host, port: 8080 },
       cnc: { software: 'LinuxCNC', enabled: false, port: 8080 },
       laser: { software: 'LightBurn', enabled: false, port: 8080 },
     },

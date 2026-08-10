@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useHydraStore, type RackConfig } from '../store';
-import { Layers, MapPin, CheckSquare, Square, Settings2 } from 'lucide-react';
+import { RotateCcw, Layers, MapPin, CheckSquare, Square, Settings2 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -50,11 +50,44 @@ export function RackConfigView() {
 
   const renderRack = (rackId: 'rack1' | 'rack2', title: string) => {
     const rack = config[rackId];
-    return (
+    
+  const handleReset = () => {
+    updateRobot(selectedRobot.id, {
+      rackSystem: {
+        enabled: true,
+        rack1: {
+          type: 'Input',
+          capacity: 24,
+          usableSlots: Array(24).fill(true),
+          basePickupPos: { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, tx: 0, ty: 0 },
+          renderPos: { x: 300, y: 150 },
+          renderRot: 0,
+          renderScale: 1
+        },
+        rack2: {
+          type: 'Output',
+          capacity: 24,
+          usableSlots: Array(24).fill(true),
+          basePickupPos: { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, tx: 0, ty: 0 },
+          renderPos: { x: -300, y: 150 },
+          renderRot: 0,
+          renderScale: 1
+        }
+      }
+    });
+  };
+
+  return (
       <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
         <div className="p-3 bg-slate-900/50 border-b border-slate-800 flex items-center justify-between">
           <h3 className="font-semibold text-slate-200">{title}</h3>
-          <select 
+          <div className="flex items-center gap-2">
+        {config.enabled && (
+          <button onClick={handleReset} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 text-sm flex items-center gap-2 transition-colors">
+            <RotateCcw size={16} /> Reset
+          </button>
+        )}
+        <select 
             value={rack.type}
             onChange={(e) => updateRack(rackId, { type: e.target.value as any })}
             className="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 focus:border-sky-500 outline-none"
@@ -63,6 +96,7 @@ export function RackConfigView() {
             <option value="Input">Input Rack</option>
             <option value="Output">Output Rack</option>
           </select>
+      </div>
         </div>
         
         {rack.type !== 'None' && (

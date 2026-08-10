@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { type RobotState, useHydraStore, type RobotRole, type ToolType, type RobotModel } from '../store';
-import { Power, Droplets, ArrowUp, ArrowDown, ShieldAlert, Save, Plus, Play, Square, Crosshair, RefreshCw, Upload, Maximize2, Minimize2, Camera as CameraIcon, Trash2 } from 'lucide-react';
+import { RotateCcw,  Power, Droplets, ArrowUp, ArrowDown, ShieldAlert, Save, Plus, Play, Square, Crosshair, RefreshCw, Upload, Maximize2, Minimize2, Camera as CameraIcon, Trash2  } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { VirtualKinematics } from './VirtualKinematics';
@@ -200,6 +200,26 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
     updateRobot(robot.id, { pumps: newPumps });
   };
 
+  
+  const handleReset3D = () => {
+    updateRobot(robot.id, {
+      renderScale: 1,
+      atc: robot.atc ? { ...robot.atc, renderScale: 1, renderPos: { x: -300, y: 200 }, renderRot: 0, revolverPos: { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, tx: 0, ty: 0 } } : undefined,
+      rackSystem: {
+        ...robot.rackSystem,
+        rack1: { ...robot.rackSystem.rack1, renderScale: 1, renderPos: { x: 300, y: 150 }, renderRot: 0 },
+        rack2: { ...robot.rackSystem.rack2, renderScale: 1, renderPos: { x: -300, y: 150 }, renderRot: 0 },
+      },
+      juanenPnP: { ...robot.juanenPnP, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 },
+      lumenPnP: { ...robot.lumenPnP, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 },
+      juanenCNC: { ...robot.juanenCNC, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 },
+      juanenLaser: { ...robot.juanenLaser, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 },
+      vacuumTable: { ...robot.vacuumTable, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 },
+      heatedBed: { ...robot.heatedBed, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 },
+      xyTable: robot.hasXYTable && robot.xyTable ? { ...robot.xyTable, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 } : robot.xyTable
+    } as any);
+  };
+
   const handleResetPos = () => {
     updateRobot(robot.id, { pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 } });
     if (hasXYTable && xyTable) {
@@ -362,6 +382,12 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
             className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(6,182,212,0.5)] border border-cyan-400"
           >
             <RefreshCw size={16} className="fill-slate-950" /> Reset
+          </button>
+          <button 
+            onClick={handleReset3D}
+            className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)] border border-slate-600"
+          >
+            <RotateCcw size={16} className="text-white" /> Reset 3D
           </button>
           
           <button 

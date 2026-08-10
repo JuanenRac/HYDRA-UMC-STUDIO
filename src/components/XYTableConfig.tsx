@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useHydraStore } from '../store';
-import { Crosshair, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Save, Maximize2, Plus } from 'lucide-react';
+import { RotateCcw, Crosshair, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Save, Maximize2, Plus } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Cylinder } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
@@ -14,6 +14,8 @@ function XYTableVisualizer({ xyTable }: { xyTable: any }) {
   // Position is clamped to table bounds for visual safety
   const px = (Math.max(0, Math.min(xyTable.pos.x, xyTable.tableSize.width)) / 1000) * VISUAL_SCALE;
   const py = (Math.max(0, Math.min(xyTable.pos.y, xyTable.tableSize.length)) / 1000) * VISUAL_SCALE;
+  
+  
   
   return (
     <group position={[-width/2, 0, -length/2]}>
@@ -52,6 +54,14 @@ export function XYTableConfig() {
 
   const selectedRobot = robots.find(r => r.id === selectedRobotId);
   const xyTable = selectedRobot?.xyTable;
+
+  const handleReset = () => {
+    if (!selectedRobot) return;
+    updateRobot(selectedRobot.id, {
+      xyTable: { pos: { x: 0, y: 0 }, tableSize: { width: 300, length: 300 }, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
+    } as any);
+  };
+
 
   useEffect(() => {
     if (!selectedRobot && robots.length > 0) {
@@ -92,7 +102,13 @@ export function XYTableConfig() {
         <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
           <Crosshair className="text-amber-400" size={20} /> XY Table
         </h2>
-        <select 
+        <div className="flex items-center gap-2">
+          {selectedRobot.hasXYTable && (
+            <button onClick={handleReset} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 text-sm flex items-center gap-2 transition-colors">
+              <RotateCcw size={16} /> Reset
+            </button>
+          )}
+          <select 
           className="bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-sm font-medium text-slate-200 focus:outline-none focus:border-amber-500"
           value={selectedRobotId}
           onChange={(e) => setSelectedRobotId(Number(e.target.value))}
@@ -101,6 +117,7 @@ export function XYTableConfig() {
             <option key={r.id} value={r.id}>{r.name} - {r.role}</option>
           ))}
         </select>
+        </div>
       </div>
 
       {!selectedRobot.hasXYTable ? (

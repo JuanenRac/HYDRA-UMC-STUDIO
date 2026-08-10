@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useHydraStore } from '../store';
-import { Zap, Maximize2, Plus } from 'lucide-react';
+import { RotateCcw, Zap, Maximize2, Plus } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Box } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
@@ -32,13 +32,26 @@ export function JuanenLaserConfig() {
 
 
 
+  
+  const handleReset = () => {
+    updateRobot(selectedRobot.id, {
+      juanenLaser: { enabled: true, size: { width: 500, length: 500 }, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
+    } as any);
+  };
+  
   return (
     <div className="h-full flex flex-col space-y-4">
       <div className="flex items-center justify-between shrink-0">
         <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
           <Zap className="text-sky-400" size={20} /> JuanenLaser
         </h2>
-        <select 
+        <div className="flex items-center gap-2">
+          {isEnabled && (
+            <button onClick={handleReset} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 text-sm flex items-center gap-2 transition-colors">
+              <RotateCcw size={16} /> Reset
+            </button>
+          )}
+          <select 
           className="bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-sm font-medium text-slate-200 focus:outline-none focus:border-sky-500"
           value={selectedRobotId}
           onChange={(e) => setSelectedRobotId(Number(e.target.value))}
@@ -47,6 +60,7 @@ export function JuanenLaserConfig() {
             <option key={r.id} value={r.id}>{r.name} - {r.role}</option>
           ))}
         </select>
+        </div>
       </div>
 
       {!isEnabled ? (
