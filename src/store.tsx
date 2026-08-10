@@ -102,6 +102,11 @@ export interface RobotState {
     rack2: RackConfig;
   };
   hasXYTable: boolean;
+  playbackState: {
+    isPlaying: boolean;
+    activeStep: number;
+    speed: number;
+  };
 
   juanenPnP: SharedModuleGeneric;
   lumenPnP: SharedModuleGeneric;
@@ -191,6 +196,7 @@ export const createDefaultRobots = (): RobotState[] => {
     pumps: [false, false] as [boolean, boolean],
     endstops: { x1: false, x2: false, y1: false, y2: false, z0: false },
     recordedPoints: [],
+    playbackState: { isPlaying: false, activeStep: 0, speed: 100 },
     hasXYTable: false,
 
     juanenPnP: { enabled: false, size: { width: 500, length: 500 } },

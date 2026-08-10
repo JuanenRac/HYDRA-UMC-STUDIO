@@ -239,32 +239,55 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
         )}
 
         
-        {combinedRobots.map((combinedRobot, i) => (
-          <DraggableGizmo
-              key={combinedRobot.id}
-              position={[(combinedRobot.pos?.tx ?? (500 + i * 300)) / 1000, 0, (combinedRobot.pos?.ty ?? 500) / 1000]}
-              scale={[combinedRobot.renderScale || 1, combinedRobot.renderScale || 1, combinedRobot.renderScale || 1]}
-              controlMode={controlMode}
-              initialRotation={combinedRobot.pos?.trz || 0}
-              onMouseUp={(e: any) => {
-                 if (e.target.object) {
-                    const newTx = e.target.object.position.x * 1000;
-                    const newTy = e.target.object.position.z * 1000;
-                    updateRobot(combinedRobot.id, {
-                        pos: {
-                            ...combinedRobot.pos,
-                            tx: newTx,
-                            ty: newTy,
-                            trz: e.target.object.rotation.y
-                        },
-                        renderScale: e.target.object.scale.x
-                    });
-                 }
-              }}
-            >
-              <RobotArm robot={combinedRobot} />
-          </DraggableGizmo>
-        ))}
+        {combinedRobots.map((combinedRobot, i) => {
+          const cHasTable = combinedRobot.hasXYTable && combinedRobot.xyTable;
+          const cTableW = cHasTable ? (combinedRobot.xyTable!.tableSize.width / 1000) : 0;
+          const cTableL = cHasTable ? (combinedRobot.xyTable!.tableSize.length / 1000) : 0;
+          const cPx = cHasTable ? (Math.max(0, Math.min(combinedRobot.xyTable!.pos.x, combinedRobot.xyTable!.tableSize.width)) / 1000) : 0;
+          const cPy = cHasTable ? (Math.max(0, Math.min(combinedRobot.xyTable!.pos.y, combinedRobot.xyTable!.tableSize.length)) / 1000) : 0;
+
+          return (
+            <DraggableGizmo
+                key={combinedRobot.id}
+                position={[(combinedRobot.pos?.tx ?? (500 + i * 300)) / 1000, 0, (combinedRobot.pos?.ty ?? 500) / 1000]}
+                scale={[combinedRobot.renderScale || 1, combinedRobot.renderScale || 1, combinedRobot.renderScale || 1]}
+                controlMode={controlMode}
+                initialRotation={combinedRobot.pos?.trz || 0}
+                onMouseUp={(e: any) => {
+                   if (e.target.object) {
+                      const newTx = e.target.object.position.x * 1000;
+                      const newTy = e.target.object.position.z * 1000;
+                      updateRobot(combinedRobot.id, {
+                          pos: {
+                              ...combinedRobot.pos,
+                              tx: newTx,
+                              ty: newTy,
+                              trz: e.target.object.rotation.y
+                          },
+                          renderScale: e.target.object.scale.x
+                      });
+                   }
+                }}
+              >
+                {cHasTable ? (
+                   <group>
+                     <group position={[0, 0.08, 0]} scale={[(combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1)]}>
+                       <PathVisualizer points={combinedRobot.recordedPoints} hasXYTable={true} />
+                     </group>
+                     <Box args={[cTableW, 0.02, cTableL]} position={[cTableW/2, 0.01, cTableL/2]} material-color="#121720" castShadow receiveShadow />
+                     <group position={[cPx, 0.08, cPy]} scale={[(combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1)]}>
+                       <RobotArm robot={combinedRobot} />
+                     </group>
+                   </group>
+                ) : (
+                   <group>
+                     <RobotArm robot={combinedRobot} />
+                     <PathVisualizer points={combinedRobot.recordedPoints} hasXYTable={false} />
+                   </group>
+                )}
+            </DraggableGizmo>
+          );
+        })}
 
         {hasXYTable ? (
           <DraggableGizmo
@@ -326,7 +349,6 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
           </DraggableGizmo>
         ) : (
           <group>
-            <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
             <DraggableGizmo
               position={[(robot.pos?.tx || 0) / 1000, 0, (robot.pos?.ty || 0) / 1000]}
               scale={[robot.renderScale || 1, robot.renderScale || 1, robot.renderScale || 1]}
@@ -349,6 +371,7 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
               }}
             >
               <RobotArm robot={robot} />
+              <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
             </DraggableGizmo>
           </group>
         )}
