@@ -94,7 +94,7 @@ export interface RobotState {
   valves: [boolean, boolean];
   pumps: [boolean, boolean];
   endstops: { x1: boolean; x2: boolean; y1: boolean; y2: boolean; z0: boolean };
-  recordedPoints: { x: number; y: number; z: number; a: number; b: number; c: number; tx?: number; ty?: number }[];
+  recordedPoints: { x: number; y: number; z: number; a: number; b: number; c: number; tx?: number; ty?: number; j1?: number; j2?: number; j3?: number; j4?: number; j5?: number; j6?: number }[];
   atc?: ATCConfig;
   rackSystem: {
     enabled: boolean;

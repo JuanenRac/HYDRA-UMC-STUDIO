@@ -550,7 +550,7 @@ export default function Dashboard() {
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col overflow-hidden bg-slate-950/80 p-4 backdrop-blur-sm">
           {activeTab === 'overview' && <OverviewPanel />}
-          {activeTab === 'robot' && activeRobot && <RobotDetail robot={activeRobot} />}
+          {activeTab === 'robot' && activeRobot && <RobotDetail key={activeRobot.id} robot={activeRobot} />}
           {activeTab === 'cameras' && <CamerasView />}
           {activeTab === 'xytable' && <XYTableConfig />}
           {activeTab === 'atc' && <ATCToolsConfig />}

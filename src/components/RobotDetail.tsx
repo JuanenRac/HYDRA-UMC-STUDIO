@@ -56,6 +56,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
   const xyTable = robot.xyTable;
 
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(100);
+  const [activeStep, setActiveStep] = useState<number | null>(null);
   const playbackSpeedRef = useRef(100);
 
   // Sync ref
@@ -233,6 +234,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
     updateRobot(robot.id, {
       recordedPoints: [...robot.recordedPoints, { 
         ...robot.pos, 
+        ...robot.joints,
         ...(hasXYTable && xyTable ? { tx: xyTable.pos.x, ty: xyTable.pos.y } : {}) 
       }]
     });
@@ -243,7 +245,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
     if (!id) return;
     const example = examples.find(e => e.id === id);
     if (example) {
-      updateRobot(robot.id, { recordedPoints: example.points });
+      updateRobot(robot.id, { recordedPoints: JSON.parse(JSON.stringify(example.points)) });
     }
   };
 
@@ -252,15 +254,45 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
     setIsPlaying(true);
     isPlayingRef.current = true;
     
+    const combinedBots = (robot.combinedWith || []).map(id => robots.find(r => r.id === id)).filter(Boolean) as RobotState[];
+    
     const baseDuration = 1000; // ms per point segment
     let currentPos = { ...robot.pos };
+    let currentJoints = { ...robot.joints };
     let currentTablePos = hasXYTable && xyTable ? { ...xyTable.pos } : null;
     
-    for (let i = 0; i < robot.recordedPoints.length; i++) {
+    const combinedState = combinedBots.map(b => ({
+      id: b.id,
+      points: b.recordedPoints || [],
+      currentPos: { ...b.pos },
+      currentJoints: { ...b.joints },
+      currentTablePos: b.hasXYTable && b.xyTable ? { ...b.xyTable.pos } : null,
+      hasXYTable: b.hasXYTable,
+      xyTable: b.xyTable
+    }));
+    
+    // Find max points length to play them all
+    let maxPoints = robot.recordedPoints.length;
+    for (const b of combinedState) {
+      if (b.points.length > maxPoints) maxPoints = b.points.length;
+    }
+    
+    for (let i = 0; i < maxPoints; i++) {
+      setActiveStep(i);
       if (!isPlayingRef.current) break;
-      const targetPt = robot.recordedPoints[i];
+      
+      const targetPt = robot.recordedPoints[Math.min(i, robot.recordedPoints.length - 1)];
       const startPt = { ...currentPos };
+      const startJoints = { ...currentJoints };
       const startTable = currentTablePos ? { ...currentTablePos } : null;
+      
+      const cTargets = combinedState.map(b => ({
+        ...b,
+        target: b.points[Math.min(i, Math.max(0, b.points.length - 1))] || b.currentPos,
+        startPt: { ...b.currentPos },
+        startJoints: { ...b.currentJoints },
+        startTable: b.currentTablePos ? { ...b.currentTablePos } : null
+      }));
       
       const duration = baseDuration / (playbackSpeedRef.current / 100);
       const steps = Math.max(1, Math.floor(duration / 16)); // ~60fps
@@ -278,9 +310,21 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
           c: startPt.c + (targetPt.c - startPt.c) * t,
         };
 
-        const currentJoints = computePseudoIK(interpolatedPos);
+        let newJoints;
+        if (targetPt.j1 !== undefined && targetPt.j2 !== undefined && targetPt.j3 !== undefined && targetPt.j4 !== undefined && targetPt.j5 !== undefined && targetPt.j6 !== undefined) {
+           newJoints = {
+             j1: startJoints.j1 + (targetPt.j1 - startJoints.j1) * t,
+             j2: startJoints.j2 + (targetPt.j2 - startJoints.j2) * t,
+             j3: startJoints.j3 + (targetPt.j3 - startJoints.j3) * t,
+             j4: startJoints.j4 + (targetPt.j4 - startJoints.j4) * t,
+             j5: startJoints.j5 + (targetPt.j5 - startJoints.j5) * t,
+             j6: startJoints.j6 + (targetPt.j6 - startJoints.j6) * t,
+           };
+        } else {
+           newJoints = computePseudoIK(interpolatedPos);
+        }
         
-        let updatePayload: Partial<RobotState> = { pos: interpolatedPos, joints: currentJoints };
+        let updatePayload: Partial<RobotState> = { pos: interpolatedPos, joints: newJoints };
         
         if (hasXYTable && startTable && targetPt.tx !== undefined && targetPt.ty !== undefined && xyTable) {
           const interpolatedTablePos = {
@@ -304,11 +348,13 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
     
     setIsPlaying(false);
     isPlayingRef.current = false;
+    setActiveStep(null);
   };
 
   const stopTrajectory = () => {
     setIsPlaying(false);
     isPlayingRef.current = false;
+    setActiveStep(null);
   };
 
   const handleRemovePoint = (index: number) => {
@@ -673,16 +719,56 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                 
                 <div className="space-y-2">
                   {robot.recordedPoints.map((pt, i) => (
-                    <div key={i} className="bg-slate-900 border border-slate-800 rounded p-2 text-xs flex justify-between items-center">
-                      <span className="font-mono text-slate-400">P{i}</span>
-                      <span className="font-mono text-sky-400">X:{pt.x.toFixed(0)} Y:{pt.y.toFixed(0)} Z:{pt.z.toFixed(0)}</span>
-                      <button onClick={() => {
-                        const newPts = [...robot.recordedPoints];
-                        newPts.splice(i, 1);
-                        updateRobot(robot.id, { recordedPoints: newPts });
-                      }} className="text-slate-500 hover:text-rose-400">
-                        <Trash2 size={14} />
-                      </button>
+                    <div key={i} className={cn("bg-slate-900 border rounded p-2 text-xs flex flex-col gap-1 transition-colors", activeStep === i ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]" : "border-slate-800")}>
+                      <div className="flex justify-between items-center border-b border-slate-800/50 pb-1 mb-1">
+                        <div className="flex items-center gap-2">
+                          {activeStep === i ? (
+                            <Play size={12} className="text-emerald-400 animate-pulse fill-emerald-400" />
+                          ) : (
+                            <span className="w-3" />
+                          )}
+                          <span className={cn("font-mono font-bold", activeStep === i ? "text-emerald-400" : "text-slate-400")}>STEP {i}</span>
+                        </div>
+                        <button onClick={() => {
+                          const newPts = [...robot.recordedPoints];
+                          newPts.splice(i, 1);
+                          updateRobot(robot.id, { recordedPoints: newPts });
+                        }} className="text-slate-500 hover:text-rose-400 p-1">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                      
+                      <div className="grid grid-cols-6 gap-x-2 gap-y-1 font-mono text-[10px]">
+                        <span className="text-slate-500 flex justify-between"><span>X:</span><span className="text-sky-400">{pt.x.toFixed(1)}</span></span>
+                        <span className="text-slate-500 flex justify-between"><span>Y:</span><span className="text-sky-400">{pt.y.toFixed(1)}</span></span>
+                        <span className="text-slate-500 flex justify-between"><span>Z:</span><span className="text-sky-400">{pt.z.toFixed(1)}</span></span>
+                        <span className="text-slate-500 flex justify-between"><span>A:</span><span className="text-sky-400">{pt.a.toFixed(1)}</span></span>
+                        <span className="text-slate-500 flex justify-between"><span>B:</span><span className="text-sky-400">{pt.b.toFixed(1)}</span></span>
+                        <span className="text-slate-500 flex justify-between"><span>C:</span><span className="text-sky-400">{pt.c.toFixed(1)}</span></span>
+                      </div>
+                      
+                      {(pt.j1 !== undefined || (pt.tx !== undefined && pt.ty !== undefined)) && (
+                        <div className="grid grid-cols-6 gap-x-2 gap-y-1 font-mono text-[10px] mt-1 border-t border-slate-800/50 pt-1">
+                          {pt.j1 !== undefined ? (
+                            <>
+                              <span className="text-slate-500 flex justify-between"><span>J1:</span><span className="text-indigo-400">{pt.j1?.toFixed(1)}</span></span>
+                              <span className="text-slate-500 flex justify-between"><span>J2:</span><span className="text-indigo-400">{pt.j2?.toFixed(1)}</span></span>
+                              <span className="text-slate-500 flex justify-between"><span>J3:</span><span className="text-indigo-400">{pt.j3?.toFixed(1)}</span></span>
+                              <span className="text-slate-500 flex justify-between"><span>J4:</span><span className="text-indigo-400">{pt.j4?.toFixed(1)}</span></span>
+                              <span className="text-slate-500 flex justify-between"><span>J5:</span><span className="text-indigo-400">{pt.j5?.toFixed(1)}</span></span>
+                              <span className="text-slate-500 flex justify-between"><span>J6:</span><span className="text-indigo-400">{pt.j6?.toFixed(1)}</span></span>
+                            </>
+                          ) : (
+                            <span className="col-span-6"></span>
+                          )}
+                          {pt.tx !== undefined && pt.ty !== undefined && (
+                            <>
+                              <span className="text-slate-500 flex justify-between col-start-1"><span>TX:</span><span className="text-amber-400">{pt.tx?.toFixed(1)}</span></span>
+                              <span className="text-slate-500 flex justify-between col-start-2"><span>TY:</span><span className="text-amber-400">{pt.ty?.toFixed(1)}</span></span>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                   {robot.recordedPoints.length === 0 && (
