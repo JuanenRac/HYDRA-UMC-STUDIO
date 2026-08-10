@@ -55,6 +55,10 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
   const hasXYTable = robot.hasXYTable;
   const xyTable = robot.xyTable;
 
+  const combinedBotsInfo = (robot.combinedWith || []).map(id => robots.find(r => r.id === id)).filter(Boolean) as RobotState[];
+  const hasAnyPoints = robot.recordedPoints.length > 0 || combinedBotsInfo.some(b => b.recordedPoints.length > 0);
+  const isStartAll = combinedBotsInfo.length > 0;
+
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(100);
   const [activeStep, setActiveStep] = useState<number | null>(null);
   const playbackSpeedRef = useRef(100);
@@ -63,6 +67,15 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
   useEffect(() => {
     playbackSpeedRef.current = playbackSpeed;
   }, [playbackSpeed]);
+
+  useEffect(() => {
+    if (isPlaying && activeStep !== null && activeStep !== -1) {
+      const el = document.getElementById(`step-${robot.id}-${activeStep}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [activeStep, isPlaying, robot.id]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -249,12 +262,20 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
     }
   };
 
+  const loadExampleForRobot = (targetRobotId: number, exampleId: string) => {
+    if (!exampleId) return;
+    const example = examples.find(e => e.id === exampleId);
+    if (example) {
+      updateRobot(targetRobotId, { recordedPoints: JSON.parse(JSON.stringify(example.points)) });
+    }
+  };
+
   const startTrajectory = async () => {
-    if (robot.recordedPoints.length === 0) return;
+    const combinedBots = (robot.combinedWith || []).map(id => robots.find(r => r.id === id)).filter(Boolean) as RobotState[];
+    const hasAnyPoints = robot.recordedPoints.length > 0 || combinedBots.some(b => b.recordedPoints.length > 0);
+    if (!hasAnyPoints) return;
     setIsPlaying(true);
     isPlayingRef.current = true;
-    
-    const combinedBots = (robot.combinedWith || []).map(id => robots.find(r => r.id === id)).filter(Boolean) as RobotState[];
     
     const baseDuration = 1000; // ms per point segment
     let currentPos = { ...robot.pos };
@@ -281,18 +302,22 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
       setActiveStep(i);
       if (!isPlayingRef.current) break;
       
-      const targetPt = robot.recordedPoints[Math.min(i, robot.recordedPoints.length - 1)];
       const startPt = { ...currentPos };
+      const targetPt = robot.recordedPoints[Math.min(i, Math.max(0, robot.recordedPoints.length - 1))] || startPt;
       const startJoints = { ...currentJoints };
       const startTable = currentTablePos ? { ...currentTablePos } : null;
       
-      const cTargets = combinedState.map(b => ({
-        ...b,
-        target: b.points[Math.min(i, Math.max(0, b.points.length - 1))] || b.currentPos,
-        startPt: { ...b.currentPos },
-        startJoints: { ...b.currentJoints },
-        startTable: b.currentTablePos ? { ...b.currentTablePos } : null
-      }));
+      const cTargets = combinedState.map(b => {
+        const botPoints = b.points;
+        const targetPoint = botPoints.length > 0 ? botPoints[Math.min(i, botPoints.length - 1)] : b.currentPos;
+        return {
+          ...b,
+          target: targetPoint,
+          startPt: { ...b.currentPos },
+          startJoints: { ...b.currentJoints },
+          startTable: b.currentTablePos ? { ...b.currentTablePos } : null
+        };
+      });
       
       const duration = baseDuration / (playbackSpeedRef.current / 100);
       const steps = Math.max(1, Math.floor(duration / 16)); // ~60fps
@@ -337,6 +362,41 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
         
         updateRobot(robot.id, updatePayload);
         
+        cTargets.forEach(c => {
+          const cInterpolatedPos = {
+            x: c.startPt.x + (c.target.x - c.startPt.x) * t,
+            y: c.startPt.y + (c.target.y - c.startPt.y) * t,
+            z: c.startPt.z + (c.target.z - c.startPt.z) * t,
+            a: c.startPt.a + (c.target.a - c.startPt.a) * t,
+            b: c.startPt.b + (c.target.b - c.startPt.b) * t,
+            c: c.startPt.c + (c.target.c - c.startPt.c) * t,
+            tx: c.startPt.tx !== undefined && c.target.tx !== undefined ? c.startPt.tx + (c.target.tx - c.startPt.tx) * t : c.startPt.tx,
+            ty: c.startPt.ty !== undefined && c.target.ty !== undefined ? c.startPt.ty + (c.target.ty - c.startPt.ty) * t : c.startPt.ty,
+            trz: c.startPt.trz,
+          };
+          let cNewJoints;
+          const cTarget = c.target as any;
+          if (cTarget.j1 !== undefined && cTarget.j2 !== undefined && cTarget.j3 !== undefined && cTarget.j4 !== undefined && cTarget.j5 !== undefined && cTarget.j6 !== undefined) {
+             cNewJoints = {
+               j1: c.startJoints.j1 + (cTarget.j1 - c.startJoints.j1) * t,
+               j2: c.startJoints.j2 + (cTarget.j2 - c.startJoints.j2) * t,
+               j3: c.startJoints.j3 + (cTarget.j3 - c.startJoints.j3) * t,
+               j4: c.startJoints.j4 + (cTarget.j4 - c.startJoints.j4) * t,
+               j5: c.startJoints.j5 + (cTarget.j5 - c.startJoints.j5) * t,
+               j6: c.startJoints.j6 + (cTarget.j6 - c.startJoints.j6) * t,
+             };
+          } else {
+             cNewJoints = computePseudoIK(cInterpolatedPos);
+          }
+          let cPayload: Partial<RobotState> = { pos: cInterpolatedPos, joints: cNewJoints };
+          if (c.hasXYTable && c.startTable && c.target.tx !== undefined && c.target.ty !== undefined && c.xyTable) {
+             const cTablePos = { x: c.startTable.x + (c.target.tx - c.startTable.x) * t, y: c.startTable.y + (c.target.ty - c.startTable.y) * t };
+             cPayload.xyTable = { ...c.xyTable, pos: cTablePos };
+             c.currentTablePos = cTablePos;
+          }
+          updateRobot(c.id, cPayload);
+        });
+        
         await new Promise(r => setTimeout(r, 16));
       }
 
@@ -344,6 +404,28 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
         x: targetPt.x, y: targetPt.y, z: targetPt.z, 
         a: targetPt.a, b: targetPt.b, c: targetPt.c 
       };
+      
+      combinedState.forEach(b => {
+        const c = cTargets.find(t => t.id === b.id);
+        if (c) {
+          b.currentPos = {
+            x: c.target.x, y: c.target.y, z: c.target.z,
+            a: c.target.a, b: c.target.b, c: c.target.c,
+            tx: c.target.tx !== undefined ? c.target.tx : b.currentPos.tx,
+            ty: c.target.ty !== undefined ? c.target.ty : b.currentPos.ty,
+            trz: c.target.trz !== undefined ? c.target.trz : b.currentPos.trz,
+          };
+          // Preserve j1..j6 if they existed in the target, otherwise we'd need to save the IK result.
+          // Since we might have used computePseudoIK, let's use the LAST computed joints if target lacked them.
+          // Wait, cNewJoints is not available here. It was local to the t-loop.
+          // Let's just set the target joints. If they are undefined, startJoints in the next step will be undefined.
+          // In the t-loop, we fallback to IK anyway.
+          b.currentJoints = { ...c.target } as any;
+          if (c.target.tx !== undefined && c.target.ty !== undefined && b.currentTablePos) {
+            b.currentTablePos = { x: c.target.tx, y: c.target.ty };
+          }
+        }
+      });
     }
     
     setIsPlaying(false);
@@ -416,10 +498,10 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
           ) : (
             <button 
               onClick={startTrajectory}
-              disabled={robot.recordedPoints.length === 0}
+              disabled={!hasAnyPoints}
               className="flex justify-center items-center gap-2 px-6 py-3 min-h-[48px] bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold text-sm uppercase tracking-widest rounded-lg transition-colors shadow-[0_0_15px_rgba(0,255,102,0.6)] border border-emerald-400"
             >
-              <Play size={16} className="fill-slate-950" /> Start
+              <Play size={16} className="fill-slate-950" /> {isStartAll ? 'Start All' : 'Start'}
             </button>
           )}
 
@@ -687,6 +769,29 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                     ))}
                   </select>
                 </div>
+                {combinedBotsInfo.length > 0 && (
+                  <div className="pt-2 border-t border-slate-800">
+                    <label className="block text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider">Combined Robots</label>
+                    <div className="space-y-3">
+                      {combinedBotsInfo.map(bot => (
+                        <div key={bot.id} className="bg-slate-900/50 p-2 rounded border border-slate-800/50">
+                          <div className="text-xs text-slate-300 font-medium mb-1">{bot.name} ({bot.recordedPoints.length} pts)</div>
+                          <select 
+                            className="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-xs text-slate-200 outline-none"
+                            onChange={(e) => loadExampleForRobot(bot.id, e.target.value)}
+                            defaultValue=""
+                            disabled={isPlaying}
+                          >
+                            <option value="">-- Select Example --</option>
+                            {examples.map(e => (
+                              <option key={e.id} value={e.id}>{e.name} ({e.points.length} pts)</option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div>
                   <div className="flex justify-between text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">
                     <span>Speed</span>
@@ -719,7 +824,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                 
                 <div className="space-y-2">
                   {robot.recordedPoints.map((pt, i) => (
-                    <div key={i} className={cn("bg-slate-900 border rounded p-2 text-xs flex flex-col gap-1 transition-colors", activeStep === i ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]" : "border-slate-800")}>
+                    <div id={`step-${robot.id}-${i}`} key={i} className={cn("bg-slate-900 border rounded p-2 text-xs flex flex-col gap-1 transition-colors", activeStep === i ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]" : "border-slate-800")}>
                       <div className="flex justify-between items-center border-b border-slate-800/50 pb-1 mb-1">
                         <div className="flex items-center gap-2">
                           {activeStep === i ? (

@@ -4,7 +4,7 @@ import { useHydraStore, createDefaultRobots, createDefaultCameras } from './stor
 import { 
   Activity, Crosshair, Layers, 
   Video, Focus, Settings, Menu, Plus, Trash2, Search, AlertTriangle, Power
-, Cpu, PenTool, Zap, Wind, Thermometer } from 'lucide-react';
+, Cpu, PenTool, Zap, Wind, Thermometer, Download, Upload } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -26,7 +26,7 @@ import { ATCToolsConfig } from './components/ATCToolsConfig';
 import { RackConfigView } from './components/RackConfigView';
 
 export default function Dashboard() {
-  const { controllers, activeControllerId, setActiveControllerId, activeController, updateController, robots, settings, updateSettings, updateRobot, addController, removeController } = useHydraStore();
+  const { controllers, activeControllerId, setActiveControllerId, activeController, updateController, robots, settings, updateSettings, updateRobot, addController, removeController, exportScene, importScene } = useHydraStore();
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -409,6 +409,21 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold tracking-wider text-slate-100">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span></h1>
         </div>
         <div className="flex items-center gap-6 text-base font-medium">
+          <div className="flex items-center gap-2 mr-4">
+            <button 
+              onClick={exportScene}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-300"
+              title="Save Scene (All Robots)"
+            >
+              <Download size={18} />
+              <span className="text-sm">Save Scene</span>
+            </button>
+            <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-300 cursor-pointer" title="Load Scene">
+              <Upload size={18} />
+              <span className="text-sm">Load Scene</span>
+              <input type="file" accept=".json" onChange={importScene} className="hidden" />
+            </label>
+          </div>
           <button 
             onClick={() => setIsSettingsOpen(true)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 transition-colors"

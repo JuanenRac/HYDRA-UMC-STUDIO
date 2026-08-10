@@ -94,7 +94,7 @@ export interface RobotState {
   valves: [boolean, boolean];
   pumps: [boolean, boolean];
   endstops: { x1: boolean; x2: boolean; y1: boolean; y2: boolean; z0: boolean };
-  recordedPoints: { x: number; y: number; z: number; a: number; b: number; c: number; tx?: number; ty?: number; j1?: number; j2?: number; j3?: number; j4?: number; j5?: number; j6?: number }[];
+  recordedPoints: { x: number; y: number; z: number; a: number; b: number; c: number; tx?: number; ty?: number; trz?: number; j1?: number; j2?: number; j3?: number; j4?: number; j5?: number; j6?: number }[];
   atc?: ATCConfig;
   rackSystem: {
     enabled: boolean;
@@ -172,6 +172,8 @@ interface HydraStoreContextType {
   removeController: (id: string) => void;
   saveKinematics: (id: number) => void;
   loadKinematics: (id: number, e: React.ChangeEvent<HTMLInputElement>) => void;
+  exportScene: () => void;
+  importScene: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const createDefaultRobots = (): RobotState[] => {
@@ -405,12 +407,44 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     e.target.value = '';
   };
 
+  const exportScene = () => {
+    const data = JSON.stringify(robots, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hydra_scene.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const importScene = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        if (Array.isArray(json)) {
+          updateController(activeControllerId, { robots: json });
+        }
+      } catch {
+        console.error('Invalid scene file');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   return (
     <HydraContext.Provider value={{ 
       controllers, activeControllerId, activeController, setActiveControllerId,
       robots, cameras, settings, 
       updateController, updateRobot, updateCamera, updateSettings, 
-      saveKinematics, loadKinematics, addController, removeController 
+      saveKinematics, loadKinematics, addController, removeController,
+      exportScene, importScene
     }}>
       {children}
     </HydraContext.Provider>

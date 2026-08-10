@@ -262,9 +262,7 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
                  }
               }}
             >
-              <group rotation={[0, combinedRobot.pos?.trz || 0, 0]}>
-                <RobotArm robot={combinedRobot} />
-              </group>
+              <RobotArm robot={combinedRobot} />
           </DraggableGizmo>
         ))}
 
@@ -290,7 +288,7 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
               }
             }}
           >
-            <group position={[0, 0, 0]} rotation={[0, robot.xyTable?.worldRot || 0, 0]}>
+            <group position={[0, 0, 0]}>
               <group position={[0, 0.08, 0]} scale={[(robot.renderScale || 1) / (robot.xyTable?.renderScale || 1), (robot.renderScale || 1) / (robot.xyTable?.renderScale || 1), (robot.renderScale || 1) / (robot.xyTable?.renderScale || 1)]}>
                 <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
               </group>
@@ -350,9 +348,7 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
                  }
               }}
             >
-              <group rotation={[0, robot.pos?.trz || 0, 0]}>
-                <RobotArm robot={robot} />
-              </group>
+              <RobotArm robot={robot} />
             </DraggableGizmo>
           </group>
         )}
