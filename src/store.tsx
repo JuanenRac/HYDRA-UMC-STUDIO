@@ -34,7 +34,7 @@ export type ToolType =
 export type ATCType = 'vertical_panel' | 'horizontal_panel' | 'revolver';
 export type ATCGrid = '1x1' | '1x2' | '2x1' | '2x2' | '2x3' | '3x2' | '3x3' | '3x4' | '4x3' | '4x4';
 
-export interface RackConfig {
+export interface RackConfig { renderScale?: number;
   type: 'Input' | 'Output' | 'None';
   capacity: number;
   usableSlots: boolean[];
@@ -46,7 +46,7 @@ export interface RackConfig {
   };
 }
 
-export interface ATCConfig {
+export interface ATCConfig { renderScale?: number;
   type: ATCType;
   panelGrid: ATCGrid;
   revolverSlots: number;
@@ -58,6 +58,27 @@ export interface ATCConfig {
     tool: ToolType;
     pos?: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number; tx?: number; ty?: number };
   }[];
+}
+
+
+export interface SharedModuleGeneric {
+  enabled: boolean;
+  renderScale?: number;
+  worldPos?: { x: number; y: number };
+  worldRot?: number;
+  size: { width: number; length: number };
+}
+
+export interface VacuumTableModule extends SharedModuleGeneric {
+  pumpActive: boolean;
+  valveActive: boolean;
+}
+
+export interface HeatedBedModule extends SharedModuleGeneric {
+  targetTemp: number;
+  currentTemp1: number;
+  currentTemp2: number;
+  ssrActive: boolean;
 }
 
 export interface RobotState {
@@ -81,12 +102,21 @@ export interface RobotState {
     rack2: RackConfig;
   };
   hasXYTable: boolean;
+
+  juanenPnP: SharedModuleGeneric;
+  lumenPnP: SharedModuleGeneric;
+  juanenCNC: SharedModuleGeneric;
+  juanenLaser: SharedModuleGeneric;
+  vacuumTable: VacuumTableModule;
+  heatedBed: HeatedBedModule;
+
   combinedWith?: number[];
   renderScale?: number;
   xyTable: {
     pos: { x: number; y: number };
     worldPos?: { x: number; y: number };
     worldRot?: number;
+    renderScale?: number;
     tableSize: { width: number; length: number };
   };
 }
@@ -160,6 +190,14 @@ export const createDefaultRobots = (): RobotState[] => {
     endstops: { x1: false, x2: false, y1: false, y2: false, z0: false },
     recordedPoints: [],
     hasXYTable: false,
+
+    juanenPnP: { enabled: false, size: { width: 500, length: 500 } },
+    lumenPnP: { enabled: false, size: { width: 500, length: 500 } },
+    juanenCNC: { enabled: false, size: { width: 500, length: 500 } },
+    juanenLaser: { enabled: false, size: { width: 500, length: 500 } },
+    vacuumTable: { enabled: false, size: { width: 100, length: 100 }, pumpActive: false, valveActive: false },
+    heatedBed: { enabled: false, size: { width: 200, length: 200 }, targetTemp: 60, currentTemp1: 25, currentTemp2: 25, ssrActive: false },
+
     rackSystem: {
       enabled: false,
       rack1: {
@@ -229,9 +267,39 @@ const defaultControllers: HydraController[] = [
 const HydraContext = createContext<HydraStoreContextType | null>(null);
 
 export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [controllers, setControllers] = useState<HydraController[]>(defaultControllers);
-  const [activeControllerId, setActiveControllerId] = useState<string>(defaultControllers[0].id);
-  const [settings, setSettings] = useState<SystemSettings>({
+  const [controllers, setControllers] = useState<HydraController[]>(() => {
+    try {
+      const saved = localStorage.getItem('hydra_controllers');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    
+    let host = '192.168.1.100';
+    if (typeof window !== 'undefined' && window.location.hostname) {
+      host = window.location.hostname;
+    }
+    const def = JSON.parse(JSON.stringify(defaultControllers));
+    def[0].ip = host;
+    def[0].id = host;
+    return def;
+  });
+  const [activeControllerId, setActiveControllerId] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem('hydra_active_controller_id');
+      if (saved) return saved;
+    } catch(e) {}
+    
+    let host = '192.168.1.100';
+    if (typeof window !== 'undefined' && window.location.hostname) {
+      host = window.location.hostname;
+    }
+    return host;
+  });
+  const [settings, setSettings] = useState<SystemSettings>(() => {
+    try {
+      const saved = localStorage.getItem('hydra_settings');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return {
     visibleModules: ['Vision/Cameras', 'Robots', 'Macros/Tasks', 'Node Network', 'Settings'],
     integrations: {
       openPnP: { enabled: false, ip: '127.0.0.1', port: 8080 },
@@ -243,7 +311,20 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     customModels: [],
     autoConnectRobots: false,
     theme: "Dark Mode (Default)"
+    };
   });
+
+  React.useEffect(() => {
+    localStorage.setItem('hydra_settings', JSON.stringify(settings));
+  }, [settings]);
+
+  React.useEffect(() => {
+    localStorage.setItem('hydra_controllers', JSON.stringify(controllers));
+  }, [controllers]);
+
+  React.useEffect(() => {
+    localStorage.setItem('hydra_active_controller_id', activeControllerId);
+  }, [activeControllerId]);
 
   const activeController = useMemo(() => controllers.find(c => c.id === activeControllerId) || controllers[0], [controllers, activeControllerId]);
   const robots = activeController.robots;

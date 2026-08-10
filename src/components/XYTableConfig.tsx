@@ -3,6 +3,7 @@ import { useHydraStore } from '../store';
 import { Crosshair, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Save, Maximize2, Plus } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Cylinder } from '@react-three/drei';
+import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 
 function XYTableVisualizer({ xyTable }: { xyTable: any }) {
   // Convert mm to meters for visualization and scale 4x
@@ -89,7 +90,7 @@ export function XYTableConfig() {
     <div className="h-full flex flex-col space-y-4">
       <div className="flex items-center justify-between shrink-0">
         <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-          <Crosshair className="text-amber-400" size={20} /> XY Table Configuration
+          <Crosshair className="text-amber-400" size={20} /> XY Table
         </h2>
         <select 
           className="bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-sm font-medium text-slate-200 focus:outline-none focus:border-amber-500"
@@ -225,9 +226,7 @@ export function XYTableConfig() {
               </span>
             </div>
             <Canvas camera={{ position: [0.6, 0.6, 0.6], fov: 50 }} shadows className="w-full h-full outline-none">
-              <color attach="background" args={['#020617']} />
-              <ambientLight intensity={0.4} />
-              <directionalLight position={[2, 5, 2]} intensity={1} castShadow shadow-mapSize={[1024, 1024]} />
+              <Shared3DEnvironment />
               
               {xyTable && <XYTableVisualizer xyTable={xyTable} />}
               

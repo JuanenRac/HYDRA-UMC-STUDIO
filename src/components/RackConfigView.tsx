@@ -128,7 +128,7 @@ export function RackConfigView() {
       <div className="flex items-center justify-between shrink-0 flex-wrap gap-2 sticky top-0 bg-slate-950/90 py-2 z-10 backdrop-blur-sm">
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-            <Layers className="text-rose-400" size={20} /> Rack Configuration
+            <Layers className="text-rose-400" size={20} /> Rack
           </h2>
           <select 
             className="bg-slate-900 border border-slate-700 rounded px-3 py-1.5 min-h-[36px] text-sm font-medium text-slate-200 focus:outline-none focus:border-sky-500"
@@ -141,26 +141,38 @@ export function RackConfigView() {
           </select>
         </div>
         
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={handleToggleSystem} 
-            className={cnm("flex items-center gap-2 px-4 py-1.5 font-semibold rounded-lg transition-colors border", config.enabled ? "bg-rose-500/20 text-rose-400 border-rose-500/50 glow-border-rose" : "bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200 hover:bg-slate-700")}
-          >
-            <Settings2 size={16} /> {config.enabled ? "System Active" : "System Disabled"}
-          </button>
-        </div>
+        
       </div>
 
       {config.enabled ? (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div className="flex-1 flex flex-col">
+          <div className="flex justify-end mb-4">
+            <button 
+              onClick={handleToggleSystem}
+              className="text-[10px] text-rose-400 hover:text-rose-300 uppercase tracking-wider font-semibold"
+            >
+              Remove Rack
+            </button>
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {renderRack('rack1', 'Rack 1 (Default Input)')}
           {renderRack('rack2', 'Rack 2 (Default Output)')}
         </div>
+        </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
-          <Layers size={64} className="mb-4 opacity-20" />
-          <p className="text-lg font-medium">Rack System is Disabled</p>
-          <p className="text-sm">Enable it to configure input/output PCB racks.</p>
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-8 flex flex-col items-center justify-center text-center flex-1">
+          <Layers className="text-slate-600 mb-3" size={48} />
+          <h3 className="text-slate-200 font-medium mb-2">No Rack Assigned</h3>
+          <p className="text-slate-400 text-sm max-w-md mb-6">
+            This robot does not currently have a Rack configured. Add one to enable 
+            input and output buffers.
+          </p>
+          <button 
+            onClick={handleToggleSystem}
+            className="flex items-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/50 text-rose-400 px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            <Layers size={16} /> Enable Rack
+          </button>
         </div>
       )}
     </div>

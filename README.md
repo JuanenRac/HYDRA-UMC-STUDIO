@@ -6,7 +6,9 @@ Hydra-UMC Studio is a web-based, full-featured control panel designed to monitor
 
 - **Multi-Controller Architecture (Ethernet/IP):** Connect to multiple HYDRA-UMC boards simultaneously via IP. Each controller can manage its own isolated FDCAN network.
 - **Multi-Robot Dashboard:** Overview of up to 8 robotic arms per controller with online/offline status, current roles, tools, and ATC configurations. Fully responsive 1920x1080 layout.
-- **Virtual Kinematics:** 3D rendering of the robotic arm movements in real-time, showing visual representations of 26 different attachable tools (Lasers, Extruders, Grippers, Spindles, etc).
+- **Virtual Kinematics:** 3D rendering of the robotic arm movements in real-time, showing visual representations of 26 different attachable tools. Includes an interactive Gizmo to Translate, Rotate, and Scale (0.10x to 2.0x) any 3D object dynamically in the workspace.
+- **Modular 3D Architecture:** 3D objects and components (Robot Arms, Toolheads, ATC, Racks, and Gizmos) have been separated into individual files in `src/components/3d/` for independent editing and scalability. Specific arm designs for Parol6, Faze4, AR3, and AR4 are now supported and can be visually customized independently.
+- **Shared Resources & Modular Navigation:** Dedicated vertical sub-menu navigation for an expanding list of hardware modules. Modular configuration panels for shared hardware, including JuanenPnP, LumenPnP, JuanenCNC, JuanenLaser, Vacuum Tables (with pump/valve control), and Heated Beds (with SSR and dual thermistor readouts).
 - **Advanced Jogging (Joint & Cartesian):** Granular jogging of individual joints with step sizes from 0.01° to 45.00°. Includes Pseudo-Inverse Kinematics for smooth Cartesian (XYZ ABC) jogging.
 - **XY Table Configuration:** Fully interactive 3D setup for global XY stages, assignable to specific robots for advanced positioning and interpolation.
 - **Automatic Tool Changer (ATC):** Configure Vertical Panel, Horizontal Panel, or Revolver ATC types. Assign tools to slots and define pickup coordinates (XYZABC + XY Table).

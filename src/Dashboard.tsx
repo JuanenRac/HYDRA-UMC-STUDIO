@@ -4,7 +4,7 @@ import { useHydraStore, createDefaultRobots, createDefaultCameras } from './stor
 import { 
   Activity, Crosshair, Layers, 
   Video, Focus, Settings, Menu, Plus, Trash2, Search, AlertTriangle, Power
-} from 'lucide-react';
+, Cpu, PenTool, Zap, Wind, Thermometer } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -16,17 +16,24 @@ function cn(...inputs: ClassValue[]) {
 import { RobotDetail } from './components/RobotDetail';
 import { CamerasView } from './components/CamerasView';
 import { XYTableConfig } from './components/XYTableConfig';
+import { JuanenPnPConfig } from './components/JuanenPnPConfig';
+import { LumenPnPConfig } from './components/LumenPnPConfig';
+import { JuanenCNCConfig } from './components/JuanenCNCConfig';
+import { JuanenLaserConfig } from './components/JuanenLaserConfig';
+import { VacuumTableConfig } from './components/VacuumTableConfig';
+import { HeatedBedConfig } from './components/HeatedBedConfig';
 import { ATCToolsConfig } from './components/ATCToolsConfig';
 import { RackConfigView } from './components/RackConfigView';
 
 export default function Dashboard() {
   const { controllers, activeControllerId, setActiveControllerId, activeController, updateController, robots, settings, updateSettings, updateRobot, addController, removeController } = useHydraStore();
-  const [activeTab, setActiveTab] = useState<'overview' | 'robot' | 'cameras' | 'xytable' | 'atc' | 'rack'>('overview');
+  const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [configTab, setConfigTab] = useState<'controllers' | 'ui' | 'robots' | 'models' | 'integrations'>('controllers');
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isModulesMenuOpen, setIsModulesMenuOpen] = useState(false);
   
 
   const activeRobot = robots.find(r => r.id === selectedRobotId);
@@ -85,13 +92,20 @@ export default function Dashboard() {
                                   className="bg-transparent border-none outline-none text-slate-200 w-full"
                                 />
                               </td>
-                              <td className="px-4 py-2">
-                                <input
-                                  value={c.ip}
-                                  onChange={e => updateController(c.id, { ip: e.target.value })}
-                                  className="bg-transparent border-none outline-none font-mono text-slate-300 w-full"
-                                />
-                              </td>
+                              <td className="px-4 py-2 flex items-center gap-2">
+    <input
+      value={c.ip}
+      onChange={e => updateController(c.id, { ip: e.target.value })}
+      className="bg-transparent border-none outline-none font-mono text-slate-300 w-full"
+    />
+    <button
+      onClick={() => window.location.href = `http://${c.ip}:${window.location.port}`}
+      className="p-1 hover:bg-slate-700 rounded text-sky-400 transition-colors"
+      title="Connect to Host"
+    >
+      <Power size={14} />
+    </button>
+  </td>
                               <td className="px-4 py-2">
                                 <select 
                                   value={c.status}
@@ -202,12 +216,22 @@ export default function Dashboard() {
                         <option value="Sunset">Sunset</option>
                         <option value="Hacker">Hacker</option>
                         <option value="Synthwave">Synthwave</option>
+  <option value="Dracula">Dracula</option>
+  <option value="Nord">Nord</option>
+  <option value="Solarized Dark">Solarized Dark</option>
+  <option value="Solarized Light">Solarized Light</option>
+  <option value="Monokai">Monokai</option>
+  <option value="Gruvbox">Gruvbox</option>
+  <option value="Tokyo Night">Tokyo Night</option>
+  <option value="Catppuccin">Catppuccin</option>
+  <option value="Midnight Blue">Midnight Blue</option>
+  <option value="Neon">Neon</option>
                       </select>
                     </div>
                     <div>
                       <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Shared Resources Visibility</h3>
                       <div className="space-y-2 bg-slate-950 p-4 rounded-lg border border-slate-800">
-                        {['Vision/Cameras', 'XY Table config', 'ATC Tools', 'Rack Config'].map(module => (
+                        {['Vision/Cameras', 'XY Table', 'ATC Tools', 'Rack', 'JuanenPnP', 'LumenPnP', 'JuanenCNC', 'JuanenLaser', 'Vacuum Table', 'Heated Bed'].map(module => (
                           <label key={module} className="flex items-center gap-3">
                             <input 
                               type="checkbox" 
@@ -417,78 +441,110 @@ export default function Dashboard() {
       <div className="flex flex-1 overflow-hidden h-[calc(100%-4rem)]">
         {/* Sidebar Nav - larger targets for 10" touch */}
         <nav className={cn(
-          "shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col gap-3 z-10 overflow-y-auto custom-scrollbar transition-all duration-300 ease-in-out",
+          "shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col gap-3 z-10 overflow-y-auto custom-scrollbar transition-all duration-300 ease-in-out relative",
           isSidebarOpen ? "w-64 p-4 opacity-100" : "w-0 p-0 opacity-0 overflow-hidden border-none"
         )}>
-          <NavItem 
-            icon={<Activity size={18} />} 
-            label="Overview" 
-            active={activeTab === 'overview'} 
-            onClick={() => setActiveTab('overview')} 
-          />
-          <div className="mt-3 mb-1 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-            Networked Robots
-          </div>
-          {robots.map(r => (
-            <button
-              key={r.id}
-              onClick={() => {
-                setSelectedRobotId(r.id);
-                setActiveTab('robot');
-              }}
-              className={cn(
-                "flex items-center justify-between px-3 py-3 min-h-[50px] rounded-lg text-sm transition-all text-left",
-                activeTab === 'robot' && selectedRobotId === r.id
-                  ? "bg-sky-500/10 text-sky-400 glow-border-sky"
-                  : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
-              )}
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <div className={cn("w-2 h-2 rounded-full shrink-0", r.online ? "bg-emerald-500" : "bg-slate-700")} />
-                <span className="truncate font-medium">{r.name}</span>
+          {isModulesMenuOpen ? (
+            <div className="flex flex-col gap-3 h-full animate-in slide-in-from-right-4 fade-in duration-300">
+              <button 
+                onClick={() => setIsModulesMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-slate-400 hover:text-slate-200 transition-colors uppercase tracking-wider mb-2"
+              >
+                ← Back
+              </button>
+              
+              <div className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                Modules
               </div>
-              <span className="text-[10px] uppercase font-mono opacity-60 shrink-0 ml-1">{r.model}</span>
-            </button>
-          ))}
-          
-          <div className="mt-3 mb-1 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-            Shared Resources
-          </div>
-          
-          {/* Vision/Cameras is always first if enabled (it is forced enabled in UI but let's check array) */}
-          {settings.visibleModules?.includes('Vision/Cameras') && (
-            <NavItem 
-              icon={<Video size={18} />} 
-              label="Vision / Cameras" 
-              active={activeTab === 'cameras'} 
-              onClick={() => setActiveTab('cameras')} 
-            />
-          )}
-          {settings.visibleModules?.includes('XY Table config') && (
-            <NavItem 
-              icon={<Crosshair size={18} />} 
-              label="XY Table config" 
-              active={activeTab === 'xytable'} 
-              onClick={() => setActiveTab('xytable')} 
-            />
-          )}
-          {settings.visibleModules?.includes('ATC Tools') && (
-            <NavItem 
-              icon={<Focus size={18} />} 
-              label="ATC Tools" 
-              active={activeTab === 'atc'} 
-              onClick={() => setActiveTab('atc')} 
-            />
-          )}
-          {settings.visibleModules?.includes('Rack Config') && (
-            <NavItem 
-              icon={<Layers size={18} />} 
-              label="Rack Config" 
-              active={activeTab === 'rack'} 
-              onClick={() => setActiveTab('rack')} 
-            />
-          )}
+              
+              {settings.visibleModules?.includes('XY Table') && (
+                <NavItem icon={<Crosshair size={18} />} label="XY Table" active={activeTab === 'xytable'} onClick={() => setActiveTab('xytable')} />
+              )}
+              {settings.visibleModules?.includes('ATC Tools') && (
+                <NavItem icon={<Focus size={18} />} label="ATC Tools" active={activeTab === 'atc'} onClick={() => setActiveTab('atc')} />
+              )}
+              {settings.visibleModules?.includes('Rack') && (
+                <NavItem icon={<Layers size={18} />} label="Rack" active={activeTab === 'rack'} onClick={() => setActiveTab('rack')} />
+              )}
+              {settings.visibleModules?.includes('JuanenPnP') && (
+                <NavItem icon={<Cpu size={18} />} label="JuanenPnP" active={activeTab === 'juanenpnp'} onClick={() => setActiveTab('juanenpnp')} />
+              )}
+              {settings.visibleModules?.includes('LumenPnP') && (
+                <NavItem icon={<Cpu size={18} />} label="LumenPnP" active={activeTab === 'lumenpnp'} onClick={() => setActiveTab('lumenpnp')} />
+              )}
+              {settings.visibleModules?.includes('JuanenCNC') && (
+                <NavItem icon={<PenTool size={18} />} label="JuanenCNC" active={activeTab === 'juanencnc'} onClick={() => setActiveTab('juanencnc')} />
+              )}
+              {settings.visibleModules?.includes('JuanenLaser') && (
+                <NavItem icon={<Zap size={18} />} label="JuanenLaser" active={activeTab === 'juanenlaser'} onClick={() => setActiveTab('juanenlaser')} />
+              )}
+              {settings.visibleModules?.includes('Vacuum Table') && (
+                <NavItem icon={<Wind size={18} />} label="Vacuum Table" active={activeTab === 'vacuumtable'} onClick={() => setActiveTab('vacuumtable')} />
+              )}
+              {settings.visibleModules?.includes('Heated Bed') && (
+                <NavItem icon={<Thermometer size={18} />} label="Heated Bed" active={activeTab === 'heatedbed'} onClick={() => setActiveTab('heatedbed')} />
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 h-full animate-in slide-in-from-left-4 fade-in duration-300">
+              <NavItem 
+                icon={<Activity size={18} />} 
+                label="Overview" 
+                active={activeTab === 'overview'} 
+                onClick={() => setActiveTab('overview')} 
+              />
+              <div className="mt-3 mb-1 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                Networked Robots
+              </div>
+              {robots.map(r => (
+                <button
+                  key={r.id}
+                  onClick={() => {
+                    setSelectedRobotId(r.id);
+                    setActiveTab('robot');
+                  }}
+                  className={cn(
+                    "flex items-center justify-between px-3 py-3 min-h-[50px] rounded-lg text-sm transition-all text-left",
+                    activeTab === 'robot' && selectedRobotId === r.id
+                      ? "bg-sky-500/10 text-sky-400 glow-border-sky"
+                      : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
+                  )}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className={cn("w-2 h-2 rounded-full shrink-0", r.online ? "bg-emerald-500" : "bg-slate-700")} />
+                    <span className="truncate font-medium">{r.name}</span>
+                  </div>
+                  <span className="text-[10px] uppercase font-mono opacity-60 shrink-0 ml-1">{r.model}</span>
+                </button>
+              ))}
+              
+              <div className="mt-3 mb-1 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                Shared Resources
+              </div>
+              
+              {settings.visibleModules?.includes('Vision/Cameras') && (
+                <NavItem 
+                  icon={<Video size={18} />} 
+                  label="Vision / Cameras" 
+                  active={activeTab === 'cameras'} 
+                  onClick={() => setActiveTab('cameras')} 
+                />
+              )}
 
+              <button
+                onClick={() => setIsModulesMenuOpen(true)}
+                className={cn(
+                  "flex items-center gap-4 px-4 py-4 min-h-[64px] rounded-xl font-medium text-lg transition-all",
+                  isModulesMenuOpen || ['xytable', 'atc', 'rack', 'juanenpnp', 'lumenpnp', 'juanencnc', 'juanenlaser', 'vacuumtable', 'heatedbed'].includes(activeTab)
+                    ? "bg-sky-500/10 text-sky-400 glow-border-sky" 
+                    : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
+                )}
+              >
+                <Layers size={18} />
+                <span className="truncate">Modules</span>
+              </button>
+            </div>
+          )}
         </nav>
 
         {/* Main Content Area */}
@@ -499,6 +555,14 @@ export default function Dashboard() {
           {activeTab === 'xytable' && <XYTableConfig />}
           {activeTab === 'atc' && <ATCToolsConfig />}
           {activeTab === 'rack' && <RackConfigView />}
+
+        {activeTab === 'juanenpnp' && <JuanenPnPConfig />}
+        {activeTab === 'lumenpnp' && <LumenPnPConfig />}
+        {activeTab === 'juanencnc' && <JuanenCNCConfig />}
+        {activeTab === 'juanenlaser' && <JuanenLaserConfig />}
+        {activeTab === 'vacuumtable' && <VacuumTableConfig />}
+        {activeTab === 'heatedbed' && <HeatedBedConfig />}
+
         </main>
       </div>
     </div>
@@ -584,6 +648,36 @@ function OverviewPanel() {
             {r.rackSystem?.enabled && (
               <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-rose-400 bg-rose-400/10 p-1 rounded border border-rose-500/20">
                 <Layers size={10} /> Rack Active
+              </div>
+            )}
+            {r.juanenPnP?.enabled && (
+              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-blue-400 bg-blue-400/10 p-1 rounded border border-blue-500/20">
+                JuanenPnP
+              </div>
+            )}
+            {r.lumenPnP?.enabled && (
+              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-indigo-400 bg-indigo-400/10 p-1 rounded border border-indigo-500/20">
+                LumenPnP
+              </div>
+            )}
+            {r.juanenCNC?.enabled && (
+              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-fuchsia-400 bg-fuchsia-400/10 p-1 rounded border border-fuchsia-500/20">
+                JuanenCNC
+              </div>
+            )}
+            {r.juanenLaser?.enabled && (
+              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-red-400 bg-red-400/10 p-1 rounded border border-red-500/20">
+                JuanenLaser
+              </div>
+            )}
+            {r.vacuumTable?.enabled && (
+              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-teal-400 bg-teal-400/10 p-1 rounded border border-teal-500/20">
+                Vacuum Table
+              </div>
+            )}
+            {r.heatedBed?.enabled && (
+              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-orange-400 bg-orange-400/10 p-1 rounded border border-orange-500/20">
+                Heated Bed
               </div>
             )}
             {cameras.find(c => c.id === r.id)?.connected ? (
