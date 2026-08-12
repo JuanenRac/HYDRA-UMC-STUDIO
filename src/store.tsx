@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
 
+export const unthrottledDelay = () => new Promise<void>(resolve => setTimeout(resolve, 16));
+
+export const globalPlaybacks: Record<number, boolean> = {};
+
 export type RobotModel = 'Parol6 (6-DOF)' | 'Faze4 (6-DOF)' | 'AR3 (6-DOF)' | 'AR4 (6-DOF)' | 'Generic (6-DOF)';
 export type RobotRole = 'Idle' | 'CNC' | 'Laser' | 'Pnp' | '3D printing' | 'Inspection';
 export type ToolType = 
@@ -107,6 +111,8 @@ export interface RobotState {
     activeStep: number;
     speed: number;
   };
+  cameraView?: { position: [number, number, number]; target: [number, number, number] };
+  centerCameraTrigger?: number;
 
   juanenPnP: SharedModuleGeneric;
   lumenPnP: SharedModuleGeneric;
@@ -160,9 +166,14 @@ export interface SystemSettings {
   autoConnectRobots: boolean;
   theme: string;
   language: string;
+  worksPaths?: Record<string, string>;
+  gamepadEnabled?: boolean;
+  gamepadMapping?: Record<string, string>;
   uiLayout?: {
     rightPanelWidth?: number;
     pointsTableHeight?: number;
+    threeDHeight?: number;
+    cameraPips?: Record<number, { x?: number, y?: number, w?: number, h?: number, isOpen?: boolean }>;
   };
 }
 
@@ -184,6 +195,7 @@ interface HydraStoreContextType {
   loadKinematics: (id: number, e: React.ChangeEvent<HTMLInputElement>) => void;
   exportScene: () => void;
   importScene: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  factoryReset: () => void;
 }
 
 export const createDefaultRobots = (): RobotState[] => {
@@ -283,7 +295,13 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [controllers, setControllers] = useState<HydraController[]>(() => {
     try {
       const saved = localStorage.getItem('hydra_controllers');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        parsed.forEach((c: any) => c.robots?.forEach((r: any) => {
+          if (!r.playbackState) r.playbackState = { isPlaying: false, activeStep: 0, speed: 100 };
+        }));
+        return parsed;
+      }
     } catch(e) {}
     
     let host = '192.168.1.100';
@@ -330,6 +348,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     autoConnectRobots: false,
     theme: "Dark Mode (Default)",
     language: "en",
+    worksPaths: {},
     uiLayout: {
       rightPanelWidth: 320,
       pointsTableHeight: 300,
@@ -396,7 +415,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `kinematics_${robot.name.replace(/\s+/g, '_')}.json`;
+    const prefix = settings.worksPaths?.[robot.id] ? settings.worksPaths[robot.id].replace(/\//g, '_') + '_' : '';
+    a.download = `${prefix}kinematics_${robot.name.replace(/\s+/g, '_')}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -454,13 +474,18 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     e.target.value = '';
   };
 
+  const factoryReset = () => {
+    localStorage.clear();
+    window.location.reload();
+  };
+
   return (
     <HydraContext.Provider value={{ 
       controllers, activeControllerId, activeController, setActiveControllerId,
       robots, cameras, settings, 
       updateController, updateRobot, updateCamera, updateSettings, 
       saveKinematics, loadKinematics, addController, removeController,
-      exportScene, importScene
+      exportScene, importScene, factoryReset
     }}>
       {children}
     </HydraContext.Provider>

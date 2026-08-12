@@ -49,12 +49,12 @@ export function HeatedBedConfig() {
     <div className="h-full flex flex-col space-y-4">
       <div className="flex items-center justify-between shrink-0">
         <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-          <Thermometer className="text-sky-400" size={20} /> Heated Bed
+          <Thermometer className="text-sky-400" size={20} /> {t('modules.heated_bed_title', 'Heated Bed')}
         </h2>
         <div className="flex items-center gap-2">
           {isEnabled && (
             <button onClick={handleReset} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 text-sm flex items-center gap-2 transition-colors">
-              <RotateCcw size={16} /> Reset
+              <RotateCcw size={16} /> {t('modules.reset', 'Reset')}
             </button>
           )}
           <select 
@@ -72,15 +72,15 @@ export function HeatedBedConfig() {
       {!isEnabled ? (
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-8 flex flex-col items-center justify-center text-center flex-1">
           <Thermometer className="text-slate-600 mb-3" size={48} />
-          <h3 className="text-slate-200 font-medium mb-2">No Heated Bed Assigned</h3>
+          <h3 className="text-slate-200 font-medium mb-2">{t('modules.no_module_assigned', 'No Heated Bed Assigned', { machineType: 'Heated Bed' })}</h3>
           <p className="text-slate-400 text-sm max-w-md mb-6">
-            This robot does not currently have this module configured. Add one to enable its features.
+            {t('modules.no_module_desc', 'This robot does not currently have this module configured. Add one to enable its features.')}
           </p>
           <button 
             onClick={handleToggle}
             className="flex items-center gap-2 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/50 text-sky-400 px-4 py-2 rounded-lg font-medium transition-colors"
           >
-            <Plus size={16} /> Enable Heated Bed
+            <Plus size={16} /> {t('modules.enable_module', 'Enable Heated Bed', { machineType: 'Heated Bed' })}
           </button>
         </div>
       ) : (
@@ -88,12 +88,12 @@ export function HeatedBedConfig() {
           <div className="space-y-4 overflow-y-auto custom-scrollbar pr-2">
             <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-slate-200">Module Settings</h3>
+                <h3 className="text-sm font-medium text-slate-200">{t('modules.module_settings', 'Module Settings')}</h3>
                 <button 
                   onClick={handleToggle}
                   className="text-[10px] text-rose-400 hover:text-rose-300 uppercase tracking-wider font-semibold"
                 >
-                  Remove Module
+                  {t('modules.remove_module', 'Remove Module')}
                 </button>
               </div>
               
@@ -101,7 +101,7 @@ export function HeatedBedConfig() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
-                      <Maximize2 size={12} /> Width (X mm)
+                      <Maximize2 size={12} /> {t('modules.width_x', 'Width (X mm)')}
                     </label>
                     <input 
                       type="number"
@@ -113,7 +113,7 @@ export function HeatedBedConfig() {
                   </div>
                   <div>
                     <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
-                      <Maximize2 size={12} className="rotate-90" /> Length (Y mm)
+                      <Maximize2 size={12} className="rotate-90" /> {t('modules.length_y', 'Length (Y mm)')}
                     </label>
                     <input 
                       type="number"
@@ -129,19 +129,19 @@ export function HeatedBedConfig() {
 
             <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 space-y-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-slate-200">Heating Controls</h3>
+                <h3 className="text-sm font-medium text-slate-200">{t('modules.heating_controls', 'Heating Controls')}</h3>
                 <button 
                   onClick={() => handleCustomChange('ssrActive', !moduleData.ssrActive)}
                   className={`flex items-center justify-center gap-2 px-3 py-1 text-xs border transition-all font-medium rounded ${moduleData.ssrActive ? 'bg-rose-500/20 border-rose-500 text-rose-400' : 'bg-slate-950 border-slate-700 text-slate-400'}`}
                 >
-                  <Power size={12} /> SSR {moduleData.ssrActive ? 'ON' : 'OFF'}
+                  <Power size={12} /> {t('modules.ssr', 'SSR')} {moduleData.ssrActive ? t('modules.on', 'ON') : t('modules.off', 'OFF')}
                 </button>
               </div>
               
               <div className="grid grid-cols-1 gap-3">
                 <div>
                   <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
-                    Target Temp (°C)
+                    {t('modules.target_temp', 'Target Temp (°C)')}
                   </label>
                   <input 
                     type="number"
@@ -155,11 +155,11 @@ export function HeatedBedConfig() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-950 border border-slate-800 rounded p-3 flex flex-col items-center gap-1">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase">Thermistor 1</div>
+                  <div className="text-[10px] font-bold text-slate-500 uppercase">{t('modules.thermistor_1', 'Thermistor 1')}</div>
                   <div className="text-lg font-mono text-orange-400">{moduleData?.currentTemp1?.toFixed(1) || '25.0'} °C</div>
                 </div>
                 <div className="bg-slate-950 border border-slate-800 rounded p-3 flex flex-col items-center gap-1">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase">Thermistor 2</div>
+                  <div className="text-[10px] font-bold text-slate-500 uppercase">{t('modules.thermistor_2', 'Thermistor 2')}</div>
                   <div className="text-lg font-mono text-orange-400">{moduleData?.currentTemp2?.toFixed(1) || '25.0'} °C</div>
                 </div>
               </div>
@@ -170,7 +170,7 @@ export function HeatedBedConfig() {
           <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden relative h-[400px] md:h-auto min-h-[400px]">
             <div className="absolute top-3 left-3 z-10 pointer-events-none">
               <span className="bg-slate-950/80 backdrop-blur text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-800">
-                3D Live View
+                {t('modules.live_view_3d', '3D Live View')}
               </span>
             </div>
             <Canvas camera={{ position: [0.6, 0.6, 0.6], fov: 50 }} shadows className="w-full h-full outline-none">

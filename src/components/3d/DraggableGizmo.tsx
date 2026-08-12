@@ -50,11 +50,15 @@ export default function DraggableGizmo({ position, controlMode, onMouseUp, child
 
   const handleTransformMouseUp = (e: any) => {
     if (e?.target?.object) {
+       const obj = e.target.object as THREE.Object3D;
+       const yAngle = new THREE.Euler().setFromQuaternion(obj.quaternion, 'YXZ').y;
+       const fakeRot = obj.rotation.clone();
+       fakeRot.y = yAngle;
        const mockEvent = {
          target: {
            object: {
-             position: e.target.object.position,
-             rotation: e.target.object.rotation,
+             position: obj.position,
+             rotation: fakeRot,
              scale: new THREE.Vector3(scale[0], scale[1], scale[2])
            }
          }

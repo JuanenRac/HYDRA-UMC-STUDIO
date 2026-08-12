@@ -1,5 +1,6 @@
-import React, { useRef, useMemo } from 'react';
-import { Canvas } from '@react-three/fiber';
+import React, { useRef, useMemo, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html, TransformControls, Box, Cylinder, Sphere, RoundedBox, Line, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { useHydraStore, type RobotState } from '../store';
@@ -11,8 +12,52 @@ import ATC3DView from './3d/ATC3DView';
 import Rack3DView from './3d/Rack3DView';
 import DraggableGizmo from './3d/DraggableGizmo';
 
+function CameraAnimator({ targetPosition, targetFocus, trigger, controlsRef, initialView }: { targetPosition: [number, number, number], targetFocus: [number, number, number], trigger?: number, controlsRef: React.MutableRefObject<any>, initialView?: { position: [number, number, number], target: [number, number, number] } }) {
+  const { camera } = useThree();
+  const isCentering = useRef(false);
+  const lastTrigger = useRef(trigger);
+  const initialized = useRef(false);
+
+  const targetPos = useMemo(() => new THREE.Vector3(...targetPosition), [targetPosition]);
+  const targetFoc = useMemo(() => new THREE.Vector3(...targetFocus), [targetFocus]);
+
+  useEffect(() => {
+    if (trigger && trigger !== lastTrigger.current) {
+      isCentering.current = true;
+      lastTrigger.current = trigger;
+    }
+  }, [trigger]);
+
+  useFrame((state, delta) => {
+    if (controlsRef.current && !initialized.current) {
+      if (initialView) {
+        camera.position.set(...initialView.position);
+        controlsRef.current.target.set(...initialView.target);
+      } else {
+        camera.position.set(...targetPosition);
+        controlsRef.current.target.set(...targetFocus);
+      }
+      controlsRef.current.update();
+      initialized.current = true;
+    }
+
+    if (isCentering.current && controlsRef.current) {
+      const step = 4 * delta;
+      camera.position.lerp(targetPos, step);
+      controlsRef.current.target.lerp(targetFoc, step);
+      controlsRef.current.update();
+
+      if (camera.position.distanceTo(targetPos) < 0.01 && controlsRef.current.target.distanceTo(targetFoc) < 0.01) {
+        isCentering.current = false;
+      }
+    }
+  });
+  return null;
+}
+
 export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; controlMode: 'translate' | 'rotate' | 'scale' | 'none' }) {
   const { updateRobot, settings, robots } = useHydraStore();
+  const controlsRef = useRef<any>(null);
 
   const hasXYTable = robot.hasXYTable;
   const xyTable = robot.xyTable;
@@ -20,6 +65,15 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
   // Convert mm to meters directly
   const tableW = xyTable ? (xyTable.tableSize.width / 1000) : 0;
   const tableL = xyTable ? (xyTable.tableSize.length / 1000) : 0;
+  
+  // Calculate Target Center for Camera
+  const targetX = hasXYTable 
+    ? ((xyTable?.worldPos?.x ?? -tableW * 500) / 1000) + tableW / 2
+    : (robot.pos?.tx || 0) / 1000;
+    
+  const targetZ = hasXYTable 
+    ? ((xyTable?.worldPos?.y ?? -tableL * 500) / 1000) + tableL / 2
+    : (robot.pos?.ty || 0) / 1000;
   
   // Clamped position for visualization
   const px = xyTable ? (Math.max(0, Math.min(xyTable.pos.x, xyTable.tableSize.width)) / 1000) : 0;
@@ -30,16 +84,15 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
 
   return (
     <div className="w-full h-full bg-slate-950 relative rounded-xl overflow-hidden">
-      <div className="absolute top-4 left-4 z-10 flex flex-col gap-1 pointer-events-none">
-        <span className="text-xs font-mono bg-slate-900/80 text-sky-400 px-2 py-1 rounded border border-sky-500/20 backdrop-blur shadow-lg shadow-black/20">
-          Model: {robot.model}
-        </span>
-        <span className="text-xs font-mono bg-slate-900/80 text-emerald-400 px-2 py-1 rounded border border-emerald-500/20 backdrop-blur shadow-lg shadow-black/20">
-          Tool: {robot.tool}
-        </span>
-      </div>
       <Canvas shadows className="w-full h-full outline-none touch-none">
-        <PerspectiveCamera makeDefault position={[0.4, 0.4, 0.6]} fov={45} />
+        <PerspectiveCamera makeDefault fov={45} />
+        <CameraAnimator 
+          targetPosition={[targetX + 0.5, 0.4, targetZ + 0.6]} 
+          targetFocus={[targetX, 0.2, targetZ]} 
+          trigger={robot.centerCameraTrigger} 
+          controlsRef={controlsRef} 
+          initialView={robot.cameraView}
+        />
         
         <color attach="background" args={[settings.theme.includes('Light') ? '#e2e8f0' : '#07090C']} />
         
@@ -331,9 +384,10 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
                     const newX = e.target.object.position.x * 1000;
                     const newY = e.target.object.position.z * 1000;
                     updateRobot(robot.id, { 
-                      xyTable: { 
-                        ...robot.xyTable, 
-                        pos: { x: newX, y: newY } 
+                      pos: { ...robot.pos, tx: newX, ty: newY },
+                      xyTable: {
+                        ...robot.xyTable,
+                        pos: { x: newX, y: newY }
                       },
                       renderScale: e.target.object.scale.x * (robot.xyTable?.renderScale || 1)
                     });
@@ -376,7 +430,26 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
           </group>
         )}
 
-        <OrbitControls makeDefault maxPolarAngle={Math.PI / 2 + 0.1} minDistance={0.5} maxDistance={6} target={hasXYTable ? [0, 0.4, 0] : [0, 0.4, 0]} />
+        <OrbitControls 
+          ref={controlsRef}
+          makeDefault 
+          maxPolarAngle={Math.PI / 2 + 0.1} 
+          minDistance={0.5} 
+          maxDistance={6} 
+          onEnd={(e) => {
+            if (e && e.target) {
+              const controls = e.target as any;
+              const position = controls.object.position;
+              const target = controls.target;
+              updateRobot(robot.id, {
+                cameraView: {
+                  position: [position.x, position.y, position.z],
+                  target: [target.x, target.y, target.z]
+                }
+              });
+            }
+          }}
+        />
       </Canvas>
     </div>
   );

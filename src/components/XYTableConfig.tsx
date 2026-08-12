@@ -102,12 +102,12 @@ export function XYTableConfig() {
     <div className="h-full flex flex-col space-y-4">
       <div className="flex items-center justify-between shrink-0">
         <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-          <Crosshair className="text-amber-400" size={20} /> XY Table
+          <Crosshair className="text-amber-400" size={20} /> {t('modules.xy_table_title', 'XY Table')}
         </h2>
         <div className="flex items-center gap-2">
           {selectedRobot.hasXYTable && (
             <button onClick={handleReset} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 text-sm flex items-center gap-2 transition-colors">
-              <RotateCcw size={16} /> Reset
+              <RotateCcw size={16} /> {t('modules.reset', 'Reset')}
             </button>
           )}
           <select 
@@ -125,16 +125,15 @@ export function XYTableConfig() {
       {!selectedRobot.hasXYTable ? (
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-8 flex flex-col items-center justify-center text-center flex-1">
           <Crosshair className="text-slate-600 mb-3" size={48} />
-          <h3 className="text-slate-200 font-medium mb-2">No XY Table Assigned</h3>
+          <h3 className="text-slate-200 font-medium mb-2">{t('modules.no_module_assigned', 'No XY Table Assigned', { machineType: 'XY Table' })}</h3>
           <p className="text-slate-400 text-sm max-w-md mb-6">
-            This robot does not currently have an XY table configured. Add one to enable 
-            extended working area and coordinated motion.
+            {t('modules.no_module_desc', 'This robot does not currently have this module configured. Add one to enable its features.')}
           </p>
           <button 
             onClick={handleAddTable}
             className="flex items-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/50 text-amber-400 px-4 py-2 rounded-lg font-medium transition-colors"
           >
-            <Plus size={16} /> Enable XY Table
+            <Plus size={16} /> {t('modules.enable_module', 'Enable XY Table', { machineType: 'XY Table' })}
           </button>
         </div>
       ) : (
@@ -142,12 +141,12 @@ export function XYTableConfig() {
           <div className="space-y-4 overflow-y-auto custom-scrollbar pr-2">
             <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-slate-200">Table Settings</h3>
+                <h3 className="text-sm font-medium text-slate-200">{t('modules.module_settings', 'Table Settings')}</h3>
                 <button 
                   onClick={() => updateRobot(selectedRobot.id, { hasXYTable: false })}
                   className="text-[10px] text-rose-400 hover:text-rose-300 uppercase tracking-wider font-semibold"
                 >
-                  Remove Table
+                  {t('modules.remove_module', 'Remove Module')}
                 </button>
               </div>
               
@@ -155,7 +154,7 @@ export function XYTableConfig() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
-                      <Maximize2 size={12} /> Width (X mm)
+                      <Maximize2 size={12} /> {t('modules.width_x', 'Width (X mm)')}
                     </label>
                     <input 
                       type="number"
@@ -167,7 +166,7 @@ export function XYTableConfig() {
                   </div>
                   <div>
                     <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
-                      <Maximize2 size={12} className="rotate-90" /> Length (Y mm)
+                      <Maximize2 size={12} className="rotate-90" /> {t('modules.length_y', 'Length (Y mm)')}
                     </label>
                     <input 
                       type="number"
@@ -183,9 +182,9 @@ export function XYTableConfig() {
             
             <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-slate-200">Manual Jog Control</h3>
+                <h3 className="text-sm font-medium text-slate-200">{t('modules.jog', 'Manual Jog Control')}</h3>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Step:</span>
+                  <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{t('modules.step', 'Step:')}</span>
                   <select 
                     className="bg-slate-950 border border-slate-800 rounded px-2 py-1 min-h-[36px] text-xs text-amber-400 font-mono focus:outline-none focus:border-amber-500"
                     value={jogStep}
@@ -232,7 +231,7 @@ export function XYTableConfig() {
               
               <div className="mt-4 flex justify-end">
                 <button className="flex items-center justify-center gap-2 min-h-[44px] bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-200 px-4 py-2 rounded transition-colors text-xs font-medium">
-                  <Save size={16} /> Save Table Calibration
+                  <Save size={16} /> {t('modules.save_config', 'Save Config')}
                 </button>
               </div>
             </div>
@@ -241,7 +240,7 @@ export function XYTableConfig() {
           <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden relative h-[400px] md:h-auto min-h-[400px]">
             <div className="absolute top-3 left-3 z-10 pointer-events-none">
               <span className="bg-slate-950/80 backdrop-blur text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-800">
-                3D Live View
+                {t('modules.live_view_3d', '3D Live View')}
               </span>
             </div>
             <Canvas camera={{ position: [0.6, 0.6, 0.6], fov: 50 }} shadows className="w-full h-full outline-none">

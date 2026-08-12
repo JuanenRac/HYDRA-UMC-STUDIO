@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { useHydraStore, createDefaultRobots, createDefaultCameras } from './store';
 import { 
   Activity, Crosshair, Layers, 
   Video, Focus, Settings, Menu, Plus, Trash2, Search, AlertTriangle, Power
-, Cpu, PenTool, Zap, Wind, Thermometer, Download, Upload } from 'lucide-react';
+, Cpu, PenTool, Zap, Wind, Thermometer, Download, Upload, RefreshCw } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -25,14 +25,15 @@ import { VacuumTableConfig } from './components/VacuumTableConfig';
 import { HeatedBedConfig } from './components/HeatedBedConfig';
 import { ATCToolsConfig } from './components/ATCToolsConfig';
 import { RackConfigView } from './components/RackConfigView';
+import { GamepadConfig } from './components/GamepadConfig';
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
-  const { controllers, activeControllerId, setActiveControllerId, activeController, updateController, robots, settings, updateSettings, updateRobot, addController, removeController, exportScene, importScene } = useHydraStore();
+  const { controllers, activeControllerId, setActiveControllerId, activeController, updateController, robots, settings, updateSettings, updateRobot, addController, removeController, exportScene, importScene, factoryReset } = useHydraStore();
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [configTab, setConfigTab] = useState<'controllers' | 'ui' | 'robots' | 'models' | 'integrations'>('controllers');
+  const [configTab, setConfigTab] = useState<'controllers' | 'ui' | 'robots' | 'models' | 'integrations' | 'paths' | 'gamepad'>('controllers');
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isModulesMenuOpen, setIsModulesMenuOpen] = useState(false);
@@ -69,8 +70,24 @@ export default function Dashboard() {
                 <button onClick={() => setConfigTab('robots')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'robots' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.robot_names', 'Robot Names')}</button>
                 <button onClick={() => setConfigTab('models')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'models' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.custom_models', 'Custom Models')}</button>
                 <button onClick={() => setConfigTab('integrations')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'integrations' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.integrations', 'Integrations')}</button>
-              </div>
+                <button onClick={() => setConfigTab('paths')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'paths' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.paths', 'Work Paths')}</button>
+                <button onClick={() => setConfigTab('gamepad')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'gamepad' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>Gamepad</button>
+              
+                <div className="mt-auto border-t border-slate-800 p-4">
+                  <button 
+                    onClick={() => {
+                      if (window.confirm(t('config.reset_confirm', 'Are you sure you want to reset all configurations? This cannot be undone.'))) {
+                        localStorage.clear();
+                        window.location.reload();
+                      }
+                    }}
+                    className="w-full px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw size={16} /> {t('config.reset', 'Factory Reset')}
+                  </button>
+                </div>
 
+              </div>
               <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-900">
                 {configTab === 'controllers' && (
                   <div className="space-y-4">
@@ -165,14 +182,14 @@ export default function Dashboard() {
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">FDCAN Config</label>
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('config.fdcan_config', 'FDCAN Config')}</label>
                           <select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
-                            <option>Classic CAN</option>
+                            <option>{t('config.classic_can', 'Classic CAN')}</option>
                             <option>FDCAN</option>
                           </select>
                         </div>
                         <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">CANBUS Bitrate</label>
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('config.canbus_bitrate', 'CANBUS Bitrate')}</label>
                           <select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
                             <option>500 kbps</option>
                             <option>1 Mbps</option>
@@ -181,7 +198,7 @@ export default function Dashboard() {
                           </select>
                         </div>
                         <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Telemetry</label>
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('config.telemetry', 'Telemetry')}</label>
                           <select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
                             <option>10ms (100Hz)</option>
                             <option>20ms (50Hz)</option>
@@ -191,10 +208,10 @@ export default function Dashboard() {
                         </div>
                         <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 flex flex-col justify-center gap-2">
                           <button className="w-full py-2 bg-rose-900/40 hover:bg-rose-800/60 text-rose-400 border border-rose-700/50 rounded text-sm font-bold uppercase transition-colors flex items-center justify-center gap-2">
-                            <AlertTriangle size={16} /> Global E-Stop
+                            <AlertTriangle size={16} /> {t('config.global_estop', 'Global E-Stop')}
                           </button>
                           <button className="w-full py-2 bg-amber-900/40 hover:bg-amber-800/60 text-amber-400 border border-amber-700/50 rounded text-sm font-bold uppercase transition-colors flex items-center justify-center gap-2">
-                            <Power size={16} /> Reboot Controller
+                            <Power size={16} /> {t('config.reboot_controller', 'Reboot Controller')}
                           </button>
                         </div>
                       </div>
@@ -252,7 +269,7 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">{t('config.shared_resources', 'Shared Resources Visibility')}</h3>
-                      <div className="space-y-2 bg-slate-950 p-4 rounded-lg border border-slate-800">
+                      <div className="grid grid-cols-2 gap-2 bg-slate-950 p-4 rounded-lg border border-slate-800">
                         {['Vision/Cameras', 'XY Table', 'ATC Tools', 'Rack', 'PickAndPlace', 'CNC', 'Laser', 'Vacuum Table', 'Heated Bed'].map(module => {
                           const moduleTitleMap: Record<string, string> = {
                             'Vision/Cameras': t('dashboard.vision_cameras', 'Vision / Cameras'),
@@ -280,7 +297,7 @@ export default function Dashboard() {
                               disabled={module === 'Vision/Cameras'}
                               className="w-4 h-4 rounded border-slate-700 text-sky-500 focus:ring-sky-500 bg-slate-900"
                             />
-                            <span className="text-sm text-slate-300">{moduleTitleMap[module]} {module === 'Vision/Cameras' && t('config.vision_required', '(Required)')}</span>
+                            <span className="text-sm text-slate-300 truncate" title={moduleTitleMap[module]}>{moduleTitleMap[module]} {module === 'Vision/Cameras' && t('config.vision_required', '(Required)')}</span>
                           </label>
                         )})}
                       </div>
@@ -299,7 +316,7 @@ export default function Dashboard() {
                             value={r.name}
                             onChange={(e) => updateRobot(r.id, { name: e.target.value })}
                             className="bg-transparent border-none outline-none text-slate-200 flex-1 text-sm font-semibold"
-                            placeholder="Robot Name"
+                            placeholder={t('config.robot_name_placeholder', 'Robot Name')}
                           />
                         </div>
                       ))}
@@ -323,7 +340,7 @@ export default function Dashboard() {
                               updateSettings({ customModels: newModels });
                             }}
                             className="bg-transparent border-none outline-none text-slate-200 flex-1 text-sm font-semibold"
-                            placeholder="Model Name"
+                            placeholder={t('config.model_name_placeholder', 'Model Name')}
                           />
                           <button 
                             onClick={() => {
@@ -382,6 +399,8 @@ export default function Dashboard() {
                           {t('config.enabled', 'Enabled')}
                         </label>
                       </div>
+
+
                       <div className="grid grid-cols-2 gap-4">
                         <input placeholder={t('config.ip_address', 'IP Address')} value={settings.integrations?.prusaSlicer?.ip} 
                           onChange={(e) => updateSettings({ integrations: { ...settings.integrations, prusaSlicer: { ...settings.integrations?.prusaSlicer, ip: e.target.value } } })}
@@ -422,10 +441,53 @@ export default function Dashboard() {
 
                   </div>
                 )}
+                {configTab === 'paths' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                      <h3 className="text-lg font-bold text-slate-200 tracking-wider flex items-center gap-2">
+                        {t('config.work_paths', 'Work Directories for Points')}
+                      </h3>
+                    </div>
+                    <div className="bg-sky-900/20 border border-sky-800/50 rounded-lg p-4 mb-4">
+                      <p className="text-sm text-sky-200/80 leading-relaxed">
+                        {t('config.work_paths_desc', 'Define virtual paths for each robot. Note: as a web app in Firefox, downloads will still go to your default Downloads folder, but the filename will include this prefix.')}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {activeController.robots.map(r => (
+                        <div key={r.id} className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800 shadow-sm hover:border-slate-700 transition-colors">
+                          <label className="text-xs text-slate-400 font-bold uppercase tracking-wider flex justify-between">
+                            <span>{r.name}</span>
+                            <span className="text-slate-600 font-mono">[{r.role}]</span>
+                          </label>
+                          <input 
+                            value={settings.worksPaths?.[r.id] || `Works/${r.name.replace(/\s+/g, '')}`}
+                            onChange={(e) => updateSettings({ worksPaths: { ...(settings.worksPaths || {}), [r.id]: e.target.value } })}
+                            className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 focus:glow-border-sky w-full font-mono transition-all"
+                            placeholder="Works/RobotName"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {configTab === 'gamepad' && (
+                  <GamepadConfig />
+                )}
               </div>
             </div>
 
-            <div className="p-4 border-t border-slate-800 flex justify-end gap-3 bg-slate-950 shrink-0">
+            <div className="p-4 border-t border-slate-800 flex justify-between gap-3 bg-slate-950 shrink-0">
+              <button 
+                onClick={() => {
+                  if (confirm(t('config.confirm_reset', 'Are you sure you want to restore all settings and scenes to factory defaults? This cannot be undone.'))) {
+                    factoryReset();
+                  }
+                }} 
+                className="px-4 py-2 text-sm bg-rose-950 text-rose-400 font-bold rounded transition-colors border border-rose-800 hover:bg-rose-900"
+              >
+                {t('config.factory_reset_upper', 'FACTORY RESET')}
+              </button>
               <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded transition-colors shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400 hover:shadow-[0_0_20px_rgba(0,229,255,0.8)]">{t('config.done', 'DONE')}</button>
             </div>
           </div>
@@ -665,7 +727,7 @@ function OverviewPanel() {
                 </div>
               );
             })()}
-            <div className="text-[11px] text-slate-400 grid grid-cols-[40px_1fr] gap-x-1 gap-y-1">
+            <div className="text-[11px] text-slate-400 grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
 
               <div>{t('dashboard.model', 'Model:')}</div>
               <div className="text-slate-200 font-medium">{r.model}</div>
@@ -683,60 +745,62 @@ function OverviewPanel() {
               </div>
             )}
             
-            {r.hasXYTable && (
-              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-amber-400 bg-amber-400/10 p-1 rounded border border-amber-500/20">
-                <Focus size={10} /> {t('dashboard.xy_assigned', 'XY Assigned')}
-              </div>
-            )}
-            {r.atc && (
-              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-sky-400 bg-sky-400/10 p-1 rounded border border-sky-500/20">
-                <Settings size={10} /> ATC: {r.atc.type.replace("_", " ")}
-              </div>
-            )}
-            {r.rackSystem?.enabled && (
-              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-rose-400 bg-rose-400/10 p-1 rounded border border-rose-500/20">
-                <Layers size={10} /> Rack Active
-              </div>
-            )}
-            {r.juanenPnP?.enabled && (
-              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-blue-400 bg-blue-400/10 p-1 rounded border border-blue-500/20">
-                JuanenPnP
-              </div>
-            )}
-            {r.lumenPnP?.enabled && (
-              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-indigo-400 bg-indigo-400/10 p-1 rounded border border-indigo-500/20">
-                LumenPnP
-              </div>
-            )}
-            {r.juanenCNC?.enabled && (
-              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-fuchsia-400 bg-fuchsia-400/10 p-1 rounded border border-fuchsia-500/20">
-                CNC: JuanenCNC
-              </div>
-            )}
-            {r.juanenLaser?.enabled && (
-              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-red-400 bg-red-400/10 p-1 rounded border border-red-500/20">
-                Laser: JuanenLaser
-              </div>
-            )}
-            {r.vacuumTable?.enabled && (
-              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-teal-400 bg-teal-400/10 p-1 rounded border border-teal-500/20">
-                Vacuum Table
-              </div>
-            )}
-            {r.heatedBed?.enabled && (
-              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-orange-400 bg-orange-400/10 p-1 rounded border border-orange-500/20">
-                Heated Bed
-              </div>
-            )}
-            {cameras.find(c => c.id === r.id)?.connected ? (
-              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-emerald-400 bg-emerald-500/10 p-1 rounded border border-emerald-500/20">
-                <Video size={10} /> {t('dashboard.camera_active', 'Camera Active')}
-              </div>
-            ) : (
-              <div className="mt-1 flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-slate-500 bg-slate-800 p-1 rounded border border-slate-700">
-                <Video size={10} /> {t('dashboard.camera_offline', 'Camera Offline')}
-              </div>
-            )}
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
+              {r.hasXYTable && (
+                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-amber-400 bg-amber-400/10 p-1 rounded border border-amber-500/20">
+                  <Focus size={10} /> {t('dashboard.xy_assigned', 'XY Assigned')}
+                </div>
+              )}
+              {r.atc && (
+                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-sky-400 bg-sky-400/10 p-1 rounded border border-sky-500/20">
+                  <Settings size={10} /> ATC: {r.atc.type.replace("_", " ")}
+                </div>
+              )}
+              {r.rackSystem?.enabled && (
+                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-rose-400 bg-rose-400/10 p-1 rounded border border-rose-500/20">
+                  <Layers size={10} /> Rack Active
+                </div>
+              )}
+              {r.juanenPnP?.enabled && (
+                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-blue-400 bg-blue-400/10 p-1 rounded border border-blue-500/20">
+                  JuanenPnP
+                </div>
+              )}
+              {r.lumenPnP?.enabled && (
+                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-indigo-400 bg-indigo-400/10 p-1 rounded border border-indigo-500/20">
+                  LumenPnP
+                </div>
+              )}
+              {r.juanenCNC?.enabled && (
+                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-fuchsia-400 bg-fuchsia-400/10 p-1 rounded border border-fuchsia-500/20">
+                  CNC: JuanenCNC
+                </div>
+              )}
+              {r.juanenLaser?.enabled && (
+                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-red-400 bg-red-400/10 p-1 rounded border border-red-500/20">
+                  Laser: JuanenLaser
+                </div>
+              )}
+              {r.vacuumTable?.enabled && (
+                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-teal-400 bg-teal-400/10 p-1 rounded border border-teal-500/20">
+                  Vacuum Table
+                </div>
+              )}
+              {r.heatedBed?.enabled && (
+                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-orange-400 bg-orange-400/10 p-1 rounded border border-orange-500/20">
+                  Heated Bed
+                </div>
+              )}
+              {cameras.find(c => c.id === r.id)?.connected ? (
+                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-emerald-400 bg-emerald-500/10 p-1 rounded border border-emerald-500/20">
+                  <Video size={10} /> {t('dashboard.camera_active', 'Camera Active')}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-slate-500 bg-slate-800 p-1 rounded border border-slate-700">
+                  <Video size={10} /> {t('dashboard.camera_offline', 'Camera Offline')}
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>

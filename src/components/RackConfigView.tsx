@@ -86,7 +86,7 @@ export function RackConfigView() {
           <div className="flex items-center gap-2">
         {config.enabled && (
           <button onClick={handleReset} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 text-sm flex items-center gap-2 transition-colors">
-            <RotateCcw size={16} /> Reset
+            <RotateCcw size={16} /> {t('modules.reset', 'Reset')}
           </button>
         )}
         <select 
@@ -94,9 +94,9 @@ export function RackConfigView() {
             onChange={(e) => updateRack(rackId, { type: e.target.value as any })}
             className="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 focus:border-sky-500 outline-none"
           >
-            <option value="None">Disabled</option>
-            <option value="Input">Input Rack</option>
-            <option value="Output">Output Rack</option>
+            <option value="None">{t('modules.disabled', 'Disabled')}</option>
+            <option value="Input">{t('modules.input_rack', 'Input Rack')}</option>
+            <option value="Output">{t('modules.output_rack', 'Output Rack')}</option>
           </select>
       </div>
         </div>
@@ -105,7 +105,7 @@ export function RackConfigView() {
           <div className="p-4 space-y-4">
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="text-xs font-bold text-slate-400 uppercase">Capacity (Plates)</label>
+                <label className="text-xs font-bold text-slate-400 uppercase">{t('modules.capacity', 'Capacity (Plates)')}</label>
                 <span className="text-xs font-mono text-sky-400">{rack.capacity}</span>
               </div>
               <input 
@@ -117,7 +117,7 @@ export function RackConfigView() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Usable Slots Config</label>
+              <label className="text-xs font-bold text-slate-400 uppercase mb-2 block">{t('modules.usable_slots', 'Usable Slots Config')}</label>
               <div className="grid grid-cols-6 gap-2">
                 {Array.from({ length: rack.capacity }).map((_, i) => (
                   <button 
@@ -133,7 +133,7 @@ export function RackConfigView() {
             </div>
 
             <div className="pt-4 border-t border-slate-800/50">
-              <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><MapPin size={14}/> Base Pickup Position</label>
+              <label className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><MapPin size={14}/> {t('modules.base_pickup_pos', 'Base Pickup Position')}</label>
               <div className="grid grid-cols-3 gap-2 mb-2">
                 {['j1', 'j2', 'j3', 'j4', 'j5', 'j6'].map(f => (
                   <div key={f}>
@@ -162,10 +162,11 @@ export function RackConfigView() {
   return (
     <div className="h-full flex flex-col space-y-4 overflow-y-auto pr-2 pb-10">
       <div className="flex items-center justify-between shrink-0 flex-wrap gap-2 sticky top-0 bg-slate-950/90 py-2 z-10 backdrop-blur-sm">
-        <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-            <Layers className="text-rose-400" size={20} /> Rack
-          </h2>
+        <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
+          <Layers className="text-rose-400" size={20} /> {t('modules.rack_manager_title', 'Rack Manager')}
+        </h2>
+        
+        <div className="flex items-center gap-2">
           <select 
             className="bg-slate-900 border border-slate-700 rounded px-3 py-1.5 min-h-[36px] text-sm font-medium text-slate-200 focus:outline-none focus:border-sky-500"
             value={selectedRobotId}
@@ -176,8 +177,6 @@ export function RackConfigView() {
             ))}
           </select>
         </div>
-        
-        
       </div>
 
       {config.enabled ? (
@@ -187,27 +186,26 @@ export function RackConfigView() {
               onClick={handleToggleSystem}
               className="text-[10px] text-rose-400 hover:text-rose-300 uppercase tracking-wider font-semibold"
             >
-              Remove Rack
+              {t('modules.remove_module', 'Remove Rack')}
             </button>
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {renderRack('rack1', 'Rack 1 (Default Input)')}
-          {renderRack('rack2', 'Rack 2 (Default Output)')}
+          {renderRack('rack1', t('modules.rack1', 'Rack 1 (Default Input)'))}
+          {renderRack('rack2', t('modules.rack2', 'Rack 2 (Default Output)'))}
         </div>
         </div>
       ) : (
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-8 flex flex-col items-center justify-center text-center flex-1">
           <Layers className="text-slate-600 mb-3" size={48} />
-          <h3 className="text-slate-200 font-medium mb-2">No Rack Assigned</h3>
+          <h3 className="text-slate-200 font-medium mb-2">{t('modules.no_module_assigned', 'No Rack Assigned', { machineType: 'Rack' })}</h3>
           <p className="text-slate-400 text-sm max-w-md mb-6">
-            This robot does not currently have a Rack configured. Add one to enable 
-            input and output buffers.
+            {t('modules.no_module_desc', 'This robot does not currently have a Rack configured. Add one to enable input and output buffers.')}
           </p>
           <button 
             onClick={handleToggleSystem}
             className="flex items-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/50 text-rose-400 px-4 py-2 rounded-lg font-medium transition-colors"
           >
-            <Layers size={16} /> Enable Rack
+            <Layers size={16} /> {t('modules.enable_module', 'Enable Rack', { machineType: 'Rack' })}
           </button>
         </div>
       )}

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useHydraStore } from '../store';
-import { useTranslation } from 'react-i18next';
-import { RotateCcw, Wind, Maximize2, Plus, Power } from 'lucide-react';
+import { RotateCcw, Cpu, Maximize2, Plus } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Box } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
@@ -9,39 +8,34 @@ import SharedModule3DView from './3d/SharedModule3DView';
 
 
 
-export function VacuumTableConfig() {
-  const { t } = useTranslation();
+export function JuanenPnPConfig() {
   const { robots, updateRobot } = useHydraStore();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const selectedRobot = robots.find(r => r.id === selectedRobotId);
 
   if (!selectedRobot) return null;
 
-  const moduleData = selectedRobot.vacuumTable as any;
+  const moduleData = selectedRobot.juanenPnP as any;
   const isEnabled = moduleData?.enabled || false;
 
   const handleToggle = () => {
     updateRobot(selectedRobot.id, {
-      vacuumTable: { ...moduleData, enabled: !isEnabled }
+      juanenPnP: { ...moduleData, enabled: !isEnabled }
     } as any);
   };
 
   const handleSizeChange = (axis: 'width' | 'length', value: number) => {
     updateRobot(selectedRobot.id, {
-      vacuumTable: { ...moduleData, size: { ...moduleData.size, [axis]: value } }
+      juanenPnP: { ...moduleData, size: { ...moduleData.size, [axis]: value } }
     } as any);
   };
 
-  const handleCustomChange = (field: string, value: any) => {
-    updateRobot(selectedRobot.id, {
-      vacuumTable: { ...moduleData, [field]: value }
-    } as any);
-  };
+
 
   
   const handleReset = () => {
     updateRobot(selectedRobot.id, {
-      vacuumTable: { enabled: true, size: { width: 100, length: 100 }, pumpActive: false, valveActive: false, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
+      juanenPnP: { enabled: true, size: { width: 500, length: 500 }, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
     } as any);
   };
   
@@ -49,12 +43,12 @@ export function VacuumTableConfig() {
     <div className="h-full flex flex-col space-y-4">
       <div className="flex items-center justify-between shrink-0">
         <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-          <Wind className="text-sky-400" size={20} /> {t('modules.vacuum_table_title', 'Vacuum Table')}
+          <Cpu className="text-sky-400" size={20} /> JuanenPnP
         </h2>
         <div className="flex items-center gap-2">
           {isEnabled && (
             <button onClick={handleReset} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 text-sm flex items-center gap-2 transition-colors">
-              <RotateCcw size={16} /> {t('modules.reset', 'Reset')}
+              <RotateCcw size={16} /> Reset
             </button>
           )}
           <select 
@@ -71,16 +65,16 @@ export function VacuumTableConfig() {
 
       {!isEnabled ? (
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-8 flex flex-col items-center justify-center text-center flex-1">
-          <Wind className="text-slate-600 mb-3" size={48} />
-          <h3 className="text-slate-200 font-medium mb-2">{t('modules.no_module_assigned', 'No Vacuum Table Assigned', { machineType: 'Vacuum Table' })}</h3>
+          <Cpu className="text-slate-600 mb-3" size={48} />
+          <h3 className="text-slate-200 font-medium mb-2">No JuanenPnP Assigned</h3>
           <p className="text-slate-400 text-sm max-w-md mb-6">
-            {t('modules.no_module_desc', 'This robot does not currently have this module configured. Add one to enable its features.')}
+            This robot does not currently have this module configured. Add one to enable its features.
           </p>
           <button 
             onClick={handleToggle}
             className="flex items-center gap-2 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/50 text-sky-400 px-4 py-2 rounded-lg font-medium transition-colors"
           >
-            <Plus size={16} /> {t('modules.enable_module', 'Enable Vacuum Table', { machineType: 'Vacuum Table' })}
+            <Plus size={16} /> Enable JuanenPnP
           </button>
         </div>
       ) : (
@@ -88,12 +82,12 @@ export function VacuumTableConfig() {
           <div className="space-y-4 overflow-y-auto custom-scrollbar pr-2">
             <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-slate-200">{t('modules.module_settings', 'Module Settings')}</h3>
+                <h3 className="text-sm font-medium text-slate-200">Module Settings</h3>
                 <button 
                   onClick={handleToggle}
                   className="text-[10px] text-rose-400 hover:text-rose-300 uppercase tracking-wider font-semibold"
                 >
-                  {t('modules.remove_module', 'Remove Module')}
+                  Remove Module
                 </button>
               </div>
               
@@ -101,7 +95,7 @@ export function VacuumTableConfig() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
-                      <Maximize2 size={12} /> {t('modules.width_x', 'Width (X mm)')}
+                      <Maximize2 size={12} /> Width (X mm)
                     </label>
                     <input 
                       type="number"
@@ -113,7 +107,7 @@ export function VacuumTableConfig() {
                   </div>
                   <div>
                     <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
-                      <Maximize2 size={12} className="rotate-90" /> {t('modules.length_y', 'Length (Y mm)')}
+                      <Maximize2 size={12} className="rotate-90" /> Length (Y mm)
                     </label>
                     <input 
                       type="number"
@@ -127,36 +121,20 @@ export function VacuumTableConfig() {
               </div>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-slate-200 mb-4">{t('modules.vacuum_controls', 'Vacuum Controls')}</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <button 
-                  onClick={() => handleCustomChange('pumpActive', !moduleData.pumpActive)}
-                  className={`flex items-center justify-center gap-2 min-h-[44px] border transition-all text-sm font-medium rounded ${moduleData.pumpActive ? 'bg-sky-500/20 border-sky-500 text-sky-400' : 'bg-slate-950 border-slate-700 text-slate-400'}`}
-                >
-                  <Power size={16} /> {t('modules.pump', 'Pump')} {moduleData.pumpActive ? t('modules.on', 'ON') : t('modules.off', 'OFF')}
-                </button>
-                <button 
-                  onClick={() => handleCustomChange('valveActive', !moduleData.valveActive)}
-                  className={`flex items-center justify-center gap-2 min-h-[44px] border transition-all text-sm font-medium rounded ${moduleData.valveActive ? 'bg-sky-500/20 border-sky-500 text-sky-400' : 'bg-slate-950 border-slate-700 text-slate-400'}`}
-                >
-                  <Wind size={16} /> {t('modules.valve', 'Valve')} {moduleData.valveActive ? t('modules.open', 'OPEN') : t('modules.closed', 'CLOSED')}
-                </button>
-              </div>
-            </div>
+
 
           </div>
           
           <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden relative h-[400px] md:h-auto min-h-[400px]">
             <div className="absolute top-3 left-3 z-10 pointer-events-none">
               <span className="bg-slate-950/80 backdrop-blur text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-800">
-                {t('modules.live_view_3d', '3D Live View')}
+                3D Live View
               </span>
             </div>
             <Canvas camera={{ position: [0.6, 0.6, 0.6], fov: 50 }} shadows className="w-full h-full outline-none">
               <Shared3DEnvironment />
               
-              {moduleData && <SharedModule3DView module={moduleData} type="vacuumTable" />}
+              {moduleData && <SharedModule3DView module={moduleData} type="juanenPnP" />}
               
               <OrbitControls makeDefault maxPolarAngle={Math.PI / 2 + 0.1} minDistance={0.2} maxDistance={3} target={[0, 0, 0]} />
             </Canvas>

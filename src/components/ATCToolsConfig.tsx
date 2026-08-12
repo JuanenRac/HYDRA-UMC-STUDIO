@@ -92,12 +92,12 @@ export function ATCToolsConfig() {
       <div className="h-full flex flex-col space-y-4">
         <div className="flex items-center justify-between shrink-0">
           <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-            <Settings className="text-sky-400" size={20} /> ATC Tools Configuration
+            <Settings className="text-sky-400" size={20} /> {t('modules.atc_title', 'ATC Tools Configuration')}
           </h2>
           <div className="flex items-center gap-2">
         {selectedRobot.atc && (
           <button onClick={handleReset} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 text-sm flex items-center gap-2 transition-colors">
-            <RotateCcw size={16} /> Reset
+            <RotateCcw size={16} /> {t('modules.reset', 'Reset')}
           </button>
         )}
         <select 
@@ -113,15 +113,15 @@ export function ATCToolsConfig() {
         </div>
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-8 flex flex-col items-center justify-center text-center flex-1">
           <Settings className="text-slate-600 mb-3" size={48} />
-          <h3 className="text-slate-200 font-medium mb-2">No ATC Configured</h3>
+          <h3 className="text-slate-200 font-medium mb-2">{t('modules.no_module_assigned', 'No ATC Configured', { machineType: 'ATC' })}</h3>
           <p className="text-slate-400 text-sm max-w-md mb-6">
-            This robot does not currently have an Automatic Tool Changer (ATC) configured. Add one to enable automated tool swapping.
+            {t('modules.no_module_desc', 'This robot does not currently have an Automatic Tool Changer (ATC) configured. Add one to enable automated tool swapping.')}
           </p>
           <button 
             onClick={enableATC}
             className="flex items-center gap-2 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/50 text-sky-400 px-4 py-2 rounded-lg font-medium transition-colors"
           >
-            Enable ATC
+            {t('modules.enable_module', 'Enable ATC', { machineType: 'ATC' })}
           </button>
         </div>
       </div>
@@ -238,7 +238,7 @@ export function ATCToolsConfig() {
       <div className="flex items-center justify-between shrink-0 flex-wrap gap-2">
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-            <Settings className="text-sky-400" size={20} /> ATC Tools Configuration
+            <Settings className="text-sky-400" size={20} /> {t('modules.atc_title', 'ATC Tools Configuration')}
           </h2>
           <select 
             className="bg-slate-900 border border-slate-700 rounded px-3 py-1.5 min-h-[36px] text-sm font-medium text-slate-200 focus:outline-none focus:border-sky-500"
@@ -254,12 +254,12 @@ export function ATCToolsConfig() {
         <div className="flex items-center gap-2">
           <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={loadConfig} />
           <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-200 text-xs font-semibold rounded-lg transition-colors border border-slate-700">
-            <Upload size={14} /> Load Config
+            <Upload size={14} /> {t('robot_detail.load', 'Load Config')}
           </button>
           <button onClick={saveConfig} className="flex items-center gap-2 px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-xs font-semibold rounded-lg transition-colors border border-sky-500/30">
             <Save size={14} />{t('modules.save_config', 'Save Config')}</button>
           <button onClick={disableATC} className="flex items-center gap-2 px-3 py-1.5 text-rose-400 text-xs font-semibold hover:text-rose-300 ml-2">
-            Remove ATC
+            {t('modules.remove_module', 'Remove ATC')}
           </button>
         </div>
       </div>
@@ -273,27 +273,27 @@ export function ATCToolsConfig() {
               className={cnm("flex-1 py-2 sm:py-3 px-2 sm:px-3 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 sm:gap-2", 
                 atcConfig.type === 'vertical_panel' ? "bg-sky-500/20 text-sky-400 border border-sky-500/30 shadow-sm" : "text-slate-400 hover:text-slate-300 hover:bg-slate-950 border border-transparent")}
             >
-              <Grid3X3 size={16} /> Vertical
+              <Grid3X3 size={16} /> {t('modules.vertical', 'Vertical')}
             </button>
             <button
               onClick={() => updateAtcConfig({ type: 'horizontal_panel' })}
               className={cnm("flex-1 py-2 sm:py-3 px-2 sm:px-3 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 sm:gap-2", 
                 atcConfig.type === 'horizontal_panel' ? "bg-sky-500/20 text-sky-400 border border-sky-500/30 shadow-sm" : "text-slate-400 hover:text-slate-300 hover:bg-slate-950 border border-transparent")}
             >
-              <Server size={16} /> Horizontal
+              <Server size={16} /> {t('modules.horizontal', 'Horizontal')}
             </button>
             <button
               onClick={() => updateAtcConfig({ type: 'revolver' })}
               className={cnm("flex-1 py-2 sm:py-3 px-2 sm:px-3 rounded-lg text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 sm:gap-2", 
                 atcConfig.type === 'revolver' ? "bg-sky-500/20 text-sky-400 border border-sky-500/30 shadow-sm" : "text-slate-400 hover:text-slate-300 hover:bg-slate-950 border border-transparent")}
             >
-              <CircleDashed size={16} /> Revolver
+              <CircleDashed size={16} /> {t('modules.revolver', 'Revolver')}
             </button>
           </div>
 
           {(atcConfig.type === 'vertical_panel' || atcConfig.type === 'horizontal_panel') ? (
             <div className="mb-6 shrink-0">
-              <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Panel Grid Layout</label>
+              <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">{t('modules.panel_grid_layout', 'Panel Grid Layout')}</label>
               <select
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500"
                 value={atcConfig.panelGrid}
@@ -306,7 +306,7 @@ export function ATCToolsConfig() {
             </div>
           ) : (
             <div className="mb-6 shrink-0">
-              <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Revolver Capacity</label>
+              <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">{t('modules.revolver_capacity', 'Revolver Capacity')}</label>
               <input
                 type="number"
                 min={1}
@@ -320,13 +320,13 @@ export function ATCToolsConfig() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <MapPin size={16} className="text-slate-500" />
-                    <span className="text-sm font-semibold text-slate-300">Base Pickup Position</span>
+                    <span className="text-sm font-semibold text-slate-300">{t('modules.base_pickup_pos', 'Base Pickup Position')}</span>
                   </div>
                   <button 
                     onClick={() => setEditingSlot(editingSlot === 'revolver' ? null : 'revolver')}
                     className="text-xs text-sky-400 hover:text-sky-300 flex items-center gap-1"
                   >
-                    {editingSlot === 'revolver' ? <><ChevronUp size={14}/> Hide</> : <><ChevronDown size={14}/> Edit Pos</>}
+                    {editingSlot === 'revolver' ? <><ChevronUp size={14}/> {t('modules.hide', 'Hide')}</> : <><ChevronDown size={14}/> {t('modules.edit_pos', 'Edit Pos')}</>}
                   </button>
                 </div>
                 {editingSlot === 'revolver' && renderPosEditor('revolver')}
@@ -335,7 +335,7 @@ export function ATCToolsConfig() {
           )}
 
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Tool Assignments</h3>
+            <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{t('modules.tool_assignments', 'Tool Assignments')}</h3>
             {Array.from({ length: slotCount }).map((_, i) => {
               const currentTool = atcConfig.tools.find(t => t.slot === i)?.tool || 'None';
               const isEditing = editingSlot === i;

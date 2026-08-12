@@ -13,7 +13,7 @@ Hydra-UMC Studio is a web-based, full-featured control panel designed to monitor
 - **XY Table Configuration:** Fully interactive 3D setup for global XY stages, assignable to specific robots for advanced positioning and interpolation.
 - **Automatic Tool Changer (ATC):** Configure Vertical Panel, Horizontal Panel, or Revolver ATC types. Assign tools to slots and define pickup coordinates (XYZABC + XY Table).
 - **Input/Output Rack System:** Configure custom PCB/Pallet racks for Pick & Place scenarios, complete with capacity, usable slots, and pickup calibration.
-- **Vision Matrix (Cameras):** Multi-camera view matrix with full-screen toggling, Picture-in-Picture (PiP) live view, and YOLOv8 Object Detection overlay support.
+- **Vision Matrix (Cameras):** Multi-camera view matrix with full-screen toggling, Picture-in-Picture (PiP) live view (now also integrated directly in the Robot Detail view), and YOLOv8 Object Detection overlay support.
 - **Trajectory Management:** Record waypoints manually, or load from over 25+ preset kinematic examples (Spirals, Raster Scans, XY Sync patterns). Export and import trajectories as JSON. Variable speed playback.
 - **System Configuration:** Manage network settings (CAN Bus Bitrate, Master IP), 16+ custom themes (Cyberpunk, Matrix, Dracula, etc.), and execute emergency protocols (Global E-Stop, Controller Reboot).
 - **I/O Control:** Monitor and actuate valves, pumps, and endstops directly from the robot detail view.

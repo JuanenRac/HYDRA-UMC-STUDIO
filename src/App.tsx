@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { HydraProvider } from './store';
 import Dashboard from './Dashboard';
+import { GamepadController } from './components/GamepadController';
 import SplashSvg from './assets/HYDRA_UMC_SPLASHSCREEN.svg';
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
 
   return (
     <HydraProvider>
+      <GamepadController />
       <Dashboard />
     </HydraProvider>
   );

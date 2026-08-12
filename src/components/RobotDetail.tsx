@@ -1,7 +1,8 @@
 import { useRef, useState, useEffect } from 'react';
+import { motion, useDragControls } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { type RobotState, useHydraStore, type RobotRole, type ToolType, type RobotModel } from '../store';
-import { RotateCcw,  Power, Droplets, ArrowUp, ArrowDown, ShieldAlert, Save, Plus, Play, Square, Crosshair, RefreshCw, Upload, Maximize2, Minimize2, Camera as CameraIcon, Trash2  } from 'lucide-react';
+import { type RobotState, useHydraStore, type RobotRole, type ToolType, type RobotModel, unthrottledDelay, globalPlaybacks } from '../store';
+import { RotateCcw, Home, Video, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, ShieldAlert, Save, Plus, Play, Square, Crosshair, RefreshCw, Upload, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X  } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { VirtualKinematics } from './VirtualKinematics';
@@ -40,16 +41,353 @@ const URTC_TOOLS: ToolType[] = [
   'Ultrasonic Welder / Packaging Sealer'
 ];
 
+
+const CameraPIP = ({ bot, initialX, initialY, label, t }: { bot: RobotState, initialX: number, initialY: number, label: string, t: any }) => {
+  const { settings, updateSettings } = useHydraStore();
+  const controls = useDragControls();
+  const pipConfig = settings.uiLayout?.cameraPips?.[bot.id] || { w: 192, h: 144, x: initialX, y: initialY, isOpen: true };
+  const isOpen = pipConfig.isOpen !== false;
+
+  const [size, setSize] = useState({ w: pipConfig.w || 192, h: pipConfig.h || 144 });
+  const resizeRef = useRef(false);
+  const startSize = useRef({ w: 0, h: 0 });
+  const startPos = useRef({ x: 0, y: 0 });
+  
+  const pipConfigRef = useRef(pipConfig);
+  const layoutRef = useRef(settings.uiLayout);
+  const sizeRef = useRef(size);
+  const settingsRef = useRef(settings);
+  const updateSettingsRef = useRef(updateSettings);
+
+  useEffect(() => {
+    pipConfigRef.current = pipConfig;
+    layoutRef.current = settings.uiLayout;
+    settingsRef.current = settings;
+    updateSettingsRef.current = updateSettings;
+  }, [pipConfig, settings, updateSettings]);
+
+  useEffect(() => {
+    sizeRef.current = size;
+  }, [size]);
+
+  useEffect(() => {
+    if (!resizeRef.current) {
+      setSize({ w: pipConfig.w || 192, h: pipConfig.h || 144 });
+    }
+  }, [pipConfig.w, pipConfig.h]);
+
+  useEffect(() => {
+    const handleMove = (e: PointerEvent) => {
+      if (!resizeRef.current) return;
+      const newW = Math.max(160, startSize.current.w + (e.clientX - startPos.current.x));
+      const newH = Math.max(120, startSize.current.h + (e.clientY - startPos.current.y));
+      setSize({ w: newW, h: newH });
+      sizeRef.current = { w: newW, h: newH };
+    };
+    const handleUp = () => {
+      if (resizeRef.current) {
+        document.body.classList.remove('select-none');
+        resizeRef.current = false;
+        // Save size on drop
+        const finalSize = sizeRef.current;
+        const freshSettings = settingsRef.current;
+        const freshPip = freshSettings.uiLayout?.cameraPips?.[bot.id] || pipConfig;
+        updateSettingsRef.current({
+          uiLayout: {
+            ...freshSettings.uiLayout,
+            cameraPips: {
+              ...freshSettings.uiLayout?.cameraPips,
+              [bot.id]: { ...freshPip, w: finalSize.w, h: finalSize.h }
+            }
+          }
+        });
+      }
+    };
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp);
+    return () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+    };
+  }, [bot.id, updateSettings]);
+
+  if (!isOpen) return null;
+
+  return (
+    <motion.div 
+      drag
+      dragListener={false}
+      dragControls={controls}
+      dragMomentum={false}
+      initial={{ x: pipConfig.x || initialX, y: pipConfig.y || initialY }}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        setSize({ w: 192, h: 144 });
+        sizeRef.current = { w: 192, h: 144 };
+        const freshSettings = settingsRef.current;
+        const freshPip = freshSettings.uiLayout?.cameraPips?.[bot.id] || pipConfig;
+        updateSettingsRef.current({
+          uiLayout: {
+            ...freshSettings.uiLayout,
+            cameraPips: {
+              ...freshSettings.uiLayout?.cameraPips,
+              [bot.id]: { ...freshPip, w: 192, h: 144 }
+            }
+          }
+        });
+      }}
+      onDragEnd={(e, info) => {
+        const freshSettings = settingsRef.current;
+        const freshPip = freshSettings.uiLayout?.cameraPips?.[bot.id] || pipConfig;
+        updateSettingsRef.current({
+          uiLayout: {
+            ...freshSettings.uiLayout,
+            cameraPips: {
+              ...freshSettings.uiLayout?.cameraPips,
+              [bot.id]: { 
+                ...freshPip, 
+                x: (freshPip.x || initialX) + info.offset.x, 
+                y: (freshPip.y || initialY) + info.offset.y 
+              }
+            }
+          }
+        });
+      }}
+      style={{ width: size.w, height: size.h }}
+      className="absolute bottom-4 right-4 bg-slate-950/80 backdrop-blur border border-slate-700 rounded-lg overflow-hidden shadow-2xl z-50 flex flex-col pointer-events-auto"
+    >
+      <div 
+        className="bg-slate-900/90 px-2 py-1 flex justify-between items-center border-b border-slate-800 cursor-move"
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          controls.start(e);
+        }}
+      >
+        <span className="text-[10px] font-bold text-slate-300 uppercase flex items-center gap-1 truncate"><CameraIcon size={12} className="shrink-0" /> {label}</span>
+        <div className="flex items-center gap-2">
+          <span className={cn("shrink-0 w-1.5 h-1.5 rounded-full shadow-[0_0_5px_rgba(16,185,129,0.8)]", bot.online ? "bg-emerald-500" : "bg-rose-500")} />
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              updateSettings({
+                uiLayout: {
+                  ...settings.uiLayout,
+                  cameraPips: {
+                    ...settings.uiLayout?.cameraPips,
+                    [bot.id]: { ...pipConfig, isOpen: false }
+                  }
+                }
+              });
+            }}
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      </div>
+      <div className="flex-1 bg-black relative flex items-center justify-center pointer-events-none">
+         <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'linear-gradient(transparent 50%, rgba(0,0,0,0.5) 50%)', backgroundSize: '100% 4px' }} />
+         <CameraIcon size={24} className="text-slate-800 pointer-events-none" />
+         {bot.playbackState?.isPlaying && (
+           <div className="absolute inset-0 border-2 border-emerald-500/30 animate-pulse pointer-events-none" />
+         )}
+         <div className="absolute bottom-1 left-1 text-[8px] font-mono text-emerald-500/70 pointer-events-none">
+           {bot.pos.tx?.toFixed(1) || 0} {bot.pos.ty?.toFixed(1) || 0}
+         </div>
+      </div>
+      <div 
+        className="absolute bottom-0 right-0 w-6 h-6 cursor-nwse-resize z-20 flex items-end justify-end p-1"
+        onPointerDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          document.body.classList.add('select-none');
+          resizeRef.current = true;
+          startSize.current = size;
+          startPos.current = { x: e.clientX, y: e.clientY };
+        }}
+      >
+        <div className="w-2 h-2 border-r-2 border-b-2 border-slate-400 opacity-50 pointer-events-none" />
+      </div>
+    </motion.div>
+  );
+};
+
+
 export function RobotDetail({ robot }: { robot: RobotState }) {
   const { t } = useTranslation();
   const { updateRobot, saveKinematics, loadKinematics, settings, robots, updateSettings } = useHydraStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [jogStep, setJogStep] = useState<number>(1);
   const [selectedExample, setSelectedExample] = useState<string>('');
+
+  const loadExample = (id: string) => {
+    setSelectedExample(id);
+    const ex = examples.find(e => e.id === id);
+    if (ex) {
+      updateRobot(robot.id, { recordedPoints: ex.points as any });
+    }
+  };
+
+  const loadExampleForRobot = (botId: number, exId: string) => {
+    const ex = examples.find(e => e.id === exId);
+    if (ex) {
+      updateRobot(botId, { recordedPoints: ex.points as any });
+    }
+  };
+
+
+  const handleStop = () => {
+    globalPlaybacks[robot.id] = false;
+    robot.combinedWith?.forEach(id => {
+      globalPlaybacks[id] = false;
+    });
+    updateRobot(robot.id, { playbackState: { isPlaying: false, activeStep: -1, speed: 100 } });
+    robot.combinedWith?.forEach(id => updateRobot(id, { playbackState: { isPlaying: false, activeStep: -1, speed: 100 } }));
+  };
+
+  const handlePlay = async (playAll: boolean = false) => {
+    globalPlaybacks[robot.id] = true;
+    if (playAll) {
+      robot.combinedWith?.forEach(id => {
+        globalPlaybacks[id] = true;
+      });
+    }
+
+    if (robot.recordedPoints.length === 0) return;
+    updateRobot(robot.id, { playbackState: { isPlaying: true, activeStep: 0, speed: 100 } });
+    const playRobotTrajectory = async (rId: number, points: any[]) => {
+      let currentStep = 0;
+      
+      // Determine initial state
+      const initialRState = rId === robot.id ? robot : combinedBotsInfo.find(b => b.id === rId);
+      let currentPos = { ...(initialRState?.pos || { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }) };
+      let currentJoints = { ...(initialRState?.joints || { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0 }) };
+
+      while (currentStep < points.length) {
+        if (!globalPlaybacks[rId]) break;
+        const pt = points[currentStep];
+        
+        let j1 = pt.j1;
+        let j2 = pt.j2;
+        let j3 = pt.j3;
+        let j4 = pt.j4;
+        let j5 = pt.j5;
+        let j6 = pt.j6;
+
+        // Pseudo-IK if joints are not provided
+        if (j1 === undefined) {
+           const L1 = 160;
+           const L2 = 200;
+           const r = Math.sqrt(pt.x*pt.x + pt.y*pt.y) || 0.001;
+           const zOff = pt.z - 195;
+           const d = Math.sqrt(r*r + zOff*zOff);
+           
+           j1 = Math.atan2(pt.y, pt.x) * 180 / Math.PI;
+           
+           let cosJ3 = (r*r + zOff*zOff - L1*L1 - L2*L2) / (2 * L1 * L2);
+           cosJ3 = Math.max(-1, Math.min(1, cosJ3));
+           j3 = Math.acos(cosJ3) * 180 / Math.PI;
+           
+           const phi = Math.atan2(r, zOff);
+           let cosGamma = (L1*L1 + d*d - L2*L2) / (2*L1*d);
+           cosGamma = Math.max(-1, Math.min(1, cosGamma));
+           const gamma = Math.acos(cosGamma);
+           
+           const theta1_rad = phi - gamma;
+           j2 = -theta1_rad * 180 / Math.PI;
+
+           j4 = pt.a || 0;
+           j5 = -j2 + j3 - 180;
+           j6 = pt.c || 0;
+        }
+
+        const targetPos = { 
+          x: pt.x, y: pt.y, z: pt.z, a: pt.a, b: pt.b, c: pt.c, 
+          tx: pt.tx !== undefined ? pt.tx : currentPos.tx, 
+          ty: pt.ty !== undefined ? pt.ty : currentPos.ty, 
+          trz: pt.trz !== undefined ? pt.trz : currentPos.trz 
+        };
+        const targetJoints = { j1: j1||0, j2: j2||0, j3: j3||0, j4: j4||0, j5: j5||0, j6: j6||0 };
+        
+        const startPos = { ...currentPos };
+        const startJoints = { ...currentJoints };
+
+        const durationMs = 60000 / (playbackSpeedRef.current || 100);
+        const steps = Math.max(1, Math.floor(durationMs / 16));
+        
+        for (let i = 1; i <= steps; i++) {
+          if (!globalPlaybacks[rId]) break;
+          const t = i / steps;
+          const lerp = (s: number, e: number, t: number) => s + (e - s) * t;
+          
+          const interpPos = {
+              x: lerp(startPos.x || 0, targetPos.x || 0, t),
+              y: lerp(startPos.y || 0, targetPos.y || 0, t),
+              z: lerp(startPos.z || 0, targetPos.z || 0, t),
+              a: lerp(startPos.a || 0, targetPos.a || 0, t),
+              b: lerp(startPos.b || 0, targetPos.b || 0, t),
+              c: lerp(startPos.c || 0, targetPos.c || 0, t),
+              tx: targetPos.tx !== undefined ? lerp(startPos.tx || 0, targetPos.tx, t) : undefined,
+              ty: targetPos.ty !== undefined ? lerp(startPos.ty || 0, targetPos.ty, t) : undefined,
+              trz: targetPos.trz !== undefined ? lerp(startPos.trz || 0, targetPos.trz, t) : undefined,
+          };
+          
+          const interpJoints = {
+              j1: lerp(startJoints.j1 || 0, targetJoints.j1 || 0, t),
+              j2: lerp(startJoints.j2 || 0, targetJoints.j2 || 0, t),
+              j3: lerp(startJoints.j3 || 0, targetJoints.j3 || 0, t),
+              j4: lerp(startJoints.j4 || 0, targetJoints.j4 || 0, t),
+              j5: lerp(startJoints.j5 || 0, targetJoints.j5 || 0, t),
+              j6: lerp(startJoints.j6 || 0, targetJoints.j6 || 0, t),
+          };
+
+          const xyUpdate = initialRState?.hasXYTable && (interpPos.tx !== undefined || interpPos.ty !== undefined) ? {
+            xyTable: {
+              ...initialRState.xyTable!,
+              pos: { x: interpPos.tx ?? initialRState.xyTable!.pos.x, y: interpPos.ty ?? initialRState.xyTable!.pos.y }
+            }
+          } : {};
+
+          updateRobot(rId, { 
+            pos: interpPos as any, 
+            joints: interpJoints, 
+            playbackState: { isPlaying: true, activeStep: currentStep, speed: 100 }, 
+            ...xyUpdate 
+          });
+          
+          await unthrottledDelay();
+        }
+        
+        currentPos = { ...targetPos } as any;
+        currentJoints = { ...targetJoints };
+
+        if (!globalPlaybacks[rId]) break;
+        currentStep++;
+      }
+      updateRobot(rId, { playbackState: { isPlaying: false, activeStep: -1, speed: 100 } });
+    };
+    playRobotTrajectory(robot.id, robot.recordedPoints);
+    if (playAll) {
+      combinedBotsInfo.forEach(bot => {
+        if (bot.recordedPoints.length > 0) {
+          updateRobot(bot.id, { playbackState: { isPlaying: true, activeStep: 0, speed: 100 } });
+          playRobotTrajectory(bot.id, bot.recordedPoints);
+        }
+      });
+    }
+  };
+
   
   const [rightPanelWidth, setRightPanelWidth] = useState(settings.uiLayout?.rightPanelWidth || 320);
   const [isResizingRightPanel, setIsResizingRightPanel] = useState(false);
   const rightPanelResizeStartRef = useRef({ width: 0, x: 0 });
+  const rightPanelWidthRef = useRef(rightPanelWidth);
+  const uiLayoutRef = useRef(settings.uiLayout);
+
+  useEffect(() => {
+    rightPanelWidthRef.current = rightPanelWidth;
+    uiLayoutRef.current = settings.uiLayout;
+  }, [rightPanelWidth, settings.uiLayout]);
 
   useEffect(() => {
     const handleMove = (e: PointerEvent) => {
@@ -60,11 +398,12 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
       }
     };
     const handleUp = () => {
+      document.body.classList.remove('select-none');
       setIsResizingRightPanel(false);
       updateSettings({
         uiLayout: {
-          ...settings.uiLayout,
-          rightPanelWidth: rightPanelWidth,
+          ...uiLayoutRef.current,
+          rightPanelWidth: rightPanelWidthRef.current,
         }
       });
     };
@@ -77,11 +416,9 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
       window.removeEventListener('pointermove', handleMove);
       window.removeEventListener('pointerup', handleUp);
     };
-  }, [isResizingRightPanel, rightPanelWidth, settings.uiLayout, updateSettings]);
+  }, [isResizingRightPanel, updateSettings]);
 
-  const [isPlaying, setIsPlaying] = useState(false);
-  const isPlayingRef = useRef(false);
-  const [rightTab, setRightTab] = useState<'trajectories' | 'config' | 'io'>('trajectories');
+      const [rightTab, setRightTab] = useState<'trajectories' | 'config' | 'io'>('trajectories');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [controlMode, setControlMode] = useState<'translate' | 'rotate' | 'scale' | 'none'>('none');
   const toggleControl = (mode: 'translate' | 'rotate' | 'scale') => setControlMode(prev => prev === mode ? 'none' : mode);
@@ -94,8 +431,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
   const isStartAll = combinedBotsInfo.length > 0;
 
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(100);
-  const [activeStep, setActiveStep] = useState<number | null>(null);
-  const playbackSpeedRef = useRef(100);
+    const playbackSpeedRef = useRef(100);
 
   // Sync ref
   useEffect(() => {
@@ -103,622 +439,314 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
   }, [playbackSpeed]);
 
   useEffect(() => {
-    if (isPlaying && activeStep !== null && activeStep !== -1) {
-      const el = document.getElementById(`step-${robot.id}-${activeStep}`);
+    if (robot.playbackState?.isPlaying && robot.playbackState?.activeStep !== null && robot.playbackState?.activeStep !== -1) {
+      const el = document.getElementById(`step-${robot.id}-${robot.playbackState?.activeStep}`);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }
-  }, [activeStep, isPlaying, robot.id]);
+  }, [robot.playbackState?.activeStep, robot.playbackState?.isPlaying, robot.id]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      isPlayingRef.current = false;
+      
     };
   }, []);
 
-  const [jogMode, setJogMode] = useState<'cartesian' | 'joint'>('joint');
-  const [pipPos, setPipPos] = useState({ x: 20, y: 20 });
-  const [isDraggingPip, setIsDraggingPip] = useState(false);
-  const [pipSize, setPipSize] = useState({ w: 192, h: 144 }); // 48rem width equivalent is 192px
-  const [isResizingPip, setIsResizingPip] = useState(false);
-  const resizeStartRef = useRef({ w: 0, h: 0, x: 0, y: 0 });
-  const dragStartRef = useRef({ x: 0, y: 0 });
-  const pipInitialRef = useRef({ x: 0, y: 0 });
+  const [reset3DKey, setReset3DKey] = useState(0);
+  const [threeDHeight, setThreeDHeight] = useState<number | undefined>(settings.uiLayout?.threeDHeight);
+  const dragRef = useRef(false);
+  const startDragY = useRef(0);
+  const startHeight = useRef(0);
+  const currentHeightRef = useRef(threeDHeight);
+  
+  useEffect(() => {
+    currentHeightRef.current = threeDHeight;
+  }, [threeDHeight]);
 
   useEffect(() => {
     const handleMove = (e: PointerEvent) => {
-      if (isDraggingPip) {
-        const dx = e.clientX - dragStartRef.current.x;
-        const dy = e.clientY - dragStartRef.current.y;
-        setPipPos({ x: pipInitialRef.current.x - dx, y: pipInitialRef.current.y - dy });
-      } else if (isResizingPip) {
-        const dx = resizeStartRef.current.x - e.clientX;
-        const dy = resizeStartRef.current.y - e.clientY;
-        setPipSize({ 
-          w: Math.max(120, resizeStartRef.current.w + dx), 
-          h: Math.max(90, resizeStartRef.current.h + dy) 
-        });
+      if (!dragRef.current) return;
+      const newHeight = Math.max(200, startHeight.current + (e.clientY - startDragY.current));
+      setThreeDHeight(newHeight);
+    };
+    const handleUp = () => {
+      if (dragRef.current) {
+        document.body.classList.remove('select-none');
+        dragRef.current = false;
+        if (currentHeightRef.current) {
+          updateSettings({ uiLayout: { ...uiLayoutRef.current, threeDHeight: currentHeightRef.current } });
+        }
       }
     };
-    const handleUp = () => { setIsDraggingPip(false); setIsResizingPip(false); };
-    
-    if (isDraggingPip || isResizingPip) {
-      window.addEventListener('pointermove', handleMove);
-      window.addEventListener('pointerup', handleUp);
-    }
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp);
     return () => {
       window.removeEventListener('pointermove', handleMove);
       window.removeEventListener('pointerup', handleUp);
     };
-  }, [isDraggingPip, isResizingPip]);
+  }, [updateSettings]);
 
-  const [pipConnected, setPipConnected] = useState(false);
-
-  
-  const handleJointJog = (joint: keyof RobotState['joints'], direction: number) => {
-    const newValue = Math.min(180, Math.max(-180, robot.joints[joint] + (direction * jogStep)));
+  const handleAddPoint = () => {
     updateRobot(robot.id, {
-      joints: { ...robot.joints, [joint]: newValue }
+      recordedPoints: [...robot.recordedPoints, { ...robot.pos, ...robot.joints }]
     });
   };
 
-  const handleJointSlider = (joint: keyof RobotState['joints'], value: number) => {
-    updateRobot(robot.id, {
-      joints: { ...robot.joints, [joint]: value }
-    });
-  };
-
-  // Helper for Pseudo IK to make visual robot arm track Cartesian position
-  const computePseudoIK = (pos: RobotState['pos']) => {
-    const r = Math.sqrt(pos.x*pos.x + pos.y*pos.y);
-    const j1_angle = Math.atan2(pos.y, pos.x) * 180 / Math.PI;
-    
-    // Tool tip offset: the wrist J5 to tool tip is approx 135mm.
-    // So the wrist target Z is pos.z + 135.
-    // Base is 170mm + 120mm to Joint 2 = 290mm total Z offset from floor to J2.
-    // Therefore, Z distance from J2 to wrist is: (pos.z + 135) - 290
-    const zOff = (pos.z + 135) - 290;
-    
-    const d = Math.sqrt(r*r + zOff*zOff);
-    const L1 = 160;
-    const L2 = 200;
-    const dClamped = Math.max(0.1, Math.min(d, L1 + L2 - 0.1));
-    
-    // Law of cosines for elbow angle
-    const cosElbow = (L1*L1 + L2*L2 - dClamped*dClamped) / (2*L1*L2);
-    const elbowAngle = Math.acos(Math.max(-1, Math.min(1, cosElbow)));
-    
-    // Angle from base to target
-    const alpha = Math.atan2(zOff, r);
-    // Law of cosines for shoulder angle
-    const cosBeta = (L1*L1 + dClamped*dClamped - L2*L2) / (2*L1*dClamped);
-    const beta = Math.acos(Math.max(-1, Math.min(1, cosBeta)));
-    
-    const j2_deg = (alpha + beta) * 180 / Math.PI - 90; // offset so 0 is pointing up
-    const j3_deg = 180 - (elbowAngle * 180 / Math.PI);
-    
-    // Force the tool to point straight down (global Z rotation = -180 deg)
-    // Global angle = j2_deg - j3_deg + j5_deg = -180
-    let j5_deg = -180 - j2_deg + j3_deg;
-    
-    // Normalize j5 to be between -180 and 180
-    while (j5_deg <= -180) j5_deg += 360;
-    while (j5_deg > 180) j5_deg -= 360;
-
-    return {
-      j1: j1_angle,
-      j2: j2_deg,
-      j3: j3_deg,
-      j4: pos.a,
-      j5: j5_deg,
-      j6: pos.c,
-    };
-  };
-
-  const handleJog = (axis: keyof RobotState['pos'], direction: number) => {
-    const newPos = { ...robot.pos, [axis]:  (robot.pos[axis] || 0) + (direction * jogStep) };
-    updateRobot(robot.id, {
-      pos: newPos,
-      joints: computePseudoIK(newPos)
-    });
-  };
-
-  const handleTableJog = (axis: 'x' | 'y', direction: number) => {
-    if (!hasXYTable || !xyTable) return;
-    let newPos = xyTable.pos[axis] + (direction * jogStep);
-    if (axis === 'x') newPos = Math.max(0, Math.min(newPos, xyTable.tableSize.width));
-    if (axis === 'y') newPos = Math.max(0, Math.min(newPos, xyTable.tableSize.length));
-    
-    updateRobot(robot.id, {
-      xyTable: { ...xyTable, pos: { ...xyTable.pos, [axis]: newPos } }
-    });
-  };
-
-  const toggleValve = (index: 0 | 1) => {
+  const toggleValve = (index: number) => {
     const newValves = [...robot.valves] as [boolean, boolean];
     newValves[index] = !newValves[index];
     updateRobot(robot.id, { valves: newValves });
   };
 
-  const togglePump = (index: 0 | 1) => {
+  const togglePump = (index: number) => {
     const newPumps = [...robot.pumps] as [boolean, boolean];
     newPumps[index] = !newPumps[index];
     updateRobot(robot.id, { pumps: newPumps });
   };
 
-  
-  const handleReset3D = () => {
-    updateRobot(robot.id, {
-      renderScale: 1,
-      atc: robot.atc ? { ...robot.atc, renderScale: 1, renderPos: { x: -300, y: 200 }, renderRot: 0, revolverPos: { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, tx: 0, ty: 0 } } : undefined,
-      rackSystem: {
-        ...robot.rackSystem,
-        rack1: { ...robot.rackSystem.rack1, renderScale: 1, renderPos: { x: 300, y: 150 }, renderRot: 0 },
-        rack2: { ...robot.rackSystem.rack2, renderScale: 1, renderPos: { x: -300, y: 150 }, renderRot: 0 },
-      },
-      juanenPnP: { ...robot.juanenPnP, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 },
-      lumenPnP: { ...robot.lumenPnP, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 },
-      juanenCNC: { ...robot.juanenCNC, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 },
-      juanenLaser: { ...robot.juanenLaser, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 },
-      vacuumTable: { ...robot.vacuumTable, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 },
-      heatedBed: { ...robot.heatedBed, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 },
-      xyTable: robot.hasXYTable && robot.xyTable ? { ...robot.xyTable, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 } : robot.xyTable
-    } as any);
-  };
-
-  const handleResetPos = () => {
-    updateRobot(robot.id, { pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 } });
-    if (hasXYTable && xyTable) {
-      updateRobot(robot.id, {
-        xyTable: { ...xyTable, pos: { x: 0, y: 0 } }
-      });
-    }
-  };
-
-  const handleAddPoint = () => {
-    updateRobot(robot.id, {
-      recordedPoints: [...robot.recordedPoints, { 
-        ...robot.pos, 
-        ...robot.joints,
-        ...(hasXYTable && xyTable ? { tx: xyTable.pos.x, ty: xyTable.pos.y } : {}) 
-      }]
-    });
-  };
-
-  const loadExample = (id: string) => {
-    setSelectedExample(id);
-    if (!id) return;
-    const example = examples.find(e => e.id === id);
-    if (example) {
-      updateRobot(robot.id, { recordedPoints: JSON.parse(JSON.stringify(example.points)) });
-    }
-  };
-
-  const loadExampleForRobot = (targetRobotId: number, exampleId: string) => {
-    if (!exampleId) return;
-    const example = examples.find(e => e.id === exampleId);
-    if (example) {
-      updateRobot(targetRobotId, { recordedPoints: JSON.parse(JSON.stringify(example.points)) });
-    }
-  };
-
-  const startTrajectory = async () => {
-    const combinedBots = (robot.combinedWith || []).map(id => robots.find(r => r.id === id)).filter(Boolean) as RobotState[];
-    const hasAnyPoints = robot.recordedPoints.length > 0 || combinedBots.some(b => b.recordedPoints.length > 0);
-    if (!hasAnyPoints) return;
-    setIsPlaying(true);
-    isPlayingRef.current = true;
-    
-    const baseDuration = 1000; // ms per point segment
-    let currentPos = { ...robot.pos };
-    let currentJoints = { ...robot.joints };
-    let currentTablePos = hasXYTable && xyTable ? { ...xyTable.pos } : null;
-    
-    const combinedState = combinedBots.map(b => ({
-      id: b.id,
-      points: b.recordedPoints || [],
-      currentPos: { ...b.pos },
-      currentJoints: { ...b.joints },
-      currentTablePos: b.hasXYTable && b.xyTable ? { ...b.xyTable.pos } : null,
-      hasXYTable: b.hasXYTable,
-      xyTable: b.xyTable
-    }));
-    
-    // Find max points length to play them all
-    let maxPoints = robot.recordedPoints.length;
-    for (const b of combinedState) {
-      if (b.points.length > maxPoints) maxPoints = b.points.length;
-    }
-    
-    for (let i = 0; i < maxPoints; i++) {
-      setActiveStep(i);
-      if (!isPlayingRef.current) break;
-      
-      const startPt = { ...currentPos };
-      const targetPt = robot.recordedPoints[Math.min(i, Math.max(0, robot.recordedPoints.length - 1))] || startPt;
-      const startJoints = { ...currentJoints };
-      const startTable = currentTablePos ? { ...currentTablePos } : null;
-      
-      const cTargets = combinedState.map(b => {
-        const botPoints = b.points;
-        const targetPoint = botPoints.length > 0 ? botPoints[Math.min(i, botPoints.length - 1)] : b.currentPos;
-        return {
-          ...b,
-          target: targetPoint,
-          startPt: { ...b.currentPos },
-          startJoints: { ...b.currentJoints },
-          startTable: b.currentTablePos ? { ...b.currentTablePos } : null
-        };
-      });
-      
-      const duration = baseDuration / (playbackSpeedRef.current / 100);
-      const steps = Math.max(1, Math.floor(duration / 16)); // ~60fps
-      
-      // We use a Web Worker to act as an unthrottled timer for background tab playback
-      const workerCode = `
-        let timer;
-        self.onmessage = function(e) {
-          if (e.data === 'start') {
-            timer = setInterval(() => self.postMessage('tick'), 16);
-          } else if (e.data === 'stop') {
-            clearInterval(timer);
-          }
-        };
-      `;
-      const blob = new Blob([workerCode], { type: 'application/javascript' });
-      const workerUrl = URL.createObjectURL(blob);
-      const timerWorker = new Worker(workerUrl);
-      
-      timerWorker.postMessage('start');
-      
-      let stepCount = 0;
-      const stepPromise = () => new Promise<void>(resolve => {
-        const handler = () => {
-          timerWorker.removeEventListener('message', handler);
-          resolve();
-        };
-        timerWorker.addEventListener('message', handler);
-      });
-
-      for (let step = 1; step <= steps; step++) {
-        if (!isPlayingRef.current) break;
-        const t = step / steps;
-        
-        const interpolatedPos = {
-          x: startPt.x + (targetPt.x - startPt.x) * t,
-          y: startPt.y + (targetPt.y - startPt.y) * t,
-          z: startPt.z + (targetPt.z - startPt.z) * t,
-          a: startPt.a + (targetPt.a - startPt.a) * t,
-          b: startPt.b + (targetPt.b - startPt.b) * t,
-          c: startPt.c + (targetPt.c - startPt.c) * t,
-        };
-
-        let newJoints;
-        if (targetPt.j1 !== undefined && targetPt.j2 !== undefined && targetPt.j3 !== undefined && targetPt.j4 !== undefined && targetPt.j5 !== undefined && targetPt.j6 !== undefined) {
-           newJoints = {
-             j1: startJoints.j1 + (targetPt.j1 - startJoints.j1) * t,
-             j2: startJoints.j2 + (targetPt.j2 - startJoints.j2) * t,
-             j3: startJoints.j3 + (targetPt.j3 - startJoints.j3) * t,
-             j4: startJoints.j4 + (targetPt.j4 - startJoints.j4) * t,
-             j5: startJoints.j5 + (targetPt.j5 - startJoints.j5) * t,
-             j6: startJoints.j6 + (targetPt.j6 - startJoints.j6) * t,
-           };
-        } else {
-           newJoints = computePseudoIK(interpolatedPos);
-        }
-        
-        let updatePayload: Partial<RobotState> = { pos: interpolatedPos, joints: newJoints };
-        
-        if (hasXYTable && startTable && targetPt.tx !== undefined && targetPt.ty !== undefined && xyTable) {
-          const interpolatedTablePos = {
-            x: startTable.x + (targetPt.tx - startTable.x) * t,
-            y: startTable.y + (targetPt.ty - startTable.y) * t,
-          };
-          updatePayload.xyTable = { ...xyTable, pos: interpolatedTablePos };
-          currentTablePos = interpolatedTablePos;
-        }
-        
-        updateRobot(robot.id, updatePayload);
-        
-        cTargets.forEach(c => {
-          const cInterpolatedPos = {
-            x: c.startPt.x + (c.target.x - c.startPt.x) * t,
-            y: c.startPt.y + (c.target.y - c.startPt.y) * t,
-            z: c.startPt.z + (c.target.z - c.startPt.z) * t,
-            a: c.startPt.a + (c.target.a - c.startPt.a) * t,
-            b: c.startPt.b + (c.target.b - c.startPt.b) * t,
-            c: c.startPt.c + (c.target.c - c.startPt.c) * t,
-            tx: c.startPt.tx !== undefined && c.target.tx !== undefined ? c.startPt.tx + (c.target.tx - c.startPt.tx) * t : c.startPt.tx,
-            ty: c.startPt.ty !== undefined && c.target.ty !== undefined ? c.startPt.ty + (c.target.ty - c.startPt.ty) * t : c.startPt.ty,
-            trz: c.startPt.trz,
-          };
-          let cNewJoints;
-          const cTarget = c.target as any;
-          if (cTarget.j1 !== undefined && cTarget.j2 !== undefined && cTarget.j3 !== undefined && cTarget.j4 !== undefined && cTarget.j5 !== undefined && cTarget.j6 !== undefined) {
-             cNewJoints = {
-               j1: c.startJoints.j1 + (cTarget.j1 - c.startJoints.j1) * t,
-               j2: c.startJoints.j2 + (cTarget.j2 - c.startJoints.j2) * t,
-               j3: c.startJoints.j3 + (cTarget.j3 - c.startJoints.j3) * t,
-               j4: c.startJoints.j4 + (cTarget.j4 - c.startJoints.j4) * t,
-               j5: c.startJoints.j5 + (cTarget.j5 - c.startJoints.j5) * t,
-               j6: c.startJoints.j6 + (cTarget.j6 - c.startJoints.j6) * t,
-             };
-          } else {
-             cNewJoints = computePseudoIK(cInterpolatedPos);
-          }
-          let cPayload: Partial<RobotState> = { pos: cInterpolatedPos, joints: cNewJoints };
-          if (c.hasXYTable && c.startTable && c.target.tx !== undefined && c.target.ty !== undefined && c.xyTable) {
-             const cTablePos = { x: c.startTable.x + (c.target.tx - c.startTable.x) * t, y: c.startTable.y + (c.target.ty - c.startTable.y) * t };
-             cPayload.xyTable = { ...c.xyTable, pos: cTablePos };
-             c.currentTablePos = cTablePos;
-          }
-          updateRobot(c.id, cPayload);
-        });
-        
-        await stepPromise();
-      }
-      
-      timerWorker.postMessage('stop');
-      timerWorker.terminate();
-      URL.revokeObjectURL(workerUrl);
-
-      currentPos = { 
-        x: targetPt.x, y: targetPt.y, z: targetPt.z, 
-        a: targetPt.a, b: targetPt.b, c: targetPt.c 
-      };
-      
-      combinedState.forEach(b => {
-        const c = cTargets.find(t => t.id === b.id);
-        if (c) {
-          b.currentPos = {
-            x: c.target.x, y: c.target.y, z: c.target.z,
-            a: c.target.a, b: c.target.b, c: c.target.c,
-            tx: c.target.tx !== undefined ? c.target.tx : b.currentPos.tx,
-            ty: c.target.ty !== undefined ? c.target.ty : b.currentPos.ty,
-            trz: c.target.trz !== undefined ? c.target.trz : b.currentPos.trz,
-          };
-          // Preserve j1..j6 if they existed in the target, otherwise we'd need to save the IK result.
-          // Since we might have used computePseudoIK, let's use the LAST computed joints if target lacked them.
-          // Wait, cNewJoints is not available here. It was local to the t-loop.
-          // Let's just set the target joints. If they are undefined, startJoints in the next step will be undefined.
-          // In the t-loop, we fallback to IK anyway.
-          b.currentJoints = { ...c.target } as any;
-          if (c.target.tx !== undefined && c.target.ty !== undefined && b.currentTablePos) {
-            b.currentTablePos = { x: c.target.tx, y: c.target.ty };
-          }
-        }
-      });
-    }
-    
-    setIsPlaying(false);
-    isPlayingRef.current = false;
-    setActiveStep(null);
-  };
-
-  const stopTrajectory = () => {
-    setIsPlaying(false);
-    isPlayingRef.current = false;
-    setActiveStep(null);
-  };
-
-  const handleRemovePoint = (index: number) => {
-    updateRobot(robot.id, {
-      recordedPoints: robot.recordedPoints.filter((_, i) => i !== index)
-    });
-  };
-
-  if (!robot.online) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-slate-500">
-        <ShieldAlert size={48} className="mb-4 opacity-50" />
-        <h2 className="text-xl">Robot Offline</h2>
-        <p className="text-sm mt-2">Check FDCAN connection to {robot.name}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className={cn("w-full h-full flex flex-col gap-3", isFullscreen && "fixed inset-0 z-50 bg-slate-950 p-4")}>
-      {/* Detail Header */}
-      <div className="flex items-center justify-between shrink-0">
-        <h2 className="text-xl font-bold text-slate-100 flex items-center gap-3">
-          {robot.name}
-          <span className="px-2 py-1 rounded font-semibold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">{robot.online ? t('robot_detail.status.connected', 'Online') : t('robot_detail.status.disconnected', 'Offline')}</span>
-        </h2>
-        
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => updateRobot(robot.id, { online: false })}
-            className="flex items-center gap-2 px-6 py-3 min-h-[48px] bg-red-600 hover:bg-red-500 border border-red-400 text-white text-sm font-black uppercase tracking-widest rounded-lg transition-all shadow-[0_0_20px_rgba(220,38,38,0.6)] hover:shadow-[0_0_30px_rgba(220,38,38,0.9)] animate-pulse"
-          >
-            <ShieldAlert size={18} className="fill-white/20" /> {t('robot_detail.estop', 'E-STOP')}
-          </button>
-
-          <button 
-            onClick={() => updateRobot(robot.id, { joints: { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0 }, pos: { ...robot.pos, tx: 0, ty: 0, trz: 0 } })}
-            className="flex items-center gap-2 px-6 py-3 min-h-[48px] bg-yellow-400 hover:bg-yellow-300 border border-yellow-300 text-slate-950 text-sm font-black uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(250,204,21,0.8)] hover:shadow-[0_0_20px_rgba(250,204,21,1)]"
-          >
-            {t('robot_detail.home', 'HOME')}
-          </button>
-          {robot.hasXYTable && (
-            <button 
-              onClick={() => updateRobot(robot.id, { xyTable: { ...robot.xyTable, pos: { x: 0, y: 0 }, worldPos: { x: 0, y: 0 } } })}
-              className="flex items-center gap-2 px-6 py-3 min-h-[48px] bg-yellow-400 hover:bg-yellow-300 border border-yellow-300 text-slate-950 text-sm font-black uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(250,204,21,0.8)] hover:shadow-[0_0_20px_rgba(250,204,21,1)]"
-            >
-              {t('robot_detail.home_xy', 'HOME XY')}
-            </button>
-          )}
-
-          
-          {isPlaying ? (
-            <button 
-              onClick={stopTrajectory}
-              className="flex justify-center items-center gap-2 px-6 py-3 min-h-[48px] bg-rose-500 text-slate-950 font-bold text-sm uppercase tracking-widest rounded-lg transition-colors shadow-[0_0_15px_rgba(255,102,0,0.6)] border border-rose-400"
-            >
-              <Square size={16} className="fill-slate-950" /> {t('robot_detail.stop', 'Stop')}
-            </button>
-          ) : (
-            <button 
-              onClick={startTrajectory}
-              disabled={!hasAnyPoints}
-              className="flex justify-center items-center gap-2 px-6 py-3 min-h-[48px] bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold text-sm uppercase tracking-widest rounded-lg transition-colors shadow-[0_0_15px_rgba(0,255,102,0.6)] border border-emerald-400"
-            >
-              <Play size={16} className="fill-slate-950" /> {isStartAll ? t('robot_detail.start_all', 'Start All') : t('robot_detail.start', 'Start')}
-            </button>
-          )}
-
-          <button 
-            onClick={handleResetPos}
-            className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(6,182,212,0.5)] border border-cyan-400"
-          >
-            <RefreshCw size={16} className="fill-slate-950" /> Reset
-          </button>
-          <button 
-            onClick={handleReset3D}
-            className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)] border border-slate-600"
-          >
-            <RotateCcw size={16} className="text-white" /> Reset 3D
-          </button>
-          
-          <button 
-            onClick={() => saveKinematics(robot.id)}
-            disabled={robot.recordedPoints.length === 0 || isPlaying}
-            className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(99,102,241,0.5)] border border-indigo-400"
-          >
-            <Save size={16} /> Export
-          </button>
-          
-          <input 
-            type="file" 
-            accept=".json" 
-            className="hidden" 
-            ref={fileInputRef} 
-            onChange={(e) => loadKinematics(robot.id, e)} 
-          />
-          <button 
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-fuchsia-500 hover:bg-fuchsia-400 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(217,70,239,0.5)] border border-fuchsia-400"
-          >
-            <Upload size={16} /> Load
-          </button>
+    <div className="flex flex-col h-full bg-slate-950 text-slate-200">
+      <div className="flex items-center justify-between p-3 border-b border-slate-800 bg-slate-900 shrink-0">
+        <div className="flex items-center gap-4">
+          <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <span className={cn("w-2 h-2 rounded-full", robot.online ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]")} />
+            {robot.name}
+          </h2>
+          <div className="flex items-center gap-2">
+            <span className="text-xs px-2 py-1 bg-slate-800 text-slate-400 rounded-md uppercase font-bold tracking-wider">{robot.model}</span>
+            <span className="text-xs px-2 py-1 bg-slate-800 text-slate-400 rounded-md uppercase font-bold tracking-wider">{robot.tool}</span>
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
-        {/* Left Col: Kinematics & 3D */}
-        <div className="flex-1 flex flex-col gap-4 min-h-0 min-w-0">
-          {/* 3D View */}
-          <div className={cn(
-            "bg-slate-900 border border-slate-800 rounded-xl p-1 overflow-hidden flex-1 min-h-[300px] relative shadow-inner",
-            isFullscreen && "fixed inset-x-0 bottom-0 top-[140px] z-40 rounded-none border-none bg-slate-950"
-          )}>
-            <VirtualKinematics robot={robot} controlMode={controlMode} />
-            
-            <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-auto">
+      <div className="flex-1 flex overflow-hidden p-4 gap-4">
+        {/* Left Panel: 3D View */}
+        <div className="flex-1 flex flex-col gap-4 min-w-0">
+          <div 
+            className="relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col group shrink-0 min-h-[200px]"
+            style={{ flex: threeDHeight ? `0 0 ${threeDHeight}px` : '1 1 0%' }}
+          >
+            <VirtualKinematics key={reset3DKey} robot={robot} controlMode={controlMode} />
+
+            <div className="absolute bottom-4 left-4 z-50 flex gap-2 pointer-events-auto">
               <button 
-                className={`px-3 py-1.5 text-xs font-semibold rounded shadow-md border ${controlMode === 'translate' ? 'bg-sky-500 text-white border-sky-400' : 'bg-slate-950/80 backdrop-blur text-slate-300 hover:bg-slate-900 border-slate-800'}`}
                 onClick={() => toggleControl('translate')}
+                className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'translate' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
+                title={t('robot_detail.move', 'Move')}
               >
-                {t('robot_detail.move', 'Move')}
+                <ArrowUp size={16} />
               </button>
               <button 
-                className={`px-3 py-1.5 text-xs font-semibold rounded shadow-md border ${controlMode === 'rotate' ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-slate-950/80 backdrop-blur text-slate-300 hover:bg-slate-900 border-slate-800'}`}
                 onClick={() => toggleControl('rotate')}
+                className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'rotate' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
+                title={t('robot_detail.rotate', 'Rotate')}
               >
-                {t('robot_detail.rotate', 'Rotate')}
+                <RotateCcw size={16} />
               </button>
-
               <button 
-                className={`px-3 py-1.5 text-xs font-semibold rounded shadow-md border ${controlMode === 'scale' ? 'bg-amber-500 text-white border-amber-400' : 'bg-slate-950/80 backdrop-blur text-slate-300 hover:bg-slate-900 border-slate-800'}`}
                 onClick={() => toggleControl('scale')}
+                className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'scale' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
+                title={t('robot_detail.resize', 'Resize')}
               >
-                {t('robot_detail.resize', 'Resize')}
+                <Maximize2 size={16} />
               </button>
-
-              <span className="bg-slate-950/80 backdrop-blur font-mono font-bold text-slate-300 text-xs px-3 py-1.5 rounded border border-slate-800 shadow-md">
-                Points: {robot.recordedPoints.length}
-              </span>
+              <div className="w-px h-6 bg-slate-800 self-center mx-1"></div>
               <button 
+                onClick={() => {
+                  updateRobot(robot.id, { 
+                    cameraView: undefined,
+                    centerCameraTrigger: Date.now()
+                  });
+                }}
+                className="p-2 rounded bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-300 backdrop-blur-sm transition-colors"
+                title={t('robot_detail.center_view', 'Center View')}
+              >
+                <Crosshair size={16} />
+              </button>
+            </div>
+
+            <div className="absolute top-4 right-4 z-50 flex gap-2 pointer-events-auto">
+              <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
-                className="bg-slate-950/80 hover:bg-slate-900 backdrop-blur text-slate-300 p-1.5 rounded border border-slate-800 shadow-md"
+                className="p-2 rounded bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-300 backdrop-blur-sm transition-colors"
               >
                 {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </button>
             </div>
 
-            {/* Picture-in-Picture Camera Stream */}
+            {/* Closed Camera Icons (Bottom Right) */}
+            <div className="absolute bottom-4 right-4 z-50 flex gap-2 pointer-events-auto">
+              {[robot, ...combinedBotsInfo].map(bot => {
+                const pipConfig = settings.uiLayout?.cameraPips?.[bot.id];
+                if (pipConfig?.isOpen === false) {
+                  return (
+                    <button 
+                      key={bot.id}
+                      onClick={() => {
+                        updateSettings({
+                          uiLayout: {
+                            ...settings.uiLayout,
+                            cameraPips: {
+                              ...settings.uiLayout?.cameraPips,
+                              [bot.id]: { ...pipConfig, isOpen: true }
+                            }
+                          }
+                        });
+                      }}
+                      className="p-2 rounded bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-emerald-500/50 backdrop-blur-sm transition-colors flex items-center gap-1"
+                      title={`Show ${bot.name} Camera`}
+                    >
+                      <CameraIcon size={16} />
+                      <span className="text-[10px] font-bold max-w-[60px] truncate">{bot.name}</span>
+                    </button>
+                  );
+                }
+                return null;
+              })}
+            </div>
+
+            {/* Camera PIP Windows */}
+            <CameraPIP 
+              bot={robot} 
+              initialX={0} 
+              initialY={0} 
+              label={robot.name} 
+              t={t} 
+            />
+            {combinedBotsInfo.map((bot, index) => (
+              <CameraPIP 
+                key={bot.id} 
+                bot={bot} 
+                initialX={-200 * (index + 1)} 
+                initialY={0} 
+                label={bot.name} 
+                t={t} 
+              />
+            ))}
+            
+            {/* Horizontal Resize Handle for 3D View */}
             <div 
+              className="absolute bottom-0 left-0 right-0 h-4 cursor-ns-resize flex items-center justify-center z-20 hover:bg-white/5 transition-colors"
               onPointerDown={(e) => {
-                if ((e.target as HTMLElement).closest('.resize-handle')) return;
                 e.preventDefault();
-                setIsDraggingPip(true);
-                dragStartRef.current = { x: e.clientX, y: e.clientY };
-                pipInitialRef.current = pipPos;
+                e.stopPropagation();
+                document.body.classList.add('select-none');
+                dragRef.current = true;
+                startHeight.current = e.currentTarget.parentElement?.offsetHeight || 0;
+                startDragY.current = e.clientY;
               }}
-              onDoubleClick={() => {
-                if (!pipConnected) {
-                  setPipConnected(true);
+            >
+              <div className="w-12 h-1 rounded-full bg-slate-500/50" />
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-2 pb-2">
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-2 pointer-events-auto shrink-0">
+            {/* E-STOP Button (First, Glowing, Blinking) */}
+            <button 
+              onClick={() => {
+                handleStop();
+                updateRobot(robot.id, { online: false });
+                if (isStartAll) {
+                  robot.combinedWith?.forEach(id => updateRobot(id, { online: false }));
                 }
               }}
-              style={{ bottom: pipPos.y, right: pipPos.x, width: pipSize.w, height: pipSize.h }}
-              className={cn("absolute bg-slate-950 border-2 border-slate-800 rounded-lg overflow-hidden shadow-2xl pointer-events-auto flex flex-col items-center justify-center cursor-move z-10 select-none group", 
-                robot.tool.includes('Camera') && !pipConnected && "hover:border-sky-500/50 transition-colors"
-              )}>
-              
-              {robot.tool.includes('Camera') && pipConnected ? (
-                <>
-                  <div className="w-full h-full bg-black/40 flex items-center justify-center relative overflow-hidden">
-                    <CameraIcon size={32} className="text-slate-800" />
-                    <div className="absolute inset-0 bg-electric-grid opacity-30 mix-blend-screen pointer-events-none" />
-                    <div className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[9px] font-mono text-emerald-500 bg-slate-900/80 px-1 rounded border border-emerald-500/20">
-                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> LIVE
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <CameraIcon size={Math.min(32, pipSize.w / 4)} className={cn("mb-1", robot.tool.includes('Camera') ? "opacity-50 text-slate-500" : "opacity-20 text-slate-700")} />
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 text-center px-2">
-                    {robot.tool.includes('Camera') ? 'Dbl Click to Connect' : 'No Camera'}
-                  </span>
-                </>
-              )}
+              className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-red-600 hover:bg-red-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_20px_rgba(220,38,38,0.8)] border border-red-500 animate-pulse"
+            >
+              <AlertOctagon size={16} /> {isStartAll ? t('robot_detail.estop_all', 'E-STOP ALL') : t('robot_detail.estop', 'E-STOP')}
+            </button>
 
-              {/* Resize Handle */}
-              <div 
-                className="resize-handle absolute top-0 left-0 w-6 h-6 cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity z-50 flex items-start justify-start p-1"
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setIsResizingPip(true);
-                  resizeStartRef.current = { w: pipSize.w, h: pipSize.h, x: e.clientX, y: e.clientY };
-                }}
+            {/* START/STOP Button */}
+            {!robot.playbackState?.isPlaying ? (
+              <button 
+                onClick={() => handlePlay(isStartAll)}
+                disabled={robot.recordedPoints.length === 0}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 min-h-[48px] bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.5)] border border-emerald-400"
               >
-                <div className="w-2 h-2 border-l-2 border-t-2 border-slate-400" />
-              </div>
-            </div>
+                <Play size={16} /> {isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START')}
+              </button>
+            ) : (
+              <button 
+                onClick={handleStop}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 min-h-[48px] bg-rose-500 hover:bg-rose-400 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(244,63,94,0.5)] border border-rose-400"
+              >
+                <Square size={16} /> {isStartAll ? t('robot_detail.stop_all', 'STOP ALL') : t('robot_detail.stop', 'STOP')}
+              </button>
+            )}
+
+            {/* HOME Button */}
+            <button 
+              onClick={() => updateRobot(robot.id, { pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }, joints: { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 } })}
+              className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]"
+            >
+              <Home size={16} /> HOME
+            </button>
+
+            {/* HOME XY Button */}
+            {robot.hasXYTable && (
+              <button 
+                onClick={() => updateRobot(robot.id, { 
+    pos: { ...robot.pos, tx: 0, ty: 0 },
+    xyTable: robot.xyTable ? { ...robot.xyTable, pos: { x: 0, y: 0 } } : robot.xyTable
+  })}
+                className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]"
+              >
+                <Home size={16} /> HOME XY
+              </button>
+            )}
+
+            {/* RESET Button */}
+            <button 
+              onClick={() => {
+                handleStop();
+                updateRobot(robot.id, { 
+                   pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }, 
+                   joints: { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 }
+                });
+              }}
+              className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-amber-500 shadow-[0_0_15px_rgba(217,119,6,0.3)]"
+            >
+              <RefreshCw size={16} /> RESET
+            </button>
+
+            {/* RESET 3D Button */}
+            <button 
+              onClick={() => setReset3DKey(k => k + 1)}
+              className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-teal-600 hover:bg-teal-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-teal-500 shadow-[0_0_15px_rgba(13,148,136,0.3)]"
+            >
+              <Video size={16} /> RESET 3D
+            </button>
+
+            {/* EXPORT / LOAD Buttons */}
+            <button 
+              onClick={() => saveKinematics(robot.id)}
+              disabled={robot.recordedPoints.length === 0 || robot.playbackState?.isPlaying}
+              className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(99,102,241,0.5)] border border-indigo-400"
+            >
+              <Save size={16} /> {t('robot_detail.export', 'Export')}
+            </button>
+            <input 
+              type="file" 
+              accept=".json" 
+              className="hidden" 
+              ref={fileInputRef} 
+              onChange={(e) => loadKinematics(robot.id, e)}
+            />
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-fuchsia-500 hover:bg-fuchsia-400 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(217,70,239,0.5)] border border-fuchsia-400"
+            >
+              <Upload size={16} /> {t('robot_detail.load', 'Load')}
+            </button>
           </div>
 
           {/* Joint Controls */}
           <div className={cn("bg-slate-900 border border-slate-800 rounded-xl p-4 shrink-0 shadow-sm", isFullscreen && "hidden")}>
             <div className="flex flex-wrap items-center justify-between mb-4 gap-4">
               <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
-                  <button
-                    onClick={() => setJogMode('joint')}
-                    className={cn("px-6 py-2 min-h-[44px] rounded-md text-sm font-bold uppercase tracking-wider transition-colors", jogMode === 'joint' ? "bg-sky-500/20 text-sky-400 glow-border-sky" : "text-slate-400 hover:text-slate-300")}
-                  >
-                    {t('robot_detail.joints', 'Joints')}
-                  </button>
-                  <button
-                    onClick={() => setJogMode('cartesian')}
-                    className={cn("px-6 py-2 min-h-[44px] rounded-md text-sm font-bold uppercase tracking-wider transition-colors", jogMode === 'cartesian' ? "bg-sky-500/20 text-sky-400 glow-border-sky" : "text-slate-400 hover:text-slate-300")}
-                  >
-                    {t('robot_detail.cartesian', 'Cartesian')}
-                  </button>
-                </div>
                 
                 <div className="flex items-center gap-2">
                   <button 
@@ -742,7 +770,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                   <input 
                     type="range" 
                     min="10" 
-                    max="300" 
+                    max="500" 
                     step="10" 
                     value={playbackSpeed} 
                     onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
@@ -769,7 +797,6 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
               </div>
             </div>
             
-            {jogMode === 'joint' ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {(['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const).map(j => (
                   <div key={j} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
@@ -785,23 +812,6 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {(['x', 'y', 'z', 'a', 'b', 'c'] as const).map(axis => (
-                  <div key={axis} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-400 uppercase">{axis}</span>
-                      <span className="text-xs font-mono text-sky-400">{robot.pos[axis as keyof typeof robot.pos]?.toFixed(2) || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: (robot.pos[axis as keyof typeof robot.pos] || 0) - jogStep } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">-</button>
-                      <input type="range" min="-500" max="500" value={robot.pos[axis as keyof typeof robot.pos] || 0} onChange={e => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: Number(e.target.value) } })} className="flex-1" />
-                      <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: (robot.pos[axis as keyof typeof robot.pos] || 0) + jogStep } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">+</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
 
             {hasXYTable && (
               <div className="mt-4 pt-4 border-t border-slate-800">
@@ -816,15 +826,34 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                         <span className="text-xs font-mono text-sky-400">{robot.pos[axis]?.toFixed(2) || 0}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: Math.max(0, (robot.pos[axis] || 0) - jogStep) } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">-</button>
-                        <input type="range" min="0" max={maxVal} value={robot.pos[axis] || 0} onChange={e => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: Number(e.target.value) } })} className="flex-1" />
-                        <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, [axis]: Math.min(maxVal, (robot.pos[axis] || 0) + jogStep) } })} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">+</button>
+                        <button onClick={() => {
+    const newVal = Math.max(0, (robot.pos[axis] || 0) - jogStep);
+    updateRobot(robot.id, { 
+      pos: { ...robot.pos, [axis]: newVal },
+      xyTable: robot.xyTable ? { ...robot.xyTable, pos: { ...robot.xyTable.pos, [axis === 'tx' ? 'x' : 'y']: newVal } } : robot.xyTable
+    });
+  }} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">-</button>
+                        <input type="range" min="0" max={maxVal} value={robot.pos[axis] || 0} onChange={e => {
+    const newVal = Number(e.target.value);
+    updateRobot(robot.id, { 
+      pos: { ...robot.pos, [axis]: newVal },
+      xyTable: robot.xyTable ? { ...robot.xyTable, pos: { ...robot.xyTable.pos, [axis === 'tx' ? 'x' : 'y']: newVal } } : robot.xyTable
+    });
+  }} className="flex-1" />
+                        <button onClick={() => {
+    const newVal = Math.min(maxVal, (robot.pos[axis] || 0) + jogStep);
+    updateRobot(robot.id, { 
+      pos: { ...robot.pos, [axis]: newVal },
+      xyTable: robot.xyTable ? { ...robot.xyTable, pos: { ...robot.xyTable.pos, [axis === 'tx' ? 'x' : 'y']: newVal } } : robot.xyTable
+    });
+  }} className="p-2 bg-slate-900 hover:bg-slate-800 rounded text-slate-300">+</button>
                       </div>
                     </div>
                   )})}
                 </div>
               </div>
             )}
+          </div>
           </div>
         </div>
 
@@ -833,6 +862,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
             className="hidden lg:flex w-2 cursor-col-resize hover:bg-slate-700/50 rounded mx-[-12px] z-10 shrink-0 items-center justify-center transition-colors touch-none"
             onPointerDown={(e) => {
               e.preventDefault();
+              document.body.classList.add('select-none');
               setIsResizingRightPanel(true);
               rightPanelResizeStartRef.current = { width: rightPanelWidth, x: e.clientX };
             }}
@@ -853,7 +883,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                 onClick={() => setRightTab('trajectories')} 
                 className={cn("flex-1 py-3 px-4 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors", rightTab === 'trajectories' ? "text-sky-400 border-b-2 border-sky-400 bg-slate-800" : "text-slate-400 hover:text-slate-300")}
               >
-                {t('robot_detail.points', 'Points')}
+                {t('robot_detail.examples_tab', 'Examples')}
               </button>
               <button 
                 onClick={() => setRightTab('config')} 
@@ -878,9 +908,9 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                       className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
                       value={selectedExample}
                       onChange={(e) => loadExample(e.target.value)}
-                      disabled={isPlaying}
+                      disabled={robot.playbackState?.isPlaying}
                     >
-                      <option value="">-- Select --</option>
+                      <option value="">{t('robot_detail.select', '-- Select --')}</option>
                       {examples.map(e => (
                         <option key={e.id} value={e.id}>{e.name} ({e.points.length} pts)</option>
                       ))}
@@ -897,9 +927,9 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                               className="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-xs text-slate-200 outline-none"
                               onChange={(e) => loadExampleForRobot(bot.id, e.target.value)}
                               defaultValue=""
-                              disabled={isPlaying}
+                              disabled={robot.playbackState?.isPlaying}
                             >
-                              <option value="">-- Select Example --</option>
+                              <option value="">{t('robot_detail.select_example', '-- Select Example --')}</option>
                               {examples.map(e => (
                                 <option key={e.id} value={e.id}>{e.name} ({e.points.length} pts)</option>
                               ))}
@@ -916,10 +946,10 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                 <div className="space-y-6">
                   
                   <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 mt-4">
-                    <h4 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Model & Tools</h4>
+                    <h4 className="text-sm font-bold text-slate-200 uppercase tracking-wider">{t('robot_detail.model_and_tools', 'Model & Tools')}</h4>
                     
                     <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Model</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('robot_detail.model', 'Model')}</label>
                     <select 
                       value={robot.model}
                       onChange={e => updateRobot(robot.id, { model: e.target.value as any })}
@@ -930,11 +960,14 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                       <option value="AR3 (6-DOF)">AR3 (6-DOF)</option>
                       <option value="AR4 (6-DOF)">AR4 (6-DOF)</option>
                       <option value="Generic (6-DOF)">Generic (6-DOF)</option>
+                      {settings.customModels?.map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
                     </select>
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Role</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('robot_detail.role', 'Role')}</label>
                     <select 
                       value={robot.role}
                       onChange={e => updateRobot(robot.id, { role: e.target.value as any })}
@@ -950,7 +983,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">URTC Tool</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('robot_detail.urtc_tool', 'URTC Tool')}</label>
                     <select 
                       value={robot.tool}
                       onChange={e => updateRobot(robot.id, { tool: e.target.value as any })}
@@ -964,9 +997,9 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                 </div>
 
                 <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 mt-4">
-                  <h4 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Virtual Environment</h4>
+                  <h4 className="text-sm font-bold text-slate-200 uppercase tracking-wider">{t('robot_detail.virtual_environment', 'Virtual Environment')}</h4>
                   <div className="flex flex-col gap-2">
-                    <span className="text-sm font-semibold text-slate-400">Combine with Robot</span>
+                    <span className="text-sm font-semibold text-slate-400">{t('robot_detail.combine_with_robot', 'Combine with Robot')}</span>
                     
                     <div className="flex flex-col gap-2">
                       {robots.filter(r => r.id !== robot.id && r.online).map(r => (
@@ -992,7 +1025,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
 
                   </div>
                   <p className="text-xs text-slate-500 font-medium">
-                    Shows the selected robot in the 3D view. Parameters are configured in its own menu.
+                    {t('robot_detail.combine_desc', 'Shows the selected robot in the 3D view. Parameters are configured in its own menu.')}
                   </p>
                 </div>
               </div>
@@ -1009,7 +1042,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                       )}
                     >
                       <Droplets size={20} className="mb-2" />
-                      <span className="text-xs font-semibold uppercase tracking-wider">Valve 1</span>
+                      <span className="text-xs font-semibold uppercase tracking-wider">{t('robot_detail.valve_1', 'Valve 1')}</span>
                     </button>
                     <button 
                       onClick={() => toggleValve(1)}
@@ -1018,7 +1051,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                       )}
                     >
                       <Droplets size={20} className="mb-2" />
-                      <span className="text-xs font-semibold uppercase tracking-wider">Valve 2</span>
+                      <span className="text-xs font-semibold uppercase tracking-wider">{t('robot_detail.valve_2', 'Valve 2')}</span>
                     </button>
                   </div>
 
@@ -1044,7 +1077,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-slate-800">
-                    <h4 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Endstops</h4>
+                    <h4 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">{t('robot_detail.endstops_upper', 'ENDSTOPS')}</h4>
                     <div className="flex gap-2">
                       {(['x1', 'x2', 'y1', 'y2', 'z0'] as const).map(axis => (
                         <div key={axis} className={cn(
@@ -1067,21 +1100,21 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
           {/* Bottom Panel: Points & Trajectories Table */}
           <div className="flex flex-col flex-[1.2] bg-slate-950 border border-slate-800 rounded-xl overflow-hidden min-h-0">
             <div className="p-3 bg-slate-900 border-b border-slate-800 shrink-0">
-              <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">Points Table</span>
+              <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">{t('robot_detail.points_table', 'Points Table')}</span>
             </div>
             
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 relative">
               <div className="space-y-2">
                 {robot.recordedPoints.map((pt, i) => (
-                  <div id={`step-${robot.id}-${i}`} key={i} className={cn("bg-slate-900 border rounded p-2 text-xs flex flex-col gap-1 transition-colors", activeStep === i ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]" : "border-slate-800")}>
+                  <div id={`step-${robot.id}-${i}`} key={i} className={cn("bg-slate-900 border rounded p-2 text-xs flex flex-col gap-1 transition-colors", robot.playbackState?.activeStep === i ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]" : "border-slate-800")}>
                     <div className="flex justify-between items-center border-b border-slate-800/50 pb-1 mb-1">
                       <div className="flex items-center gap-2">
-                        {activeStep === i ? (
+                        {robot.playbackState?.activeStep === i ? (
                           <Play size={12} className="text-emerald-400 animate-pulse fill-emerald-400" />
                         ) : (
                           <span className="w-3" />
                         )}
-                        <span className={cn("font-mono font-bold", activeStep === i ? "text-emerald-400" : "text-slate-400")}>STEP {i}</span>
+                        <span className={cn("font-mono font-bold", robot.playbackState?.activeStep === i ? "text-emerald-400" : "text-slate-400")}>{t('robot_detail.step_upper', 'STEP')} {i}</span>
                       </div>
                       <button onClick={() => {
                         const newPts = [...robot.recordedPoints];
@@ -1093,34 +1126,17 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                     </div>
                     
                     <div className="grid grid-cols-6 gap-x-2 gap-y-1 font-mono text-[10px]">
-                      <span className="text-slate-500 flex justify-between"><span>X:</span><span className="text-sky-400">{pt.x.toFixed(1)}</span></span>
-                      <span className="text-slate-500 flex justify-between"><span>Y:</span><span className="text-sky-400">{pt.y.toFixed(1)}</span></span>
-                      <span className="text-slate-500 flex justify-between"><span>Z:</span><span className="text-sky-400">{pt.z.toFixed(1)}</span></span>
-                      <span className="text-slate-500 flex justify-between"><span>A:</span><span className="text-sky-400">{pt.a.toFixed(1)}</span></span>
-                      <span className="text-slate-500 flex justify-between"><span>B:</span><span className="text-sky-400">{pt.b.toFixed(1)}</span></span>
-                      <span className="text-slate-500 flex justify-between"><span>C:</span><span className="text-sky-400">{pt.c.toFixed(1)}</span></span>
+                      <span className="text-slate-500 flex justify-between"><span>J1:</span><span className="text-indigo-400">{pt.j1 !== undefined ? pt.j1.toFixed(1) : '0.0'}</span></span>
+                      <span className="text-slate-500 flex justify-between"><span>J2:</span><span className="text-indigo-400">{pt.j2 !== undefined ? pt.j2.toFixed(1) : '0.0'}</span></span>
+                      <span className="text-slate-500 flex justify-between"><span>J3:</span><span className="text-indigo-400">{pt.j3 !== undefined ? pt.j3.toFixed(1) : '0.0'}</span></span>
+                      <span className="text-slate-500 flex justify-between"><span>J4:</span><span className="text-indigo-400">{pt.j4 !== undefined ? pt.j4.toFixed(1) : '0.0'}</span></span>
+                      <span className="text-slate-500 flex justify-between"><span>J5:</span><span className="text-indigo-400">{pt.j5 !== undefined ? pt.j5.toFixed(1) : '0.0'}</span></span>
+                      <span className="text-slate-500 flex justify-between"><span>J6:</span><span className="text-indigo-400">{pt.j6 !== undefined ? pt.j6.toFixed(1) : '0.0'}</span></span>
                     </div>
-                    
-                    {(pt.j1 !== undefined || (pt.tx !== undefined && pt.ty !== undefined)) && (
+                    {pt.tx !== undefined && pt.ty !== undefined && (
                       <div className="grid grid-cols-6 gap-x-2 gap-y-1 font-mono text-[10px] mt-1 border-t border-slate-800/50 pt-1">
-                        {pt.j1 !== undefined ? (
-                          <>
-                            <span className="text-slate-500 flex justify-between"><span>J1:</span><span className="text-indigo-400">{pt.j1?.toFixed(1)}</span></span>
-                            <span className="text-slate-500 flex justify-between"><span>J2:</span><span className="text-indigo-400">{pt.j2?.toFixed(1)}</span></span>
-                            <span className="text-slate-500 flex justify-between"><span>J3:</span><span className="text-indigo-400">{pt.j3?.toFixed(1)}</span></span>
-                            <span className="text-slate-500 flex justify-between"><span>J4:</span><span className="text-indigo-400">{pt.j4?.toFixed(1)}</span></span>
-                            <span className="text-slate-500 flex justify-between"><span>J5:</span><span className="text-indigo-400">{pt.j5?.toFixed(1)}</span></span>
-                            <span className="text-slate-500 flex justify-between"><span>J6:</span><span className="text-indigo-400">{pt.j6?.toFixed(1)}</span></span>
-                          </>
-                        ) : (
-                          <span className="col-span-6"></span>
-                        )}
-                        {pt.tx !== undefined && pt.ty !== undefined && (
-                          <>
-                            <span className="text-slate-500 flex justify-between col-start-1"><span>TX:</span><span className="text-amber-400">{pt.tx?.toFixed(1)}</span></span>
-                            <span className="text-slate-500 flex justify-between col-start-2"><span>TY:</span><span className="text-amber-400">{pt.ty?.toFixed(1)}</span></span>
-                          </>
-                        )}
+                        <span className="text-slate-500 flex justify-between col-start-1"><span>TX:</span><span className="text-amber-400">{pt.tx.toFixed(1)}</span></span>
+                        <span className="text-slate-500 flex justify-between col-start-2"><span>TY:</span><span className="text-amber-400">{pt.ty.toFixed(1)}</span></span>
                       </div>
                     )}
                   </div>
