@@ -71,3 +71,32 @@ This project is licensed under the GNU General Public License v3.0 (GPL-3.0). Se
 **JuanenRac** (Electro Hobby 3D)  
 📧 electrohobby3d@gmail.com  
 📺 [youtube.com/@electrohobby3d](https://youtube.com/@electrohobby3d)
+
+## 📁 Trajectory Files (WORKS)
+
+You can create custom trajectory files to be loaded by the robots. A trajectory file is a simple JSON array where each object represents a waypoint.
+The robot will smoothly interpolate between these waypoints using joint interpolation.
+
+### Basic 6-DOF Trajectory (Without XY Table)
+```json
+[
+  { "j1": 0, "j2": -45, "j3": 45, "j4": 0, "j5": 90, "j6": 0 },
+  { "j1": 10, "j2": -30, "j3": 50, "j4": 0, "j5": 90, "j6": 0 },
+  { "j1": 20, "j2": -20, "j3": 60, "j4": 0, "j5": 90, "j6": 0 }
+]
+```
+
+### 6-DOF Trajectory + XY Table (External Axes TX, TY)
+If your robot is attached to an XY Table, you can include `tx` and `ty` coordinates (in mm) to move the base simultaneously with the joints:
+```json
+[
+  { "j1": 0, "j2": -45, "j3": 45, "j4": 0, "j5": 90, "j6": 0, "tx": 0, "ty": 0 },
+  { "j1": 10, "j2": -30, "j3": 50, "j4": 0, "j5": 90, "j6": 0, "tx": 100, "ty": 50 },
+  { "j1": 20, "j2": -20, "j3": 60, "j4": 0, "j5": 90, "j6": 0, "tx": 200, "ty": 100 }
+]
+```
+
+### How to use:
+1. Navigate to the **Robot Details** screen and select the **Trajectories** (Trayectorias) tab.
+2. Click the **Open / Add** (+ icon) button next to the "Works Robot" selector.
+3. Select your `.json` trajectory file. It will be uploaded to the robot's configured WORKS folder and become available in the dropdown immediately.

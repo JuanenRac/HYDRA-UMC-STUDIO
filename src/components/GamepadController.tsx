@@ -73,16 +73,29 @@ export function GamepadController() {
               });
             } else if (action.startsWith('T')) {
               // Action format: TX+, TY-
-              const axisStr = action.substring(1, 2).toLowerCase(); // "x" or "y"
+              const axisStr = action.substring(0, 2).toLowerCase(); // "tx" or "ty"
+              const tableAxis = axisStr === 'tx' ? 'x' : 'y';
               const isPos = action.endsWith('+');
               const step = isPos ? 2 : -2;
               const currentPos = currentRobot.pos || { x: 0, y: 0, z: 0 };
+              const newTablePosVal = ((currentPos as any)[axisStr] || 0) + step;
               
+              const xyUpdate = currentRobot.hasXYTable && currentRobot.xyTable ? {
+                xyTable: {
+                  ...currentRobot.xyTable,
+                  pos: {
+                    ...currentRobot.xyTable.pos,
+                    [tableAxis]: newTablePosVal
+                  }
+                }
+              } : {};
+
               updateRobotRef.current(currentRobot.id, {
                 pos: {
                   ...currentPos,
-                  [axisStr]: ((currentPos as any)[axisStr] || 0) + step
-                }
+                  [axisStr]: newTablePosVal
+                },
+                ...xyUpdate
               });
             } else if (action.startsWith('SPEED')) {
               // SPEED+, SPEED-
@@ -107,29 +120,29 @@ export function GamepadController() {
               selectedRobotIdRef.current = id;
             } else if (action === 'E-STOP') {
               if (currentRobot) {
-                updateRobotRef.current(currentRobot.id, { online: false, playbackState: { isPlaying: false, activeStep: -1, speed: currentRobot.playbackState?.speed || 100 } });
+                updateRobotRef.current(currentRobot.id, { online: false, playbackState: { ...(currentRobot.playbackState || {}), isPlaying: false, activeStep: -1, speed: currentRobot.playbackState?.speed || 100 } });
               }
             } else if (action === 'E-STOP ALL') {
-              activeControllerRef.current.robots.forEach(r => updateRobotRef.current(r.id, { online: false, playbackState: { isPlaying: false, activeStep: -1, speed: r.playbackState?.speed || 100 } }));
+              activeControllerRef.current.robots.forEach(r => updateRobotRef.current(r.id, { online: false, playbackState: { ...(r.playbackState || {}), isPlaying: false, activeStep: -1, speed: r.playbackState?.speed || 100 } }));
             } else if (action === 'START') {
                if (currentRobot) {
                  const pb = currentRobot.playbackState || { speed: 100 };
-                 updateRobotRef.current(currentRobot.id, { playbackState: { isPlaying: true, activeStep: 0, speed: pb.speed || 100 } });
+                 const freshRobot = activeControllerRef.current.robots.find(r => r.id === currentRobot.id); const freshPb = freshRobot?.playbackState || { speed: 100 }; updateRobotRef.current(currentRobot.id, { playbackState: { ...freshPb, isPlaying: true, activeStep: 0, speed: freshPb.speed || 100 } });
                }
             } else if (action === 'START ALL') {
                activeControllerRef.current.robots.forEach(r => {
                  const pb = r.playbackState || { speed: 100 };
-                 updateRobotRef.current(r.id, { playbackState: { isPlaying: true, activeStep: 0, speed: pb.speed || 100 } });
+                 const freshR = activeControllerRef.current.robots.find(rob => rob.id === r.id); const freshPb = freshR?.playbackState || { speed: 100 }; updateRobotRef.current(r.id, { playbackState: { ...freshPb, isPlaying: true, activeStep: 0, speed: freshPb.speed || 100 } });
                });
             } else if (action === 'STOP') {
                if (currentRobot) {
                  const pb = currentRobot.playbackState || { speed: 100 };
-                 updateRobotRef.current(currentRobot.id, { playbackState: { isPlaying: false, activeStep: -1, speed: pb.speed || 100 } });
+                 updateRobotRef.current(currentRobot.id, { playbackState: { ...pb, isPlaying: false, activeStep: -1, speed: pb.speed || 100 } });
                }
             } else if (action === 'STOP ALL') {
                activeControllerRef.current.robots.forEach(r => {
                  const pb = r.playbackState || { speed: 100 };
-                 updateRobotRef.current(r.id, { playbackState: { isPlaying: false, activeStep: -1, speed: pb.speed || 100 } });
+                 updateRobotRef.current(r.id, { playbackState: { ...pb, isPlaying: false, activeStep: -1, speed: pb.speed || 100 } });
                });
             } else if (action === 'ADD POINT') {
                if (currentRobot) {
@@ -142,6 +155,9 @@ export function GamepadController() {
                    a: currentRobot.pos.a,
                    b: currentRobot.pos.b,
                    c: currentRobot.pos.c,
+                   tx: currentRobot.pos.tx,
+                   ty: currentRobot.pos.ty,
+                   trz: currentRobot.pos.trz,
                    j1: currentRobot.joints.j1,
                    j2: currentRobot.joints.j2,
                    j3: currentRobot.joints.j3,

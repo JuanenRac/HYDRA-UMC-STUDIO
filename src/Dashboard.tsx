@@ -242,6 +242,7 @@ export default function Dashboard() {
                         value={settings.theme}
                         onChange={(e) => updateSettings({ theme: e.target.value })}
                       >
+                        <option value="HYDRA-UMC Studio Fasion">HYDRA-UMC Studio Fasion</option>
                         <option value="Dark Mode (Default)">Dark Mode (Default)</option>
                         <option value="Light Mode (White)">Light Mode (White)</option>
                         <option value="Light Gray">Light Gray</option>
@@ -475,10 +476,10 @@ export default function Dashboard() {
                             <span className="text-slate-600 font-mono">[{r.role}]</span>
                           </label>
                           <input 
-                            value={settings.worksPaths?.[r.id] || `Works/${r.name.replace(/\s+/g, '')}`}
+                            value={settings.worksPaths?.[r.id] || `WORKS/${r.name.replace(/\s+/g, '')}`}
                             onChange={(e) => updateSettings({ worksPaths: { ...(settings.worksPaths || {}), [r.id]: e.target.value } })}
                             className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 focus:glow-border-sky w-full font-mono transition-all"
-                            placeholder="Works/RobotName"
+                            placeholder="WORKS/RobotName"
                           />
                         </div>
                       ))}

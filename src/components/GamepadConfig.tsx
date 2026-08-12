@@ -93,12 +93,24 @@ export function GamepadConfig() {
         <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
           <Gamepad2 size={16} className="text-sky-400" /> Gamepad Controller
         </h3>
-        <button 
-          onClick={toggleGamepad}
-          className={`px-3 py-1 rounded text-xs font-bold transition-colors border ${gamepadEnabled ? 'bg-sky-500/20 text-sky-400 border-sky-500/50' : 'bg-slate-800 text-slate-500 border-slate-700'}`}
-        >
-          {gamepadEnabled ? 'ENABLED' : 'DISABLED'}
-        </button>
+        <div className="flex items-center gap-3">
+          {gamepadEnabled && (
+            <select
+              value={settings.gamepadConnectionType || 'USB'}
+              onChange={(e) => updateSettings({ gamepadConnectionType: e.target.value as 'USB' | 'Bluetooth' })}
+              className="bg-slate-900 border border-slate-700 rounded p-1 text-xs text-slate-300 outline-none"
+            >
+              <option value="USB">USB Connection</option>
+              <option value="Bluetooth">Bluetooth Connection</option>
+            </select>
+          )}
+          <button 
+            onClick={toggleGamepad}
+            className={`px-3 py-1 rounded text-xs font-bold transition-colors border ${gamepadEnabled ? 'bg-sky-500/20 text-sky-400 border-sky-500/50' : 'bg-slate-800 text-slate-500 border-slate-700'}`}
+          >
+            {gamepadEnabled ? 'ENABLED' : 'DISABLED'}
+          </button>
+        </div>
       </div>
 
       {gamepadEnabled && (

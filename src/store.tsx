@@ -120,6 +120,8 @@ export interface RobotState {
   valves: [boolean, boolean];
   pumps: [boolean, boolean];
   endstops: { x1: boolean; x2: boolean; y1: boolean; y2: boolean; z0: boolean };
+  selectedExample?: string;
+  selectedWorkFile?: string;
   recordedPoints: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number; tx?: number; ty?: number; trz?: number; x?: number; y?: number; z?: number; a?: number; b?: number; c?: number }[];
   atc?: ATCConfig;
   rackSystem: {
@@ -130,6 +132,9 @@ export interface RobotState {
   hasXYTable: boolean;
   playbackState: {
     isPlaying: boolean;
+    isPaused?: boolean;
+    isFinished?: boolean;
+    isLooping?: boolean;
     activeStep: number;
     speed: number;
   };
@@ -194,6 +199,7 @@ export interface SystemSettings {
   language: string;
   worksPaths?: Record<string, string>;
   gamepadEnabled?: boolean;
+  gamepadConnectionType?: 'USB' | 'Bluetooth';
   gamepadMapping?: Record<string, string>;
   uiLayout?: {
     rightPanelWidth?: number;
@@ -244,7 +250,7 @@ export const createDefaultRobots = (): RobotState[] => {
     pumps: [false, false] as [boolean, boolean],
     endstops: { x1: false, x2: false, y1: false, y2: false, z0: false },
     recordedPoints: [],
-    playbackState: { isPlaying: false, activeStep: 0, speed: 100 },
+    playbackState: { isPlaying: false, activeStep: 0, speed: 100, isLooping: false },
     hasXYTable: false,
 
     juanenPnP: { enabled: false, size: { width: 500, length: 500 } },
@@ -387,7 +393,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     },
     customModels: [],
     autoConnectRobots: false,
-    theme: "Dark Mode (Default)",
+    theme: "HYDRA-UMC Studio Fasion",
     language: "en",
     worksPaths: {},
     uiLayout: {
@@ -398,7 +404,17 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   React.useEffect(() => {
+    fetch('/settings.json').then(r => r.json()).then(data => {
+      setSettings(prev => ({ ...prev, ...data }));
+    }).catch(() => {});
+  }, []);
+
+  React.useEffect(() => {
     localStorage.setItem('hydra_settings', JSON.stringify(settings));
+    fetch('/api/save-settings', {
+      method: 'POST',
+      body: JSON.stringify(settings)
+    }).catch(() => {});
   }, [settings]);
 
   React.useEffect(() => {
