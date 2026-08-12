@@ -1,3 +1,9 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - Core application file: Dashboard.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
@@ -9,6 +15,10 @@ import {
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+/**
+ * Executes the Cn logic. 
+ * This function handles the necessary computations and state updates.
+ */
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -27,6 +37,10 @@ import { ATCToolsConfig } from './components/ATCToolsConfig';
 import { RackConfigView } from './components/RackConfigView';
 import { GamepadConfig } from './components/GamepadConfig';
 
+/**
+ * Executes the  dashboard logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
   const { controllers, activeControllerId, setActiveControllerId, activeController, updateController, robots, settings, updateSettings, updateRobot, addController, removeController, exportScene, importScene, factoryReset } = useHydraStore();
@@ -678,6 +692,10 @@ export default function Dashboard() {
   );
 }
 
+/**
+ * Executes the  nav item logic. 
+ * This function handles the necessary computations and state updates.
+ */
 function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void }) {
   return (
     <button
@@ -695,6 +713,10 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, labe
   );
 }
 
+/**
+ * Executes the  overview panel logic. 
+ * This function handles the necessary computations and state updates.
+ */
 function OverviewPanel() {
   const { t } = useTranslation();
   const { robots, cameras, updateRobot } = useHydraStore();

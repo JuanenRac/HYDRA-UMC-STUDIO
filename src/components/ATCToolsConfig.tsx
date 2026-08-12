@@ -1,3 +1,9 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - React Component: ATCToolsConfig.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import { useTranslation } from 'react-i18next';
 import { useState, useRef, useEffect } from 'react';
 import { useHydraStore, type ATCGrid, type ToolType, type ATCConfig } from '../store';
@@ -6,10 +12,15 @@ import { RotateCcw, Settings, Grid3X3, CircleDashed, MapPin, ChevronDown, Chevro
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+/**
+ * Executes the Cnm logic. 
+ * This function handles the necessary computations and state updates.
+ */
 function cnm(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Stores the  u r t c_ t o o l s configuration or state data. */
 const URTC_TOOLS: ToolType[] = [
   'None',
   'Soldering Station (T12)',
@@ -39,6 +50,7 @@ const URTC_TOOLS: ToolType[] = [
   'Ultrasonic Welder / Packaging Sealer'
 ];
 
+/** Stores the Default atc config configuration or state data. */
 const defaultAtcConfig: ATCConfig = {
   type: 'vertical_panel',
   panelGrid: '2x2',
@@ -46,6 +58,10 @@ const defaultAtcConfig: ATCConfig = {
   tools: []
 };
 
+/**
+ * Executes the  a t c tools config logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export function ATCToolsConfig() {
   const { t } = useTranslation();
   const { robots, updateRobot } = useHydraStore();
@@ -380,6 +396,10 @@ export function ATCToolsConfig() {
   );
 }
 
+/**
+ * Executes the  a t c graphics logic. 
+ * This function handles the necessary computations and state updates.
+ */
 function ATCGraphics({ config }: { config: ATCConfig }) {
   if (config.type === 'vertical_panel' || config.type === 'horizontal_panel') {
     const [rows, cols] = config.panelGrid.split('x').map(Number);

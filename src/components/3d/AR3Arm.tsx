@@ -1,9 +1,19 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - 3D View Component: AR3Arm.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import React, { useRef } from 'react';
 import * as THREE from 'three';
 import { Cylinder, RoundedBox } from '@react-three/drei';
 import type { RobotState } from '../../store';
 import Toolhead from './Toolhead';
 
+/**
+ * Executes the  a r3 arm logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export default function AR3Arm({ robot }: { robot: RobotState }) {
   const group = useRef<THREE.Group>(null);
   

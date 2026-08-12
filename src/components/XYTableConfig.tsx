@@ -1,3 +1,9 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - React Component: XYTableConfig.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import { useState, useEffect } from 'react';
 import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +12,10 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Cylinder } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 
+/**
+ * Executes the  x y table visualizer logic. 
+ * This function handles the necessary computations and state updates.
+ */
 function XYTableVisualizer({ xyTable }: { xyTable: any }) {
   // Convert mm to meters for visualization and scale 4x
   const VISUAL_SCALE = 4;
@@ -48,6 +58,10 @@ function XYTableVisualizer({ xyTable }: { xyTable: any }) {
   );
 }
 
+/**
+ * Executes the  x y table config logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export function XYTableConfig() {
   const { t } = useTranslation();
   const { robots, updateRobot } = useHydraStore();

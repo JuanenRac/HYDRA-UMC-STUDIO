@@ -1,3 +1,9 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - Core application file: i18n.ts
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
@@ -7,6 +13,7 @@ import de from './locales/de.json';
 import fr from './locales/fr.json';
 import it from './locales/it.json';
 
+/** Stores the Resources configuration or state data. */
 const resources = {
   en: { translation: en },
   es: { translation: es },

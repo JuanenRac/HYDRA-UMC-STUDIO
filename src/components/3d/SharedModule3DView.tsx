@@ -1,6 +1,16 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - 3D View Component: SharedModule3DView.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import React from 'react';
 import { Box, Cylinder } from '@react-three/drei';
 
+/**
+ * Executes the  lumen style frame logic. 
+ * This function handles the necessary computations and state updates.
+ */
 function LumenStyleFrame({ width, length, type, feederCount }: { width: number, length: number, type: string, feederCount: number }) {
   const isPnp = type === 'lumenPnP' || type === 'juanenPnP';
   const isCNC = type === 'juanenCNC';
@@ -89,6 +99,10 @@ function LumenStyleFrame({ width, length, type, feederCount }: { width: number, 
   );
 }
 
+/**
+ * Executes the  shared module3 d view logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export default function SharedModule3DView({ module, type }: { module: any, type: string }) {
   const width = module?.size?.width ? module.size.width / 1000 : 0.5;
   const length = module?.size?.length ? module.size.length / 1000 : 0.5;

@@ -1,11 +1,25 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - Core application file: store.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import React, { createContext, useContext, useState, useMemo } from 'react';
 
+/**
+ * Renders the Unthrottled delay component.
+ * Responsible for displaying the UI elements and handling user interactions related to this feature.
+ */
 export const unthrottledDelay = () => new Promise<void>(resolve => setTimeout(resolve, 16));
 
+/** Stores the Global playbacks configuration or state data. */
 export const globalPlaybacks: Record<number, boolean> = {};
 
+/** Type definition representing  robot model configurations or states. */
 export type RobotModel = 'Parol6 (6-DOF)' | 'Faze4 (6-DOF)' | 'AR3 (6-DOF)' | 'AR4 (6-DOF)' | 'Generic (6-DOF)';
+/** Type definition representing  robot role configurations or states. */
 export type RobotRole = 'Idle' | 'CNC' | 'Laser' | 'Pnp' | '3D printing' | 'Inspection';
+/** Type definition representing  tool type configurations or states. */
 export type ToolType = 
   | 'None'
   | 'Soldering Station (T12)'
@@ -35,9 +49,12 @@ export type ToolType =
   | 'Ultrasonic Welder / Packaging Sealer'
 ;
 
+/** Type definition representing  a t c type configurations or states. */
 export type ATCType = 'vertical_panel' | 'horizontal_panel' | 'revolver';
+/** Type definition representing  a t c grid configurations or states. */
 export type ATCGrid = '1x1' | '1x2' | '2x1' | '2x2' | '2x3' | '3x2' | '3x3' | '3x4' | '4x3' | '4x4';
 
+/** Defines the data structure and expected properties for  rack config entities. */
 export interface RackConfig { renderScale?: number;
   type: 'Input' | 'Output' | 'None';
   capacity: number;
@@ -50,6 +67,7 @@ export interface RackConfig { renderScale?: number;
   };
 }
 
+/** Defines the data structure and expected properties for  a t c config entities. */
 export interface ATCConfig { renderScale?: number;
   type: ATCType;
   panelGrid: ATCGrid;
@@ -65,6 +83,7 @@ export interface ATCConfig { renderScale?: number;
 }
 
 
+/** Defines the data structure and expected properties for  shared module generic entities. */
 export interface SharedModuleGeneric {
   enabled: boolean;
   renderScale?: number;
@@ -73,11 +92,13 @@ export interface SharedModuleGeneric {
   size: { width: number; length: number };
 }
 
+/** Defines the data structure and expected properties for  vacuum table module entities. */
 export interface VacuumTableModule extends SharedModuleGeneric {
   pumpActive: boolean;
   valveActive: boolean;
 }
 
+/** Defines the data structure and expected properties for  heated bed module entities. */
 export interface HeatedBedModule extends SharedModuleGeneric {
   targetTemp: number;
   currentTemp1: number;
@@ -85,6 +106,7 @@ export interface HeatedBedModule extends SharedModuleGeneric {
   ssrActive: boolean;
 }
 
+/** Defines the data structure and expected properties for  robot state entities. */
 export interface RobotState {
   id: number;
   name: string;
@@ -98,7 +120,7 @@ export interface RobotState {
   valves: [boolean, boolean];
   pumps: [boolean, boolean];
   endstops: { x1: boolean; x2: boolean; y1: boolean; y2: boolean; z0: boolean };
-  recordedPoints: { x: number; y: number; z: number; a: number; b: number; c: number; tx?: number; ty?: number; trz?: number; j1?: number; j2?: number; j3?: number; j4?: number; j5?: number; j6?: number }[];
+  recordedPoints: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number; tx?: number; ty?: number; trz?: number; x?: number; y?: number; z?: number; a?: number; b?: number; c?: number }[];
   atc?: ATCConfig;
   rackSystem: {
     enabled: boolean;
@@ -132,8 +154,10 @@ export interface RobotState {
   };
 }
 
+/** Type definition representing  camera type configurations or states. */
 export type CameraType = 'USB Vision Camera' | 'Thermal (MLX90640)' | 'Thermal (MLX90641)' | 'Thermal (MLX90642)';
 
+/** Defines the data structure and expected properties for  camera state entities. */
 export interface CameraState {
   id: number;
   connected: boolean;
@@ -142,6 +166,7 @@ export interface CameraState {
   detections: { label: string; confidence: number; box: { x: number; y: number; w: number; h: number } }[];
 }
 
+/** Defines the data structure and expected properties for  hydra controller entities. */
 export interface HydraController {
   id: string;
   name: string;
@@ -153,6 +178,7 @@ export interface HydraController {
   cameras: CameraState[];
 }
 
+/** Defines the data structure and expected properties for  system settings entities. */
 export interface SystemSettings {
   visibleModules: string[];
   integrations: {
@@ -177,6 +203,7 @@ export interface SystemSettings {
   };
 }
 
+/** Defines the data structure and expected properties for  hydra store context type entities. */
 interface HydraStoreContextType {
   controllers: HydraController[];
   activeControllerId: string;
@@ -198,6 +225,10 @@ interface HydraStoreContextType {
   factoryReset: () => void;
 }
 
+/**
+ * Renders the Create default robots component.
+ * Responsible for displaying the UI elements and handling user interactions related to this feature.
+ */
 export const createDefaultRobots = (): RobotState[] => {
   const bots = Array.from({ length: 8 }, (_, i) => ({
     id: i + 1,
@@ -253,6 +284,10 @@ export const createDefaultRobots = (): RobotState[] => {
   return bots;
 };
 
+/**
+ * Renders the Create default cameras component.
+ * Responsible for displaying the UI elements and handling user interactions related to this feature.
+ */
 export const createDefaultCameras = (): CameraState[] => {
   return Array.from({ length: 8 }, (_, i) => ({
     id: i + 1,
@@ -266,6 +301,7 @@ export const createDefaultCameras = (): CameraState[] => {
   }));
 };
 
+/** Stores the Default controllers configuration or state data. */
 const defaultControllers: HydraController[] = [
   {
     id: '192.168.1.100',
@@ -289,8 +325,13 @@ const defaultControllers: HydraController[] = [
   }
 ];
 
+/** Stores the  hydra context configuration or state data. */
 const HydraContext = createContext<HydraStoreContextType | null>(null);
 
+/**
+ * Renders the  hydra provider component.
+ * Responsible for displaying the UI elements and handling user interactions related to this feature.
+ */
 export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [controllers, setControllers] = useState<HydraController[]>(() => {
     try {
@@ -492,6 +533,10 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
+/**
+ * Renders the Use hydra store component.
+ * Responsible for displaying the UI elements and handling user interactions related to this feature.
+ */
 export const useHydraStore = () => {
   const ctx = useContext(HydraContext);
   if (!ctx) throw new Error('useHydraStore must be used within HydraProvider');

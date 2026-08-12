@@ -1,5 +1,15 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - 3D View Component: Shared3DEnvironment.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import { useHydraStore } from '../../store';
 
+/**
+ * Executes the  shared3 d environment logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export function Shared3DEnvironment() {
   const { settings } = useHydraStore();
   

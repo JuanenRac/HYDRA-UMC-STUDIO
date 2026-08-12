@@ -1,6 +1,16 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - 3D View Component: Rack3DView.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import React from 'react';
 import { Box } from '@react-three/drei';
 
+/**
+ * Executes the  rack3 d view logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export default function Rack3DView({ rack, type }: { rack: any, type: string }) {
   if (type === 'None') return null;
   const cap = rack.capacity || 24;

@@ -1,8 +1,18 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - React Component: GamepadConfig.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
 import { Gamepad2 } from 'lucide-react';
 
+/**
+ * Executes the  gamepad config logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export function GamepadConfig() {
   const { t } = useTranslation();
   const { settings, updateSettings } = useHydraStore();

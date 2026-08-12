@@ -1,3 +1,9 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - React Component: VirtualKinematics.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
@@ -12,6 +18,10 @@ import ATC3DView from './3d/ATC3DView';
 import Rack3DView from './3d/Rack3DView';
 import DraggableGizmo from './3d/DraggableGizmo';
 
+/**
+ * Executes the  camera animator logic. 
+ * This function handles the necessary computations and state updates.
+ */
 function CameraAnimator({ targetPosition, targetFocus, trigger, controlsRef, initialView }: { targetPosition: [number, number, number], targetFocus: [number, number, number], trigger?: number, controlsRef: React.MutableRefObject<any>, initialView?: { position: [number, number, number], target: [number, number, number] } }) {
   const { camera } = useThree();
   const isCentering = useRef(false);
@@ -55,6 +65,10 @@ function CameraAnimator({ targetPosition, targetFocus, trigger, controlsRef, ini
   return null;
 }
 
+/**
+ * Executes the  virtual kinematics logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; controlMode: 'translate' | 'rotate' | 'scale' | 'none' }) {
   const { updateRobot, settings, robots } = useHydraStore();
   const controlsRef = useRef<any>(null);
@@ -296,29 +310,49 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
           const cHasTable = combinedRobot.hasXYTable && combinedRobot.xyTable;
           const cTableW = cHasTable ? (combinedRobot.xyTable!.tableSize.width / 1000) : 0;
           const cTableL = cHasTable ? (combinedRobot.xyTable!.tableSize.length / 1000) : 0;
-          const cPx = cHasTable ? (Math.max(0, Math.min(combinedRobot.xyTable!.pos.x, combinedRobot.xyTable!.tableSize.width)) / 1000) : 0;
-          const cPy = cHasTable ? (Math.max(0, Math.min(combinedRobot.xyTable!.pos.y, combinedRobot.xyTable!.tableSize.length)) / 1000) : 0;
+          
+          const gizmoX = cHasTable 
+            ? (combinedRobot.xyTable!.worldPos?.x ?? (500 + i * 300)) / 1000
+            : (combinedRobot.pos?.tx ?? (500 + i * 300)) / 1000;
+          const gizmoZ = cHasTable
+            ? (combinedRobot.xyTable!.worldPos?.y ?? 500) / 1000
+            : (combinedRobot.pos?.ty ?? 500) / 1000;
+          const gizmoRot = cHasTable
+            ? (combinedRobot.xyTable!.worldRot ?? 0)
+            : (combinedRobot.pos?.trz ?? 0);
 
           return (
-            <DraggableGizmo
+            <DraggableGizmo 
                 key={combinedRobot.id}
-                position={[(combinedRobot.pos?.tx ?? (500 + i * 300)) / 1000, 0, (combinedRobot.pos?.ty ?? 500) / 1000]}
+                position={[gizmoX, 0, gizmoZ]}
                 scale={[combinedRobot.renderScale || 1, combinedRobot.renderScale || 1, combinedRobot.renderScale || 1]}
                 controlMode={controlMode}
-                initialRotation={combinedRobot.pos?.trz || 0}
+                initialRotation={gizmoRot}
                 onMouseUp={(e: any) => {
                    if (e.target.object) {
                       const newTx = e.target.object.position.x * 1000;
                       const newTy = e.target.object.position.z * 1000;
-                      updateRobot(combinedRobot.id, {
-                          pos: {
-                              ...combinedRobot.pos,
-                              tx: newTx,
-                              ty: newTy,
-                              trz: e.target.object.rotation.y
-                          },
-                          renderScale: e.target.object.scale.x
-                      });
+                      
+                      if (cHasTable) {
+                         updateRobot(combinedRobot.id, {
+                           xyTable: {
+                             ...combinedRobot.xyTable as any,
+                             worldPos: { x: newTx, y: newTy },
+                             worldRot: e.target.object.rotation.y
+                           },
+                           renderScale: e.target.object.scale.x
+                         });
+                      } else {
+                         updateRobot(combinedRobot.id, {
+                             pos: {
+                                 ...combinedRobot.pos,
+                                 tx: newTx,
+                                 ty: newTy,
+                                 trz: e.target.object.rotation.y
+                             },
+                             renderScale: e.target.object.scale.x
+                         });
+                      }
                    }
                 }}
               >
@@ -328,7 +362,7 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
                        <PathVisualizer points={combinedRobot.recordedPoints} hasXYTable={true} />
                      </group>
                      <Box args={[cTableW, 0.02, cTableL]} position={[cTableW/2, 0.01, cTableL/2]} material-color="#121720" castShadow receiveShadow />
-                     <group position={[cPx, 0.08, cPy]} scale={[(combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1)]}>
+                     <group position={[(combinedRobot.pos?.tx || 0) / 1000, 0.08, (combinedRobot.pos?.ty || 0) / 1000]} scale={[(combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1)]}>
                        <RobotArm robot={combinedRobot} />
                      </group>
                    </group>

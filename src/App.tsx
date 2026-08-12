@@ -1,9 +1,19 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - Core application file: App.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import { useState, useEffect } from 'react';
 import { HydraProvider } from './store';
 import Dashboard from './Dashboard';
 import { GamepadController } from './components/GamepadController';
 import SplashSvg from './assets/HYDRA_UMC_SPLASHSCREEN.svg';
 
+/**
+ * Executes the  app logic. 
+ * This function handles the necessary computations and state updates.
+ */
 function App() {
   const [showSplash, setShowSplash] = useState(true);
 

@@ -1,3 +1,9 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - React Component: JuanenLaserConfig.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import { useState } from 'react';
 import { useHydraStore } from '../store';
 import { RotateCcw, Zap, Maximize2, Plus } from 'lucide-react';
@@ -8,6 +14,10 @@ import SharedModule3DView from './3d/SharedModule3DView';
 
 
 
+/**
+ * Executes the  juanen laser config logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export function JuanenLaserConfig() {
   const { robots, updateRobot } = useHydraStore();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);

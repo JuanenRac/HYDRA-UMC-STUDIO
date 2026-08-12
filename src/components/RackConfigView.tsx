@@ -1,3 +1,9 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - React Component: RackConfigView.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useHydraStore, type RackConfig } from '../store';
@@ -5,10 +11,18 @@ import { RotateCcw, Layers, MapPin, CheckSquare, Square, Settings2 } from 'lucid
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+/**
+ * Executes the Cnm logic. 
+ * This function handles the necessary computations and state updates.
+ */
 function cnm(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Executes the  rack config view logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export function RackConfigView() {
   const { t } = useTranslation();
   const { robots, updateRobot } = useHydraStore();

@@ -1,3 +1,9 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - React Component: CamerasView.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import { useState } from 'react';
 import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
@@ -5,10 +11,18 @@ import { Video, Maximize2, Minimize2, Camera as CameraIcon, Power, ScanLine, Cir
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+/**
+ * Executes the Cn logic. 
+ * This function handles the necessary computations and state updates.
+ */
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Executes the  cameras view logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export function CamerasView() {
   const { cameras, updateCamera } = useHydraStore();
   const { t } = useTranslation();

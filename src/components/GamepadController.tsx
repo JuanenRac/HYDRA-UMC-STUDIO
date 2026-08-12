@@ -1,6 +1,16 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - React Component: GamepadController.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import { useEffect, useRef, useState } from 'react';
 import { useHydraStore } from '../store';
 
+/**
+ * Executes the  gamepad controller logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export function GamepadController() {
   const { settings, activeController, updateRobot } = useHydraStore();
   const requestRef = useRef<number>(0);

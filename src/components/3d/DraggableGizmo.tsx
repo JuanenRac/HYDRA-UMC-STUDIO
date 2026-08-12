@@ -1,7 +1,14 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - 3D View Component: DraggableGizmo.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import React from 'react';
 import { Html, TransformControls } from '@react-three/drei';
 import * as THREE from 'three';
 
+/** Defines the data structure and expected properties for  draggable gizmo props entities. */
 export interface DraggableGizmoProps {
   position: [number, number, number];
   controlMode: 'translate' | 'rotate' | 'scale' | 'none';
@@ -11,6 +18,10 @@ export interface DraggableGizmoProps {
   scale?: [number, number, number];
 }
 
+/**
+ * Executes the  draggable gizmo logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export default function DraggableGizmo({ position, controlMode, onMouseUp, children, initialRotation = 0, scale = [1, 1, 1] }: DraggableGizmoProps) {
   const coordRef = React.useRef<HTMLDivElement>(null);
   const [targetObj, setTargetObj] = React.useState<THREE.Group | null>(null);

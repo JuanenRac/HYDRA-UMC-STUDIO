@@ -1,7 +1,17 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - 3D View Component: ATC3DView.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import React from 'react';
 import { Box, Cylinder } from '@react-three/drei';
 import Toolhead from './Toolhead';
 
+/**
+ * Executes the  a t c3 d view logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export default function ATC3DView({ atc }: { atc: any }) {
   if (atc.type === 'vertical_panel' || atc.type === 'horizontal_panel' || atc.type === 'Vertical Panel' || atc.type === 'Horizontal Panel') {
     const isHoriz = atc.type === 'horizontal_panel' || atc.type === 'Horizontal Panel';

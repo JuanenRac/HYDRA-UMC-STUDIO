@@ -1,3 +1,9 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - React Component: RobotDetail.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import { useRef, useState, useEffect } from 'react';
 import { motion, useDragControls } from 'motion/react';
 import { useTranslation } from 'react-i18next';
@@ -8,10 +14,15 @@ import { twMerge } from 'tailwind-merge';
 import { VirtualKinematics } from './VirtualKinematics';
 import { examples } from '../examples/kinematics';
 
+/**
+ * Executes the Cn logic. 
+ * This function handles the necessary computations and state updates.
+ */
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Stores the  u r t c_ t o o l s configuration or state data. */
 const URTC_TOOLS: ToolType[] = [
   'None',
   'Soldering Station (T12)',
@@ -42,6 +53,10 @@ const URTC_TOOLS: ToolType[] = [
 ];
 
 
+/**
+ * Renders the  camera p i p component.
+ * Responsible for displaying the UI elements and handling user interactions related to this feature.
+ */
 const CameraPIP = ({ bot, initialX, initialY, label, t }: { bot: RobotState, initialX: number, initialY: number, label: string, t: any }) => {
   const { settings, updateSettings } = useHydraStore();
   const controls = useDragControls();
@@ -213,6 +228,10 @@ const CameraPIP = ({ bot, initialX, initialY, label, t }: { bot: RobotState, ini
 };
 
 
+/**
+ * Executes the  robot detail logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export function RobotDetail({ robot }: { robot: RobotState }) {
   const { t } = useTranslation();
   const { updateRobot, saveKinematics, loadKinematics, settings, robots, updateSettings } = useHydraStore();
@@ -301,18 +320,57 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
            j6 = pt.c || 0;
         }
 
+        
+        let x = pt.x;
+        let y = pt.y;
+        let z = pt.z;
+        let a = pt.a;
+        let b = pt.b;
+        let c = pt.c;
+        if (x === undefined && j1 !== undefined) {
+           const j1Rad = j1 * (Math.PI / 180);
+           const j2Rad = j2 * (Math.PI / 180);
+           const j3Rad = j3 * (Math.PI / 180);
+           
+           const theta1_rad = -j2Rad;
+           const R2 = 160 * Math.sin(theta1_rad) + 200 * Math.sin(theta1_rad + j3Rad);
+           const Z2 = 160 * Math.cos(theta1_rad) + 200 * Math.cos(theta1_rad + j3Rad);
+           
+           x = R2 * Math.cos(j1Rad);
+           y = R2 * Math.sin(j1Rad);
+           z = Z2 + 195;
+           a = j4;
+           b = j5 + j2 - j3 + 180;
+           c = j6;
+        }
+
         const targetPos = { 
-          x: pt.x, y: pt.y, z: pt.z, a: pt.a, b: pt.b, c: pt.c, 
-          tx: pt.tx !== undefined ? pt.tx : currentPos.tx, 
-          ty: pt.ty !== undefined ? pt.ty : currentPos.ty, 
-          trz: pt.trz !== undefined ? pt.trz : currentPos.trz 
-        };
+           x: x, y: y, z: z, a: a, b: b, c: c,
+           tx: pt.tx !== undefined ? pt.tx : currentPos.tx,
+           ty: pt.ty !== undefined ? pt.ty : currentPos.ty,
+           trz: pt.trz !== undefined ? pt.trz : currentPos.trz 
+         };
+
         const targetJoints = { j1: j1||0, j2: j2||0, j3: j3||0, j4: j4||0, j5: j5||0, j6: j6||0 };
         
         const startPos = { ...currentPos };
         const startJoints = { ...currentJoints };
 
-        const durationMs = 60000 / (playbackSpeedRef.current || 100);
+        const maxJointDiff = Math.max(
+          Math.abs(targetJoints.j1 - (startJoints.j1||0)),
+          Math.abs(targetJoints.j2 - (startJoints.j2||0)),
+          Math.abs(targetJoints.j3 - (startJoints.j3||0)),
+          Math.abs(targetJoints.j4 - (startJoints.j4||0)),
+          Math.abs(targetJoints.j5 - (startJoints.j5||0)),
+          Math.abs(targetJoints.j6 - (startJoints.j6||0))
+        );
+        const xyDist = Math.sqrt(Math.pow((targetPos.tx || 0) - (startPos.tx || 0), 2) + Math.pow((targetPos.ty || 0) - (startPos.ty || 0), 2));
+        const effectiveDist = Math.max(maxJointDiff * 2, xyDist, 0.1);
+
+        const baseVelocity = 50; 
+        const currentVelocity = baseVelocity * ((playbackSpeedRef.current || 100) / 100);
+        const durationMs = (effectiveDist / currentVelocity) * 1000;
+        
         const steps = Math.max(1, Math.floor(durationMs / 16));
         
         for (let i = 1; i <= steps; i++) {
@@ -490,7 +548,19 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
 
   const handleAddPoint = () => {
     updateRobot(robot.id, {
-      recordedPoints: [...robot.recordedPoints, { ...robot.pos, ...robot.joints }]
+      recordedPoints: [...robot.recordedPoints, { 
+        j1: Number(robot.joints.j1.toFixed(3)), 
+        j2: Number(robot.joints.j2.toFixed(3)), 
+        j3: Number(robot.joints.j3.toFixed(3)), 
+        j4: Number(robot.joints.j4.toFixed(3)), 
+        j5: Number(robot.joints.j5.toFixed(3)), 
+        j6: Number(robot.joints.j6.toFixed(3)), 
+        ...(robot.hasXYTable ? {
+          tx: Number((robot.pos.tx || 0).toFixed(3)), 
+          ty: Number((robot.pos.ty || 0).toFixed(3)), 
+          trz: Number((robot.pos.trz || 0).toFixed(3))
+        } : {})
+      }]
     });
   };
 

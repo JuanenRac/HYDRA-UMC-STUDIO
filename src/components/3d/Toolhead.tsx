@@ -1,6 +1,16 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - 3D View Component: Toolhead.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import React from 'react';
 import { Box, Cylinder } from '@react-three/drei';
 
+/**
+ * Executes the  toolhead logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export default function Toolhead({ tool }: { tool: string }) {
   if (tool.includes('Laser')) {
     return (

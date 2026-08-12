@@ -1,3 +1,9 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - React Component: PickAndPlace.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import { useState } from 'react';
 import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +13,10 @@ import { OrbitControls, Grid, Box } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 import SharedModule3DView from './3d/SharedModule3DView';
 
+/**
+ * Executes the  pick and place logic. 
+ * This function handles the necessary computations and state updates.
+ */
 export function PickAndPlace() {
   const { t } = useTranslation();
   const { robots, updateRobot } = useHydraStore();
