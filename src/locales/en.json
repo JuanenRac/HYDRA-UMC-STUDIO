@@ -327,7 +327,10 @@
       "no_response": "No response from target",
       "version_found": "Firmware {{fw}}, bootloader {{bl}}",
       "flash_start": "Starting flash of {{name}} - {{hop}}",
-      "flash_done": "Flash complete"
+      "flash_done": "Flash complete",
+      "github_found": "Found {{count}} .bin asset(s) in {{repo}} releases",
+      "github_error": "GitHub error: {{error}}",
+      "github_downloading": "Downloading {{name}} from GitHub..."
     },
     "progress": {
       "connecting": "Connecting...",
@@ -338,7 +341,12 @@
       "rebooting": "Rebooting to application...",
       "done": "Done",
       "error_rollback": "Rejected: anti-rollback (enable \"allow downgrade\" to override)"
-    }
+    },
+    "target_kinematic_brain": "Kinematic Brain",
+    "target_urtc_expansion": "Advanced Expansion Board",
+    "expansion_not_present": "no Advanced expansion detected on this robot",
+    "download_github": "Download from GitHub",
+    "no_releases": "No .bin releases published yet."
   },
   "tester": {
     "title": "Tester",
@@ -368,7 +376,10 @@
       "axes": "Axis drivers",
       "endstops": "Endstops",
       "tool": "Active tool identification",
-      "telemetry": "Telemetry stream"
+      "telemetry": "Telemetry stream",
+      "spi": "SPI link to CM5",
+      "fdcan": "FDCAN1 STACK A bus",
+      "i2c": "I2C relay to expansion"
     },
     "bus_monitor": "Raw Bus Monitor",
     "monitor_start": "Start",
@@ -386,6 +397,8 @@
       "part_detected": "Part detected",
       "actuator_state": "Actuator state",
       "generic": "Generic panel - communication + version telemetry only for this tool profile."
-    }
+    },
+    "expansion_type": "Expansion Board",
+    "expansion_none": "None"
   }
 }

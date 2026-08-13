@@ -327,7 +327,10 @@
       "no_response": "Keine Antwort vom Ziel",
       "version_found": "Firmware {{fw}}, Bootloader {{bl}}",
       "flash_start": "Flashen von {{name}} gestartet - {{hop}}",
-      "flash_done": "Flashen abgeschlossen"
+      "flash_done": "Flashen abgeschlossen",
+      "github_found": "{{count}} .bin-Datei(en) in den Releases von {{repo}} gefunden",
+      "github_error": "GitHub-Fehler: {{error}}",
+      "github_downloading": "Lade {{name}} von GitHub herunter..."
     },
     "progress": {
       "connecting": "Verbinde...",
@@ -338,7 +341,12 @@
       "rebooting": "Neustart in die Anwendung...",
       "done": "Fertig",
       "error_rollback": "Abgelehnt: Anti-Rollback (\"Downgrade erlauben\" aktivieren zum Umgehen)"
-    }
+    },
+    "target_kinematic_brain": "Kinematisches Gehirn",
+    "target_urtc_expansion": "Erweiterte Expansion Board",
+    "expansion_not_present": "keine erweiterte Expansion an diesem Roboter erkannt",
+    "download_github": "Von GitHub herunterladen",
+    "no_releases": "Noch keine .bin-Releases veröffentlicht."
   },
   "tester": {
     "title": "Tester",
@@ -368,7 +376,10 @@
       "axes": "Achstreiber",
       "endstops": "Endschalter",
       "tool": "Erkennung des aktiven Werkzeugs",
-      "telemetry": "Telemetrie-Datenstrom"
+      "telemetry": "Telemetrie-Datenstrom",
+      "spi": "SPI-Verbindung zum CM5",
+      "fdcan": "FDCAN1-STACK-A-Bus",
+      "i2c": "I2C-Relay zur Erweiterung"
     },
     "bus_monitor": "Rohbus-Monitor",
     "monitor_start": "Start",
@@ -386,6 +397,8 @@
       "part_detected": "Teil erkannt",
       "actuator_state": "Aktorzustand",
       "generic": "Generisches Panel - für dieses Werkzeugprofil nur Kommunikations- und Versionstelemetrie."
-    }
+    },
+    "expansion_type": "Erweiterungsplatine",
+    "expansion_none": "Keine"
   }
 }

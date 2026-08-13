@@ -327,7 +327,10 @@
       "no_response": "Aucune réponse de la cible",
       "version_found": "Firmware {{fw}}, bootloader {{bl}}",
       "flash_start": "Début du flashage de {{name}} - {{hop}}",
-      "flash_done": "Flashage terminé"
+      "flash_done": "Flashage terminé",
+      "github_found": "{{count}} fichier(s) .bin trouvé(s) dans les releases de {{repo}}",
+      "github_error": "Erreur GitHub : {{error}}",
+      "github_downloading": "Téléchargement de {{name}} depuis GitHub..."
     },
     "progress": {
       "connecting": "Connexion...",
@@ -338,7 +341,12 @@
       "rebooting": "Redémarrage vers l'application...",
       "done": "Terminé",
       "error_rollback": "Rejeté : anti-rollback (activez « autoriser le downgrade » pour contourner)"
-    }
+    },
+    "target_kinematic_brain": "Cerveau Cinématique",
+    "target_urtc_expansion": "Carte d'Extension Avancée",
+    "expansion_not_present": "aucune extension Avancée détectée sur ce robot",
+    "download_github": "Télécharger depuis GitHub",
+    "no_releases": "Aucune release .bin publiée pour le moment."
   },
   "tester": {
     "title": "Tester",
@@ -368,7 +376,10 @@
       "axes": "Pilotes d'axes",
       "endstops": "Fins de course",
       "tool": "Identification de l'outil actif",
-      "telemetry": "Flux de télémétrie"
+      "telemetry": "Flux de télémétrie",
+      "spi": "Liaison SPI vers le CM5",
+      "fdcan": "Bus FDCAN1 STACK A",
+      "i2c": "Relais I2C vers l'extension"
     },
     "bus_monitor": "Moniteur de Bus Brut",
     "monitor_start": "Démarrer",
@@ -386,6 +397,8 @@
       "part_detected": "Pièce détectée",
       "actuator_state": "État de l'actionneur",
       "generic": "Panneau générique - télémétrie de communication et de version uniquement pour ce profil d'outil."
-    }
+    },
+    "expansion_type": "Carte d'Extension",
+    "expansion_none": "Aucune"
   }
 }

@@ -327,7 +327,10 @@
       "no_response": "Sin respuesta del objetivo",
       "version_found": "Firmware {{fw}}, bootloader {{bl}}",
       "flash_start": "Iniciando flasheo de {{name}} - {{hop}}",
-      "flash_done": "Flasheo completo"
+      "flash_done": "Flasheo completo",
+      "github_found": "Encontrados {{count}} archivo(s) .bin en los releases de {{repo}}",
+      "github_error": "Error de GitHub: {{error}}",
+      "github_downloading": "Descargando {{name}} de GitHub..."
     },
     "progress": {
       "connecting": "Conectando...",
@@ -338,7 +341,12 @@
       "rebooting": "Reiniciando a la aplicación...",
       "done": "Hecho",
       "error_rollback": "Rechazado: anti-rollback (activa \"permitir downgrade\" para saltarlo)"
-    }
+    },
+    "target_kinematic_brain": "Cerebro Cinemático",
+    "target_urtc_expansion": "Tarjeta de Expansión Avanzada",
+    "expansion_not_present": "no se detecta expansión Avanzada en este robot",
+    "download_github": "Descargar de GitHub",
+    "no_releases": "Todavía no hay releases .bin publicados."
   },
   "tester": {
     "title": "Tester",
@@ -368,7 +376,10 @@
       "axes": "Drivers de ejes",
       "endstops": "Finales de carrera",
       "tool": "Identificación de herramienta activa",
-      "telemetry": "Flujo de telemetría"
+      "telemetry": "Flujo de telemetría",
+      "spi": "Enlace SPI al CM5",
+      "fdcan": "Bus FDCAN1 STACK A",
+      "i2c": "Relay I2C a la expansión"
     },
     "bus_monitor": "Monitor de Bus en Crudo",
     "monitor_start": "Iniciar",
@@ -386,6 +397,8 @@
       "part_detected": "Pieza detectada",
       "actuator_state": "Estado del actuador",
       "generic": "Panel genérico - solo telemetría de comunicación y versión para este perfil de herramienta."
-    }
+    },
+    "expansion_type": "Tarjeta de Expansión",
+    "expansion_none": "Ninguna"
   }
 }

@@ -123,12 +123,15 @@ export interface RobotState {
   role: RobotRole;
   tool: ToolType;
   urtcConnected: boolean;
-  // Robot Controller Board (Tier 2, FDCAN1 "STACK A" slot) and URTC Tool Head (Tier 3,
-  // relayed through the Robot Controller Board's own second CAN port) firmware state -
+  // Robot Controller Board (Tier 1, FDCAN1 "STACK A" slot, STM32G474RET6), URTC Tool Head
+  // (Tier 2, relayed through the Robot Controller Board's own second CAN port,
+  // STM32F303CCT6), and that head's own optional Advanced Expansion Board (Tier 3, only
+  // present when urtcHead.expansionBoardType is 3 or 4, STM32F303CBT6) firmware state -
   // see HYDRA-UMC's docs/architecture.md for the addressing scheme. Populated by
   // Flasher.tsx/Tester.tsx once a board answers a version query.
   controllerBoard?: CanOtaBoardState;
-  urtcHead?: CanOtaBoardState;
+  urtcHead?: CanOtaBoardState & { expansionBoardType?: number };
+  urtcExpansion?: CanOtaBoardState;
   pos: { x: number; y: number; z: number; a: number; b: number; c: number; tx?: number; ty?: number; trz?: number };
   joints: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number };
   valves: [boolean, boolean];
@@ -195,6 +198,9 @@ export interface HydraController {
   fdcanDataBaudrate: number;
   robots: RobotState[];
   cameras: CameraState[];
+  // This controller's own STM32H745ZIT6 "kinematic brain" (Tier 0, reached directly over
+  // SPI - no FDCAN1 "STACK A" slot involved). See HYDRA-UMC's docs/architecture.md.
+  kinematicBrain?: CanOtaBoardState;
 }
 
 /** Defines the data structure and expected properties for  system settings entities. */
@@ -269,7 +275,8 @@ export const createDefaultRobots = (): RobotState[] => {
     tool: 'None' as ToolType,
     urtcConnected: i < 3,
     controllerBoard: i < 3 ? { firmwareVersion: '1.2.0', bootloaderVersion: '1.0.0', hardwareId: `RCB-${(i + 1).toString().padStart(3, '0')}` } : undefined,
-    urtcHead: i < 3 ? { firmwareVersion: '2.1.3', bootloaderVersion: '1.0.0', hardwareId: `URTC-${(i + 1).toString().padStart(3, '0')}` } : undefined,
+    urtcHead: i < 3 ? { firmwareVersion: '2.1.3', bootloaderVersion: '1.0.0', hardwareId: `URTC-${(i + 1).toString().padStart(3, '0')}`, expansionBoardType: i === 0 ? 3 : 0 } : undefined,
+    urtcExpansion: i === 0 ? { firmwareVersion: '1.0.1', bootloaderVersion: '1.0.0', hardwareId: `EXP-${(i + 1).toString().padStart(3, '0')}` } : undefined,
     pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 },
     joints: { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 },
     valves: [false, false] as [boolean, boolean],
@@ -344,6 +351,7 @@ const defaultControllers: HydraController[] = [
     fdcanDataBaudrate: 5000,
     robots: createDefaultRobots(),
     cameras: createDefaultCameras(),
+    kinematicBrain: { firmwareVersion: '0.9.0', bootloaderVersion: '1.0.0', hardwareId: 'KB-001' },
   },
   {
     id: '192.168.1.101',

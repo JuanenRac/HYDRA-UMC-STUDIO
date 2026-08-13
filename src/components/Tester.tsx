@@ -22,7 +22,7 @@ import { Activity, Beaker, Radio, RefreshCw, Trash2, CheckCircle2, XCircle, Circ
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useHydraStore, type ToolType } from '../store';
-import { hopDescription, mockQueryVersion, mockSelfTest, slotLabel, startMockBusMonitor, type CanFrame, type CanOtaTarget, type CanOtaTier, type SelfTestStep } from '../lib/canOta';
+import { chipNameFor, hasAdvancedExpansion, hopDescription, mockQueryVersion, mockSelfTest, slotLabel, startMockBusMonitor, type CanFrame, type CanOtaTarget, type CanOtaTier, type SelfTestStep } from '../lib/canOta';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -52,11 +52,11 @@ function categoryFor(tool: ToolType): ToolCategory {
 
 export function Tester() {
   const { t } = useTranslation();
-  const { activeController, updateRobot } = useHydraStore();
+  const { activeController, updateRobot, updateController } = useHydraStore();
   const robots = activeController?.robots || [];
 
-  const [robotId, setRobotId] = useState<number>(robots[0]?.id ?? 0);
   const [tier, setTier] = useState<CanOtaTier>('controllerBoard');
+  const [robotId, setRobotId] = useState<number>(robots[0]?.id ?? 0);
   const [querying, setQuerying] = useState(false);
   const [statusColor, setStatusColor] = useState('#00ff66');
   const [ringOn, setRingOn] = useState(false);
@@ -69,13 +69,20 @@ export function Tester() {
 
   const robot = robots.find(r => r.id === robotId);
   const robotIndex0 = robots.findIndex(r => r.id === robotId);
+  const needsRobotSlot = tier !== 'kinematicBrain';
+  const expansionAvailable = hasAdvancedExpansion(robot?.urtcHead?.expansionBoardType);
 
   const target: CanOtaTarget | null = useMemo(() => {
+    if (!activeController) return null;
+    if (tier === 'kinematicBrain') return { controllerName: activeController.name, tier };
     if (!robot || robotIndex0 < 0) return null;
-    return { controllerName: activeController?.name || '', robotId: robot.id, robotName: robot.name, robotIndex0, tier };
+    return { controllerName: activeController.name, robotId: robot.id, robotName: robot.name, robotIndex0, tier };
   }, [robot, robotIndex0, tier, activeController]);
 
-  const boardState = tier === 'controllerBoard' ? robot?.controllerBoard : robot?.urtcHead;
+  const boardState = tier === 'kinematicBrain' ? activeController?.kinematicBrain
+    : tier === 'controllerBoard' ? robot?.controllerBoard
+    : tier === 'urtcHead' ? robot?.urtcHead
+    : robot?.urtcExpansion;
   const category = robot ? categoryFor(robot.tool) : 'generic';
 
   useEffect(() => {
@@ -85,6 +92,8 @@ export function Tester() {
     monitorStop.current?.();
     monitorStop.current = null;
   }, [robotId, tier]);
+
+  useEffect(() => { if (tier === 'urtcExpansion' && !expansionAvailable) setTier('urtcHead'); }, [robotId]); // eslint-disable-line
 
   function toggleMonitor() {
     if (monitorStop.current) {
@@ -102,8 +111,17 @@ export function Tester() {
     const res = await mockQueryVersion(target);
     setQuerying(false);
     if (!res.online) return;
-    const patch = { firmwareVersion: res.firmwareVersion, bootloaderVersion: res.bootloaderVersion, hardwareId: res.hardwareId, lastSeen: Date.now() };
-    updateRobot(robotId, tier === 'controllerBoard' ? { controllerBoard: patch } : { urtcHead: patch });
+    const patch: Record<string, any> = { firmwareVersion: res.firmwareVersion, bootloaderVersion: res.bootloaderVersion, hardwareId: res.hardwareId, lastSeen: Date.now() };
+    if (tier === 'kinematicBrain') {
+      if (activeController) updateController(activeController.id, { kinematicBrain: patch });
+    } else if (tier === 'controllerBoard') {
+      updateRobot(robotId, { controllerBoard: patch });
+    } else if (tier === 'urtcHead') {
+      if (res.expansionBoardType !== undefined) patch.expansionBoardType = res.expansionBoardType;
+      updateRobot(robotId, { urtcHead: { ...robot?.urtcHead, ...patch } });
+    } else {
+      updateRobot(robotId, { urtcExpansion: patch });
+    }
   }
 
   async function handleFramQuery() {
@@ -141,7 +159,16 @@ export function Tester() {
         {/* Target selection */}
         <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('flasher.target', 'Target')}</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] text-slate-500 uppercase font-bold">{t('flasher.board', 'Board')}</label>
+            <select value={tier} onChange={e => setTier(e.target.value as CanOtaTier)} className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
+              <option value="kinematicBrain">{t('flasher.target_kinematic_brain')} ({chipNameFor('kinematicBrain')})</option>
+              <option value="controllerBoard">{t('flasher.target_controller_board')} ({chipNameFor('controllerBoard')})</option>
+              <option value="urtcHead" disabled={!robot?.urtcConnected}>{t('flasher.target_urtc_head')} ({chipNameFor('urtcHead')})</option>
+              <option value="urtcExpansion" disabled={!expansionAvailable}>{t('flasher.target_urtc_expansion')} ({chipNameFor('urtcExpansion')}){!expansionAvailable ? ` - ${t('flasher.expansion_not_present')}` : ''}</option>
+            </select>
+          </div>
+          {needsRobotSlot && (
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] text-slate-500 uppercase font-bold">{t('flasher.robot_slot', 'Robot Slot')}</label>
               <select value={robotId} onChange={e => setRobotId(Number(e.target.value))} className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
@@ -150,14 +177,7 @@ export function Tester() {
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] text-slate-500 uppercase font-bold">{t('flasher.board', 'Board')}</label>
-              <select value={tier} onChange={e => setTier(e.target.value as CanOtaTier)} className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
-                <option value="controllerBoard">{t('flasher.target_controller_board')}</option>
-                <option value="urtcHead" disabled={!robot?.urtcConnected}>{t('flasher.target_urtc_head')}</option>
-              </select>
-            </div>
-          </div>
+          )}
           {target && (
             <div className="text-[11px] font-mono text-slate-500 bg-slate-900 rounded-lg px-3 py-2 flex items-center gap-2 overflow-x-auto">
               <Radio size={12} className="shrink-0 text-emerald-500" /> {hopDescription(target)}
@@ -177,49 +197,61 @@ export function Tester() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
-          {/* Global controls */}
-          <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('tester.global_controls', 'Global Controls')}</h3>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400">{t('tester.status_led', 'Status LED')}</span>
-              <input type="color" value={statusColor} onChange={e => setStatusColor(e.target.value)} className="w-10 h-7 rounded bg-transparent border border-slate-800 cursor-pointer" />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400">{t('tester.ring_led', 'Ring LED')}</span>
-              <button onClick={() => setRingOn(!ringOn)} className={cn('px-3 py-1 rounded text-[10px] font-bold uppercase transition-colors', ringOn ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-500 border border-slate-700')}>
-                {ringOn ? t('modules.on', 'ON') : t('modules.off', 'OFF')}
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400">{t('tester.oled_mode', 'OLED Mode')}</span>
-              <select value={oledMode} onChange={e => setOledMode(e.target.value as any)} className="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 outline-none">
-                <option value="standard">{t('tester.oled_standard', 'Standard')}</option>
-                <option value="night">{t('tester.oled_night', 'Night')}</option>
-                <option value="off">{t('tester.oled_off', 'Off')}</option>
-              </select>
-            </div>
-          </div>
-
-          {/* F-RAM */}
-          <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('tester.fram', 'Persistence (F-RAM)')}</h3>
-            <div className="text-xs text-slate-400">
-              {framState ? (
-                framState.hasValidState ? <span className="text-emerald-400">{t('tester.fram_valid', 'Valid saved state found')}</span> : <span className="text-slate-500">{t('tester.fram_empty', 'No saved state')}</span>
-              ) : (
-                <span className="text-slate-600">{t('tester.fram_unknown', 'Unknown - query to check')}</span>
+        <div className={cn('grid gap-6', tier === 'urtcHead' ? 'grid-cols-2' : 'grid-cols-1')}>
+          {/* Global controls - URTC head only (status/ring LED, OLED are on that board) */}
+          {tier === 'urtcHead' && (
+            <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('tester.global_controls', 'Global Controls')}</h3>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-400">{t('tester.status_led', 'Status LED')}</span>
+                <input type="color" value={statusColor} onChange={e => setStatusColor(e.target.value)} className="w-10 h-7 rounded bg-transparent border border-slate-800 cursor-pointer" />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-400">{t('tester.ring_led', 'Ring LED')}</span>
+                <button onClick={() => setRingOn(!ringOn)} className={cn('px-3 py-1 rounded text-[10px] font-bold uppercase transition-colors', ringOn ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-500 border border-slate-700')}>
+                  {ringOn ? t('modules.on', 'ON') : t('modules.off', 'OFF')}
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-400">{t('tester.oled_mode', 'OLED Mode')}</span>
+                <select value={oledMode} onChange={e => setOledMode(e.target.value as any)} className="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 outline-none">
+                  <option value="standard">{t('tester.oled_standard', 'Standard')}</option>
+                  <option value="night">{t('tester.oled_night', 'Night')}</option>
+                  <option value="off">{t('tester.oled_off', 'Off')}</option>
+                </select>
+              </div>
+              {robot?.urtcHead?.expansionBoardType !== undefined && (
+                <div className="flex items-center justify-between pt-2 border-t border-slate-800/50">
+                  <span className="text-xs text-slate-400">{t('tester.expansion_type', 'Expansion Board')}</span>
+                  <span className={cn('text-xs font-mono', expansionAvailable ? 'text-emerald-400' : 'text-slate-500')}>
+                    {robot.urtcHead.expansionBoardType === 0 ? t('tester.expansion_none', 'None') : `#${robot.urtcHead.expansionBoardType}${expansionAvailable ? ` (${t('flasher.target_urtc_expansion')})` : ''}`}
+                  </span>
+                </div>
               )}
             </div>
-            <div className="flex gap-2">
-              <button onClick={handleFramQuery} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors">
-                <RefreshCw size={12} /> {t('tester.fram_query', 'Query')}
-              </button>
-              <button onClick={() => setFramState({ hasValidState: false })} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg transition-colors">
-                <Trash2 size={12} /> {t('tester.fram_erase', 'Erase')}
-              </button>
+          )}
+
+          {/* F-RAM - Robot Controller Board and URTC head both carry persisted state */}
+          {(tier === 'controllerBoard' || tier === 'urtcHead') && (
+            <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('tester.fram', 'Persistence (F-RAM)')}</h3>
+              <div className="text-xs text-slate-400">
+                {framState ? (
+                  framState.hasValidState ? <span className="text-emerald-400">{t('tester.fram_valid', 'Valid saved state found')}</span> : <span className="text-slate-500">{t('tester.fram_empty', 'No saved state')}</span>
+                ) : (
+                  <span className="text-slate-600">{t('tester.fram_unknown', 'Unknown - query to check')}</span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button onClick={handleFramQuery} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors">
+                  <RefreshCw size={12} /> {t('tester.fram_query', 'Query')}
+                </button>
+                <button onClick={() => setFramState({ hasValidState: false })} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg transition-colors">
+                  <Trash2 size={12} /> {t('tester.fram_erase', 'Erase')}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Tool telemetry */}

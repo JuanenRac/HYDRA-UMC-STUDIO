@@ -38,7 +38,7 @@
     "customModels": [],
     "autoConnectRobots": false,
     "theme": "HYDRA-UMC Studio Fasion",
-    "language": "en",
+    "language": "es",
     "worksPaths": {},
     "canOta": {
       "transport": "mock",
@@ -443,7 +443,19 @@
           "selectedWorkFile": "mover_objetos_palet.json",
           "selectedExample": "example-8-star",
           "renderScale": 3,
-          "centerCameraTrigger": 1786662000621
+          "centerCameraTrigger": 1786662000621,
+          "controllerBoard": {
+            "firmwareVersion": "URTC_V1.1_F303CC",
+            "bootloaderVersion": "1.0.0",
+            "lastSeen": 1786665145217
+          },
+          "urtcHead": {
+            "firmwareVersion": "1.0.0",
+            "bootloaderVersion": "1.0.0",
+            "hardwareId": "URTC-001",
+            "lastSeen": 1786665182887,
+            "expansionBoardType": 3
+          }
         },
         {
           "id": 2,
@@ -730,7 +742,19 @@
               0
             ]
           },
-          "renderScale": 1
+          "renderScale": 1,
+          "controllerBoard": {
+            "firmwareVersion": "URTC_V1.1_F303CC",
+            "bootloaderVersion": "1.0.0",
+            "lastSeen": 1786665003558
+          },
+          "urtcHead": {
+            "firmwareVersion": "1.2.8",
+            "bootloaderVersion": "1.0.0",
+            "hardwareId": "URTC-002",
+            "lastSeen": 1786665187408,
+            "expansionBoardType": 0
+          }
         },
         {
           "id": 3,
@@ -1225,7 +1249,14 @@
               0
             ]
           },
-          "renderScale": 1
+          "renderScale": 1,
+          "urtcHead": {
+            "firmwareVersion": "1.0.2",
+            "bootloaderVersion": "1.0.0",
+            "hardwareId": "URTC-003",
+            "lastSeen": 1786665195647,
+            "expansionBoardType": 0
+          }
         },
         {
           "id": 4,
