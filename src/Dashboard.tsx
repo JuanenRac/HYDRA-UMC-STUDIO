@@ -9,9 +9,9 @@ import { useTranslation } from 'react-i18next';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { useHydraStore, createDefaultRobots, createDefaultCameras } from './store';
 import { 
-  Activity, Crosshair, Layers, 
+  Activity, Crosshair, AlertOctagon, Layers, 
   Video, Focus, Settings, Menu, Plus, Trash2, Search, AlertTriangle, Power
-, Cpu, PenTool, Zap, Wind, Thermometer, Download, Upload, RefreshCw, Server } from 'lucide-react';
+, Cpu, PenTool, Zap, Wind, Thermometer, Download, Upload, RefreshCw, Server, Info } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -47,6 +47,13 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
   const [configTab, setConfigTab] = useState<'controllers' | 'ui' | 'robots' | 'models' | 'integrations' | 'paths' | 'gamepad'>('controllers');
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -65,6 +72,36 @@ export default function Dashboard() {
   return (
     <div className="w-full h-screen bg-slate-950 bg-electric-grid text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
       
+            
+            {isAboutOpen && (
+        <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[500px] max-w-full overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
+              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <Info className="text-sky-400" size={20} /> About HYDRA-UMC STUDIO
+              </h2>
+              <button onClick={() => setIsAboutOpen(false)} className="text-slate-400 hover:text-slate-200 p-1">
+                &times;
+              </button>
+            </div>
+            <div className="p-6 space-y-4 text-slate-300 text-sm flex flex-col items-center">
+              <img src={HydraIcon} alt="Hydra Logo" className="w-24 h-24 object-contain mb-4" />
+              <h3 className="text-2xl font-bold text-slate-100 uppercase tracking-widest text-center">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span> <span className="text-slate-500 text-lg">v1.0</span></h3>
+              <p className="text-center text-slate-400 max-w-sm">Advanced Centralized Control Dashboard for Robotics, CNC, 3D Printers, and Lasers.</p>
+              
+              <div className="w-full bg-slate-950 p-4 rounded border border-slate-800 mt-6 space-y-2">
+                <div className="flex justify-between border-b border-slate-800/50 pb-2"><span className="text-slate-500 font-bold uppercase tracking-wider">Author</span><span className="font-medium text-slate-200">JuanenRac (Electro Hobby 3D)</span></div>
+                <div className="flex justify-between border-b border-slate-800/50 py-2"><span className="text-slate-500 font-bold uppercase tracking-wider">Email</span><span className="font-medium text-sky-400">electrohobby3d@gmail.com</span></div>
+                <div className="flex justify-between pt-2"><span className="text-slate-500 font-bold uppercase tracking-wider">License</span><span className="font-mono text-emerald-400">GPL-3.0</span></div>
+              </div>
+            </div>
+            <div className="p-4 border-t border-slate-800 flex justify-end bg-slate-950 shrink-0">
+              <button onClick={() => setIsAboutOpen(false)} className="px-6 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded transition-colors shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400 hover:shadow-[0_0_20px_rgba(0,229,255,0.8)]">CLOSE</button>
+            </div>
+          </div>
+        </div>
+      )}
+
             {isSettingsOpen && (
         <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
           <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[800px] max-w-full overflow-hidden flex flex-col h-[600px]">
@@ -543,6 +580,14 @@ export default function Dashboard() {
             <Settings size={18} />
             <span className="text-sm">{t('dashboard.configure', 'Config')}</span>
           </button>
+
+          <button 
+            onClick={() => setIsAboutOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 transition-colors"
+          >
+            <Info size={18} />
+            <span className="text-sm">ABOUT</span>
+          </button>
           <div className="flex items-center gap-3">
             <span className={cn("w-4 h-4 rounded-full animate-pulse", activeController?.status === 'online' ? "bg-emerald-500 shadow-[0_0_10px_rgba(0,255,102,0.5)]" : "bg-rose-500 shadow-[0_0_10px_rgba(255,102,0,0.5)]")} />
             <span className={cn("tracking-wide font-bold", activeController?.status === 'online' ? "text-emerald-400" : "text-rose-400")}>{activeController?.status === 'online' ? t('dashboard.status.connected', 'System Online') : t('dashboard.status.disconnected', 'System Offline')}</span>
@@ -565,7 +610,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden h-[calc(100%-4rem)]">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Nav - larger targets for 10" touch */}
         <nav className={cn(
           "shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col gap-3 z-10 overflow-y-auto custom-scrollbar transition-all duration-300 ease-in-out relative",
@@ -697,10 +742,43 @@ export default function Dashboard() {
         {activeTab === 'heatedbed' && <HeatedBedConfig />}
 
         </main>
+
       </div>
+      
+      {/* Global System Status Footer */}
+      <footer className="h-8 shrink-0 bg-slate-950 border-t border-slate-800 flex items-center justify-between px-4 z-20 text-[10px] uppercase font-bold tracking-wider text-slate-500 shadow-[0_-5px_15px_rgba(0,0,0,0.2)]">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+             <span className={cn("w-2 h-2 rounded-full", activeController?.status === 'online' ? "bg-emerald-500" : "bg-rose-500")} />
+             {activeController?.status === 'online' ? 'SYSTEM ONLINE' : 'SYSTEM OFFLINE'}
+          </div>
+          <div className="w-px h-3 bg-slate-800"></div>
+          <div className="flex items-center gap-2">
+            <Cpu size={12} className="text-slate-400" />
+            <span>{robots.filter(r => r.online).length} / {robots.length} ROBOTS ACTIVE</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => {
+              robots.forEach(r => updateRobot(r.id, { online: false }));
+            }}
+            className="flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/30 hover:bg-rose-500/20 transition-colors"
+          >
+            <AlertOctagon size={12} /> GLOBAL E-STOP
+          </button>
+          <div className="w-px h-3 bg-slate-800"></div>
+          <div>HYDRA-UMC STUDIO v1.0</div>
+          <div className="w-px h-3 bg-slate-800"></div>
+          <div className="px-2 py-0.5 rounded border border-slate-700 bg-slate-900 font-mono text-sky-400">
+            {currentTime.toLocaleTimeString()}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
+
 
 /**
  * Executes the  nav item logic. 
