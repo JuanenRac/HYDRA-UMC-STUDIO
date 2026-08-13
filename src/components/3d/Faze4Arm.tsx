@@ -31,7 +31,12 @@
 // bring THAT axis to three.js's vertical Y instead. Verified numerically
 // (see faze4Kinematics.ts) rather than guessed - a naive "-90 about X"
 // copy-paste from Parol6Arm.tsx would have left the base spinning around a
-// horizontal axis.
+// horizontal axis. Unlike AR3/AR4, this correction DOES build the moving
+// arm upward correctly (the all-zero-pose tip sits at positive Y) - but
+// base_link's own mesh geometry (the stationary mounting plate) still
+// extends well below y=0 on its own (confirmed against the real STL
+// file), which is why the base visibly sank into the floor/table before
+// FAZE4_BASE_OFFSET lifted and recentered it.
 // =============================================================================
 
 import React, { useMemo } from 'react';
@@ -78,6 +83,10 @@ export const FAZE4_ROOT_QUAT = (() => {
   return new THREE.Quaternion().setFromUnitVectors(axisWorld, new THREE.Vector3(0, 1, 0));
 })();
 
+// base_link's own centering/lift offset (X,Y,Z), applied AFTER the root rotation above -
+// computed from base_link.STL's own real bounding box, see this file's header comment.
+export const FAZE4_BASE_OFFSET: [number, number, number] = [0.1697, 0.1596, -0.0768];
+
 function jointQuaternion(joint: JointDef, angleDeg: number): THREE.Quaternion {
   const reorient = new THREE.Quaternion().setFromEuler(new THREE.Euler(joint.rpy[0], joint.rpy[1], joint.rpy[2], 'XYZ'));
   const axisVec = new THREE.Vector3(...joint.axis).normalize();
@@ -107,6 +116,7 @@ export default function Faze4Arm({ robot }: { robot: RobotState }) {
   const hvataljkaGeo = useRealScaleSTL('hvataljka.STL');
 
   return (
+    <group position={FAZE4_BASE_OFFSET}>
     <group quaternion={FAZE4_ROOT_QUAT}>
       <mesh geometry={baseLinkGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
 
@@ -136,6 +146,7 @@ export default function Faze4Arm({ robot }: { robot: RobotState }) {
           </group>
         </group>
       </group>
+    </group>
     </group>
   );
 }

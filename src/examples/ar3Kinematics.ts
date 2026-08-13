@@ -110,8 +110,10 @@ function solveJ1J2J3(xt: number, yt: number, zt: number): { j1: number; j2: numb
 
 // app z=0 maps to this many mm above AR3's own base - calibrated so the shared examples'
 // usual ~200mm radius sits at a genuinely reachable AR3 pose (j2=-60,j3=60 gives R=199mm
-// at height=-567mm in AR3's own frame - see auditoria_historial.txt for the derivation).
-const Z_OFFSET_MM = -567;
+// at height=567mm in AR3's own frame - see auditoria_historial.txt for the derivation).
+// Re-derived after the AR3_ROOT_QUAT orientation fix (was -567 under the old, upside-down
+// root - flipping the root to build the chain upward flips this height's sign too).
+const Z_OFFSET_MM = 567;
 
 export function ar3JointsToCartesian(pt: KinematicsPoint): { x: number; y: number; z: number; a: number; b: number; c: number } {
   const p = fkPosition(pt.j1 || 0, pt.j2 || 0, pt.j3 || 0);

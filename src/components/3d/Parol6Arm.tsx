@@ -29,6 +29,15 @@
 // ROS is Z-up; three.js is Y-up. The whole chain above is left exactly as
 // authored and wrapped in a single root rotation (-90 deg about X) to
 // convert once, rather than fighting the axis convention at every joint.
+// PAROL6_BASE_OFFSET (outside that root rotation) additionally recenters
+// base_link's own footprint - like every other *Arm.tsx in this folder,
+// the raw STL isn't centered on its own local origin, so without it the
+// whole rig sat offset from the XY table's own center instead of on it.
+// This entire chain (order, origin xyz/rpy, axis, and J3/J4's real
+// [-114.59,74.48]/[-114.59,114.59] deg limits) was re-verified joint by
+// joint against the upstream PAROL6.urdf directly, byte for byte - no
+// swap or sign mismatch found there, so if J3/J4 still look wrong after
+// this centering fix it isn't a data transcription bug.
 //
 // Known, larger version of the trade-off already accepted for the other
 // robots' link-length differences (see mejoras_futuras.txt): the shared
@@ -73,6 +82,12 @@ function useRealScaleSTL(fileName: string): THREE.BufferGeometry {
 
 const bodyMat = { color: '#c7ccd3', roughness: 0.5, metalness: 0.35 };
 
+// base_link's own centering offset (X,Y,Z), applied in the ROOT-ROTATED frame (i.e. outside the
+// root group below) - computed from base_link.STL's own real bounding box: like every other
+// *Arm.tsx in this folder, the raw mesh isn't centered on its own local origin, so without this
+// the whole rig sits offset from the table's own XY center instead of on it.
+const PAROL6_BASE_OFFSET: [number, number, number] = [0.0637, 0, -0.0035];
+
 /**
  * Executes the parol6 arm logic - real mesh geometry, real URDF-driven FK chain.
  */
@@ -93,6 +108,7 @@ export default function Parol6Arm({ robot }: { robot: RobotState }) {
   const l6Geo = useRealScaleSTL('L6.STL');
 
   return (
+    <group position={PAROL6_BASE_OFFSET}>
     <group rotation={[-Math.PI / 2, 0, 0]}>
       <mesh geometry={baseLinkGeo} castShadow receiveShadow>
         <meshStandardMaterial {...bodyMat} />
@@ -154,6 +170,7 @@ export default function Parol6Arm({ robot }: { robot: RobotState }) {
           </group>
         </group>
       </group>
+    </group>
     </group>
   );
 }

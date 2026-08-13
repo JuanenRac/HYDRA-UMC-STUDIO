@@ -21,9 +21,17 @@
 //   J6 (link_5->link_6):    xyz=(-0.000294,0,0.02117)     rpy=(0,0,3.1416)              axis=(0,0,1)
 //
 // Root correction: joint 1's own world-frame axis (after its rpy) works
-// out to plain world -Z, so the root group here rotates +90deg about X to
-// bring that to three.js's vertical Y - verified numerically (see
-// ar3Kinematics.ts), not guessed or copy-pasted from the other rigs.
+// out to plain world -Z. Aligning that to three.js's +Y builds the whole
+// chain BELOW y=0 (confirmed by computing every link's own bounding box
+// after the correction - all 7 links, base_link through link_6, sat
+// entirely at negative Y) - the robot rendered upside-down, base at the
+// "top". Aligning to -Y instead (root rotates -90deg about X) builds
+// every link at positive Y as expected. AR3_BASE_OFFSET additionally
+// recenters base_link's own footprint (its bounding box isn't centered on
+// its own local origin the way a hand-authored primitive would be) so the
+// robot sits centered on the XY table platform instead of offset to one
+// side - both verified against the real downloaded STL files' own
+// geometry, not guessed.
 // =============================================================================
 
 import React, { useMemo } from 'react';
@@ -66,8 +74,12 @@ export const AR3_ROOT_QUAT = (() => {
   const j1 = AR3_CHAIN[0];
   const e = new THREE.Euler(j1.rpy[0], j1.rpy[1], j1.rpy[2], 'XYZ');
   const axisWorld = new THREE.Vector3(...j1.axis).applyEuler(e).normalize();
-  return new THREE.Quaternion().setFromUnitVectors(axisWorld, new THREE.Vector3(0, 1, 0));
+  return new THREE.Quaternion().setFromUnitVectors(axisWorld, new THREE.Vector3(0, -1, 0));
 })();
+
+// base_link's own centering offset (X,Y,Z), applied AFTER the root rotation above -
+// computed from base_link.STL's own real bounding box, see this file's header comment.
+export const AR3_BASE_OFFSET: [number, number, number] = [0, 0, 0.0477];
 
 function jointQuaternion(joint: JointDef, angleDeg: number): THREE.Quaternion {
   const reorient = new THREE.Quaternion().setFromEuler(new THREE.Euler(joint.rpy[0], joint.rpy[1], joint.rpy[2], 'XYZ'));
@@ -99,6 +111,7 @@ export default function AR3Arm({ robot }: { robot: RobotState }) {
   const l6Geo = useRealScaleSTL('link_6.STL');
 
   return (
+    <group position={AR3_BASE_OFFSET}>
     <group quaternion={AR3_ROOT_QUAT}>
       <mesh geometry={baseGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
 
@@ -128,6 +141,7 @@ export default function AR3Arm({ robot }: { robot: RobotState }) {
           </group>
         </group>
       </group>
+    </group>
     </group>
   );
 }

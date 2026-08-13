@@ -19,9 +19,14 @@
 //   J6 (link_5->link_6):    xyz=(0,0,0.041)            rpy=(0,0,0)                  axis=(0,0,1)
 //
 // Root correction: joint 1's own world-frame axis (after its rpy) works
-// out to plain world -Z, same as AR3 (a sibling design) - root group
-// rotates +90deg about X to bring that to three.js's vertical Y, verified
-// numerically (see ar4Kinematics.ts).
+// out to plain world -Z, same as AR3 (a sibling design). Aligning that to
+// +Y built the whole chain BELOW y=0 (every link's own bounding box sat
+// at negative Y, confirmed against the real STL files - the robot
+// rendered upside-down); aligning to -Y instead (root rotates -90deg
+// about X) builds every link at positive Y as expected. AR4_BASE_OFFSET
+// additionally recenters base_link's own footprint so the robot sits
+// centered on the XY table platform - both verified against the real
+// downloaded STL geometry, not guessed.
 //
 // Unlike Faze4/AR3 (whose URDFs declare every joint "continuous", no real
 // limits), AR4's config/mk3.yaml carries real joint limits - used both
@@ -69,8 +74,12 @@ export const AR4_ROOT_QUAT = (() => {
   const j1 = AR4_CHAIN[0];
   const e = new THREE.Euler(j1.rpy[0], j1.rpy[1], j1.rpy[2], 'XYZ');
   const axisWorld = new THREE.Vector3(...j1.axis).applyEuler(e).normalize();
-  return new THREE.Quaternion().setFromUnitVectors(axisWorld, new THREE.Vector3(0, 1, 0));
+  return new THREE.Quaternion().setFromUnitVectors(axisWorld, new THREE.Vector3(0, -1, 0));
 })();
+
+// base_link's own centering offset (X,Y,Z), applied AFTER the root rotation above -
+// computed from base_link.STL's own real bounding box, see this file's header comment.
+export const AR4_BASE_OFFSET: [number, number, number] = [0, 0, 0.0477];
 
 function jointQuaternion(joint: JointDef, angleDeg: number): THREE.Quaternion {
   const reorient = new THREE.Quaternion().setFromEuler(new THREE.Euler(joint.rpy[0], joint.rpy[1], joint.rpy[2], 'XYZ'));
@@ -102,6 +111,7 @@ export default function AR4Arm({ robot }: { robot: RobotState }) {
   const l6Geo = useRealScaleSTL('link_6.STL');
 
   return (
+    <group position={AR4_BASE_OFFSET}>
     <group quaternion={AR4_ROOT_QUAT}>
       <mesh geometry={baseGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
 
@@ -131,6 +141,7 @@ export default function AR4Arm({ robot }: { robot: RobotState }) {
           </group>
         </group>
       </group>
+    </group>
     </group>
   );
 }

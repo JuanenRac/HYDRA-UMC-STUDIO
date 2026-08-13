@@ -129,10 +129,12 @@ function solveJ1J2J3(xt: number, yt: number, zt: number): { j1: number; j2: numb
 }
 
 // app z=0 maps to this many mm above AR4's own base - calibrated against a pose well
-// inside AR4's real J2/J3 limits (j2=80,j3=-70 gives R=319mm at height=176mm) rather than
+// inside AR4's real J2/J3 limits (j2=80,j3=-70 gives R=319mm at height=-176mm) rather than
 // the app's own ~200mm default radius, which sits outside AR4's real reach entirely (this
-// is genuinely a bigger arm) - see auditoria_historial.txt for the derivation.
-const Z_OFFSET_MM = 176;
+// is genuinely a bigger arm) - see auditoria_historial.txt for the derivation. Re-derived
+// after the AR4_ROOT_QUAT orientation fix (was +176 under the old, upside-down root -
+// flipping the root to build the chain upward flips this height's sign too).
+const Z_OFFSET_MM = -176;
 
 export function ar4JointsToCartesian(pt: KinematicsPoint): { x: number; y: number; z: number; a: number; b: number; c: number } {
   const p = fkPosition(pt.j1 || 0, pt.j2 || 0, pt.j3 || 0);
