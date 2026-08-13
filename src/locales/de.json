@@ -10,7 +10,8 @@
     "disconnect": "Trennen",
     "status": {
       "connected": "System Online",
-      "disconnected": "System Offline"
+      "disconnected": "System Offline",
+      "online": "Online"
     },
     "micro_factory_status": "Mikrofabrik Status",
     "combined_into": "Kombiniert in ",
@@ -80,7 +81,16 @@
     "global_estop": "Globaler Not-Halt",
     "reboot_controller": "Controller Neustarten",
     "factory_reset_upper": "WERKSEINSTELLUNG",
-    "classic_can": "Klassisches CAN"
+    "classic_can": "Klassisches CAN",
+    "can_ota": "CAN-OTA",
+    "can_ota_desc": "Einstellungen für die Module Flasher/Tester (Shared Resources > URTC): Firmware-Flashing und Diagnose über die Kette CM5 -> SPI -> STM32H745 -> FDCAN1 -> Robotersteuerplatine -> CAN -> URTC-Werkzeugkopf. Siehe docs/architecture.md in HYDRA-UMC für das vollständige Adressierungsschema.",
+    "can_ota_transport": "Transport",
+    "can_ota_transport_mock": "Simuliert (Mock) - keine Hardware nötig",
+    "can_ota_transport_hardware": "Echte Hardware (SPI zum STM32H745) - noch nicht implementiert",
+    "can_ota_transport_desc": "Mock simuliert das gesamte CAN-OTA-Protokoll, damit Flasher/Tester schon jetzt voll nutzbar sind. Auf Hardware umschalten, sobald CM5<->STM32H745-Firmware existiert.",
+    "can_ota_mcu": "MCU der Robotersteuerplatine",
+    "can_ota_mcu_placeholder": "STM32G474RET6",
+    "can_ota_mcu_desc": "Bestätigt: STM32G474RET6 (Cortex-M4 @ 170 MHz, LQFP-64, 512 KB Flash) - nutzt 2 seiner 3 integrierten FDCAN-Peripherien (eine Uplink zum STM32H745, eine Downlink zum URTC-Kopf). Siehe HYDRA-UMC docs/architecture.md Abschnitt 1/4. Bleibt editierbar, falls eine künftige Platinenrevision dies ändert."
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",
@@ -279,11 +289,103 @@
         "label": "Firmware & Einstellungen",
         "heading": "Platinen flashen und das Dashboard konfigurieren",
         "paragraphs": [
-          "Flasher schreibt neue URTC-Firmware auf eine angeschlossene Controller-Platine; Tester führt Hardware-Selbsttests an ihr durch - beide finden Sie im unteren Bereich der Seitenleiste.",
+          "Flasher und Tester (Shared Resources > URTC) erreichen die eigene Controller-Platine eines Roboters und dahinter dessen URTC-Werkzeugkopf ausschließlich über CAN-OTA - keine JTAG/SWD-Sonde, kein USB-CAN-Adapter. Flasher lädt ein .bin-Firmware-Image hoch und führt dieselbe seitenweise Übertragung, CRC32/HMAC-Prüfung und Anti-Rollback-Kontrollen aus, die der URTC-Bootloader bereits implementiert; Tester fragt Live-Versionsinformationen, F-RAM-Status und Werkzeug-Telemetrie ab, dazu einen sicheren Selbsttest, der nie mit nennenswerter Leistung aktoriert.",
           "Config (obere Leiste) öffnet die Systemkonfiguration: Controller verwalten (Name, IP, Hinzufügen/Auto-Suche), UI & Themes (Theme, Sprache - dieses Hilfemenü folgt derselben Sprache), Robindernamen und benutzerdefinierte Modelle, Software-Integrationen, Arbeitspfade (wo die Works jedes Roboters gespeichert werden) und Gamepad-Zuordnung.",
+          "Unter Config > CAN-OTA lässt sich der Transport wählen (eine vollständige integrierte Simulation, bis echte STM32H745-Firmware existiert, später echte Hardware), die eigene MCU der Robotersteuerplatine eintragen, sobald bestätigt, und die Firmware-Dateipfade festlegen, in denen Flasher sucht.",
           "Factory Reset in Config setzt die gesamte gespeicherte Konfiguration auf die Werkseinstellungen zurück - mit Vorsicht verwenden, dies kann nicht rückgängig gemacht werden."
         ]
       }
+    }
+  },
+  "flasher": {
+    "title": "Flasher",
+    "subtitle": "CAN-OTA-Firmware-Flashing (kein JTAG/SWD, kein USB-CAN)",
+    "hardware_not_implemented": "Hardware-Transport noch nicht implementiert - simulierter Modus wird angezeigt",
+    "target": "Ziel",
+    "robot_slot": "Roboter-Slot",
+    "urtc_unreachable": "URTC nicht erreichbar",
+    "board": "Platine",
+    "target_controller_board": "Robotersteuerplatine",
+    "target_urtc_head": "URTC-Werkzeugkopf (weitergeleitet)",
+    "current_version": "Aktuelle Version",
+    "bootloader": "Bootloader",
+    "no_version_known": "Version unbekannt - Ziel abfragen",
+    "query_version": "Version abfragen",
+    "firmware_file": "Firmware-Datei",
+    "browse": ".bin durchsuchen",
+    "no_file": "Keine Datei ausgewählt",
+    "allow_downgrade": "Downgrade erlauben (Anti-Rollback umgehen)",
+    "erase_fram": "F-RAM nach dem Flashen löschen",
+    "flash_now": "Jetzt flashen",
+    "flashing": "Wird geflasht...",
+    "confirm_flash": "{{target}} auf {{robot}} flashen? Dies überschreibt dessen Firmware per CAN-OTA.",
+    "log_title": "Protokoll",
+    "log_empty": "Noch keine Aktivität.",
+    "log": {
+      "file_loaded": "{{name}} geladen ({{size}} Bytes)",
+      "querying": "Version wird abgefragt - {{hop}}",
+      "no_response": "Keine Antwort vom Ziel",
+      "version_found": "Firmware {{fw}}, Bootloader {{bl}}",
+      "flash_start": "Flashen von {{name}} gestartet - {{hop}}",
+      "flash_done": "Flashen abgeschlossen"
+    },
+    "progress": {
+      "connecting": "Verbinde...",
+      "entering_bootloader": "Bootloader wird gestartet...",
+      "erasing_fram": "F-RAM wird gelöscht...",
+      "transferring": "Seiten werden übertragen...",
+      "verifying": "Verifiziere (CRC32 + HMAC)...",
+      "rebooting": "Neustart in die Anwendung...",
+      "done": "Fertig",
+      "error_rollback": "Abgelehnt: Anti-Rollback (\"Downgrade erlauben\" aktivieren zum Umgehen)"
+    }
+  },
+  "tester": {
+    "title": "Tester",
+    "subtitle": "CAN-OTA-Diagnose & Live-Telemetrie",
+    "global_controls": "Globale Steuerung",
+    "status_led": "Status-LED",
+    "ring_led": "Ring-LED",
+    "oled_mode": "OLED-Modus",
+    "oled_standard": "Standard",
+    "oled_night": "Nacht",
+    "oled_off": "Aus",
+    "fram": "Persistenz (F-RAM)",
+    "fram_valid": "Gültiger gespeicherter Zustand gefunden",
+    "fram_empty": "Kein gespeicherter Zustand",
+    "fram_unknown": "Unbekannt - zum Prüfen abfragen",
+    "fram_query": "Abfragen",
+    "fram_erase": "Löschen",
+    "tool_telemetry": "Werkzeug-Telemetrie",
+    "self_test": "Selbsttest",
+    "run_self_test": "Selbsttest ausführen",
+    "testing": "Teste...",
+    "self_test_note": "Nur sichere Prüfungen - Kommunikation und Nullsollwert-Rückmeldungen. Nie Aktorik mit nennenswerter Leistung.",
+    "selftest": {
+      "comm": "Kommunikation",
+      "version": "Versionsabfrage",
+      "fram": "F-RAM-Zugriff",
+      "axes": "Achstreiber",
+      "endstops": "Endschalter",
+      "tool": "Erkennung des aktiven Werkzeugs",
+      "telemetry": "Telemetrie-Datenstrom"
+    },
+    "bus_monitor": "Rohbus-Monitor",
+    "monitor_start": "Start",
+    "monitor_stop": "Stopp",
+    "monitor_empty": "Keine Frames - Monitor starten.",
+    "col_time": "Zeit",
+    "col_id": "ID",
+    "col_data": "Daten",
+    "telemetry": {
+      "temperature": "Temperatur",
+      "rpm": "Drehzahl",
+      "endstop": "Endschalter",
+      "open": "Offen",
+      "analog": "Analog",
+      "part_detected": "Teil erkannt",
+      "actuator_state": "Aktorzustand",
+      "generic": "Generisches Panel - für dieses Werkzeugprofil nur Kommunikations- und Versionstelemetrie."
     }
   }
 }

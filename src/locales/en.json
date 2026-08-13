@@ -10,7 +10,8 @@
     "disconnect": "Disconnect",
     "status": {
       "connected": "System Online",
-      "disconnected": "System Offline"
+      "disconnected": "System Offline",
+      "online": "Online"
     },
     "micro_factory_status": "Micro-Factory Status",
     "combined_into": "Combined into ",
@@ -80,7 +81,16 @@
     "global_estop": "Global E-Stop",
     "reboot_controller": "Reboot Controller",
     "factory_reset_upper": "FACTORY RESET",
-    "classic_can": "Classic CAN"
+    "classic_can": "Classic CAN",
+    "can_ota": "CAN-OTA",
+    "can_ota_desc": "Settings for the Flasher/Tester modules (Shared Resources > URTC): firmware flashing and diagnostics over the CM5 -> SPI -> STM32H745 -> FDCAN1 -> Robot Controller Board -> CAN -> URTC Tool Head chain. See HYDRA-UMC's own docs/architecture.md for the full addressing scheme.",
+    "can_ota_transport": "Transport",
+    "can_ota_transport_mock": "Simulated (mock) - no hardware needed",
+    "can_ota_transport_hardware": "Real hardware (SPI to STM32H745) - not implemented yet",
+    "can_ota_transport_desc": "Mock simulates the whole CAN-OTA protocol so Flasher/Tester are fully usable now. Switch to hardware once CM5<->STM32H745 firmware exists to talk to.",
+    "can_ota_mcu": "Robot Controller Board MCU",
+    "can_ota_mcu_placeholder": "STM32G474RET6",
+    "can_ota_mcu_desc": "Confirmed: STM32G474RET6 (Cortex-M4 @ 170 MHz, LQFP-64, 512 KB flash) - uses 2 of its 3 onboard FDCAN peripherals (one uplink to the STM32H745, one downlink to the URTC head). See HYDRA-UMC docs/architecture.md section 1/4. Kept editable here in case a future board revision changes it."
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -279,11 +289,103 @@
         "label": "Firmware & Settings",
         "heading": "Flashing boards and configuring the dashboard",
         "paragraphs": [
-          "Flasher writes new URTC firmware to a connected controller board; Tester runs hardware self-checks against one - both live in the sidebar's lower section.",
+          "Flasher and Tester (Shared Resources > URTC) reach a robot's own Controller Board, and its URTC Tool Head beyond it, over CAN-OTA only - no JTAG/SWD probe, no USB-CAN dongle. Flasher uploads a .bin firmware image and runs the same page-by-page transfer, CRC32/HMAC verify, and anti-rollback checks the URTC bootloader already implements; Tester queries live version info, F-RAM state, and per-tool telemetry, plus a safe self-test that never actuates at meaningful power.",
           "Config (top bar) opens System Configuration: manage Controllers (name, IP, add/auto-search), UI & Themes (theme, language - this Help menu follows the same language), Robot Names and Custom Models, Software Integrations, Work Paths (where each robot's Works are stored), and Gamepad mapping.",
+          "Config > CAN-OTA lets you pick the transport (a full built-in simulation until real STM32H745 firmware exists, or real hardware later), record the Robot Controller Board's own MCU once it's confirmed, and set the firmware-file paths Flasher looks in.",
           "Factory Reset, inside Config, wipes all saved configuration back to defaults - use with care, it cannot be undone."
         ]
       }
+    }
+  },
+  "flasher": {
+    "title": "Flasher",
+    "subtitle": "CAN-OTA Firmware Flashing (no JTAG/SWD, no USB-CAN)",
+    "hardware_not_implemented": "Hardware transport not implemented yet - showing simulated mode",
+    "target": "Target",
+    "robot_slot": "Robot Slot",
+    "urtc_unreachable": "URTC unreachable",
+    "board": "Board",
+    "target_controller_board": "Robot Controller Board",
+    "target_urtc_head": "URTC Tool Head (relayed)",
+    "current_version": "Current version",
+    "bootloader": "bootloader",
+    "no_version_known": "Version unknown - query the target",
+    "query_version": "Query Version",
+    "firmware_file": "Firmware File",
+    "browse": "Browse .bin",
+    "no_file": "No file selected",
+    "allow_downgrade": "Allow downgrade (bypass anti-rollback)",
+    "erase_fram": "Erase F-RAM after flash",
+    "flash_now": "Flash Now",
+    "flashing": "Flashing...",
+    "confirm_flash": "Flash {{target}} on {{robot}}? This will overwrite its firmware over CAN-OTA.",
+    "log_title": "Log",
+    "log_empty": "No activity yet.",
+    "log": {
+      "file_loaded": "Loaded {{name}} ({{size}} bytes)",
+      "querying": "Querying version - {{hop}}",
+      "no_response": "No response from target",
+      "version_found": "Firmware {{fw}}, bootloader {{bl}}",
+      "flash_start": "Starting flash of {{name}} - {{hop}}",
+      "flash_done": "Flash complete"
+    },
+    "progress": {
+      "connecting": "Connecting...",
+      "entering_bootloader": "Entering bootloader...",
+      "erasing_fram": "Erasing F-RAM...",
+      "transferring": "Transferring pages...",
+      "verifying": "Verifying (CRC32 + HMAC)...",
+      "rebooting": "Rebooting to application...",
+      "done": "Done",
+      "error_rollback": "Rejected: anti-rollback (enable \"allow downgrade\" to override)"
+    }
+  },
+  "tester": {
+    "title": "Tester",
+    "subtitle": "CAN-OTA Diagnostics & Live Telemetry",
+    "global_controls": "Global Controls",
+    "status_led": "Status LED",
+    "ring_led": "Ring LED",
+    "oled_mode": "OLED Mode",
+    "oled_standard": "Standard",
+    "oled_night": "Night",
+    "oled_off": "Off",
+    "fram": "Persistence (F-RAM)",
+    "fram_valid": "Valid saved state found",
+    "fram_empty": "No saved state",
+    "fram_unknown": "Unknown - query to check",
+    "fram_query": "Query",
+    "fram_erase": "Erase",
+    "tool_telemetry": "Tool Telemetry",
+    "self_test": "Self-Test",
+    "run_self_test": "Run Self-Test",
+    "testing": "Testing...",
+    "self_test_note": "Safe checks only - communication and zero-setpoint round trips. Never actuates at meaningful power.",
+    "selftest": {
+      "comm": "Communication",
+      "version": "Version query",
+      "fram": "F-RAM access",
+      "axes": "Axis drivers",
+      "endstops": "Endstops",
+      "tool": "Active tool identification",
+      "telemetry": "Telemetry stream"
+    },
+    "bus_monitor": "Raw Bus Monitor",
+    "monitor_start": "Start",
+    "monitor_stop": "Stop",
+    "monitor_empty": "No frames - start the monitor.",
+    "col_time": "Time",
+    "col_id": "ID",
+    "col_data": "Data",
+    "telemetry": {
+      "temperature": "Temperature",
+      "rpm": "RPM",
+      "endstop": "Endstop",
+      "open": "Open",
+      "analog": "Analog",
+      "part_detected": "Part detected",
+      "actuator_state": "Actuator state",
+      "generic": "Generic panel - communication + version telemetry only for this tool profile."
     }
   }
 }

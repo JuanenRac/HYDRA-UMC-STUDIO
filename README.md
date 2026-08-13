@@ -11,7 +11,7 @@ HYDRA-UMC STUDIO is an advanced, centralized control dashboard for Robotics, CNC
 - 🔄 **Works & Trajectories**: Load canned Examples, jog-and-record your own points, or load/save/edit/playback complex multi-point trajectories (JSON) per robot - portable between robot models, since each step is resolved through that robot's own real kinematics before it's drawn or played.
 - 🎮 **Gamepad Support**: USB and Bluetooth controller integrations with custom mappings.
 - 📹 **Camera Integration**: Up to eight simultaneous live feeds (USB vision or thermal MLX90640/41/42) with recording and inference status.
-- 🛠️ **Firmware Tools**: Flash and self-test URTC controller boards directly from the dashboard.
+- 🛠️ **CAN-OTA Firmware Tools**: Flash and self-test a robot's own Controller Board and, relayed through it, its URTC Tool Head - over CAN-OTA only (no JTAG/SWD, no USB-CAN dongle), matching HYDRA-UMC's own CM5 → SPI → STM32H745 → FDCAN1 → Robot Controller Board → CAN → URTC chain (see `HYDRA-UMC/docs/architecture.md`). Runs against a full built-in simulation until real STM32H745 firmware exists to talk to (Config > CAN-OTA).
 - 🌐 **Multi-language UI**: English, Spanish, German, French, and Italian, including a full in-app Help menu.
 - 💾 **Persistent State**: Fully synchronized back-end storage that saves all configurations, paths, and active machine states to the server disk.
 

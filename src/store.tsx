@@ -106,6 +106,14 @@ export interface HeatedBedModule extends SharedModuleGeneric {
   ssrActive: boolean;
 }
 
+/** Firmware/identity state for one board reachable over CAN-OTA (Robot Controller Board or URTC Tool Head) - see HYDRA-UMC's docs/architecture.md. */
+export interface CanOtaBoardState {
+  firmwareVersion?: string;
+  bootloaderVersion?: string;
+  hardwareId?: string;
+  lastSeen?: number;
+}
+
 /** Defines the data structure and expected properties for  robot state entities. */
 export interface RobotState {
   id: number;
@@ -115,6 +123,12 @@ export interface RobotState {
   role: RobotRole;
   tool: ToolType;
   urtcConnected: boolean;
+  // Robot Controller Board (Tier 2, FDCAN1 "STACK A" slot) and URTC Tool Head (Tier 3,
+  // relayed through the Robot Controller Board's own second CAN port) firmware state -
+  // see HYDRA-UMC's docs/architecture.md for the addressing scheme. Populated by
+  // Flasher.tsx/Tester.tsx once a board answers a version query.
+  controllerBoard?: CanOtaBoardState;
+  urtcHead?: CanOtaBoardState;
   pos: { x: number; y: number; z: number; a: number; b: number; c: number; tx?: number; ty?: number; trz?: number };
   joints: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number };
   valves: [boolean, boolean];
@@ -198,6 +212,16 @@ export interface SystemSettings {
   theme: string;
   language: string;
   worksPaths?: Record<string, string>;
+  // CAN-OTA firmware flashing/testing (Flasher.tsx / Tester.tsx) - see HYDRA-UMC's own
+  // docs/architecture.md for the SPI -> STM32H745 -> FDCAN1 -> Robot Controller Board ->
+  // CAN -> URTC Tool Head chain this targets. 'hardware' transport isn't implemented yet
+  // (no CM5<->STM32H745 firmware exists to talk to) - 'mock' simulates the whole protocol
+  // client-side so the UI is fully usable/demoable ahead of that.
+  canOta?: {
+    transport: 'mock' | 'hardware';
+    robotControllerBoardMcu?: string;
+    firmwarePaths?: Record<string, string>;
+  };
   gamepadEnabled?: boolean;
   gamepadConnectionType?: 'USB' | 'Bluetooth';
   gamepadMapping?: Record<string, string>;
@@ -244,6 +268,8 @@ export const createDefaultRobots = (): RobotState[] => {
     role: 'Idle' as RobotRole,
     tool: 'None' as ToolType,
     urtcConnected: i < 3,
+    controllerBoard: i < 3 ? { firmwareVersion: '1.2.0', bootloaderVersion: '1.0.0', hardwareId: `RCB-${(i + 1).toString().padStart(3, '0')}` } : undefined,
+    urtcHead: i < 3 ? { firmwareVersion: '2.1.3', bootloaderVersion: '1.0.0', hardwareId: `URTC-${(i + 1).toString().padStart(3, '0')}` } : undefined,
     pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 },
     joints: { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 },
     valves: [false, false] as [boolean, boolean],
@@ -355,6 +381,11 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     theme: "HYDRA-UMC Studio Fasion",
     language: "en",
     worksPaths: {},
+    canOta: {
+      transport: 'mock',
+      robotControllerBoardMcu: 'STM32G474RET6',
+      firmwarePaths: {},
+    },
     uiLayout: {
       rightPanelWidth: 320,
       pointsTableHeight: 300,

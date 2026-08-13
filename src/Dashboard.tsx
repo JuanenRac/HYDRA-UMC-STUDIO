@@ -57,7 +57,7 @@ export default function Dashboard() {
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
   }, []);
-  const [configTab, setConfigTab] = useState<'controllers' | 'ui' | 'robots' | 'models' | 'integrations' | 'paths' | 'gamepad'>('controllers');
+  const [configTab, setConfigTab] = useState<'controllers' | 'ui' | 'robots' | 'models' | 'integrations' | 'paths' | 'canota' | 'gamepad'>('controllers');
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isModulesMenuOpen, setIsModulesMenuOpen] = useState(false);
@@ -129,6 +129,7 @@ export default function Dashboard() {
                 <button onClick={() => setConfigTab('models')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'models' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.custom_models', 'Custom Models')}</button>
                 <button onClick={() => setConfigTab('integrations')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'integrations' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.integrations', 'Integrations')}</button>
                 <button onClick={() => setConfigTab('paths')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'paths' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.paths', 'Work Paths')}</button>
+                <button onClick={() => setConfigTab('canota')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'canota' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.can_ota', 'CAN-OTA')}</button>
                 <button onClick={() => setConfigTab('gamepad')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'gamepad' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>Gamepad</button>
               
                 <div className="mt-auto border-t border-slate-800 p-4">
@@ -527,6 +528,61 @@ export default function Dashboard() {
                           />
                         </div>
                       ))}
+                    </div>
+                  </div>
+                )}
+                {configTab === 'canota' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                      <h3 className="text-lg font-bold text-slate-200 tracking-wider">{t('config.can_ota', 'CAN-OTA')}</h3>
+                    </div>
+                    <div className="bg-sky-900/20 border border-sky-800/50 rounded-lg p-4">
+                      <p className="text-sm text-sky-200/80 leading-relaxed">
+                        {t('config.can_ota_desc', 'Settings for the Flasher/Tester modules (Shared Resources > URTC): firmware flashing and diagnostics over the CM5 -> SPI -> STM32H745 -> FDCAN1 -> Robot Controller Board -> CAN -> URTC Tool Head chain. See HYDRA-UMC\'s own docs/architecture.md for the full addressing scheme.')}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                      <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('config.can_ota_transport', 'Transport')}</label>
+                      <select
+                        value={settings.canOta?.transport || 'mock'}
+                        onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), transport: e.target.value as 'mock' | 'hardware' } })}
+                        className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full max-w-sm"
+                      >
+                        <option value="mock">{t('config.can_ota_transport_mock', 'Simulated (mock) - no hardware needed')}</option>
+                        <option value="hardware">{t('config.can_ota_transport_hardware', 'Real hardware (SPI to STM32H745) - not implemented yet')}</option>
+                      </select>
+                      <p className="text-xs text-slate-500 mt-1">{t('config.can_ota_transport_desc', 'Mock simulates the whole CAN-OTA protocol so Flasher/Tester are fully usable now. Switch to hardware once CM5<->STM32H745 firmware exists to talk to.')}</p>
+                    </div>
+
+                    <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                      <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('config.can_ota_mcu', 'Robot Controller Board MCU')}</label>
+                      <input
+                        value={settings.canOta?.robotControllerBoardMcu || ''}
+                        onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), robotControllerBoardMcu: e.target.value } })}
+                        placeholder={t('config.can_ota_mcu_placeholder', 'e.g. STM32G474 (2x FDCAN) - unconfirmed')}
+                        className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full max-w-sm font-mono"
+                      />
+                      <p className="text-xs text-slate-500 mt-1">{t('config.can_ota_mcu_desc', 'Not yet documented anywhere in this project - fill it in once confirmed, no code change needed. See HYDRA-UMC docs/architecture.md section 4.')}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('flasher.target_controller_board')}</label>
+                        <input
+                          value={settings.canOta?.firmwarePaths?.controllerBoard || 'FIRMWARE/ControllerBoard'}
+                          onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), firmwarePaths: { ...(settings.canOta?.firmwarePaths || {}), controllerBoard: e.target.value } } })}
+                          className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full font-mono"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('flasher.target_urtc_head')}</label>
+                        <input
+                          value={settings.canOta?.firmwarePaths?.urtcHead || 'FIRMWARE/URTCHead'}
+                          onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), firmwarePaths: { ...(settings.canOta?.firmwarePaths || {}), urtcHead: e.target.value } } })}
+                          className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full font-mono"
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
