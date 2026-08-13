@@ -11,7 +11,7 @@ import { useHydraStore, createDefaultRobots, createDefaultCameras } from './stor
 import { 
   Activity, Crosshair, AlertOctagon, Layers, 
   Video, Focus, Settings, Menu, Plus, Trash2, Search, AlertTriangle, Power
-, Cpu, PenTool, Zap, Wind, Thermometer, Download, Upload, RefreshCw, Server, Info } from 'lucide-react';
+, Cpu, PenTool, Zap, Wind, Thermometer, RefreshCw, Server, Info, HelpCircle } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -52,7 +52,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
   }, []);
   const [configTab, setConfigTab] = useState<'controllers' | 'ui' | 'robots' | 'models' | 'integrations' | 'paths' | 'gamepad'>('controllers');
 
@@ -558,21 +557,7 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold tracking-wider text-slate-100">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span></h1>
         </div>
         <div className="flex items-center gap-6 text-base font-medium">
-          <div className="flex items-center gap-2 mr-4">
-            <button 
-              onClick={exportScene}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-300"
-              title="Save Scene (All Robots)"
-            >
-              <Download size={18} />
-              <span className="text-sm">{t('dashboard.save_scene', 'Save Scene')}</span>
-            </button>
-            <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-300 cursor-pointer" title="Load Scene">
-              <Upload size={18} />
-              <span className="text-sm">{t('dashboard.load_scene', 'Load Scene')}</span>
-              <input type="file" accept=".json" onChange={importScene} className="hidden" />
-            </label>
-          </div>
+          
           <button 
             onClick={() => setIsSettingsOpen(true)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 transition-colors"
@@ -582,11 +567,18 @@ export default function Dashboard() {
           </button>
 
           <button 
+            onClick={() => {}}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 transition-colors"
+          >
+            <HelpCircle size={18} />
+            <span className="text-sm">{t('dashboard.help', 'Help')}</span>
+          </button>
+          <button 
             onClick={() => setIsAboutOpen(true)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 transition-colors"
           >
             <Info size={18} />
-            <span className="text-sm">ABOUT</span>
+            <span className="text-sm">{t('dashboard.about', 'About')}</span>
           </button>
           <div className="flex items-center gap-3">
             <span className={cn("w-4 h-4 rounded-full animate-pulse", activeController?.status === 'online' ? "bg-emerald-500 shadow-[0_0_10px_rgba(0,255,102,0.5)]" : "bg-rose-500 shadow-[0_0_10px_rgba(255,102,0,0.5)]")} />
@@ -726,7 +718,7 @@ export default function Dashboard() {
         </nav>
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-slate-950/80 p-4 backdrop-blur-sm">
+        <main className="flex-1 flex flex-col overflow-hidden bg-slate-950/80 pt-2 px-2 pb-1 backdrop-blur-sm">
           {activeTab === 'overview' && <OverviewPanel />}
           {activeTab === 'robot' && activeRobot && <RobotDetail key={activeRobot.id} robot={activeRobot} />}
           {activeTab === 'cameras' && <CamerasView />}

@@ -12,8 +12,6 @@
       "connected": "System Online",
       "disconnected": "System Offline"
     },
-    "save_scene": "Save Scene",
-    "load_scene": "Load Scene",
     "micro_factory_status": "Micro-Factory Status",
     "combined_into": "Combined into ",
     "model": "Model:",
@@ -27,7 +25,9 @@
     "modules": "Modules",
     "back": "Back",
     "overview": "Overview",
-    "vision_cameras": "Vision / Cameras"
+    "vision_cameras": "Vision / Cameras",
+    "about": "About",
+    "help": "Help"
   },
   "config": {
     "title": "System Configuration",

@@ -12,8 +12,6 @@
       "connected": "Système en Ligne",
       "disconnected": "Système Hors Ligne"
     },
-    "save_scene": "Sauvegarder Scène",
-    "load_scene": "Charger Scène",
     "micro_factory_status": "Statut de la Micro-Usine",
     "combined_into": "Combiné dans ",
     "model": "Modèle:",
@@ -27,7 +25,9 @@
     "modules": "Modules",
     "back": "Retour",
     "overview": "Aperçu",
-    "vision_cameras": "Vision / Caméras"
+    "vision_cameras": "Vision / Caméras",
+    "about": "À propos",
+    "help": "Aide"
   },
   "config": {
     "title": "Configuration du Système",

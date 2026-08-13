@@ -12,8 +12,6 @@
       "connected": "Sistema en Línea",
       "disconnected": "Sistema Desconectado"
     },
-    "save_scene": "Guardar Escena",
-    "load_scene": "Cargar Escena",
     "micro_factory_status": "Estado de la Micro-Fábrica",
     "combined_into": "Combinado en ",
     "model": "Modelo:",
@@ -27,7 +25,9 @@
     "modules": "Módulos",
     "back": "Atrás",
     "overview": "Vista General",
-    "vision_cameras": "Visión / Cámaras"
+    "vision_cameras": "Visión / Cámaras",
+    "about": "Acerca de",
+    "help": "Ayuda"
   },
   "config": {
     "title": "Configuración del Sistema",

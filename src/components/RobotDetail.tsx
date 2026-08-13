@@ -772,9 +772,9 @@ console.log("Loading example:", id);
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden p-4 gap-4">
+      <div className="flex-1 flex overflow-hidden pt-2 px-2 pb-0 gap-2">
         {/* Left Panel: 3D View */}
-        <div className="flex-1 flex flex-col gap-4 min-w-0">
+        <div className="flex-1 flex flex-col gap-2 min-w-0">
           <div 
             className="relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col group shrink-0 min-h-[200px]"
             style={{ flex: threeDHeight ? `0 0 ${threeDHeight}px` : '1 1 0%' }}
@@ -1162,11 +1162,11 @@ console.log("Loading example:", id);
 
         {/* Right Panel */}
         <div 
-          className={cn("w-full lg:w-auto flex flex-col shrink-0 min-h-0 gap-4 transition-all duration-75", isFullscreen && "hidden")}
+          className={cn("w-full lg:w-auto flex flex-col shrink-0 min-h-0 gap-2 transition-all duration-75", isFullscreen && "hidden")}
           style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? rightPanelWidth : '100%' }}
         >
           {/* Top Panel: Config, I/O, Points */}
-          <div className="flex flex-col flex-1 bg-slate-950 border border-slate-800 rounded-xl overflow-hidden min-h-0">
+          <div className="flex flex-col bg-slate-950 border border-slate-800 rounded-xl overflow-hidden min-h-0 shrink-0 max-h-[50%]">
             <div className="flex items-center border-b border-slate-800 bg-slate-900 overflow-x-auto custom-scrollbar shrink-0">
               <button 
                 onClick={() => setRightTab('trajectories')} 
@@ -1426,7 +1426,7 @@ console.log("Loading example:", id);
           </div>
           
           {/* Bottom Panel: Points & Trajectories Table */}
-          <div className="flex flex-col flex-[1.2] bg-slate-950 border border-slate-800 rounded-xl overflow-hidden min-h-0">
+          <div className="flex flex-col flex-1 bg-slate-950 border border-slate-800 rounded-xl overflow-hidden min-h-0">
             <div className="p-3 bg-slate-900 border-b border-slate-800 shrink-0 flex items-center justify-between">
               <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">{t('robot_detail.points_table', 'Points Table')}</span>
               <div className="bg-slate-950 border border-slate-800 px-3 py-1 rounded-md flex items-center gap-2 shadow-inner">
