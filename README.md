@@ -6,11 +6,14 @@
 HYDRA-UMC STUDIO is an advanced, centralized control dashboard for Robotics, CNC machines, 3D Printers, and Laser engravers. Built with modern web technologies, it provides real-time state management, trajectory playback, multi-device synchronization, and gamepad support.
 
 ## Features
-- 🤖 **Multi-Robot Control**: Manage multiple 6-DOF robots (e.g., Parol6, Faze4) simultaneously.
+- 🤖 **Multi-Robot Control**: Manage multiple 6-DOF robots simultaneously. Parol6, Faze4, AR3, and AR4 are modeled with their real mesh geometry and their manufacturer's own joint kinematics (accurate forward/inverse kinematics, real joint limits where the robot defines any); a Generic simplified two-link arm is also available for any other rig.
+- 🎯 **XY Table, ATC Tools, Rack Manager, Pick & Place, CNC, Laser, Vacuum Table, Heated Bed**: dedicated control panels for the machines and accessories that go alongside a robot cell.
+- 🔄 **Works & Trajectories**: Load canned Examples, jog-and-record your own points, or load/save/edit/playback complex multi-point trajectories (JSON) per robot - portable between robot models, since each step is resolved through that robot's own real kinematics before it's drawn or played.
 - 🎮 **Gamepad Support**: USB and Bluetooth controller integrations with custom mappings.
-- 📹 **Camera Integration**: Real-time Picture-in-Picture (PiP) surveillance and computer vision feeds.
+- 📹 **Camera Integration**: Up to eight simultaneous live feeds (USB vision or thermal MLX90640/41/42) with recording and inference status.
+- 🛠️ **Firmware Tools**: Flash and self-test URTC controller boards directly from the dashboard.
+- 🌐 **Multi-language UI**: English, Spanish, German, French, and Italian, including a full in-app Help menu.
 - 💾 **Persistent State**: Fully synchronized back-end storage that saves all configurations, paths, and active machine states to the server disk.
-- 🔄 **Works & Trajectories**: Load, edit, save, and playback complex multi-point movement paths (JSON), supporting combination movements across multiple robots.
 
 ## Requirements
 - [Node.js](https://nodejs.org/) (v18 or higher recommended)

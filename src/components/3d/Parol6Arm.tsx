@@ -61,6 +61,18 @@ import Toolhead from './Toolhead';
 
 const MESH_BASE = '/models/parol6/';
 
+// ROS URDF <origin rpy="r p y"/> composes as R = Rz(yaw)*Ry(pitch)*Rx(roll) - that's
+// three.js's intrinsic 'ZYX' Euler order, NOT the default 'XYZ' a plain rotation={[r,p,y]}
+// array uses. For a single-axis rpy (J1/J2/J5/J6 below) the other two factors are identity
+// regardless of order, so it made no visible difference there - but J3 and J4 are the only
+// two joints in this chain with a genuinely 2-axis rpy, and 'XYZ' vs 'ZYX' produce completely
+// different matrices for those (verified numerically, maxDiff=2 i.e. not even close), which
+// is what actually made L3/L4 render rotated ~180 degrees from where they belong - not a data
+// transcription or sign bug, an Euler composition order bug.
+function rosEuler(roll: number, pitch: number, yaw: number): THREE.Euler {
+  return new THREE.Euler(roll, pitch, yaw, 'ZYX');
+}
+
 // STL files are commonly authored in millimeters with no <mesh scale="..."/>
 // in the URDF to say so (a common, easy-to-miss authoring gap) - rather than
 // assume, each loaded geometry is checked against its own bounding box once
@@ -129,14 +141,14 @@ export default function Parol6Arm({ robot }: { robot: RobotState }) {
               </mesh>
 
               {/* Joint L3: L2 -> L3, axis (0,0,-1) */}
-              <group position={[0, -0.18, 0]} rotation={[3.1416, 0, -1.5708]}>
+              <group position={[0, -0.18, 0]} rotation={rosEuler(3.1416, 0, -1.5708)}>
                 <group rotation={[0, 0, -j3]}>
                   <mesh geometry={l3Geo} castShadow receiveShadow>
                     <meshStandardMaterial {...bodyMat} />
                   </mesh>
 
                   {/* Joint L4: L3 -> L4, axis (0,0,-1) */}
-                  <group position={[0.0435, 0, 0]} rotation={[1.5707963267949, 0, 3.14159265358979]}>
+                  <group position={[0.0435, 0, 0]} rotation={rosEuler(1.5707963267949, 0, 3.14159265358979)}>
                     <group rotation={[0, 0, -j4]}>
                       <mesh geometry={l4Geo} castShadow receiveShadow>
                         <meshStandardMaterial {...bodyMat} />

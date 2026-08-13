@@ -27,7 +27,14 @@
     "overview": "Vista General",
     "vision_cameras": "Visión / Cámaras",
     "about": "Acerca de",
-    "help": "Ayuda"
+    "help": "Ayuda",
+    "about_title": "Acerca de HYDRA-UMC STUDIO",
+    "about_tagline": "Panel de control centralizado avanzado para Robótica, CNC, Impresoras 3D y grabadoras Láser.",
+    "about_description": "Controla brazos reales de 6 ejes (Parol6, Faze4, AR3, AR4) con geometría de malla real y la cinemática de articulaciones propia del fabricante, o usa el brazo Genérico - junto con flujos de trabajo de CNC, láser, pick-and-place, mesa de vacío y mesa XY, todo desde un único panel sincronizado.",
+    "about_author": "Autor",
+    "about_email": "Email",
+    "about_license": "Licencia",
+    "close": "Cerrar"
   },
   "config": {
     "title": "Configuración del Sistema",
@@ -211,5 +218,72 @@
     "width_x": "Ancho (X mm)",
     "length_y": "Largo (Y mm)",
     "live_view_3d": "Vista 3D en Vivo"
+  },
+  "help": {
+    "title": "Ayuda",
+    "tabs": {
+      "start": {
+        "label": "Primeros Pasos",
+        "heading": "¿Qué es HYDRA-UMC STUDIO?",
+        "paragraphs": [
+          "HYDRA-UMC STUDIO es un panel de control centralizado para robots, máquinas CNC, grabadoras láser, camas de impresora 3D y estaciones pick-and-place. Un solo panel, varias máquinas, todo sincronizado en tiempo real.",
+          "Empieza añadiendo un Controlador (selector arriba a la derecha, o Config > Controllers) - cada controlador representa una placa HYDRA-UMC física, accesible por Ethernet/IP. Usa \"Auto-Search HYDRA-UMC\" para encontrar placas en tu red local automáticamente.",
+          "Con un controlador seleccionado, usa \"Add Robot\" en la barra lateral para añadirle robots. Haz clic en un robot de la barra lateral para abrir su panel de control completo: sliders de jog, ejemplos, trayectorias grabadas y su propia vista 3D en vivo.",
+          "Todo lo que configures - nombres de robots, modelos personalizados, trayectorias guardadas, herramientas asignadas - se guarda automáticamente en el directorio data/ del servidor, así que sobrevive a reinicios y lo comparte cualquier navegador que abra el panel."
+        ]
+      },
+      "robots": {
+        "label": "Robots",
+        "heading": "Jog, home y cinemática real",
+        "paragraphs": [
+          "Cada panel de robot muestra una vista 3D en vivo más un mando giratorio y un slider por articulación (J1-J6). Arrastra cualquiera de los dos para mover esa articulación; la vista 3D se actualiza al instante.",
+          "Parol6, Faze4, AR3 y AR4 están modelados con su geometría de malla real y la cadena de articulaciones propia de su fabricante - moverlos se comporta igual que el brazo real, respetando sus límites de articulación reales donde el robot los define. El modelo Genérico usa un brazo simplificado de dos eslabones sin límites de articulación fijos.",
+          "HOME lleva el robot a una pose de referencia segura y alcanzable. E-STOP detiene el movimiento al instante. Si el robot tiene una mesa XY asociada, sus propios controles de jog TX/TY aparecen junto a los sliders de articulación, y HOME XY resetea solo la mesa.",
+          "El selector de Herramienta asigna una herramienta URTC (soldador, dispensador, destornillador, pinza, etc.) al efector final del robot, mostrada en la punta de la herramienta del modelo 3D.",
+          "\"Combine with Robot\" permite mostrar un segundo robot dentro de la misma vista 3D (para celdas coreografiadas con varios robots) - su propio movimiento se sigue configurando desde su propio panel."
+        ]
+      },
+      "trajectories": {
+        "label": "Trayectorias",
+        "heading": "Ejemplos, puntos grabados y reproducción",
+        "paragraphs": [
+          "La Tabla de Puntos en la parte inferior del panel de un robot es una secuencia de pasos por los que se mueve el robot. Se construye de tres formas: cargando un Ejemplo predefinido (círculos, espirales, ondas, pick-and-place, patrones de mesa XY...), moviendo el robot a mano y pulsando \"+ Add Point\" para capturar la pose actual, o cargando un archivo Work guardado previamente.",
+          "Los Works son tus propias trayectorias guardadas: archivos JSON almacenados por robot en el servidor. Guarda la Tabla de Puntos actual con el botón Save, o carga/sube uno desde el selector Works Robot.",
+          "Cada paso se puede reordenar (flechas arriba/abajo), editar (icono de lápiz - ángulos de articulación, y posición de mesa XY si aplica), o borrar (icono de papelera) directamente en la tabla.",
+          "Usa Play/Pause/Stop para ejecutar la secuencia, Repeat para repetirla en bucle, y el slider Speed para escalar la velocidad de reproducción. La línea cian dibujada en la vista 3D anticipa el recorrido cartesiano de la punta de la herramienta para los pasos cargados, incluso antes de pulsar Play.",
+          "Los pasos cargados desde un Ejemplo son compatibles entre distintos modelos de robot: la app convierte cada paso a un objetivo cartesiano real y lo vuelve a resolver para el robot que esté seleccionado en ese momento, de forma que el mismo ejemplo traza un recorrido coherente tanto en un Parol6 como en un AR4 o en el brazo Genérico."
+        ]
+      },
+      "modules": {
+        "label": "Módulos",
+        "heading": "Máquinas más allá de los brazos robóticos",
+        "paragraphs": [
+          "Mesa XY: configura el tamaño de una plataforma XY motorizada y muévela de forma independiente, o asígnala a un robot para trabajos de pick-and-place.",
+          "ATC Tools: define las posiciones (slots) del cambiador de herramientas y sus offsets para que un robot pueda recoger y cambiar entre herramientas físicas automáticamente.",
+          "Rack Manager: organiza los racks/compartimentos de almacenamiento usados por las rutinas de pick-and-place.",
+          "Pick & Place, CNC y Láser: cada uno tiene su propio panel de control dedicado (jog de posición, velocidad, herramienta/trabajo activo) una vez habilitado para un robot.",
+          "Mesa de Vacío: controla el estado de la bomba y la válvula, y monitoriza la presión para trabajos de sujeción por vacío.",
+          "Cama Caliente: define una temperatura objetivo y monitoriza la temperatura real de la cama para flujos de trabajo tipo impresión 3D.",
+          "Cualquier módulo muestra \"No Asignado\" hasta que lo habilites para un robot desde la configuración de Modelo y Herramientas de ese robot."
+        ]
+      },
+      "cameras_gamepad": {
+        "label": "Cámaras y Mando",
+        "heading": "Visión y control manual",
+        "paragraphs": [
+          "La vista Vision / Cameras (Octal Vision Matrix) muestra hasta ocho señales en vivo lado a lado: cámaras de visión USB estándar o cámaras térmicas (MLX90640/90641/90642), con estado de grabación e inferencia en vivo.",
+          "Se puede mapear un mando USB o Bluetooth para mover robots y disparar acciones manualmente - configura el mapeo de botones/ejes en Config > Gamepad."
+        ]
+      },
+      "firmware_settings": {
+        "label": "Firmware y Configuración",
+        "heading": "Flashear placas y configurar el panel",
+        "paragraphs": [
+          "Flasher graba firmware URTC nuevo en una placa controladora conectada; Tester ejecuta autodiagnósticos de hardware sobre ella - ambos viven en la parte inferior de la barra lateral.",
+          "Config (barra superior) abre la Configuración del Sistema: gestiona Controladores (nombre, IP, añadir/auto-búsqueda), UI y Temas (tema, idioma - este menú de Ayuda sigue el mismo idioma), Nombres de Robots y Modelos Personalizados, Integraciones de Software, Rutas de Trabajo (dónde se guardan los Works de cada robot) y el mapeo del Gamepad.",
+          "Factory Reset, dentro de Config, borra toda la configuración guardada y la deja en los valores de fábrica - úsalo con cuidado, no se puede deshacer."
+        ]
+      }
+    }
   }
 }

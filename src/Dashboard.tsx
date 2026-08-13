@@ -24,6 +24,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 // Components
+import { HelpModal } from './components/HelpModal';
 import { RobotDetail } from './components/RobotDetail';
 import { CamerasView } from './components/CamerasView';
 import { XYTableConfig } from './components/XYTableConfig';
@@ -50,6 +51,7 @@ export default function Dashboard() {
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -80,7 +82,7 @@ export default function Dashboard() {
           <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[500px] max-w-full overflow-hidden flex flex-col">
             <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
               <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                <Info className="text-sky-400" size={20} /> About HYDRA-UMC STUDIO
+                <Info className="text-sky-400" size={20} /> {t('dashboard.about_title', 'About HYDRA-UMC STUDIO')}
               </h2>
               <button onClick={() => setIsAboutOpen(false)} className="text-slate-400 hover:text-slate-200 p-1">
                 &times;
@@ -89,20 +91,23 @@ export default function Dashboard() {
             <div className="p-6 space-y-4 text-slate-300 text-sm flex flex-col items-center">
               <img src={HydraIcon} alt="Hydra Logo" className="w-24 h-24 object-contain mb-4" />
               <h3 className="text-2xl font-bold text-slate-100 uppercase tracking-widest text-center">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span> <span className="text-slate-500 text-lg">v1.0</span></h3>
-              <p className="text-center text-slate-400 max-w-sm">Advanced Centralized Control Dashboard for Robotics, CNC, 3D Printers, and Lasers.</p>
-              
+              <p className="text-center text-slate-400 max-w-sm">{t('dashboard.about_tagline', 'Advanced Centralized Control Dashboard for Robotics, CNC, 3D Printers, and Laser engravers.')}</p>
+              <p className="text-center text-slate-500 text-xs max-w-md">{t('dashboard.about_description', 'Drive real 6-DOF arms (Parol6, Faze4, AR3, AR4) with accurate mesh geometry and manufacturer joint kinematics, or fall back to a Generic arm - alongside CNC, laser, pick-and-place, vacuum table and XY-table workflows, all from one synchronized dashboard.')}</p>
+
               <div className="w-full bg-slate-950 p-4 rounded border border-slate-800 mt-6 space-y-2">
-                <div className="flex justify-between border-b border-slate-800/50 pb-2"><span className="text-slate-500 font-bold uppercase tracking-wider">Author</span><span className="font-medium text-slate-200">JuanenRac (Electro Hobby 3D)</span></div>
-                <div className="flex justify-between border-b border-slate-800/50 py-2"><span className="text-slate-500 font-bold uppercase tracking-wider">Email</span><span className="font-medium text-sky-400">electrohobby3d@gmail.com</span></div>
-                <div className="flex justify-between pt-2"><span className="text-slate-500 font-bold uppercase tracking-wider">License</span><span className="font-mono text-emerald-400">GPL-3.0</span></div>
+                <div className="flex justify-between border-b border-slate-800/50 pb-2"><span className="text-slate-500 font-bold uppercase tracking-wider">{t('dashboard.about_author', 'Author')}</span><span className="font-medium text-slate-200">JuanenRac (Electro Hobby 3D)</span></div>
+                <div className="flex justify-between border-b border-slate-800/50 py-2"><span className="text-slate-500 font-bold uppercase tracking-wider">{t('dashboard.about_email', 'Email')}</span><span className="font-medium text-sky-400">electrohobby3d@gmail.com</span></div>
+                <div className="flex justify-between pt-2"><span className="text-slate-500 font-bold uppercase tracking-wider">{t('dashboard.about_license', 'License')}</span><span className="font-mono text-emerald-400">GPL-3.0</span></div>
               </div>
             </div>
             <div className="p-4 border-t border-slate-800 flex justify-end bg-slate-950 shrink-0">
-              <button onClick={() => setIsAboutOpen(false)} className="px-6 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded transition-colors shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400 hover:shadow-[0_0_20px_rgba(0,229,255,0.8)]">CLOSE</button>
+              <button onClick={() => setIsAboutOpen(false)} className="px-6 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded transition-colors shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400 hover:shadow-[0_0_20px_rgba(0,229,255,0.8)] uppercase">{t('dashboard.close', 'Close')}</button>
             </div>
           </div>
         </div>
       )}
+
+      {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} />}
 
             {isSettingsOpen && (
         <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
@@ -569,8 +574,8 @@ export default function Dashboard() {
             <span className="text-sm">{t('dashboard.configure', 'Config')}</span>
           </button>
 
-          <button 
-            onClick={() => {}}
+          <button
+            onClick={() => setIsHelpOpen(true)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 transition-colors"
           >
             <HelpCircle size={18} />

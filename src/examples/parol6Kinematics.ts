@@ -68,7 +68,9 @@ function fkPosition(jointsDeg: number[]): Vector3 {
   for (let i = 0; i < 6; i++) {
     const { pos, rpy, axisSign } = PAROL6_CHAIN[i];
     const t = new Matrix4().makeTranslation(pos[0], pos[1], pos[2]);
-    const r = new Matrix4().makeRotationFromEuler(new Euler(rpy[0], rpy[1], rpy[2], 'XYZ'));
+    // ROS rpy = Rz(yaw)*Ry(pitch)*Rx(roll) = three.js 'ZYX' order, not 'XYZ' - see
+    // Parol6Arm.tsx's rosEuler() header comment for the full explanation.
+    const r = new Matrix4().makeRotationFromEuler(new Euler(rpy[0], rpy[1], rpy[2], 'ZYX'));
     const jr = new Matrix4().makeRotationZ(axisSign * jointsDeg[i] * DEG);
     m = m.clone().multiply(t).multiply(r).multiply(jr);
   }
@@ -140,8 +142,11 @@ function solveJ2J3(targetRadius: number, targetHeight: number): { j2: number; j3
 // neutral (j2=j3=0) pose height, chosen so the app's usual small z values (examples mostly use
 // 0-20mm) and default 200mm-ish radius sit comfortably mid-workspace for this robot's real,
 // smaller reach - not the shared formula's own unrelated "+195" constant (that one is tuned to
-// the generic rig's own base height, not a universal number).
-const Z_OFFSET_MM = 247;
+// the generic rig's own base height, not a universal number). Re-derived after the rpy Euler
+// order fix (was 247 under the old, wrong 'XYZ' order - the neutral pose itself moved since
+// J3/J4's origin transforms changed); the neutral pose's own horizontal reach (~200mm) happens
+// to already match the app's default example radius closely, which is why it was picked again.
+const Z_OFFSET_MM = 334;
 
 export function parol6JointsToCartesian(pt: KinematicsPoint): { x: number; y: number; z: number; a: number; b: number; c: number } {
   const j = [pt.j1 || 0, pt.j2 || 0, pt.j3 || 0, 0, 0, 0];

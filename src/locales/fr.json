@@ -27,7 +27,14 @@
     "overview": "Aperçu",
     "vision_cameras": "Vision / Caméras",
     "about": "À propos",
-    "help": "Aide"
+    "help": "Aide",
+    "about_title": "À propos de HYDRA-UMC STUDIO",
+    "about_tagline": "Tableau de bord de contrôle centralisé avancé pour la robotique, la CNC, les imprimantes 3D et les graveurs laser.",
+    "about_description": "Pilotez de vrais bras 6 axes (Parol6, Faze4, AR3, AR4) avec une géométrie de maillage réelle et la cinématique articulaire propre au fabricant, ou utilisez le bras Générique - avec en plus les flux CNC, laser, pick-and-place, table à vide et table XY, le tout depuis un tableau de bord synchronisé unique.",
+    "about_author": "Auteur",
+    "about_email": "E-mail",
+    "about_license": "Licence",
+    "close": "Fermer"
   },
   "config": {
     "title": "Configuration du Système",
@@ -211,5 +218,72 @@
     "width_x": "Largeur (X mm)",
     "length_y": "Longueur (Y mm)",
     "live_view_3d": "Vue 3D en direct"
+  },
+  "help": {
+    "title": "Aide",
+    "tabs": {
+      "start": {
+        "label": "Prise en main",
+        "heading": "Qu'est-ce que HYDRA-UMC STUDIO ?",
+        "paragraphs": [
+          "HYDRA-UMC STUDIO est un tableau de bord de contrôle centralisé pour robots, machines CNC, graveurs laser, plateaux d'imprimante 3D et postes de pick-and-place. Un seul tableau de bord, plusieurs machines, toutes synchronisées en temps réel.",
+          "Commencez par ajouter un Contrôleur (sélecteur en haut à droite, ou Config > Controllers) - chaque contrôleur représente une carte HYDRA-UMC physique, accessible via Ethernet/IP. Utilisez \"Auto-Search HYDRA-UMC\" pour trouver automatiquement les cartes sur votre réseau local.",
+          "Une fois un contrôleur sélectionné, utilisez \"Add Robot\" dans la barre latérale pour lui rattacher des robots. Cliquez sur un robot dans la barre latérale pour ouvrir son panneau de contrôle complet : curseurs de jog, exemples, trajectoires enregistrées, et sa propre vue 3D en direct.",
+          "Tout ce que vous configurez - noms des robots, modèles personnalisés, trajectoires enregistrées, outils assignés - est sauvegardé automatiquement dans le répertoire data/ du serveur, ce qui survit aux redémarrages et est partagé par tout navigateur qui ouvre le tableau de bord."
+        ]
+      },
+      "robots": {
+        "label": "Robots",
+        "heading": "Jog, home et cinématique réelle",
+        "paragraphs": [
+          "Chaque panneau de robot affiche une vue 3D en direct ainsi qu'une molette rotative et un curseur par articulation (J1-J6). Faites glisser l'un ou l'autre pour déplacer cette articulation ; la vue 3D se met à jour immédiatement.",
+          "Parol6, Faze4, AR3 et AR4 sont modélisés avec leur géométrie de maillage réelle et la chaîne articulaire propre à leur fabricant - les déplacer reproduit le mouvement du bras réel, en respectant ses vraies limites articulaires lorsqu'elles sont définies. Le modèle Générique utilise un bras simplifié à deux segments, sans limites articulaires fixes.",
+          "HOME ramène le robot à une pose de référence sûre et atteignable. E-STOP arrête immédiatement le mouvement. Si le robot possède une table XY associée, ses propres commandes de jog TX/TY apparaissent à côté des curseurs d'articulation, et HOME XY ne réinitialise que la table.",
+          "Le sélecteur d'Outil assigne un outil URTC (fer à souder, doseur, visseuse, pince, etc.) à l'effecteur du robot, affiché à la pointe de l'outil sur le modèle 3D.",
+          "\"Combine with Robot\" permet d'afficher un second robot dans la même vue 3D (pour des cellules multi-robots chorégraphiées) - son propre mouvement reste configuré depuis son propre panneau."
+        ]
+      },
+      "trajectories": {
+        "label": "Trajectoires",
+        "heading": "Exemples, points enregistrés et lecture",
+        "paragraphs": [
+          "Le Tableau de Points en bas du panneau d'un robot est une séquence d'étapes que le robot parcourt. Construisez-le de trois façons : chargez un Exemple prédéfini (cercles, spirales, ondes, pick-and-place, motifs de table XY...), déplacez le robot à la main et appuyez sur \"+ Add Point\" pour capturer la pose actuelle, ou chargez un fichier Work précédemment enregistré.",
+          "Les Works sont vos propres trajectoires enregistrées : des fichiers JSON stockés par robot sur le serveur. Enregistrez le Tableau de Points actuel avec le bouton Save, ou chargez/importez-en un depuis le sélecteur Works Robot.",
+          "Chaque étape peut être réordonnée (flèches haut/bas), modifiée (icône crayon - angles des articulations, et position de la table XY le cas échéant), ou supprimée (icône corbeille) directement dans le tableau.",
+          "Utilisez Play/Pause/Stop pour exécuter la séquence, Repeat pour la boucler, et le curseur Speed pour ajuster la vitesse de lecture. La ligne cyan tracée dans la vue 3D prévisualise le chemin cartésien de la pointe de l'outil pour les étapes chargées, avant même d'appuyer sur Play.",
+          "Les étapes chargées depuis un Exemple sont portables entre modèles de robots : l'application convertit chaque étape en une cible cartésienne réelle et la résout à nouveau pour le robot actuellement sélectionné, de sorte que le même exemple trace un chemin cohérent aussi bien sur un Parol6, un AR4, ou le bras Générique."
+        ]
+      },
+      "modules": {
+        "label": "Modules",
+        "heading": "Des machines au-delà des bras robotisés",
+        "paragraphs": [
+          "Table XY : configurez la taille d'une plateforme XY motorisée et déplacez-la indépendamment, ou associez-la à un robot pour des travaux de pick-and-place.",
+          "ATC Tools : définissez les emplacements (slots) du changeur d'outils et leurs décalages afin qu'un robot puisse prendre et échanger automatiquement des outils physiques.",
+          "Rack Manager : organisez les racks/casiers de stockage utilisés par les routines de pick-and-place.",
+          "Pick & Place, CNC et Laser : chacun dispose de son propre panneau de contrôle dédié (jog de position, vitesse, outil/tâche active) une fois activé pour un robot.",
+          "Table à Vide : contrôlez l'état de la pompe et de la vanne, et surveillez la pression pour les travaux de maintien par le vide.",
+          "Plateau Chauffant : définissez une température cible et surveillez la température réelle du plateau pour des flux de type impression 3D.",
+          "Chaque module affiche \"Non Assigné\" tant que vous ne l'avez pas activé pour un robot depuis les paramètres Modèle et Outils de ce robot."
+        ]
+      },
+      "cameras_gamepad": {
+        "label": "Caméras & Manette",
+        "heading": "Vision et contrôle manuel",
+        "paragraphs": [
+          "La vue Vision / Cameras (Octal Vision Matrix) affiche jusqu'à huit flux en direct côte à côte : caméras de vision USB standard ou caméras thermiques (MLX90640/90641/90642), avec statut d'enregistrement et d'inférence en direct.",
+          "Une manette USB ou Bluetooth peut être associée pour déplacer les robots et déclencher des actions manuellement - configurez l'association boutons/axes dans Config > Gamepad."
+        ]
+      },
+      "firmware_settings": {
+        "label": "Firmware & Configuration",
+        "heading": "Flasher les cartes et configurer le tableau de bord",
+        "paragraphs": [
+          "Flasher écrit un nouveau firmware URTC sur une carte contrôleur connectée ; Tester exécute des autotests matériels sur celle-ci - les deux se trouvent dans la partie basse de la barre latérale.",
+          "Config (barre supérieure) ouvre la Configuration Système : gérer les Contrôleurs (nom, IP, ajout/auto-recherche), UI & Thèmes (thème, langue - ce menu d'Aide suit la même langue), Noms des Robots et Modèles Personnalisés, Intégrations Logicielles, Chemins de Travail (où sont stockés les Works de chaque robot), et l'association du Gamepad.",
+          "Factory Reset, dans Config, efface toute la configuration enregistrée et revient aux valeurs par défaut - à utiliser avec précaution, cette action est irréversible."
+        ]
+      }
+    }
   }
 }

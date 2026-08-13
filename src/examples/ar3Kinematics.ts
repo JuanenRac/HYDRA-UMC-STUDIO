@@ -24,9 +24,11 @@ import { AR3_CHAIN, AR3_ROOT_QUAT } from '../components/3d/AR3Arm';
 
 const DEG = Math.PI / 180;
 
+// ROS rpy = Rz(yaw)*Ry(pitch)*Rx(roll) = three.js 'ZYX' order, not 'XYZ' - see
+// AR3Arm.tsx's jointQuaternion() header comment for the full explanation.
 function jointMatrix(pos: [number, number, number], rpy: [number, number, number], axis: [number, number, number], angleDeg: number): Matrix4 {
   const t = new Matrix4().makeTranslation(pos[0], pos[1], pos[2]);
-  const reorient = new Quaternion().setFromEuler(new Euler(rpy[0], rpy[1], rpy[2], 'XYZ'));
+  const reorient = new Quaternion().setFromEuler(new Euler(rpy[0], rpy[1], rpy[2], 'ZYX'));
   const axisVec = new Vector3(axis[0], axis[1], axis[2]).normalize();
   const spin = new Quaternion().setFromAxisAngle(axisVec, angleDeg * DEG);
   const q = reorient.multiply(spin);
@@ -108,12 +110,12 @@ function solveJ1J2J3(xt: number, yt: number, zt: number): { j1: number; j2: numb
   return { j1: best.j1, j2: best.j2, j3: best.j3 };
 }
 
-// app z=0 maps to this many mm above AR3's own base - calibrated so the shared examples'
-// usual ~200mm radius sits at a genuinely reachable AR3 pose (j2=-60,j3=60 gives R=199mm
-// at height=567mm in AR3's own frame - see auditoria_historial.txt for the derivation).
-// Re-derived after the AR3_ROOT_QUAT orientation fix (was -567 under the old, upside-down
-// root - flipping the root to build the chain upward flips this height's sign too).
-const Z_OFFSET_MM = 567;
+// app z=0 maps to this many mm above AR3's own base - calibrated against a pose well inside
+// AR3's own workspace (j2=-60,j3=60 gives height=541mm in AR3's own frame) - see
+// auditoria_historial.txt for the derivation. Re-derived a second time after the rpy Euler
+// order fix (was 567 after the root-orientation fix alone; J2/J4/J5's own rpy are all 2-axis,
+// so this pose's real height/radius changed again once those joints' transforms were fixed).
+const Z_OFFSET_MM = 541;
 
 export function ar3JointsToCartesian(pt: KinematicsPoint): { x: number; y: number; z: number; a: number; b: number; c: number } {
   const p = fkPosition(pt.j1 || 0, pt.j2 || 0, pt.j3 || 0);

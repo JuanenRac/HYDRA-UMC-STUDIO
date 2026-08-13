@@ -8,37 +8,16 @@ import React, { useMemo } from 'react';
 import { Line } from '@react-three/drei';
 import * as THREE from 'three';
 import type { RobotState } from '../../store';
-import { parol6JointsToCartesian } from '../../examples/parol6Kinematics';
-import { faze4JointsToCartesian } from '../../examples/faze4Kinematics';
-import { ar3JointsToCartesian } from '../../examples/ar3Kinematics';
-import { ar4JointsToCartesian } from '../../examples/ar4Kinematics';
-import type { KinematicsPoint } from '../../examples/utils';
+import { jointsToCartesianForModel } from '../../examples/robotKinematicsDispatch';
 
-// Parol6Arm.tsx/Faze4Arm.tsx/AR3Arm.tsx are each driven by their own real URDF joint
-// chain (see their own header comments), not the shared 160mm/200mm planar convention
-// every OTHER *Arm.tsx uses - so a recorded point stored only as {j1..j6} (e.g. from an
-// example generator, which always computes against that shared convention) needs to be
-// converted to Cartesian using that SAME robot's own real kinematics, or the drawn path
-// line won't match where its tool tip actually ends up.
-function jointsToCartesianFor(model: RobotState['model'] | undefined, pt: KinematicsPoint) {
-  if (model === 'Parol6 (6-DOF)') return parol6JointsToCartesian(pt);
-  if (model === 'Faze4 (6-DOF)') return faze4JointsToCartesian(pt);
-  if (model === 'AR3 (6-DOF)') return ar3JointsToCartesian(pt);
-  if (model === 'AR4 (6-DOF)') return ar4JointsToCartesian(pt);
-
-  const j1Rad = (pt.j1 || 0) * (Math.PI / 180);
-  const j2Rad = (pt.j2 || 0) * (Math.PI / 180);
-  const j3Rad = (pt.j3 || 0) * (Math.PI / 180);
-  const theta1_rad = -j2Rad;
-  const R2 = 160 * Math.sin(theta1_rad) + 200 * Math.sin(theta1_rad + j3Rad);
-  const Z2 = 160 * Math.cos(theta1_rad) + 200 * Math.cos(theta1_rad + j3Rad);
-  return {
-    x: R2 * Math.cos(j1Rad),
-    y: R2 * Math.sin(j1Rad),
-    z: Z2 + 195,
-    a: pt.j4 || 0, b: pt.j5 || 0, c: pt.j6 || 0,
-  };
-}
+// Points normally already carry their own Cartesian x/y/z (populated once, using the
+// correct originating formula, at the moment they're created - see RobotDetail.tsx's
+// loadExample/loadExampleForRobot for loaded examples and handleAddPoint for live-jogged
+// recordings). This joint-only fallback only matters for legacy data that predates that
+// (an old saved "work" file, or a point missing x for some other reason) - in that case,
+// the safest assumption is that pt.j1..j6 are THIS robot's own native joint values (true
+// for anything ever recorded via the jog sliders), so dispatch through that robot's own
+// real FK rather than the shared generic 160mm/200mm formula.
 
 /**
  * Executes the  path visualizer logic.
@@ -54,7 +33,7 @@ export default function PathVisualizer({ points, hasXYTable, model }: { points: 
       let z = pt.z;
 
       if (x === undefined && pt.j1 !== undefined) {
-        const c = jointsToCartesianFor(model, pt);
+        const c = jointsToCartesianForModel(model, pt);
         x = c.x; y = c.y; z = c.z;
       }
 

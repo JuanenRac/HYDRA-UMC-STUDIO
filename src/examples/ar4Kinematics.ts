@@ -40,9 +40,11 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
+// ROS rpy = Rz(yaw)*Ry(pitch)*Rx(roll) = three.js 'ZYX' order, not 'XYZ' - see
+// AR4Arm.tsx's jointQuaternion() header comment for the full explanation.
 function jointMatrix(pos: [number, number, number], rpy: [number, number, number], axis: [number, number, number], angleDeg: number): Matrix4 {
   const t = new Matrix4().makeTranslation(pos[0], pos[1], pos[2]);
-  const reorient = new Quaternion().setFromEuler(new Euler(rpy[0], rpy[1], rpy[2], 'XYZ'));
+  const reorient = new Quaternion().setFromEuler(new Euler(rpy[0], rpy[1], rpy[2], 'ZYX'));
   const axisVec = new Vector3(axis[0], axis[1], axis[2]).normalize();
   const spin = new Quaternion().setFromAxisAngle(axisVec, angleDeg * DEG);
   const q = reorient.multiply(spin);
@@ -129,12 +131,13 @@ function solveJ1J2J3(xt: number, yt: number, zt: number): { j1: number; j2: numb
 }
 
 // app z=0 maps to this many mm above AR4's own base - calibrated against a pose well
-// inside AR4's real J2/J3 limits (j2=80,j3=-70 gives R=319mm at height=-176mm) rather than
-// the app's own ~200mm default radius, which sits outside AR4's real reach entirely (this
-// is genuinely a bigger arm) - see auditoria_historial.txt for the derivation. Re-derived
-// after the AR4_ROOT_QUAT orientation fix (was +176 under the old, upside-down root -
-// flipping the root to build the chain upward flips this height's sign too).
-const Z_OFFSET_MM = -176;
+// inside AR4's real J2/J3 limits (j2=80,j3=-70 gives height=177mm in AR4's own frame) rather
+// than the app's own ~200mm default radius, which sits outside AR4's real reach entirely
+// (this is genuinely a bigger arm) - see auditoria_historial.txt for the derivation.
+// Re-derived a second time after the rpy Euler order fix (was -176 after the root-orientation
+// fix alone; J2/J4/J5's own rpy are all 2-axis, so this pose's real height changed again -
+// coincidentally landing back near its pre-root-fix magnitude, this time positive again).
+const Z_OFFSET_MM = 177;
 
 export function ar4JointsToCartesian(pt: KinematicsPoint): { x: number; y: number; z: number; a: number; b: number; c: number } {
   const p = fkPosition(pt.j1 || 0, pt.j2 || 0, pt.j3 || 0);

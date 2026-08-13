@@ -19,6 +19,8 @@ import { parol6CartesianToJoints, parol6JointsToCartesian, PAROL6_JOINT_LIMITS_D
 import { faze4CartesianToJoints, FAZE4_HOME_POSE } from '../examples/faze4Kinematics';
 import { ar3CartesianToJoints, AR3_HOME_POSE } from '../examples/ar3Kinematics';
 import { ar4CartesianToJoints, AR4_HOME_POSE, AR4_JOINT_LIMITS_DEG } from '../examples/ar4Kinematics';
+import { convertToCartesian } from '../examples/utils';
+import { jointsToCartesianForModel } from '../examples/robotKinematicsDispatch';
 
 /**
  * Executes the Cn logic. 
@@ -54,6 +56,22 @@ function resolveTargetJoints(
   if (model === 'Faze4 (6-DOF)') return faze4CartesianToJoints(x, y, z, a, b, c);
   if (model === 'AR3 (6-DOF)') return ar3CartesianToJoints(x, y, z, a, b, c);
   return genericJoints;
+}
+
+// Stock examples (examples/list/*.ts) always store {j1..j6} computed against the SHARED
+// generic 160mm/200mm formula (examples/utils.ts's cartesianToJoints), regardless of which
+// robot ends up loading them - those numbers are only meaningful when read back through
+// that SAME formula's forward kinematics (convertToCartesian), not as literal per-robot
+// joint angles. Stamping the resulting Cartesian x/y/z/a/b/c onto each point once, here at
+// load time, means every downstream consumer (PathVisualizer's drawn path, this file's own
+// own playback loop below) can just use pt.x/y/z directly instead of re-guessing which
+// formula a stored {j1..j6} was meant for - see robotKinematicsDispatch.ts's header comment
+// for the full reasoning. j1..j6 are kept alongside (unused by the 4 real-kinematics robots
+// once x is present, but still what the Generic model's own playback/UI reads).
+function withCartesian(pt: any) {
+  if (pt.x !== undefined) return pt;
+  const c = convertToCartesian(pt);
+  return { ...pt, x: c.x, y: c.y, z: c.z, a: c.a, b: c.b, c: c.c };
 }
 
 /** Stores the  u r t c_ t o o l s configuration or state data. */
@@ -393,7 +411,7 @@ console.log("Loading example:", id);
     if (ex) {
       console.log("Updating robot with example points", ex.points.length);
       if (ex && ex.points) {
-        updateRobot(robot.id, { selectedExample: id, recordedPoints: JSON.parse(JSON.stringify(ex.points)) });
+        updateRobot(robot.id, { selectedExample: id, recordedPoints: ex.points.map(withCartesian) });
       } else {
         updateRobot(robot.id, { selectedExample: id });
       }
@@ -406,7 +424,7 @@ console.log("Loading example:", id);
   const loadExampleForRobot = (botId: number, exId: string) => {
     const ex = examples.find(e => e.id === exId);
     if (ex) {
-      updateRobot(botId, { recordedPoints: JSON.parse(JSON.stringify(ex.points)) });
+      updateRobot(botId, { recordedPoints: ex.points.map(withCartesian) });
     }
   };
 
@@ -764,17 +782,29 @@ console.log("Loading example:", id);
   }, [updateSettings]);
 
   const handleAddPoint = () => {
+    // Stamp this robot's own real Cartesian tool-tip position (via its own FK) onto the
+    // point at the moment it's recorded - see withCartesian()'s comment above for why this
+    // matters: without it, this point's {j1..j6} would later be ambiguous (this robot's own
+    // native joints vs. the shared generic formula's), which is exactly what made loaded
+    // examples draw/play back wrong for Parol6/Faze4/AR3/AR4.
+    const cart = jointsToCartesianForModel(robot.model, robot.joints);
     updateRobot(robot.id, {
-      recordedPoints: [...robot.recordedPoints, { 
-        j1: Number(robot.joints.j1.toFixed(3)), 
-        j2: Number(robot.joints.j2.toFixed(3)), 
-        j3: Number(robot.joints.j3.toFixed(3)), 
-        j4: Number(robot.joints.j4.toFixed(3)), 
-        j5: Number(robot.joints.j5.toFixed(3)), 
-        j6: Number(robot.joints.j6.toFixed(3)), 
+      recordedPoints: [...robot.recordedPoints, {
+        j1: Number(robot.joints.j1.toFixed(3)),
+        j2: Number(robot.joints.j2.toFixed(3)),
+        j3: Number(robot.joints.j3.toFixed(3)),
+        j4: Number(robot.joints.j4.toFixed(3)),
+        j5: Number(robot.joints.j5.toFixed(3)),
+        j6: Number(robot.joints.j6.toFixed(3)),
+        x: Number(cart.x.toFixed(3)),
+        y: Number(cart.y.toFixed(3)),
+        z: Number(cart.z.toFixed(3)),
+        a: Number(cart.a.toFixed(3)),
+        b: Number(cart.b.toFixed(3)),
+        c: Number(cart.c.toFixed(3)),
         ...(robot.hasXYTable ? {
-          tx: Number((robot.pos.tx || 0).toFixed(3)), 
-          ty: Number((robot.pos.ty || 0).toFixed(3)), 
+          tx: Number((robot.pos.tx || 0).toFixed(3)),
+          ty: Number((robot.pos.ty || 0).toFixed(3)),
           trz: Number((robot.pos.trz || 0).toFixed(3))
         } : {})
       }]
@@ -1574,7 +1604,13 @@ console.log("Loading example:", id);
                           </button>
                           <button onClick={() => {
                             const newPts = [...robot.recordedPoints];
-                            newPts[i] = { ...newPts[i], ...editingPointData };
+                            const merged = { ...newPts[i], ...editingPointData };
+                            // j1..j6 just changed above - re-derive x/y/z/a/b/c from the edited
+                            // joints (via this robot's own FK) so they don't go stale and get
+                            // preferred over the edit by PathVisualizer/playback (both read
+                            // pt.x first when present - see robotKinematicsDispatch.ts).
+                            const cart = jointsToCartesianForModel(robot.model, merged);
+                            newPts[i] = { ...merged, x: cart.x, y: cart.y, z: cart.z, a: cart.a, b: cart.b, c: cart.c };
                             updateRobot(robot.id, { recordedPoints: newPts });
                             setEditingPointIndex(null);
                           }} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold shadow-lg shadow-emerald-900/20 transition-colors">

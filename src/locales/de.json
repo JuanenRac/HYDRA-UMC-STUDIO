@@ -27,7 +27,14 @@
     "overview": "Übersicht",
     "vision_cameras": "Vision / Kameras",
     "about": "Über",
-    "help": "Hilfe"
+    "help": "Hilfe",
+    "about_title": "Über HYDRA-UMC STUDIO",
+    "about_tagline": "Fortschrittliches zentrales Bedienpanel für Robotik, CNC, 3D-Drucker und Lasergravierer.",
+    "about_description": "Steuern Sie echte 6-Achs-Arme (Parol6, Faze4, AR3, AR4) mit exakter Netzgeometrie und der originalen Gelenkkinematik des Herstellers, oder nutzen Sie den generischen Arm - zusammen mit CNC-, Laser-, Pick-and-Place-, Vakuumtisch- und XY-Tisch-Workflows, alles über ein einziges synchronisiertes Dashboard.",
+    "about_author": "Autor",
+    "about_email": "E-Mail",
+    "about_license": "Lizenz",
+    "close": "Schließen"
   },
   "config": {
     "title": "Systemkonfiguration",
@@ -211,5 +218,72 @@
     "width_x": "Breite (X mm)",
     "length_y": "Länge (Y mm)",
     "live_view_3d": "3D-Live-Ansicht"
+  },
+  "help": {
+    "title": "Hilfe",
+    "tabs": {
+      "start": {
+        "label": "Erste Schritte",
+        "heading": "Was ist HYDRA-UMC STUDIO?",
+        "paragraphs": [
+          "HYDRA-UMC STUDIO ist ein zentrales Bedienpanel für Roboter, CNC-Maschinen, Lasergravierer, 3D-Drucker-Betten und Pick-and-Place-Stationen. Ein Dashboard, mehrere Maschinen, alles in Echtzeit synchronisiert.",
+          "Fügen Sie zunächst einen Controller hinzu (Auswahl oben rechts, oder Config > Controllers) - jeder Controller steht für eine physische HYDRA-UMC-Platine, erreichbar über Ethernet/IP. Mit \"Auto-Search HYDRA-UMC\" finden Sie Platinen automatisch in Ihrem lokalen Netzwerk.",
+          "Sobald ein Controller ausgewählt ist, fügen Sie über \"Add Robot\" in der Seitenleiste Roboter hinzu. Klicken Sie in der Seitenleiste auf einen Roboter, um sein vollständiges Bedienpanel zu öffnen: Jog-Regler, Beispiele, aufgezeichnete Trajektorien und eine eigene Live-3D-Ansicht.",
+          "Alles, was Sie konfigurieren - Robindernamen, benutzerdefinierte Modelle, gespeicherte Trajektorien, zugewiesene Werkzeuge - wird automatisch im data/-Verzeichnis des Servers gespeichert und bleibt so über Neustarts hinweg erhalten und wird von jedem Browser geteilt, der das Dashboard öffnet."
+        ]
+      },
+      "robots": {
+        "label": "Roboter",
+        "heading": "Jog, Home und echte Kinematik",
+        "paragraphs": [
+          "Jedes Roboterpanel zeigt eine Live-3D-Ansicht sowie einen Drehregler und einen Schieberegler pro Gelenk (J1-J6). Ziehen Sie einen der beiden, um dieses Gelenk zu bewegen; die 3D-Ansicht aktualisiert sich sofort.",
+          "Parol6, Faze4, AR3 und AR4 sind mit ihrer echten Netzgeometrie und der originalen Gelenkkette des Herstellers modelliert - beim Jogging bewegen sie sich genauso wie der reale Arm und respektieren dabei die echten Gelenkgrenzen, sofern der Roboter solche definiert. Das generische Modell verwendet einen vereinfachten Zwei-Glied-Arm ohne feste Gelenkgrenzen.",
+          "HOME fährt den Roboter in eine sichere, erreichbare Referenzpose. E-STOP stoppt die Bewegung sofort. Ist ein XY-Tisch am Roboter angebracht, erscheinen dessen eigene TX/TY-Jog-Regler neben den Gelenk-Reglern, und HOME XY setzt nur den Tisch zurück.",
+          "Die Werkzeugauswahl weist dem Endeffektor des Roboters ein URTC-Werkzeug zu (Lötkolben, Dispenser, Schrauber, Greifer usw.), das an der Werkzeugspitze des 3D-Modells angezeigt wird.",
+          "\"Combine with Robot\" zeigt einen zweiten Roboter in derselben 3D-Ansicht an (für choreografierte Mehrroboterzellen) - seine eigene Bewegung wird weiterhin über sein eigenes Panel konfiguriert."
+        ]
+      },
+      "trajectories": {
+        "label": "Trajektorien",
+        "heading": "Beispiele, aufgezeichnete Punkte und Wiedergabe",
+        "paragraphs": [
+          "Die Punktetabelle unten im Roboterpanel ist eine Abfolge von Schritten, die der Roboter durchläuft. Drei Wege, sie aufzubauen: ein fertiges Beispiel laden (Kreise, Spiralen, Wellen, Pick-and-Place, XY-Tisch-Muster ...), den Roboter von Hand jogging und \"+ Add Point\" drücken, um die aktuelle Pose zu erfassen, oder eine zuvor gespeicherte Work-Datei laden.",
+          "Works sind Ihre eigenen gespeicherten Trajektorien: JSON-Dateien, die pro Roboter auf dem Server abgelegt werden. Speichern Sie die aktuelle Punktetabelle über die Save-Schaltfläche, oder laden/hochladen Sie eine über die Works-Robot-Auswahl.",
+          "Jeder Schritt lässt sich direkt in der Tabelle neu anordnen (Pfeile hoch/runter), bearbeiten (Stift-Symbol - Gelenkwinkel und XY-Tisch-Position, falls zutreffend) oder löschen (Papierkorb-Symbol).",
+          "Mit Play/Pause/Stop starten Sie die Sequenz, Repeat lässt sie in Schleife laufen, und der Speed-Regler skaliert die Wiedergabegeschwindigkeit. Die cyanfarbene Linie in der 3D-Ansicht zeigt den kartesischen Pfad der Werkzeugspitze für die geladenen Schritte bereits vor dem Drücken von Play.",
+          "Aus einem Beispiel geladene Schritte sind zwischen Robotermodellen übertragbar: Die App wandelt jeden Schritt in ein reales kartesisches Ziel um und löst es für das jeweils ausgewählte Robotermodell neu - so folgt dasselbe Beispiel auf einem Parol6, einem AR4 oder dem generischen Arm gleichermaßen einem sinnvollen Pfad."
+        ]
+      },
+      "modules": {
+        "label": "Module",
+        "heading": "Maschinen jenseits von Roboterarmen",
+        "paragraphs": [
+          "XY-Tisch: Größe einer motorisierten XY-Plattform konfigurieren und unabhängig verfahren, oder unter einem Roboter für Pick-and-Place-Arbeiten anbringen.",
+          "ATC Tools: Werkzeugwechsler-Slots und ihre Offsets definieren, damit ein Roboter automatisch zwischen physischen Werkzeugen wechseln kann.",
+          "Rack Manager: Lagerregale/-fächer organisieren, die von Pick-and-Place-Routinen genutzt werden.",
+          "Pick & Place, CNC und Laser: erhalten jeweils ein eigenes Bedienpanel (Positions-Jog, Geschwindigkeit, aktives Werkzeug/Job), sobald sie für einen Roboter aktiviert sind.",
+          "Vakuumtisch: Pumpen- und Ventilzustand steuern und den Druck für Vakuum-Haltearbeiten überwachen.",
+          "Heizbett: Zieltemperatur festlegen und die tatsächliche Betttemperatur für 3D-Druck-ähnliche Arbeitsabläufe überwachen.",
+          "Jedes Modul zeigt \"Nicht zugewiesen\", bis Sie es in den Modell- und Werkzeugeinstellungen des jeweiligen Roboters aktivieren."
+        ]
+      },
+      "cameras_gamepad": {
+        "label": "Kameras & Gamepad",
+        "heading": "Bildverarbeitung und manuelle Steuerung",
+        "paragraphs": [
+          "Die Ansicht Vision / Cameras (Octal Vision Matrix) zeigt bis zu acht Live-Feeds nebeneinander: normale USB-Vision-Kameras oder Wärmebildkameras (MLX90640/90641/90642), mit Aufnahme- und Live-Inferenz-Status.",
+          "Ein USB- oder Bluetooth-Gamepad kann zum manuellen Jogging von Robotern und Auslösen von Aktionen zugeordnet werden - konfigurieren Sie die Tasten-/Achsenzuordnung unter Config > Gamepad."
+        ]
+      },
+      "firmware_settings": {
+        "label": "Firmware & Einstellungen",
+        "heading": "Platinen flashen und das Dashboard konfigurieren",
+        "paragraphs": [
+          "Flasher schreibt neue URTC-Firmware auf eine angeschlossene Controller-Platine; Tester führt Hardware-Selbsttests an ihr durch - beide finden Sie im unteren Bereich der Seitenleiste.",
+          "Config (obere Leiste) öffnet die Systemkonfiguration: Controller verwalten (Name, IP, Hinzufügen/Auto-Suche), UI & Themes (Theme, Sprache - dieses Hilfemenü folgt derselben Sprache), Robindernamen und benutzerdefinierte Modelle, Software-Integrationen, Arbeitspfade (wo die Works jedes Roboters gespeichert werden) und Gamepad-Zuordnung.",
+          "Factory Reset in Config setzt die gesamte gespeicherte Konfiguration auf die Werkseinstellungen zurück - mit Vorsicht verwenden, dies kann nicht rückgängig gemacht werden."
+        ]
+      }
+    }
   }
 }

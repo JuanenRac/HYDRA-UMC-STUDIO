@@ -37,9 +37,11 @@ import { FAZE4_CHAIN, FAZE4_ROOT_QUAT } from '../components/3d/Faze4Arm';
 
 const DEG = Math.PI / 180;
 
+// ROS rpy = Rz(yaw)*Ry(pitch)*Rx(roll) = three.js 'ZYX' order, not 'XYZ' - see
+// Faze4Arm.tsx's jointQuaternion() header comment for the full explanation.
 function jointMatrix(pos: [number, number, number], rpy: [number, number, number], axis: [number, number, number], angleDeg: number): Matrix4 {
   const t = new Matrix4().makeTranslation(pos[0], pos[1], pos[2]);
-  const reorient = new Quaternion().setFromEuler(new Euler(rpy[0], rpy[1], rpy[2], 'XYZ'));
+  const reorient = new Quaternion().setFromEuler(new Euler(rpy[0], rpy[1], rpy[2], 'ZYX'));
   const axisVec = new Vector3(axis[0], axis[1], axis[2]).normalize();
   const spin = new Quaternion().setFromAxisAngle(axisVec, angleDeg * DEG);
   const q = reorient.multiply(spin);
@@ -126,7 +128,10 @@ function solveJ1J2J3(xt: number, yt: number, zt: number): { j1: number; j2: numb
 // app z=0 maps to this many mm above Faze4's own neutral (j2=j3=0) pose height, chosen
 // so the shared examples' usual ~200mm radius / near-zero z sit mid-workspace for this
 // robot's own (larger) real reach - see auditoria_historial.txt for the derivation.
-const Z_OFFSET_MM = 185;
+// Re-derived after the rpy Euler order fix (was 185 under the old, wrong 'XYZ' order -
+// the neutral pose itself moved a lot since J1's own rpy is 2-axis, which corrupted
+// FAZE4_ROOT_QUAT along with most of the rest of this chain).
+const Z_OFFSET_MM = 597;
 
 export function faze4JointsToCartesian(pt: KinematicsPoint): { x: number; y: number; z: number; a: number; b: number; c: number } {
   const p = fkPosition(pt.j1 || 0, pt.j2 || 0, pt.j3 || 0);

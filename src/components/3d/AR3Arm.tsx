@@ -70,19 +70,28 @@ export const AR3_CHAIN: JointDef[] = [
   { pos: [-0.000294, 0, 0.02117], rpy: [0, 0, 3.1416], axis: [0, 0, 1] },
 ];
 
+// ROS URDF <origin rpy="r p y"/> composes as R = Rz(yaw)*Ry(pitch)*Rx(roll) - three.js's
+// intrinsic 'ZYX' Euler order, NOT the default 'XYZ'. J1's own rpy here is single-axis (roll
+// only), so AR3_ROOT_QUAT itself is unaffected by this - but J2, J4 and J5 below are all
+// genuinely 2-axis, and using 'XYZ' for those produced completely wrong per-joint transforms
+// (verified numerically against Parol6's own J3/J4, maxDiff=2 i.e. not even close), which is
+// what made the assembled links not connect properly - not a data transcription or sign bug,
+// an Euler composition order bug.
 export const AR3_ROOT_QUAT = (() => {
   const j1 = AR3_CHAIN[0];
-  const e = new THREE.Euler(j1.rpy[0], j1.rpy[1], j1.rpy[2], 'XYZ');
+  const e = new THREE.Euler(j1.rpy[0], j1.rpy[1], j1.rpy[2], 'ZYX');
   const axisWorld = new THREE.Vector3(...j1.axis).applyEuler(e).normalize();
   return new THREE.Quaternion().setFromUnitVectors(axisWorld, new THREE.Vector3(0, -1, 0));
 })();
 
 // base_link's own centering offset (X,Y,Z), applied AFTER the root rotation above -
 // computed from base_link.STL's own real bounding box, see this file's header comment.
+// Unaffected by the Euler order fix (J1's own rpy is single-axis, so ROOT_QUAT - and
+// therefore base_link's own transform - didn't change).
 export const AR3_BASE_OFFSET: [number, number, number] = [0, 0, 0.0477];
 
 function jointQuaternion(joint: JointDef, angleDeg: number): THREE.Quaternion {
-  const reorient = new THREE.Quaternion().setFromEuler(new THREE.Euler(joint.rpy[0], joint.rpy[1], joint.rpy[2], 'XYZ'));
+  const reorient = new THREE.Quaternion().setFromEuler(new THREE.Euler(joint.rpy[0], joint.rpy[1], joint.rpy[2], 'ZYX'));
   const axisVec = new THREE.Vector3(...joint.axis).normalize();
   const spin = new THREE.Quaternion().setFromAxisAngle(axisVec, angleDeg * Math.PI / 180);
   return reorient.multiply(spin);

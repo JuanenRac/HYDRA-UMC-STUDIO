@@ -27,7 +27,14 @@
     "overview": "Overview",
     "vision_cameras": "Vision / Cameras",
     "about": "About",
-    "help": "Help"
+    "help": "Help",
+    "about_title": "About HYDRA-UMC STUDIO",
+    "about_tagline": "Advanced Centralized Control Dashboard for Robotics, CNC, 3D Printers, and Laser engravers.",
+    "about_description": "Drive real 6-DOF arms (Parol6, Faze4, AR3, AR4) with accurate mesh geometry and manufacturer joint kinematics, or fall back to a Generic arm - alongside CNC, laser, pick-and-place, vacuum table and XY-table workflows, all from one synchronized dashboard.",
+    "about_author": "Author",
+    "about_email": "Email",
+    "about_license": "License",
+    "close": "Close"
   },
   "config": {
     "title": "System Configuration",
@@ -211,5 +218,72 @@
     "width_x": "Width (X mm)",
     "length_y": "Length (Y mm)",
     "live_view_3d": "3D Live View"
+  },
+  "help": {
+    "title": "Help",
+    "tabs": {
+      "start": {
+        "label": "Getting Started",
+        "heading": "What is HYDRA-UMC STUDIO?",
+        "paragraphs": [
+          "HYDRA-UMC STUDIO is a centralized control dashboard for robots, CNC machines, laser engravers, 3D-printer beds, and pick-and-place stations. One dashboard, several machines, all synchronized in real time.",
+          "Start by adding a Controller (top-right selector, or Config > Controllers) - each controller represents one physical HYDRA-UMC board, reachable over Ethernet/IP. Use \"Auto-Search HYDRA-UMC\" to find boards on your local network automatically.",
+          "Once a controller is selected, use \"Add Robot\" in the sidebar to attach robots to it. Click a robot in the sidebar to open its full control panel: jog sliders, examples, recorded trajectories, and its own live 3D view.",
+          "Everything you configure - robot names, custom models, saved trajectories, tool assignments - is saved automatically to the server's data/ directory, so it survives restarts and is shared by every browser that opens the dashboard."
+        ]
+      },
+      "robots": {
+        "label": "Robots",
+        "heading": "Jogging, homing, and real kinematics",
+        "paragraphs": [
+          "Each robot panel shows a live 3D view plus one rotary knob and slider per joint (J1-J6). Drag either one to jog that joint; the 3D view updates immediately.",
+          "Parol6, Faze4, AR3, and AR4 are modeled with their real mesh geometry and their manufacturer's own joint chain - jogging them moves the same way the real arm would, respecting their real joint limits where the robot defines any. The Generic model uses a simplified two-link arm with no fixed joint limits.",
+          "HOME sends the robot to a safe, reachable reference pose. E-STOP immediately halts motion. If the robot has an XY table attached, its own TX/TY jog controls appear alongside the joint sliders, and HOME XY resets just the table.",
+          "The Tool selector assigns a URTC tool (soldering iron, dispenser, screwdriver, gripper, etc.) to the robot's end effector, shown on the 3D model's tool tip.",
+          "\"Combine with Robot\" lets you display a second robot inside the same 3D view (for choreographed multi-robot cells) - its own motion is still configured from its own panel."
+        ]
+      },
+      "trajectories": {
+        "label": "Trajectories",
+        "heading": "Examples, recorded points, and playback",
+        "paragraphs": [
+          "The Points Table at the bottom of a robot panel is a sequence of steps the robot moves through. Build it three ways: load a canned Example (circles, spirals, waves, pick-and-place, XY-table patterns...), jog the robot by hand and press \"+ Add Point\" to capture the current pose, or load a previously saved Work file.",
+          "Works are your own saved trajectories: JSON files stored per-robot on the server. Save the current Points Table with the Save button, or load/upload one from the Works Robot selector.",
+          "Every step can be reordered (up/down arrows), edited (pencil icon - joint angles, and XY-table position if applicable), or deleted (trash icon) directly in the table.",
+          "Use Play/Pause/Stop to run the sequence, Repeat to loop it, and the Speed slider to scale playback speed. The cyan line drawn in the 3D view previews the tool tip's Cartesian path for the loaded steps before you even press Play.",
+          "Steps loaded from an Example are portable between robot models: the app converts each step to a real-world Cartesian target and re-solves it for whichever robot is currently selected, so the same example traces a sensible path on a Parol6, an AR4, or the Generic arm alike."
+        ]
+      },
+      "modules": {
+        "label": "Modules",
+        "heading": "Machines beyond robot arms",
+        "paragraphs": [
+          "XY Table: configure a motorized XY platform's size and jog it independently, or attach it under a robot for pick-and-place work.",
+          "ATC Tools: define tool-changer slots and their offsets so a robot can pick up and swap between physical tools automatically.",
+          "Rack Manager: organize storage racks/bins used by pick-and-place routines.",
+          "Pick & Place, CNC, and Laser: each gets its own dedicated control panel (position jog, speed, active tool/job) once enabled for a robot.",
+          "Vacuum Table: control pump and valve state and monitor pressure for vacuum hold-down work.",
+          "Heated Bed: set a target temperature and monitor the actual bed temperature for 3D-printing-style workflows.",
+          "Any module shows \"Not Assigned\" until you enable it for a robot from that robot's Model & Tools settings."
+        ]
+      },
+      "cameras_gamepad": {
+        "label": "Cameras & Gamepad",
+        "heading": "Vision and manual control",
+        "paragraphs": [
+          "The Vision / Cameras view (Octal Vision Matrix) shows up to eight live feeds side by side: standard USB vision cameras or thermal cameras (MLX90640/90641/90642), with recording and live inference status.",
+          "A USB or Bluetooth gamepad can be mapped to jog robots and trigger actions manually - configure the button/axis mapping under Config > Gamepad."
+        ]
+      },
+      "firmware_settings": {
+        "label": "Firmware & Settings",
+        "heading": "Flashing boards and configuring the dashboard",
+        "paragraphs": [
+          "Flasher writes new URTC firmware to a connected controller board; Tester runs hardware self-checks against one - both live in the sidebar's lower section.",
+          "Config (top bar) opens System Configuration: manage Controllers (name, IP, add/auto-search), UI & Themes (theme, language - this Help menu follows the same language), Robot Names and Custom Models, Software Integrations, Work Paths (where each robot's Works are stored), and Gamepad mapping.",
+          "Factory Reset, inside Config, wipes all saved configuration back to defaults - use with care, it cannot be undone."
+        ]
+      }
+    }
   }
 }

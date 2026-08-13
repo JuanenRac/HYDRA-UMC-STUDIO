@@ -76,19 +76,32 @@ export const FAZE4_CHAIN: JointDef[] = [
 ];
 
 // Root correction, computed once: rotate joint 1's own world-frame axis onto three.js Y (up).
+// ROS rpy composes as R = Rz(yaw)*Ry(pitch)*Rx(roll) - three.js 'ZYX' order, not 'XYZ' (see
+// jointQuaternion's own comment below for the full explanation and how this was found).
 export const FAZE4_ROOT_QUAT = (() => {
   const j1 = FAZE4_CHAIN[0];
-  const e = new THREE.Euler(j1.rpy[0], j1.rpy[1], j1.rpy[2], 'XYZ');
+  const e = new THREE.Euler(j1.rpy[0], j1.rpy[1], j1.rpy[2], 'ZYX');
   const axisWorld = new THREE.Vector3(...j1.axis).applyEuler(e).normalize();
   return new THREE.Quaternion().setFromUnitVectors(axisWorld, new THREE.Vector3(0, 1, 0));
 })();
 
 // base_link's own centering/lift offset (X,Y,Z), applied AFTER the root rotation above -
 // computed from base_link.STL's own real bounding box, see this file's header comment.
-export const FAZE4_BASE_OFFSET: [number, number, number] = [0.1697, 0.1596, -0.0768];
+// Re-derived after the rpy Euler order fix below (J1's own rpy is a 2-axis rotation, so
+// FAZE4_ROOT_QUAT itself changed, not just the mesh centering).
+export const FAZE4_BASE_OFFSET: [number, number, number] = [-0.0756, -0.0157, -0.1697];
 
+// ROS URDF <origin rpy="r p y"/> composes as R = Rz(yaw)*Ry(pitch)*Rx(roll) - that's three.js's
+// intrinsic 'ZYX' Euler order, NOT the default 'XYZ'. For a single-axis rpy the other two
+// factors are identity regardless of order, so most of this chain looked fine either way - but
+// J1's own rpy (-1.5708,0,-1.5708) is 2-axis, and J3/J4/J5/J6 are all 2- or 3-axis too, so
+// 'XYZ' vs 'ZYX' produced completely different matrices for nearly this whole robot (verified
+// numerically against Parol6's own J3/J4, maxDiff=2 i.e. not even close). This is what actually
+// made the base render "de lado" (sideways, since it corrupted FAZE4_ROOT_QUAT itself) and the
+// rest of the arm look badly assembled - not a data transcription or sign bug, an Euler
+// composition order bug.
 function jointQuaternion(joint: JointDef, angleDeg: number): THREE.Quaternion {
-  const reorient = new THREE.Quaternion().setFromEuler(new THREE.Euler(joint.rpy[0], joint.rpy[1], joint.rpy[2], 'XYZ'));
+  const reorient = new THREE.Quaternion().setFromEuler(new THREE.Euler(joint.rpy[0], joint.rpy[1], joint.rpy[2], 'ZYX'));
   const axisVec = new THREE.Vector3(...joint.axis).normalize();
   const spin = new THREE.Quaternion().setFromAxisAngle(axisVec, angleDeg * Math.PI / 180);
   return reorient.multiply(spin);
