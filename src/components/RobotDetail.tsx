@@ -15,6 +15,10 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { VirtualKinematics } from './VirtualKinematics';
 import { examples } from '../examples/kinematics';
+import { parol6CartesianToJoints, parol6JointsToCartesian, PAROL6_JOINT_LIMITS_DEG, PAROL6_HOME_POSE } from '../examples/parol6Kinematics';
+import { faze4CartesianToJoints, FAZE4_HOME_POSE } from '../examples/faze4Kinematics';
+import { ar3CartesianToJoints, AR3_HOME_POSE } from '../examples/ar3Kinematics';
+import { ar4CartesianToJoints, AR4_HOME_POSE, AR4_JOINT_LIMITS_DEG } from '../examples/ar4Kinematics';
 
 /**
  * Executes the Cn logic. 
@@ -22,6 +26,34 @@ import { examples } from '../examples/kinematics';
  */
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+// Generic home pose (j2:-45,j3:45,j5:90) is fine for the shared-convention rigs, but
+// robots with their own real kinematics need their own reachable, sensible pose instead.
+function homePoseFor(model: RobotModel) {
+  if (model === 'Parol6 (6-DOF)') return { ...PAROL6_HOME_POSE };
+  if (model === 'Faze4 (6-DOF)') return { ...FAZE4_HOME_POSE };
+  if (model === 'AR3 (6-DOF)') return { ...AR3_HOME_POSE };
+  if (model === 'AR4 (6-DOF)') return { ...AR4_HOME_POSE };
+  return { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 };
+}
+
+// Parol6Arm.tsx/Faze4Arm.tsx/AR3Arm.tsx/AR4Arm.tsx are each driven by their own real
+// URDF joint chain, not the shared 160mm/200mm planar convention the generic joints
+// above were computed against - re-solve the resolved Cartesian target (x,y,z,a,b,c,
+// itself a robot-agnostic workspace point regardless of which formula produced it)
+// against that robot's own real kinematics instead, so recorded/played trajectories
+// move it sensibly.
+function resolveTargetJoints(
+  model: RobotModel | undefined,
+  x: number, y: number, z: number, a: number, b: number, c: number,
+  genericJoints: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number }
+) {
+  if (model === 'Parol6 (6-DOF)') return parol6CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'AR4 (6-DOF)') return ar4CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'Faze4 (6-DOF)') return faze4CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'AR3 (6-DOF)') return ar3CartesianToJoints(x, y, z, a, b, c);
+  return genericJoints;
 }
 
 /** Stores the  u r t c_ t o o l s configuration or state data. */
@@ -482,8 +514,12 @@ console.log("Loading example:", id);
            trz: pt.trz !== undefined ? pt.trz : currentPos.trz 
          };
 
-        const targetJoints = { j1: j1||0, j2: j2||0, j3: j3||0, j4: j4||0, j5: j5||0, j6: j6||0 };
-        
+        const targetJoints = resolveTargetJoints(
+          initialRState?.model,
+          x || 0, y || 0, z || 0, a || 0, b || 0, c || 0,
+          { j1: j1||0, j2: j2||0, j3: j3||0, j4: j4||0, j5: j5||0, j6: j6||0 }
+        );
+
         const startPos = { ...currentPos };
         const startJoints = { ...currentJoints };
 
@@ -955,8 +991,8 @@ console.log("Loading example:", id);
             </button>
 
             {/* HOME Button */}
-            <button 
-              onClick={() => updateRobot(robot.id, { pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }, joints: { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 } })}
+            <button
+              onClick={() => updateRobot(robot.id, { pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }, joints: homePoseFor(robot.model) })}
               className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]"
             >
               <Home size={16} /> HOME
@@ -979,9 +1015,9 @@ console.log("Loading example:", id);
             <button 
               onClick={() => {
                 handleStop();
-                updateRobot(robot.id, { 
-                   pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }, 
-                   joints: { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 }
+                updateRobot(robot.id, {
+                   pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 },
+                                      joints: homePoseFor(robot.model)
                 });
               }}
               className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-amber-500 shadow-[0_0_15px_rgba(217,119,6,0.3)]"
@@ -1079,24 +1115,34 @@ console.log("Loading example:", id);
             </div>
             
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {(['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const).map(j => (
+                {(['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const).map(j => {
+                  // Parol6/AR4 have real, narrower per-joint limits (from their own URDF/
+                  // config) than the generic +/-180 range every other model uses - clamping
+                  // the sliders to them keeps jogging from wandering into unreachable/
+                  // self-colliding angles. Faze4/AR3 declare every joint "continuous" in
+                  // their own URDFs (genuinely no limit), so they keep the generic range.
+                  const [jMin, jMax] = robot.model === 'Parol6 (6-DOF)' ? PAROL6_JOINT_LIMITS_DEG[j]
+                    : robot.model === 'AR4 (6-DOF)' ? AR4_JOINT_LIMITS_DEG[j]
+                    : [-180, 180];
+                  return (
                   <div key={j} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-bold text-slate-400 uppercase">{j}</span>
                       <span className="text-xs font-mono text-sky-400">{robot.joints[j as keyof typeof robot.joints]?.toFixed(2)}°</span>
                     </div>
                     <div className="flex items-center gap-4">
-                      <RotaryKnob 
-                        min={-180} 
-                        max={180} 
-                        value={robot.joints[j as keyof typeof robot.joints]} 
-                        onChange={val => updateRobot(robot.id, { joints: { ...robot.joints, [j]: val } })} 
-                        size={44} 
+                      <RotaryKnob
+                        min={jMin}
+                        max={jMax}
+                        value={robot.joints[j as keyof typeof robot.joints]}
+                        onChange={val => updateRobot(robot.id, { joints: { ...robot.joints, [j]: val } })}
+                        size={44}
                       />
-                      <FuturisticSlider min={-180} max={180} value={robot.joints[j as keyof typeof robot.joints]} onChange={val => updateRobot(robot.id, { joints: { ...robot.joints, [j]: val } })} className="flex-1" />
+                      <FuturisticSlider min={jMin} max={jMax} value={robot.joints[j as keyof typeof robot.joints]} onChange={val => updateRobot(robot.id, { joints: { ...robot.joints, [j]: val } })} className="flex-1" />
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
             {hasXYTable && (

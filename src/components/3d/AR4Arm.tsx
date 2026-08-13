@@ -2,92 +2,128 @@
 // HYDRA-UMC STUDIO - React Component: AR4Arm.tsx
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
+//
+// Real AR4 geometry: loads the actual STL mesh for every link
+// (public/models/ar4/*.STL, see ATTRIBUTION.txt there - pulled from the
+// official, MIT-licensed github.com/Annin-Robotics/ar4_ros_driver repo,
+// the "mk3" hardware revision's simple one-mesh-per-link set) and drives
+// them through the REAL joint transform chain from that repo's own
+// annin_ar4_description/urdf/ar_macro.xacro. Same overall approach as
+// Parol6Arm.tsx/Faze4Arm.tsx/AR3Arm.tsx - quaternion-based per joint.
+//
+//   J1 (base_link->link_1): xyz=(0,0,0.092)          rpy=(3.1416,0,0)             axis=(0,0,1)
+//   J2 (link_1->link_2):    xyz=(0,0.06415,-0.07778)  rpy=(1.5708,0,-1.5708)       axis=(0,0,-1)
+//   J3 (link_2->link_3):    xyz=(0,-0.305,0)          rpy=(0,0,3.1416)             axis=(0,0,-1)
+//   J4 (link_3->link_4):    xyz=(0,0,0)               rpy=(1.5708,0,-1.5708)       axis=(0,0,-1)
+//   J5 (link_4->link_5):    xyz=(0,0,-0.22294)         rpy=(3.1416,0,-1.5708)       axis=(1,0,0)
+//   J6 (link_5->link_6):    xyz=(0,0,0.041)            rpy=(0,0,0)                  axis=(0,0,1)
+//
+// Root correction: joint 1's own world-frame axis (after its rpy) works
+// out to plain world -Z, same as AR3 (a sibling design) - root group
+// rotates +90deg about X to bring that to three.js's vertical Y, verified
+// numerically (see ar4Kinematics.ts).
+//
+// Unlike Faze4/AR3 (whose URDFs declare every joint "continuous", no real
+// limits), AR4's config/mk3.yaml carries real joint limits - used both
+// here implicitly (matching what the real robot's own workspace allows)
+// and explicitly in ar4Kinematics.ts / RobotDetail.tsx's jog sliders.
 // =============================================================================
 
-import React, { useRef } from 'react';
+import React, { useMemo } from 'react';
 import * as THREE from 'three';
-import { Cylinder, RoundedBox } from '@react-three/drei';
+import { useLoader } from '@react-three/fiber';
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
 import Toolhead from './Toolhead';
 
-/**
- * Executes the  a r4 arm logic. 
- * This function handles the necessary computations and state updates.
- */
-export default function AR4Arm({ robot }: { robot: RobotState }) {
-  const group = useRef<THREE.Group>(null);
-  
-  const j1 = robot.joints.j1 * Math.PI / 180;
-  const j2 = robot.joints.j2 * Math.PI / 180;
-  const j3 = robot.joints.j3 * Math.PI / 180;
-  const j4 = robot.joints.j4 * Math.PI / 180;
-  const j5 = robot.joints.j5 * Math.PI / 180;
-  const j6 = robot.joints.j6 * Math.PI / 180;
+const MESH_BASE = '/models/ar4/';
 
-  const colorPrimary = '#475569';
-  const colorSecondary = '#1A202C';
-  const colorJoint = '#2D3748';
-  const colorAccent = '#cbd5e1';
-  
-  const matProps = { roughness: 0.3, metalness: 0.6, clearcoat: 0.5 };
-  const rubberProps = { roughness: 0.9, metalness: 0.1 };
-  
+function useRealScaleSTL(fileName: string): THREE.BufferGeometry {
+  const raw = useLoader(STLLoader, MESH_BASE + fileName);
+  return useMemo(() => {
+    const geometry = raw.clone();
+    geometry.computeBoundingBox();
+    const box = geometry.boundingBox;
+    const maxDim = box ? Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z) : 0;
+    if (maxDim > 2) geometry.scale(0.001, 0.001, 0.001);
+    return geometry;
+  }, [raw]);
+}
+
+interface JointDef {
+  pos: [number, number, number];
+  rpy: [number, number, number];
+  axis: [number, number, number];
+}
+
+export const AR4_CHAIN: JointDef[] = [
+  { pos: [0, 0, 0.092], rpy: [3.1416, 0, 0], axis: [0, 0, 1] },
+  { pos: [0, 0.06415, -0.07778], rpy: [1.5708, 0, -1.5708], axis: [0, 0, -1] },
+  { pos: [0, -0.305, 0], rpy: [0, 0, 3.1416], axis: [0, 0, -1] },
+  { pos: [0, 0, 0], rpy: [1.5708, 0, -1.5708], axis: [0, 0, -1] },
+  { pos: [0, 0, -0.22294], rpy: [3.1416, 0, -1.5708], axis: [1, 0, 0] },
+  { pos: [0, 0, 0.041], rpy: [0, 0, 0], axis: [0, 0, 1] },
+];
+
+export const AR4_ROOT_QUAT = (() => {
+  const j1 = AR4_CHAIN[0];
+  const e = new THREE.Euler(j1.rpy[0], j1.rpy[1], j1.rpy[2], 'XYZ');
+  const axisWorld = new THREE.Vector3(...j1.axis).applyEuler(e).normalize();
+  return new THREE.Quaternion().setFromUnitVectors(axisWorld, new THREE.Vector3(0, 1, 0));
+})();
+
+function jointQuaternion(joint: JointDef, angleDeg: number): THREE.Quaternion {
+  const reorient = new THREE.Quaternion().setFromEuler(new THREE.Euler(joint.rpy[0], joint.rpy[1], joint.rpy[2], 'XYZ'));
+  const axisVec = new THREE.Vector3(...joint.axis).normalize();
+  const spin = new THREE.Quaternion().setFromAxisAngle(axisVec, angleDeg * Math.PI / 180);
+  return reorient.multiply(spin);
+}
+
+const bodyMat = { color: '#e7e9ec', roughness: 0.4, metalness: 0.45 };
+const accentMat = { color: '#1d4ed8', roughness: 0.4, metalness: 0.3 };
+
+export default function AR4Arm({ robot }: { robot: RobotState }) {
+  const j1 = robot.joints.j1, j2 = robot.joints.j2, j3 = robot.joints.j3;
+  const j4 = robot.joints.j4, j5 = robot.joints.j5, j6 = robot.joints.j6;
+
+  const q1 = useMemo(() => jointQuaternion(AR4_CHAIN[0], j1), [j1]);
+  const q2 = useMemo(() => jointQuaternion(AR4_CHAIN[1], j2), [j2]);
+  const q3 = useMemo(() => jointQuaternion(AR4_CHAIN[2], j3), [j3]);
+  const q4 = useMemo(() => jointQuaternion(AR4_CHAIN[3], j4), [j4]);
+  const q5 = useMemo(() => jointQuaternion(AR4_CHAIN[4], j5), [j5]);
+  const q6 = useMemo(() => jointQuaternion(AR4_CHAIN[5], j6), [j6]);
+
+  const baseGeo = useRealScaleSTL('base_link.STL');
+  const l1Geo = useRealScaleSTL('link_1.STL');
+  const l2Geo = useRealScaleSTL('link_2.STL');
+  const l3Geo = useRealScaleSTL('link_3.STL');
+  const l4Geo = useRealScaleSTL('link_4.STL');
+  const l5Geo = useRealScaleSTL('link_5.STL');
+  const l6Geo = useRealScaleSTL('link_6.STL');
+
   return (
-    <group ref={group} position={[0, 0, 0]}>
-      {/* Base Pedestal */}
-      <Cylinder args={[0.07, 0.09, 0.04]} position={[0, 0.02, 0]} material-color={colorSecondary} castShadow receiveShadow {...rubberProps} />
-      <Cylinder args={[0.065, 0.07, 0.13]} position={[0, 0.105, 0]} material-color={colorSecondary} castShadow receiveShadow {...matProps} />
-      
-      {/* Joint 1 (Z-axis rotation, mapped to Y in ThreeJS) */}
-      <group position={[0, 0.17, 0]} rotation={[0, j1, 0]}>
-        {/* Shoulder Base Swivel */}
-        <Cylinder args={[0.065, 0.065, 0.04]} position={[0, 0.02, 0]} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
-        
-        {/* Shoulder Offset Block */}
-        <RoundedBox args={[0.09, 0.08, 0.10]} position={[0, 0.08, 0]} radius={0.015} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
-        
-        {/* Joint 2 (Z-axis rotation, bends arm along X) */}
-        <group position={[0, 0.12, 0]}>
-          <group rotation={[0, 0, j2]}>
-            {/* J2 Motor Housing */}
-            <Cylinder args={[0.05, 0.05, 0.12]} rotation={[Math.PI/2, 0, 0]} material-color={colorJoint} castShadow receiveShadow {...matProps} />
-            <Cylinder args={[0.052, 0.052, 0.02]} position={[0, 0, 0.05]} rotation={[Math.PI/2, 0, 0]} material-color={colorAccent} castShadow receiveShadow {...matProps} />
-            
-            {/* Link 2 (Upper Arm L1 = 160 => 0.16) */}
-            <Cylinder args={[0.04, 0.05, 0.16]} position={[0, 0.08, 0]} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
-            
-            {/* Joint 3 */}
-            <group position={[0, 0.16, 0]}>
-              <group rotation={[0, 0, -j3]}>
-                {/* J3 Motor Housing */}
-                <Cylinder args={[0.045, 0.045, 0.10]} rotation={[Math.PI/2, 0, 0]} material-color={colorJoint} castShadow receiveShadow {...matProps} />
-                
-                {/* Elbow / Forearm Transition Block */}
-                <RoundedBox args={[0.06, 0.06, 0.07]} position={[0, 0, 0]} radius={0.015} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
-                
-                {/* Joint 4 (Roll, Y axis in ThreeJS) */}
-                <group rotation={[0, j4, 0]}>
-                  {/* Link 4 (Forearm L2 = 200 => 0.20) */}
-                  <Cylinder args={[0.035, 0.045, 0.20]} position={[0, 0.10, 0]} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
-                  
-                  {/* Joint 5 (Pitch) */}
-                  <group position={[0, 0.20, 0]}>
-                    <group rotation={[0, 0, j5]}>
-                      {/* J5 Motor/Wrist Pitch */}
-                      <Cylinder args={[0.035, 0.035, 0.08]} rotation={[Math.PI/2, 0, 0]} material-color={colorJoint} castShadow receiveShadow {...matProps} />
-                      <RoundedBox args={[0.05, 0.05, 0.05]} position={[0, 0.025, 0]} radius={0.01} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
-                      
-                      {/* Joint 6 (Roll) */}
-                      <group position={[0, 0.05, 0]} rotation={[0, j6, 0]}>
-                        {/* Link 6 (Wrist Roll / Flange) */}
-                        <Cylinder args={[0.03, 0.03, 0.02]} position={[0, 0.01, 0]} material-color={colorSecondary} castShadow receiveShadow {...matProps} />
-                        <Cylinder args={[0.015, 0.015, 0.005]} position={[0, 0.0225, 0]} material-color={colorAccent} castShadow receiveShadow {...matProps} />
-                        
-                        <group position={[0, 0.025, 0]}>
-                          <Toolhead tool={robot.tool} />
-                        </group>
-                      </group>
-                    </group>
+    <group quaternion={AR4_ROOT_QUAT}>
+      <mesh geometry={baseGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+
+      <group position={AR4_CHAIN[0].pos} quaternion={q1}>
+        <mesh geometry={l1Geo} castShadow receiveShadow><meshStandardMaterial {...accentMat} /></mesh>
+
+        <group position={AR4_CHAIN[1].pos} quaternion={q2}>
+          <mesh geometry={l2Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+
+          <group position={AR4_CHAIN[2].pos} quaternion={q3}>
+            <mesh geometry={l3Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+
+            <group position={AR4_CHAIN[3].pos} quaternion={q4}>
+              <mesh geometry={l4Geo} castShadow receiveShadow><meshStandardMaterial {...accentMat} /></mesh>
+
+              <group position={AR4_CHAIN[4].pos} quaternion={q5}>
+                <mesh geometry={l5Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+
+                <group position={AR4_CHAIN[5].pos} quaternion={q6}>
+                  <mesh geometry={l6Geo} castShadow receiveShadow><meshStandardMaterial {...accentMat} /></mesh>
+                  <group position={[0, 0.02, 0]}>
+                    <Toolhead tool={robot.tool} />
                   </group>
                 </group>
               </group>

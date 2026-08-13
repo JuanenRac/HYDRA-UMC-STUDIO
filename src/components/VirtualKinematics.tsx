@@ -359,7 +359,7 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
                 {cHasTable ? (
                    <group>
                      <group position={[0, 0.08, 0]} scale={[(combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1)]}>
-                       <PathVisualizer points={combinedRobot.recordedPoints} hasXYTable={true} />
+                       <PathVisualizer points={combinedRobot.recordedPoints} hasXYTable={true} model={combinedRobot.model} />
                      </group>
                      <Box args={[cTableW, 0.02, cTableL]} position={[cTableW/2, 0.01, cTableL/2]} material-color="#121720" castShadow receiveShadow />
                      <group position={[(combinedRobot.pos?.tx || 0) / 1000, 0.08, (combinedRobot.pos?.ty || 0) / 1000]} scale={[(combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1)]}>
@@ -369,7 +369,7 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
                 ) : (
                    <group>
                      <RobotArm robot={combinedRobot} />
-                     <PathVisualizer points={combinedRobot.recordedPoints} hasXYTable={false} />
+                     <PathVisualizer points={combinedRobot.recordedPoints} hasXYTable={false} model={combinedRobot.model} />
                    </group>
                 )}
             </DraggableGizmo>
@@ -400,7 +400,7 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
           >
             <group position={[0, 0, 0]}>
               <group position={[0, 0.08, 0]} scale={[(robot.renderScale || 1) / (robot.xyTable?.renderScale || 1), (robot.renderScale || 1) / (robot.xyTable?.renderScale || 1), (robot.renderScale || 1) / (robot.xyTable?.renderScale || 1)]}>
-                <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
+                <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} model={robot.model} />
               </group>
               {/* Table Bed */}
               <Box args={[tableW, 0.02, tableL]} position={[tableW/2, 0.01, tableL/2]} material-color="#121720" castShadow receiveShadow />
@@ -459,7 +459,7 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
               }}
             >
               <RobotArm robot={robot} />
-              <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} />
+              <PathVisualizer points={robot.recordedPoints} hasXYTable={hasXYTable} model={robot.model} />
             </DraggableGizmo>
           </group>
         )}

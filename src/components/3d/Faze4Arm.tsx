@@ -2,92 +2,133 @@
 // HYDRA-UMC STUDIO - React Component: Faze4Arm.tsx
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
+//
+// Real Faze4 geometry: loads the actual STL mesh for every link
+// (public/models/faze4/*.STL, see ATTRIBUTION.txt there - pulled from the
+// official, MIT-licensed github.com/Source-Robotics/Faze4-Robotic-arm
+// design repo) and drives them through the REAL joint transform chain from
+// that repo's own URDF_FAZE4/urdf/Final_light_assembly_URDF.urdf. Same
+// overall approach as Parol6Arm.tsx, with one real difference: this URDF is
+// a raw CAD-assembly export (Croatian link names: rotary_base, nadlaktica=
+// upper arm, lakat=elbow, podlaktica=forearm, saka=wrist, hvataljka=
+// gripper) with joint origins in arbitrary assembly frames rather than
+// PAROL6's hand-tuned cardinal-axis ones - joint 4 (podlaktica) even
+// rotates about a non-cardinal axis (0.14804, 0.90477, 0.39934), so every
+// joint here uses a quaternion (position + quaternion, not rotation
+// Euler-triples) to stay exact regardless of axis direction.
+//
+//   J1 (base_link->rotary_base): xyz=(0.075629,-0.21266,0.050734) rpy=(-1.5708,0,-1.5708) axis=(0,-1,0)
+//   J2 (rotary_base->nadlaktica): xyz=(0,-0.20182,0)               rpy=(0,0,-1.8111)       axis=(0,0,1)
+//   J3 (nadlaktica->lakat):       xyz=(0.32,0,0)                    rpy=(3.1416,0,-1.1753)  axis=(0,0,-1)
+//   J4 (lakat->podlaktica):       xyz=(0,-0.0735,0)                 rpy=(-0.5648,-0.78173,1.7809) axis=(0.14804,0.90477,0.39934)
+//   J5 (podlaktica->saka):        xyz=(0.037114,0.22683,0.10011)    rpy=(2.2965,-0.74045,-0.57161) axis=(-1,0,0)
+//   J6 (saka->hvataljka):         xyz=(0,0,-0.042312)               rpy=(-3.1416,0,0.2419) axis=(0,0,1)
+//
+// Root correction: unlike PAROL6 (whose joint 1 already spins around a
+// clean world axis once reoriented), this rig's own base-rotation axis
+// works out to plain world -X once J1's own rpy is applied - the root
+// group here rotates -90deg about Z instead of PAROL6's -90deg about X, to
+// bring THAT axis to three.js's vertical Y instead. Verified numerically
+// (see faze4Kinematics.ts) rather than guessed - a naive "-90 about X"
+// copy-paste from Parol6Arm.tsx would have left the base spinning around a
+// horizontal axis.
 // =============================================================================
 
-import React, { useRef } from 'react';
+import React, { useMemo } from 'react';
 import * as THREE from 'three';
-import { Cylinder, RoundedBox } from '@react-three/drei';
+import { useLoader } from '@react-three/fiber';
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
 import Toolhead from './Toolhead';
 
-/**
- * Executes the  faze4 arm logic. 
- * This function handles the necessary computations and state updates.
- */
-export default function Faze4Arm({ robot }: { robot: RobotState }) {
-  const group = useRef<THREE.Group>(null);
-  
-  const j1 = robot.joints.j1 * Math.PI / 180;
-  const j2 = robot.joints.j2 * Math.PI / 180;
-  const j3 = robot.joints.j3 * Math.PI / 180;
-  const j4 = robot.joints.j4 * Math.PI / 180;
-  const j5 = robot.joints.j5 * Math.PI / 180;
-  const j6 = robot.joints.j6 * Math.PI / 180;
+const MESH_BASE = '/models/faze4/';
 
-  const colorPrimary = '#475569';
-  const colorSecondary = '#1A202C';
-  const colorJoint = '#2D3748';
-  const colorAccent = '#cbd5e1';
-  
-  const matProps = { roughness: 0.3, metalness: 0.6, clearcoat: 0.5 };
-  const rubberProps = { roughness: 0.9, metalness: 0.1 };
-  
+function useRealScaleSTL(fileName: string): THREE.BufferGeometry {
+  const raw = useLoader(STLLoader, MESH_BASE + fileName);
+  return useMemo(() => {
+    const geometry = raw.clone();
+    geometry.computeBoundingBox();
+    const box = geometry.boundingBox;
+    const maxDim = box ? Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z) : 0;
+    if (maxDim > 2) geometry.scale(0.001, 0.001, 0.001);
+    return geometry;
+  }, [raw]);
+}
+
+interface JointDef {
+  pos: [number, number, number];
+  rpy: [number, number, number];
+  axis: [number, number, number];
+}
+
+export const FAZE4_CHAIN: JointDef[] = [
+  { pos: [0.075629, -0.21266, 0.050734], rpy: [-1.5708, 0, -1.5708], axis: [0, -1, 0] },
+  { pos: [0, -0.20182, 0], rpy: [0, 0, -1.8111], axis: [0, 0, 1] },
+  { pos: [0.32, 0, 0], rpy: [3.1416, 0, -1.1753], axis: [0, 0, -1] },
+  { pos: [0, -0.0735, 0], rpy: [-0.5648, -0.78173, 1.7809], axis: [0.14804, 0.90477, 0.39934] },
+  { pos: [0.037114, 0.22683, 0.10011], rpy: [2.2965, -0.74045, -0.57161], axis: [-1, 0, 0] },
+  { pos: [0, 0, -0.042312], rpy: [-3.1416, 0, 0.2419], axis: [0, 0, 1] },
+];
+
+// Root correction, computed once: rotate joint 1's own world-frame axis onto three.js Y (up).
+export const FAZE4_ROOT_QUAT = (() => {
+  const j1 = FAZE4_CHAIN[0];
+  const e = new THREE.Euler(j1.rpy[0], j1.rpy[1], j1.rpy[2], 'XYZ');
+  const axisWorld = new THREE.Vector3(...j1.axis).applyEuler(e).normalize();
+  return new THREE.Quaternion().setFromUnitVectors(axisWorld, new THREE.Vector3(0, 1, 0));
+})();
+
+function jointQuaternion(joint: JointDef, angleDeg: number): THREE.Quaternion {
+  const reorient = new THREE.Quaternion().setFromEuler(new THREE.Euler(joint.rpy[0], joint.rpy[1], joint.rpy[2], 'XYZ'));
+  const axisVec = new THREE.Vector3(...joint.axis).normalize();
+  const spin = new THREE.Quaternion().setFromAxisAngle(axisVec, angleDeg * Math.PI / 180);
+  return reorient.multiply(spin);
+}
+
+const bodyMat = { color: '#dbe4ee', roughness: 0.5, metalness: 0.3 };
+
+export default function Faze4Arm({ robot }: { robot: RobotState }) {
+  const j1 = robot.joints.j1, j2 = robot.joints.j2, j3 = robot.joints.j3;
+  const j4 = robot.joints.j4, j5 = robot.joints.j5, j6 = robot.joints.j6;
+
+  const q1 = useMemo(() => jointQuaternion(FAZE4_CHAIN[0], j1), [j1]);
+  const q2 = useMemo(() => jointQuaternion(FAZE4_CHAIN[1], j2), [j2]);
+  const q3 = useMemo(() => jointQuaternion(FAZE4_CHAIN[2], j3), [j3]);
+  const q4 = useMemo(() => jointQuaternion(FAZE4_CHAIN[3], j4), [j4]);
+  const q5 = useMemo(() => jointQuaternion(FAZE4_CHAIN[4], j5), [j5]);
+  const q6 = useMemo(() => jointQuaternion(FAZE4_CHAIN[5], j6), [j6]);
+
+  const baseLinkGeo = useRealScaleSTL('base_link.STL');
+  const rotaryBaseGeo = useRealScaleSTL('rotary_base.STL');
+  const nadlakticaGeo = useRealScaleSTL('nadlaktica.STL');
+  const lakatGeo = useRealScaleSTL('lakat.STL');
+  const podlakticaGeo = useRealScaleSTL('podlaktica.STL');
+  const sakaGeo = useRealScaleSTL('saka.STL');
+  const hvataljkaGeo = useRealScaleSTL('hvataljka.STL');
+
   return (
-    <group ref={group} position={[0, 0, 0]}>
-      {/* Base Pedestal */}
-      <Cylinder args={[0.07, 0.09, 0.04]} position={[0, 0.02, 0]} material-color={colorSecondary} castShadow receiveShadow {...rubberProps} />
-      <Cylinder args={[0.065, 0.07, 0.13]} position={[0, 0.105, 0]} material-color={colorSecondary} castShadow receiveShadow {...matProps} />
-      
-      {/* Joint 1 (Z-axis rotation, mapped to Y in ThreeJS) */}
-      <group position={[0, 0.17, 0]} rotation={[0, j1, 0]}>
-        {/* Shoulder Base Swivel */}
-        <Cylinder args={[0.065, 0.065, 0.04]} position={[0, 0.02, 0]} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
-        
-        {/* Shoulder Offset Block */}
-        <RoundedBox args={[0.09, 0.08, 0.10]} position={[0, 0.08, 0]} radius={0.015} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
-        
-        {/* Joint 2 (Z-axis rotation, bends arm along X) */}
-        <group position={[0, 0.12, 0]}>
-          <group rotation={[0, 0, j2]}>
-            {/* J2 Motor Housing */}
-            <Cylinder args={[0.05, 0.05, 0.12]} rotation={[Math.PI/2, 0, 0]} material-color={colorJoint} castShadow receiveShadow {...matProps} />
-            <Cylinder args={[0.052, 0.052, 0.02]} position={[0, 0, 0.05]} rotation={[Math.PI/2, 0, 0]} material-color={colorAccent} castShadow receiveShadow {...matProps} />
-            
-            {/* Link 2 (Upper Arm L1 = 160 => 0.16) */}
-            <Cylinder args={[0.04, 0.05, 0.16]} position={[0, 0.08, 0]} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
-            
-            {/* Joint 3 */}
-            <group position={[0, 0.16, 0]}>
-              <group rotation={[0, 0, -j3]}>
-                {/* J3 Motor Housing */}
-                <Cylinder args={[0.045, 0.045, 0.10]} rotation={[Math.PI/2, 0, 0]} material-color={colorJoint} castShadow receiveShadow {...matProps} />
-                
-                {/* Elbow / Forearm Transition Block */}
-                <RoundedBox args={[0.06, 0.06, 0.07]} position={[0, 0, 0]} radius={0.015} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
-                
-                {/* Joint 4 (Roll, Y axis in ThreeJS) */}
-                <group rotation={[0, j4, 0]}>
-                  {/* Link 4 (Forearm L2 = 200 => 0.20) */}
-                  <Cylinder args={[0.035, 0.045, 0.20]} position={[0, 0.10, 0]} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
-                  
-                  {/* Joint 5 (Pitch) */}
-                  <group position={[0, 0.20, 0]}>
-                    <group rotation={[0, 0, j5]}>
-                      {/* J5 Motor/Wrist Pitch */}
-                      <Cylinder args={[0.035, 0.035, 0.08]} rotation={[Math.PI/2, 0, 0]} material-color={colorJoint} castShadow receiveShadow {...matProps} />
-                      <RoundedBox args={[0.05, 0.05, 0.05]} position={[0, 0.025, 0]} radius={0.01} material-color={colorPrimary} castShadow receiveShadow {...matProps} />
-                      
-                      {/* Joint 6 (Roll) */}
-                      <group position={[0, 0.05, 0]} rotation={[0, j6, 0]}>
-                        {/* Link 6 (Wrist Roll / Flange) */}
-                        <Cylinder args={[0.03, 0.03, 0.02]} position={[0, 0.01, 0]} material-color={colorSecondary} castShadow receiveShadow {...matProps} />
-                        <Cylinder args={[0.015, 0.015, 0.005]} position={[0, 0.0225, 0]} material-color={colorAccent} castShadow receiveShadow {...matProps} />
-                        
-                        <group position={[0, 0.025, 0]}>
-                          <Toolhead tool={robot.tool} />
-                        </group>
-                      </group>
-                    </group>
+    <group quaternion={FAZE4_ROOT_QUAT}>
+      <mesh geometry={baseLinkGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+
+      <group position={FAZE4_CHAIN[0].pos} quaternion={q1}>
+        <mesh geometry={rotaryBaseGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+
+        <group position={FAZE4_CHAIN[1].pos} quaternion={q2}>
+          <mesh geometry={nadlakticaGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+
+          <group position={FAZE4_CHAIN[2].pos} quaternion={q3}>
+            <mesh geometry={lakatGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+
+            <group position={FAZE4_CHAIN[3].pos} quaternion={q4}>
+              <mesh geometry={podlakticaGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+
+              <group position={FAZE4_CHAIN[4].pos} quaternion={q5}>
+                <mesh geometry={sakaGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+
+                <group position={FAZE4_CHAIN[5].pos} quaternion={q6}>
+                  <mesh geometry={hvataljkaGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+                  <group position={[0, 0.02, 0]}>
+                    <Toolhead tool={robot.tool} />
                   </group>
                 </group>
               </group>

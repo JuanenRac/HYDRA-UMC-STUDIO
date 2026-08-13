@@ -36,6 +36,8 @@ import { HeatedBedConfig } from './components/HeatedBedConfig';
 import { ATCToolsConfig } from './components/ATCToolsConfig';
 import { RackConfigView } from './components/RackConfigView';
 import { GamepadConfig } from './components/GamepadConfig';
+import { Flasher } from './components/Flasher';
+import { Tester } from './components/Tester';
 
 /**
  * Executes the  dashboard logic. 
@@ -57,6 +59,7 @@ export default function Dashboard() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isModulesMenuOpen, setIsModulesMenuOpen] = useState(false);
+  const [isUrtcMenuOpen, setIsUrtcMenuOpen] = useState(false);
   
 
   const activeRobot = robots.find(r => r.id === selectedRobotId);
@@ -646,6 +649,22 @@ export default function Dashboard() {
                 <NavItem icon={<Thermometer size={18} />} label={t('modules.heated_bed_title', 'Heated Bed')} active={activeTab === 'heatedbed'} onClick={() => setActiveTab('heatedbed')} />
               )}
             </div>
+          ) : isUrtcMenuOpen ? (
+            <div className="flex flex-col gap-3 h-full animate-in slide-in-from-right-4 fade-in duration-300">
+              <button 
+                onClick={() => setIsUrtcMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-slate-400 hover:text-slate-200 transition-colors uppercase tracking-wider mb-2"
+              >
+                ← {t('dashboard.back', 'Back')}
+              </button>
+              
+              <div className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                URTC
+              </div>
+              
+              <NavItem icon={<Cpu size={18} />} label="Flasher" active={activeTab === 'flasher'} onClick={() => setActiveTab('flasher')} />
+              <NavItem icon={<Activity size={18} />} label="Tester" active={activeTab === 'tester'} onClick={() => setActiveTab('tester')} />
+            </div>
           ) : (
             <div className="flex flex-col gap-3 h-full animate-in slide-in-from-left-4 fade-in duration-300">
               <NavItem 
@@ -693,13 +712,18 @@ export default function Dashboard() {
                 />
               )}
 
-              <NavItem 
-                icon={<Server size={18} />} 
-                label="URTC" 
-                active={activeTab === 'urtc'} 
-                onClick={() => setActiveTab('urtc')} 
-                className="py-3 min-h-[50px] text-base"
-              />
+              <button
+                onClick={() => setIsUrtcMenuOpen(true)}
+                className={cn(
+                  "flex items-center gap-4 px-4 py-3 min-h-[50px] rounded-xl font-medium text-base transition-all",
+                  isUrtcMenuOpen || ['flasher', 'tester'].includes(activeTab)
+                    ? "bg-sky-500/10 text-sky-400 glow-border-sky" 
+                    : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
+                )}
+              >
+                <Server size={18} />
+                <span className="truncate">URTC</span>
+              </button>
 
               <button
                 onClick={() => setIsModulesMenuOpen(true)}
@@ -722,6 +746,8 @@ export default function Dashboard() {
           {activeTab === 'overview' && <OverviewPanel />}
           {activeTab === 'robot' && activeRobot && <RobotDetail key={activeRobot.id} robot={activeRobot} />}
           {activeTab === 'cameras' && <CamerasView />}
+          {activeTab === 'flasher' && <Flasher />}
+          {activeTab === 'tester' && <Tester />}
           {activeTab === 'xytable' && <XYTableConfig />}
           {activeTab === 'atc' && <ATCToolsConfig />}
           {activeTab === 'rack' && <RackConfigView />}
