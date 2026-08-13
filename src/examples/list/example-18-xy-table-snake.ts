@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Example kinematics pattern: example-18-xy-table-snake.ts
+// HYDRA-UMC STUDIO - React Component: example-18-xy-table-snake.ts
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================

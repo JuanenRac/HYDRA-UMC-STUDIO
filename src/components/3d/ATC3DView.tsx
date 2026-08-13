@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - 3D View Component: ATC3DView.tsx
+// HYDRA-UMC STUDIO - React Component: ATC3DView.tsx
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================

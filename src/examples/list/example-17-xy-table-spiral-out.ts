@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Example kinematics pattern: example-17-xy-table-spiral-out.ts
+// HYDRA-UMC STUDIO - React Component: example-17-xy-table-spiral-out.ts
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================

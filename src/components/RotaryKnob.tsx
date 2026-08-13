@@ -1,3 +1,9 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - UI Control Component: RotaryKnob.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import React, { useState, useEffect, useRef } from 'react';
 
 interface RotaryKnobProps {
@@ -11,6 +17,10 @@ interface RotaryKnobProps {
 export function RotaryKnob({ min, max, value, onChange, size = 48 }: RotaryKnobProps) {
   const knobRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const onChangeRef = useRef(onChange);
+  const minRef = useRef(min);
+  const maxRef = useRef(max);
+  useEffect(() => { onChangeRef.current = onChange; minRef.current = min; maxRef.current = max; }, [onChange, min, max]);
 
   // Clamp value
   const clampedValue = Math.min(max, Math.max(min, value || 0));
@@ -54,9 +64,9 @@ export function RotaryKnob({ min, max, value, onChange, size = 48 }: RotaryKnobP
     if (angle < -135) angle = -135;
 
     const pct = (angle + 135) / 270;
-    const newVal = min + pct * (max - min);
+    const newVal = minRef.current + pct * (maxRef.current - minRef.current);
     
-    onChange(Number(newVal.toFixed(1)));
+    onChangeRef.current(Number(newVal.toFixed(1)));
   };
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Core application file: i18n.ts
+// HYDRA-UMC STUDIO - React Component: i18n.ts
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================

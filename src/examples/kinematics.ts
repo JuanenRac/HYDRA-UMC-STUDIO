@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Examples utility or registry: kinematics.ts
+// HYDRA-UMC STUDIO - React Component: kinematics.ts
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================

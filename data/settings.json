@@ -1,0 +1,3546 @@
+{
+  "settings": {
+    "visibleModules": [
+      "Vision/Cameras",
+      "Robots",
+      "Macros/Tasks",
+      "Node Network",
+      "Settings"
+    ],
+    "integrations": {
+      "openPnP": {
+        "enabled": false,
+        "ip": "192.168.1.100",
+        "port": 8080
+      },
+      "slic3r": {
+        "enabled": false,
+        "ip": "192.168.1.100",
+        "port": 8080
+      },
+      "prusaSlicer": {
+        "enabled": false,
+        "ip": "192.168.1.100",
+        "port": 8080
+      },
+      "cnc": {
+        "software": "LinuxCNC",
+        "enabled": false,
+        "port": 8080
+      },
+      "laser": {
+        "software": "LightBurn",
+        "enabled": false,
+        "port": 8080
+      }
+    },
+    "customModels": [],
+    "autoConnectRobots": false,
+    "theme": "HYDRA-UMC Studio Fasion",
+    "language": "en",
+    "worksPaths": {},
+    "uiLayout": {
+      "rightPanelWidth": 320,
+      "pointsTableHeight": 300
+    }
+  },
+  "controllers": [
+    {
+      "id": "ais-dev-jbvuwem5peymde6cd35mq4-363090451650.europe-west3.run.app",
+      "name": "HYDRA-UMC Master",
+      "ip": "ais-dev-jbvuwem5peymde6cd35mq4-363090451650.europe-west3.run.app",
+      "status": "online",
+      "fdcanBaudrate": 1000,
+      "fdcanDataBaudrate": 5000,
+      "robots": [
+        {
+          "id": 1,
+          "name": "Robot A1",
+          "online": true,
+          "model": "Parol6 (6-DOF)",
+          "role": "Pnp",
+          "tool": "Vacuum / Pneumatic Gripper",
+          "urtcConnected": true,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": true,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 2,
+          "name": "Robot A2",
+          "online": true,
+          "model": "Faze4 (6-DOF)",
+          "role": "CNC",
+          "tool": "Engraving Laser Diode (10W optical)",
+          "urtcConnected": true,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 3,
+          "name": "Robot A3",
+          "online": true,
+          "model": "Parol6 (6-DOF)",
+          "role": "Inspection",
+          "tool": "AOI (Automated Optical Inspection) System",
+          "urtcConnected": true,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 4,
+          "name": "Robot A4",
+          "online": false,
+          "model": "Faze4 (6-DOF)",
+          "role": "Idle",
+          "tool": "None",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 5,
+          "name": "Robot A5",
+          "online": false,
+          "model": "Parol6 (6-DOF)",
+          "role": "Idle",
+          "tool": "None",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 6,
+          "name": "Robot A6",
+          "online": false,
+          "model": "Faze4 (6-DOF)",
+          "role": "Idle",
+          "tool": "None",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 7,
+          "name": "Robot A7",
+          "online": false,
+          "model": "Parol6 (6-DOF)",
+          "role": "Idle",
+          "tool": "None",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 8,
+          "name": "Robot A8",
+          "online": false,
+          "model": "Faze4 (6-DOF)",
+          "role": "Idle",
+          "tool": "None",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        }
+      ],
+      "cameras": [
+        {
+          "id": 1,
+          "connected": true,
+          "type": "USB Vision Camera",
+          "yoloEnabled": true,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 10,
+                "y": 20,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 30,
+                "y": 40,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "connected": true,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 15,
+                "y": 22,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 35,
+                "y": 42,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 20,
+                "y": 24,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 40,
+                "y": 44,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 25,
+                "y": 26,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 45,
+                "y": 46,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 30,
+                "y": 28,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 50,
+                "y": 48,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 35,
+                "y": 30,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 55,
+                "y": 50,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 40,
+                "y": 32,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 60,
+                "y": 52,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 45,
+                "y": 34,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 65,
+                "y": 54,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "192.168.1.101",
+      "name": "HYDRA-UMC Node 2",
+      "ip": "192.168.1.101",
+      "status": "offline",
+      "fdcanBaudrate": 500,
+      "fdcanDataBaudrate": 4000,
+      "robots": [
+        {
+          "id": 1,
+          "name": "Robot A1",
+          "online": false,
+          "model": "Parol6 (6-DOF)",
+          "role": "Pnp",
+          "tool": "Vacuum / Pneumatic Gripper",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": true,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 2,
+          "name": "Robot A2",
+          "online": false,
+          "model": "Faze4 (6-DOF)",
+          "role": "CNC",
+          "tool": "Engraving Laser Diode (10W optical)",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 3,
+          "name": "Robot A3",
+          "online": false,
+          "model": "Parol6 (6-DOF)",
+          "role": "Inspection",
+          "tool": "AOI (Automated Optical Inspection) System",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 4,
+          "name": "Robot A4",
+          "online": false,
+          "model": "Faze4 (6-DOF)",
+          "role": "Idle",
+          "tool": "None",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 5,
+          "name": "Robot A5",
+          "online": false,
+          "model": "Parol6 (6-DOF)",
+          "role": "Idle",
+          "tool": "None",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 6,
+          "name": "Robot A6",
+          "online": false,
+          "model": "Faze4 (6-DOF)",
+          "role": "Idle",
+          "tool": "None",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 7,
+          "name": "Robot A7",
+          "online": false,
+          "model": "Parol6 (6-DOF)",
+          "role": "Idle",
+          "tool": "None",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        },
+        {
+          "id": 8,
+          "name": "Robot A8",
+          "online": false,
+          "model": "Faze4 (6-DOF)",
+          "role": "Idle",
+          "tool": "None",
+          "urtcConnected": false,
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "a": 0,
+            "b": 0,
+            "c": 0
+          },
+          "joints": {
+            "j1": 0,
+            "j2": -45,
+            "j3": 45,
+            "j4": 0,
+            "j5": 90,
+            "j6": 0
+          },
+          "valves": [
+            false,
+            false
+          ],
+          "pumps": [
+            false,
+            false
+          ],
+          "endstops": {
+            "x1": false,
+            "x2": false,
+            "y1": false,
+            "y2": false,
+            "z0": false
+          },
+          "recordedPoints": [],
+          "playbackState": {
+            "isPlaying": false,
+            "activeStep": 0,
+            "speed": 100,
+            "isLooping": false
+          },
+          "hasXYTable": false,
+          "juanenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "lumenPnP": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenCNC": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "juanenLaser": {
+            "enabled": false,
+            "size": {
+              "width": 500,
+              "length": 500
+            }
+          },
+          "vacuumTable": {
+            "enabled": false,
+            "size": {
+              "width": 100,
+              "length": 100
+            },
+            "pumpActive": false,
+            "valveActive": false
+          },
+          "heatedBed": {
+            "enabled": false,
+            "size": {
+              "width": 200,
+              "length": 200
+            },
+            "targetTemp": 60,
+            "currentTemp1": 25,
+            "currentTemp2": 25,
+            "ssrActive": false
+          },
+          "rackSystem": {
+            "enabled": false,
+            "rack1": {
+              "type": "Input",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            },
+            "rack2": {
+              "type": "Output",
+              "capacity": 24,
+              "usableSlots": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "basePickupPos": {
+                "j1": 0,
+                "j2": 0,
+                "j3": 0,
+                "j4": 0,
+                "j5": 0,
+                "j6": 0,
+                "tx": 0,
+                "ty": 0
+              }
+            }
+          },
+          "xyTable": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "tableSize": {
+              "width": 500,
+              "length": 500
+            }
+          }
+        }
+      ],
+      "cameras": [
+        {
+          "id": 1,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": true,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 10,
+                "y": 20,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 30,
+                "y": 40,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 15,
+                "y": 22,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 35,
+                "y": 42,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 20,
+                "y": 24,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 40,
+                "y": 44,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 25,
+                "y": 26,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 45,
+                "y": 46,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 30,
+                "y": 28,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 50,
+                "y": 48,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 35,
+                "y": 30,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 55,
+                "y": 50,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 40,
+                "y": 32,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 60,
+                "y": 52,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "connected": false,
+          "type": "USB Vision Camera",
+          "yoloEnabled": false,
+          "detections": [
+            {
+              "label": "PCB_PANEL",
+              "confidence": 0.98,
+              "box": {
+                "x": 45,
+                "y": 34,
+                "w": 50,
+                "h": 40
+              }
+            },
+            {
+              "label": "IC_CHIP",
+              "confidence": 0.85,
+              "box": {
+                "x": 65,
+                "y": 54,
+                "w": 15,
+                "h": 15
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "activeControllerId": "1"
+}

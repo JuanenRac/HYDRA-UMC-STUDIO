@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - 3D View Component: Parol6Arm.tsx
+// HYDRA-UMC STUDIO - React Component: Parol6Arm.tsx
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================

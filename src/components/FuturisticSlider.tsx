@@ -1,3 +1,9 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - UI Control Component: FuturisticSlider.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+
 import React, { useRef, useState, useEffect } from 'react';
 import { clsx } from 'clsx';
 
@@ -12,6 +18,10 @@ interface FuturisticSliderProps {
 export function FuturisticSlider({ min, max, value, onChange, className }: FuturisticSliderProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const onChangeRef = useRef(onChange);
+  const minRef = useRef(min);
+  const maxRef = useRef(max);
+  useEffect(() => { onChangeRef.current = onChange; minRef.current = min; maxRef.current = max; }, [onChange, min, max]);
 
   const clampedValue = Math.min(max, Math.max(min, value || 0));
   const pct = (clampedValue - min) / (max - min);
@@ -39,8 +49,8 @@ export function FuturisticSlider({ min, max, value, onChange, className }: Futur
     let newPct = (clientX - rect.left) / rect.width;
     newPct = Math.max(0, Math.min(1, newPct));
     
-    const newVal = min + newPct * (max - min);
-    onChange(Number(newVal.toFixed(1)));
+    const newVal = minRef.current + newPct * (maxRef.current - minRef.current);
+    onChangeRef.current(Number(newVal.toFixed(1)));
   };
 
   useEffect(() => {

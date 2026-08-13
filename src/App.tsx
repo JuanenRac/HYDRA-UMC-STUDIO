@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Core application file: App.tsx
+// HYDRA-UMC STUDIO - Main Router and Layout Component: App.tsx
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================

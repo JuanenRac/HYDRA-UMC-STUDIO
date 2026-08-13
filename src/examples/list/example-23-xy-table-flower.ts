@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Example kinematics pattern: example-23-xy-table-flower.ts
+// HYDRA-UMC STUDIO - React Component: example-23-xy-table-flower.ts
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================

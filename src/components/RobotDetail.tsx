@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - React Component: RobotDetail.tsx
+// HYDRA-UMC STUDIO - Robot Control Component: RobotDetail.tsx
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================
@@ -335,33 +335,46 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
 
   const loadWorkFile = async (fileName: string) => {
     setSelectedWorkFile(fileName);
-    updateRobot(robot.id, { selectedWorkFile: fileName });
-    if (!fileName) return;
+    if (!fileName) {
+      updateRobot(robot.id, { selectedWorkFile: fileName });
+      return;
+    }
     try {
       const folderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
       const res = await fetch(`/${folderPath}/${fileName}`);
       if (res.ok) {
         const points = await res.json();
-        updateRobot(robot.id, { recordedPoints: points });
+        updateRobot(robot.id, { selectedWorkFile: fileName, recordedPoints: points });
+      } else {
+        updateRobot(robot.id, { selectedWorkFile: fileName });
       }
     } catch (e) {
       console.error(e);
+      updateRobot(robot.id, { selectedWorkFile: fileName });
     }
   };
 
   const loadExample = (id: string) => {
+console.log("Loading example:", id);
     setSelectedExample(id);
-    updateRobot(robot.id, { selectedExample: id });
     const ex = examples.find(e => e.id === id);
     if (ex) {
-      updateRobot(robot.id, { recordedPoints: ex.points as any });
+      console.log("Updating robot with example points", ex.points.length);
+      if (ex && ex.points) {
+        updateRobot(robot.id, { selectedExample: id, recordedPoints: JSON.parse(JSON.stringify(ex.points)) });
+      } else {
+        updateRobot(robot.id, { selectedExample: id });
+      }
+    } else {
+      updateRobot(robot.id, { selectedExample: id });
     }
+
   };
 
   const loadExampleForRobot = (botId: number, exId: string) => {
     const ex = examples.find(e => e.id === exId);
     if (ex) {
-      updateRobot(botId, { recordedPoints: ex.points as any });
+      updateRobot(botId, { recordedPoints: JSON.parse(JSON.stringify(ex.points)) });
     }
   };
 
@@ -846,14 +859,16 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
             </div>
 
             {/* Camera PIP Windows */}
-            <CameraPIP 
-              bot={robot} 
-              initialX={0} 
-              initialY={0} 
-              label={robot.name} 
-              t={t} 
-            />
-            {combinedBotsInfo.map((bot, index) => (
+            {robot.online && (
+              <CameraPIP 
+                bot={robot} 
+                initialX={0} 
+                initialY={0} 
+                label={robot.name} 
+                t={t} 
+              />
+            )}
+            {combinedBotsInfo.map((bot, index) => bot.online ? (
               <CameraPIP 
                 key={bot.id} 
                 bot={bot} 
@@ -862,7 +877,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
                 label={bot.name} 
                 t={t} 
               />
-            ))}
+            ) : null)}
             
             {/* Horizontal Resize Handle for 3D View */}
             <div 
@@ -1027,7 +1042,14 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 min-h-[44px]">
                   <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('robot_detail.speed', 'Speed:')}</span>
-                  <div className="w-32">
+                  <RotaryKnob 
+                    min={10} 
+                    max={500} 
+                    value={playbackSpeed} 
+                    onChange={handleSpeedChange} 
+                    size={40}
+                  />
+                  <div className="w-32 ml-2">
                     <FuturisticSlider 
                       min={10} 
                       max={500} 

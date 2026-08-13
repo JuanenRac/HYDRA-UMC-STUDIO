@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - 3D View Component: RobotArm.tsx
+// HYDRA-UMC STUDIO - Robot Control Component: RobotArm.tsx
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================

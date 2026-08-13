@@ -1,22 +1,21 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Example kinematics pattern: example-5-xy-table-sync.ts
+// HYDRA-UMC STUDIO - React Component: example-5-xy-table-sync.ts
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
 import type { KinematicsExample } from '../utils';
-import { generateCircle, generateSpiral, generateWave, generateStar, generateRaster } from '../utils';
+import { cartesianToJoints } from '../utils';
 
-/** Stores the Example configuration or state data. */
 const example: KinematicsExample = {
   id: 'example-5-xy-table-sync',
-  name: 'Sync Robot & XY Table',
+  name: 'XY Table Sync',
   points: [
-      { j1: 0, j2: -47.739, j3: 108.186, j4: 0, j5: -24.075, j6: 0 },
-      { j1: -11.31, j2: -46.817, j3: 89.44, j4: 45, j5: -43.742, j6: 0 },
-      { j1: 11.31, j2: -46.817, j3: 89.44, j4: -45, j5: -43.742, j6: 0 },
-      { j1: 0, j2: -47.739, j3: 108.186, j4: 0, j5: -24.075, j6: 0 }
-]
+      { ...cartesianToJoints(150, 0, 10, 0, 0, 0), tx: -50, ty: -50 },
+      { ...cartesianToJoints(200, 50, 10, 0, 0, 0), tx: 0, ty: 50 },
+      { ...cartesianToJoints(250, 0, 10, 0, 0, 0), tx: 50, ty: -50 },
+      { ...cartesianToJoints(200, -50, 10, 0, 0, 0), tx: 0, ty: 0 },
+      { ...cartesianToJoints(150, 0, 10, 0, 0, 0), tx: -50, ty: -50 }
+  ]
 };
-
 export default example;

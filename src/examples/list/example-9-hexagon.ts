@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Example kinematics pattern: example-9-hexagon.ts
+// HYDRA-UMC STUDIO - React Component: example-9-hexagon.ts
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================

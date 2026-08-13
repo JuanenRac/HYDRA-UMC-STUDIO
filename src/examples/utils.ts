@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Examples utility or registry: utils.ts
+// HYDRA-UMC STUDIO - React Component: utils.ts
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================

@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Core application file: store.tsx
+// HYDRA-UMC STUDIO - Global State Management and Context: store.tsx
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================
@@ -339,55 +339,14 @@ const HydraContext = createContext<HydraStoreContextType | null>(null);
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
 export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [controllers, setControllers] = useState<HydraController[]>(() => {
-    try {
-      const saved = localStorage.getItem('hydra_controllers');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        parsed.forEach((c: any) => c.robots?.forEach((r: any) => {
-          if (!r.playbackState) r.playbackState = { isPlaying: false, activeStep: 0, speed: 100 };
-        }));
-        return parsed;
-      }
-    } catch(e) {}
-    
-    let host = '192.168.1.100';
-    if (typeof window !== 'undefined' && window.location.hostname) {
-      host = window.location.hostname;
-    }
-    const def = JSON.parse(JSON.stringify(defaultControllers));
-    def[0].ip = host;
-    def[0].id = host;
-    return def;
-  });
-  const [activeControllerId, setActiveControllerId] = useState<string>(() => {
-    try {
-      const saved = localStorage.getItem('hydra_active_controller_id');
-      if (saved) return saved;
-    } catch(e) {}
-    
-    let host = '192.168.1.100';
-    if (typeof window !== 'undefined' && window.location.hostname) {
-      host = window.location.hostname;
-    }
-    return host;
-  });
-  const [settings, setSettings] = useState<SystemSettings>(() => {
-    let host = '192.168.1.100';
-    if (typeof window !== 'undefined' && window.location.hostname) {
-      host = window.location.hostname;
-    }
-    
-    try {
-      const saved = localStorage.getItem('hydra_settings');
-      if (saved) return JSON.parse(saved);
-    } catch(e) {}
-    return {
+  const [controllers, setControllers] = useState<HydraController[]>(defaultControllers);
+  const [activeControllerId, setActiveControllerId] = useState<string>('192.168.1.100');
+  const [settings, setSettings] = useState<SystemSettings>({
     visibleModules: ['Vision/Cameras', 'Robots', 'Macros/Tasks', 'Node Network', 'Settings'],
     integrations: {
-      openPnP: { enabled: false, ip: host, port: 8080 },
-      slic3r: { enabled: false, ip: host, port: 8080 },
-      prusaSlicer: { enabled: false, ip: host, port: 8080 },
+      openPnP: { enabled: false, ip: '192.168.1.100', port: 8080 },
+      slic3r: { enabled: false, ip: '192.168.1.100', port: 8080 },
+      prusaSlicer: { enabled: false, ip: '192.168.1.100', port: 8080 },
       cnc: { software: 'LinuxCNC', enabled: false, port: 8080 },
       laser: { software: 'LightBurn', enabled: false, port: 8080 },
     },
@@ -400,40 +359,87 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       rightPanelWidth: 320,
       pointsTableHeight: 300,
     }
-    };
   });
+  const [isLoaded, setIsLoaded] = useState(false);
 
   React.useEffect(() => {
-    fetch('/settings.json').then(r => r.json()).then(data => {
-      setSettings(prev => ({ ...prev, ...data }));
-    }).catch(() => {});
+    fetch('/api/settings').then(r => r.json()).then(data => {
+      let host = '192.168.1.100';
+      if (typeof window !== 'undefined' && window.location.hostname) {
+        host = window.location.hostname;
+      }
+      
+      if (data && Object.keys(data).length > 0) {
+        if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
+        else setSettings(prev => ({ ...prev, ...data })); // fallback for old settings.json
+        let finalControllers: any[] = [];
+        if (data.controllers && data.controllers.length > 0) {
+          const parsed = data.controllers;
+          parsed.forEach((c: any) => c.robots?.forEach((r: any) => {
+            if (!r.playbackState) r.playbackState = { isPlaying: false, activeStep: 0, speed: 100 };
+          }));
+          setControllers(parsed);
+          finalControllers = parsed;
+        } else {
+          const def = JSON.parse(JSON.stringify(defaultControllers));
+          def[0].ip = host;
+          def[0].id = host;
+          setControllers(def);
+          finalControllers = def;
+        }
+        let actId = data.activeControllerId || host;
+        if (!finalControllers.some(c => c.id === actId)) actId = finalControllers[0]?.id || host;
+        setActiveControllerId(actId);
+      } else {
+        setSettings(prev => ({
+           ...prev,
+           integrations: {
+             openPnP: { enabled: false, ip: host, port: 8080 },
+             slic3r: { enabled: false, ip: host, port: 8080 },
+             prusaSlicer: { enabled: false, ip: host, port: 8080 },
+             cnc: { software: 'LinuxCNC', enabled: false, port: 8080 },
+             laser: { software: 'LightBurn', enabled: false, port: 8080 },
+           }
+        }));
+        const def = JSON.parse(JSON.stringify(defaultControllers));
+        def[0].ip = host;
+        def[0].id = host;
+        setControllers(def);
+        setActiveControllerId(host);
+      }
+      setIsLoaded(true);
+    }).catch(() => {
+      setIsLoaded(true);
+    });
   }, []);
 
   React.useEffect(() => {
-    localStorage.setItem('hydra_settings', JSON.stringify(settings));
-    fetch('/api/save-settings', {
-      method: 'POST',
-      body: JSON.stringify(settings)
-    }).catch(() => {});
-  }, [settings]);
+    if (!isLoaded) return;
+    const payload = {
+      settings,
+      controllers,
+      activeControllerId
+    };
+    const timer = setTimeout(() => {
+      fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => {});
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [settings, controllers, activeControllerId, isLoaded]);
 
-  React.useEffect(() => {
-    localStorage.setItem('hydra_controllers', JSON.stringify(controllers));
-  }, [controllers]);
-
-  React.useEffect(() => {
-    localStorage.setItem('hydra_active_controller_id', activeControllerId);
-  }, [activeControllerId]);
-
-  const activeController = useMemo(() => controllers.find(c => c.id === activeControllerId) || controllers[0], [controllers, activeControllerId]);
-  const robots = activeController.robots;
-  const cameras = activeController.cameras;
+  const activeController = useMemo(() => controllers.find(c => c.id === activeControllerId) || controllers[0] || defaultControllers[0], [controllers, activeControllerId]);
+  const robots = activeController?.robots || [];
+  const cameras = activeController?.cameras || [];
 
   const updateController = (id: string, updates: Partial<HydraController>) => {
     setControllers((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)));
   };
 
   const updateRobot = (id: number, updates: Partial<RobotState>) => {
+    
     setControllers((prev) => prev.map((c) => {
       if (c.id !== activeControllerId) return c;
       return { ...c, robots: c.robots.map(r => (r.id === id ? { ...r, ...updates } : r)) };
@@ -531,8 +537,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     e.target.value = '';
   };
 
-  const factoryReset = () => {
-    localStorage.clear();
+  const factoryReset = async () => {
+    await fetch("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
     window.location.reload();
   };
 

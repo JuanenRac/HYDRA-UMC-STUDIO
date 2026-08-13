@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Core application file: Dashboard.tsx
+// HYDRA-UMC STUDIO - Main Dashboard Interface: Dashboard.tsx
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================
@@ -11,7 +11,7 @@ import { useHydraStore, createDefaultRobots, createDefaultCameras } from './stor
 import { 
   Activity, Crosshair, Layers, 
   Video, Focus, Settings, Menu, Plus, Trash2, Search, AlertTriangle, Power
-, Cpu, PenTool, Zap, Wind, Thermometer, Download, Upload, RefreshCw } from 'lucide-react';
+, Cpu, PenTool, Zap, Wind, Thermometer, Download, Upload, RefreshCw, Server } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -652,13 +652,22 @@ export default function Dashboard() {
                   label={t('dashboard.vision_cameras', 'Vision / Cameras')} 
                   active={activeTab === 'cameras'} 
                   onClick={() => setActiveTab('cameras')} 
+                  className="py-3 min-h-[50px] text-base"
                 />
               )}
+
+              <NavItem 
+                icon={<Server size={18} />} 
+                label="URTC" 
+                active={activeTab === 'urtc'} 
+                onClick={() => setActiveTab('urtc')} 
+                className="py-3 min-h-[50px] text-base"
+              />
 
               <button
                 onClick={() => setIsModulesMenuOpen(true)}
                 className={cn(
-                  "flex items-center gap-4 px-4 py-4 min-h-[64px] rounded-xl font-medium text-lg transition-all",
+                  "flex items-center gap-4 px-4 py-3 min-h-[50px] rounded-xl font-medium text-base transition-all",
                   isModulesMenuOpen || ['xytable', 'atc', 'rack', 'pickandplace', 'cnc', 'laser', 'vacuumtable', 'heatedbed'].includes(activeTab)
                     ? "bg-sky-500/10 text-sky-400 glow-border-sky" 
                     : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
@@ -697,7 +706,7 @@ export default function Dashboard() {
  * Executes the  nav item logic. 
  * This function handles the necessary computations and state updates.
  */
-function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void }) {
+function NavItem({ icon, label, active, onClick, className }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void, className?: string }) {
   return (
     <button
       onClick={onClick}
@@ -705,7 +714,8 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, labe
         "flex items-center gap-4 px-4 py-4 min-h-[64px] rounded-xl font-medium text-lg transition-all",
         active 
           ? "bg-sky-500 text-slate-950 shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400" 
-          : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
+          : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent",
+        className
       )}
     >
       {icon}

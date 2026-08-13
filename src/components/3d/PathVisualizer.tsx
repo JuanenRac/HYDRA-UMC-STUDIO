@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - 3D View Component: PathVisualizer.tsx
+// HYDRA-UMC STUDIO - React Component: PathVisualizer.tsx
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================

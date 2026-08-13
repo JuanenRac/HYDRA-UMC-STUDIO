@@ -1,5 +1,5 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Example kinematics pattern: example-13-xy-table-large-raster.ts
+// HYDRA-UMC STUDIO - React Component: example-13-xy-table-large-raster.ts
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================
