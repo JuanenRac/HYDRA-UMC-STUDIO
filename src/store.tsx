@@ -375,9 +375,17 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         let finalControllers: any[] = [];
         if (data.controllers && data.controllers.length > 0) {
           const parsed = data.controllers;
-          parsed.forEach((c: any) => c.robots?.forEach((r: any) => {
+          parsed.forEach((c: any) => {
+            // If the saved controller is from the cloud environment, auto-correct it to the current local host
+            if (typeof c.id === 'string' && c.id.includes('.run.app')) {
+              c.id = host;
+              c.ip = host;
+              c.name = `HYDRA-UMC (${host})`;
+            }
+            c.robots?.forEach((r: any) => {
             if (!r.playbackState) r.playbackState = { isPlaying: false, activeStep: 0, speed: 100 };
-          }));
+            });
+          });
           setControllers(parsed);
           finalControllers = parsed;
         } else {
