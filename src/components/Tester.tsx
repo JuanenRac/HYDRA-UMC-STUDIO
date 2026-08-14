@@ -50,12 +50,20 @@ function categoryFor(tool: ToolType): ToolCategory {
   return TOOL_CATEGORY[tool] || 'generic';
 }
 
-export function Tester() {
+const ALL_TIERS: CanOtaTier[] = ['kinematicBrain', 'controllerBoard', 'urtcHead', 'urtcExpansion'];
+
+/**
+ * `tiers` restricts which of the 4 CAN-OTA tiers this instance offers - see
+ * Flasher.tsx's own header comment on the "URTC" vs "HYDRA-UMC" nav button
+ * split this exists for (Dashboard.tsx).
+ */
+export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   const { t } = useTranslation();
   const { activeController, updateRobot, updateController } = useHydraStore();
   const robots = activeController?.robots || [];
 
-  const [tier, setTier] = useState<CanOtaTier>('controllerBoard');
+  const [tier, setTier] = useState<CanOtaTier>(tiers[0]);
+  useEffect(() => { if (!tiers.includes(tier)) setTier(tiers[0]); }, [tiers]); // eslint-disable-line
   const [robotId, setRobotId] = useState<number>(robots[0]?.id ?? 0);
   const [querying, setQuerying] = useState(false);
   const [statusColor, setStatusColor] = useState('#00ff66');
@@ -162,10 +170,10 @@ export function Tester() {
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] text-slate-500 uppercase font-bold">{t('flasher.board', 'Board')}</label>
             <select value={tier} onChange={e => setTier(e.target.value as CanOtaTier)} className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
-              <option value="kinematicBrain">{t('flasher.target_kinematic_brain')} ({chipNameFor('kinematicBrain')})</option>
-              <option value="controllerBoard">{t('flasher.target_controller_board')} ({chipNameFor('controllerBoard')})</option>
-              <option value="urtcHead" disabled={!robot?.urtcConnected}>{t('flasher.target_urtc_head')} ({chipNameFor('urtcHead')})</option>
-              <option value="urtcExpansion" disabled={!expansionAvailable}>{t('flasher.target_urtc_expansion')} ({chipNameFor('urtcExpansion')}){!expansionAvailable ? ` - ${t('flasher.expansion_not_present')}` : ''}</option>
+              {tiers.includes('kinematicBrain') && <option value="kinematicBrain">{t('flasher.target_kinematic_brain')} ({chipNameFor('kinematicBrain')})</option>}
+              {tiers.includes('controllerBoard') && <option value="controllerBoard">{t('flasher.target_controller_board')} ({chipNameFor('controllerBoard')})</option>}
+              {tiers.includes('urtcHead') && <option value="urtcHead" disabled={!robot?.urtcConnected}>{t('flasher.target_urtc_head')} ({chipNameFor('urtcHead')})</option>}
+              {tiers.includes('urtcExpansion') && <option value="urtcExpansion" disabled={!expansionAvailable}>{t('flasher.target_urtc_expansion')} ({chipNameFor('urtcExpansion')}){!expansionAvailable ? ` - ${t('flasher.expansion_not_present')}` : ''}</option>}
             </select>
           </div>
           {needsRobotSlot && (

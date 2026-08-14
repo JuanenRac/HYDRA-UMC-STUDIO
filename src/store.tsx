@@ -114,6 +114,41 @@ export interface CanOtaBoardState {
   lastSeen?: number;
 }
 
+/**
+ * Live state for the Kinematic Brain's OWN local 6-axis stage (STM32H745,
+ * docs/PINOUT_STM32H745_KINEMATIC_BRAIN.TXT section 3) - CONFIRMED job per
+ * axis (project owner): X/Y1/Y2 = dual-Y XY gantry table, Z = table/head
+ * height, E0 = NEMA stepper indexing the ATC (Automatic Tool Changer)
+ * revolver/turret (a ROTARY axis sharing the same STEP/DIR/EN interface as
+ * the linear axes), E1 = a FUTURE conveyor belt's own NEMA motor (wired and
+ * pinned out today, nothing physically installed yet). This is
+ * CONTROLLER-level state (one Kinematic Brain per HydraController), not
+ * per-robot - see docs/CANBUS_STM32H745.TXT section 4.
+ */
+export interface KinematicBrainStage {
+  xyTable: {
+    x: number; y1: number; y2: number; z: number;
+    tableSize: { width: number; length: number; height: number };
+  };
+  heatedBed: { targetTemp: number; currentTemp1: number; currentTemp2: number; ssrActive: boolean };
+  atcRevolver: { toolCount: number; currentIndex: number; targetIndex: number; homed: boolean };
+  /** installed=false by default - E1/conveyor is wired+pinned but not yet a built feature, see this interface's own header comment. */
+  conveyor: { installed: boolean; running: boolean; speedPercent: number };
+  // 2 endstops per axis (X,Y1,Y2,Z,E0,E1) = 12 total, docs/PINOUT_STM32H745_KINEMATIC_BRAIN.TXT section 4
+  endstops: {
+    xMin: boolean; xMax: boolean;
+    y1Min: boolean; y1Max: boolean;
+    y2Min: boolean; y2Max: boolean;
+    zMin: boolean; zMax: boolean;
+    e0Min: boolean; e0Max: boolean;
+    e1Min: boolean; e1Max: boolean;
+  };
+  fans: [boolean, boolean, boolean];
+  // 8+2 each - docs/PINOUT_STM32H745_KINEMATIC_BRAIN.TXT sections 6-7
+  pumps: boolean[];
+  valves: boolean[];
+}
+
 /** Defines the data structure and expected properties for  robot state entities. */
 export interface RobotState {
   id: number;
@@ -154,6 +189,8 @@ export interface RobotState {
     isLooping?: boolean;
     activeStep: number;
     speed: number;
+    /** Kinematics acceleration, percent (10-500, same scale as speed) - always had a speed control here but never one for acceleration, per the project owner. Defaults to 100 (matches this robot's own default un-scaled accel profile). */
+    acceleration?: number;
   };
   cameraView?: { position: [number, number, number]; target: [number, number, number] };
   centerCameraTrigger?: number;
@@ -201,7 +238,21 @@ export interface HydraController {
   // This controller's own STM32H745ZIT6 "kinematic brain" (Tier 0, reached directly over
   // SPI - no FDCAN1 "STACK A" slot involved). See HYDRA-UMC's docs/architecture.md.
   kinematicBrain?: CanOtaBoardState;
+  // That same chip's own local 6-axis stage - see KinematicBrainStage's own header comment.
+  kinematicBrainStage?: KinematicBrainStage;
 }
+
+/** Default/idle values for a freshly-added controller's own Kinematic Brain stage. */
+export const createDefaultKinematicBrainStage = (): KinematicBrainStage => ({
+  xyTable: { x: 0, y1: 0, y2: 0, z: 0, tableSize: { width: 600, length: 400, height: 150 } },
+  heatedBed: { targetTemp: 0, currentTemp1: 24, currentTemp2: 24, ssrActive: false },
+  atcRevolver: { toolCount: 6, currentIndex: 0, targetIndex: 0, homed: false },
+  conveyor: { installed: false, running: false, speedPercent: 0 },
+  endstops: { xMin: false, xMax: false, y1Min: false, y1Max: false, y2Min: false, y2Max: false, zMin: false, zMax: false, e0Min: false, e0Max: false, e1Min: false, e1Max: false },
+  fans: [false, false, false],
+  pumps: Array(10).fill(false),
+  valves: Array(10).fill(false),
+});
 
 /** Defines the data structure and expected properties for  system settings entities. */
 export interface SystemSettings {
@@ -352,6 +403,7 @@ const defaultControllers: HydraController[] = [
     robots: createDefaultRobots(),
     cameras: createDefaultCameras(),
     kinematicBrain: { firmwareVersion: '0.9.0', bootloaderVersion: '1.0.0', hardwareId: 'KB-001' },
+    kinematicBrainStage: createDefaultKinematicBrainStage(),
   },
   {
     id: '192.168.1.101',

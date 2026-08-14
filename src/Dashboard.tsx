@@ -39,6 +39,8 @@ import { RackConfigView } from './components/RackConfigView';
 import { GamepadConfig } from './components/GamepadConfig';
 import { Flasher } from './components/Flasher';
 import { Tester } from './components/Tester';
+import { KinematicBrainStage } from './components/KinematicBrainStage';
+import { slotLabel } from './lib/canOta';
 
 /**
  * Executes the  dashboard logic. 
@@ -62,6 +64,7 @@ export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isModulesMenuOpen, setIsModulesMenuOpen] = useState(false);
   const [isUrtcMenuOpen, setIsUrtcMenuOpen] = useState(false);
+  const [isHydraUmcMenuOpen, setIsHydraUmcMenuOpen] = useState(false);
   
 
   const activeRobot = robots.find(r => r.id === selectedRobotId);
@@ -538,7 +541,7 @@ export default function Dashboard() {
                     </div>
                     <div className="bg-sky-900/20 border border-sky-800/50 rounded-lg p-4">
                       <p className="text-sm text-sky-200/80 leading-relaxed">
-                        {t('config.can_ota_desc', 'Settings for the Flasher/Tester modules (Shared Resources > URTC): firmware flashing and diagnostics over the CM5 -> SPI -> STM32H745 -> FDCAN1 -> Robot Controller Board -> CAN -> URTC Tool Head chain. See HYDRA-UMC\'s own docs/architecture.md for the full addressing scheme.')}
+                        {t('config.can_ota_desc', 'Settings shared by BOTH Flasher/Tester pairs in this dashboard: Shared Resources → URTC (Tool Head + its Advanced Expansion Board only) and Shared Resources → HYDRA-UMC (Kinematic Brain + Robot Controller Board only - split out from URTC\'s own menu, which used to incorrectly include them). Same underlying transport for the full chain: CM5 -> SPI -> STM32H745 -> FDCAN1 -> Robot Controller Board -> CAN -> URTC Tool Head -> I2C -> Advanced Expansion Board. See HYDRA-UMC\'s own docs/architecture.md, docs/CANBUS_STM32H745.TXT and docs/CANBUS_STM32G474.TXT for the full wire-level protocol.')}
                       </p>
                     </div>
 
@@ -558,15 +561,23 @@ export default function Dashboard() {
                     <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
                       <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('config.can_ota_mcu', 'Robot Controller Board MCU')}</label>
                       <input
-                        value={settings.canOta?.robotControllerBoardMcu || ''}
+                        value={settings.canOta?.robotControllerBoardMcu || 'STM32G474RET6'}
                         onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), robotControllerBoardMcu: e.target.value } })}
-                        placeholder={t('config.can_ota_mcu_placeholder', 'e.g. STM32G474 (2x FDCAN) - unconfirmed')}
+                        placeholder="STM32G474RET6"
                         className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full max-w-sm font-mono"
                       />
-                      <p className="text-xs text-slate-500 mt-1">{t('config.can_ota_mcu_desc', 'Not yet documented anywhere in this project - fill it in once confirmed, no code change needed. See HYDRA-UMC docs/architecture.md section 4.')}</p>
+                      <p className="text-xs text-slate-500 mt-1">{t('config.can_ota_mcu_desc', 'CONFIRMED: STM32G474RET6, LQFP-64, 512KB flash, 3x FDCAN (2 in use) - see docs/PINOUT_STM32G474_ROBOT_CONTROLLER.TXT and docs/CANBUS_STM32G474.TXT. Editable here only in case a future board revision changes it.')}</p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('flasher.target_kinematic_brain')}</label>
+                        <input
+                          value={settings.canOta?.firmwarePaths?.kinematicBrain || 'FIRMWARE/KinematicBrain'}
+                          onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), firmwarePaths: { ...(settings.canOta?.firmwarePaths || {}), kinematicBrain: e.target.value } } })}
+                          className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full font-mono"
+                        />
+                      </div>
                       <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
                         <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('flasher.target_controller_board')}</label>
                         <input
@@ -580,6 +591,14 @@ export default function Dashboard() {
                         <input
                           value={settings.canOta?.firmwarePaths?.urtcHead || 'FIRMWARE/URTCHead'}
                           onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), firmwarePaths: { ...(settings.canOta?.firmwarePaths || {}), urtcHead: e.target.value } } })}
+                          className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full font-mono"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('flasher.target_urtc_expansion')}</label>
+                        <input
+                          value={settings.canOta?.firmwarePaths?.urtcExpansion || 'FIRMWARE/URTCExpansion'}
+                          onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), firmwarePaths: { ...(settings.canOta?.firmwarePaths || {}), urtcExpansion: e.target.value } } })}
                           className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full font-mono"
                         />
                       </div>
@@ -712,19 +731,36 @@ export default function Dashboard() {
             </div>
           ) : isUrtcMenuOpen ? (
             <div className="flex flex-col gap-3 h-full animate-in slide-in-from-right-4 fade-in duration-300">
-              <button 
+              <button
                 onClick={() => setIsUrtcMenuOpen(false)}
                 className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-slate-400 hover:text-slate-200 transition-colors uppercase tracking-wider mb-2"
               >
                 ← {t('dashboard.back', 'Back')}
               </button>
-              
+
               <div className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                 URTC
               </div>
-              
+
               <NavItem icon={<Cpu size={18} />} label="Flasher" active={activeTab === 'flasher'} onClick={() => setActiveTab('flasher')} />
               <NavItem icon={<Activity size={18} />} label="Tester" active={activeTab === 'tester'} onClick={() => setActiveTab('tester')} />
+            </div>
+          ) : isHydraUmcMenuOpen ? (
+            <div className="flex flex-col gap-3 h-full animate-in slide-in-from-right-4 fade-in duration-300">
+              <button
+                onClick={() => setIsHydraUmcMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-slate-400 hover:text-slate-200 transition-colors uppercase tracking-wider mb-2"
+              >
+                ← {t('dashboard.back', 'Back')}
+              </button>
+
+              <div className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                HYDRA-UMC
+              </div>
+
+              <NavItem icon={<Cpu size={18} />} label="Flasher" active={activeTab === 'hydraFlasher'} onClick={() => setActiveTab('hydraFlasher')} />
+              <NavItem icon={<Activity size={18} />} label="Tester" active={activeTab === 'hydraTester'} onClick={() => setActiveTab('hydraTester')} />
+              <NavItem icon={<Crosshair size={18} />} label={t('dashboard.kinematic_brain_stage', 'Kinematic Brain Stage')} active={activeTab === 'kinematicBrainStage'} onClick={() => setActiveTab('kinematicBrainStage')} />
             </div>
           ) : (
             <div className="flex flex-col gap-3 h-full animate-in slide-in-from-left-4 fade-in duration-300">
@@ -778,12 +814,25 @@ export default function Dashboard() {
                 className={cn(
                   "flex items-center gap-4 px-4 py-3 min-h-[50px] rounded-xl font-medium text-base transition-all",
                   isUrtcMenuOpen || ['flasher', 'tester'].includes(activeTab)
-                    ? "bg-sky-500/10 text-sky-400 glow-border-sky" 
+                    ? "bg-sky-500/10 text-sky-400 glow-border-sky"
                     : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
                 )}
               >
                 <Server size={18} />
                 <span className="truncate">URTC</span>
+              </button>
+
+              <button
+                onClick={() => setIsHydraUmcMenuOpen(true)}
+                className={cn(
+                  "flex items-center gap-4 px-4 py-3 min-h-[50px] rounded-xl font-medium text-base transition-all",
+                  isHydraUmcMenuOpen || ['hydraFlasher', 'hydraTester', 'kinematicBrainStage'].includes(activeTab)
+                    ? "bg-sky-500/10 text-sky-400 glow-border-sky"
+                    : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
+                )}
+              >
+                <Cpu size={18} />
+                <span className="truncate">HYDRA-UMC</span>
               </button>
 
               <button
@@ -807,8 +856,11 @@ export default function Dashboard() {
           {activeTab === 'overview' && <OverviewPanel />}
           {activeTab === 'robot' && activeRobot && <RobotDetail key={activeRobot.id} robot={activeRobot} />}
           {activeTab === 'cameras' && <CamerasView />}
-          {activeTab === 'flasher' && <Flasher />}
-          {activeTab === 'tester' && <Tester />}
+          {activeTab === 'flasher' && <Flasher tiers={['urtcHead', 'urtcExpansion']} />}
+          {activeTab === 'tester' && <Tester tiers={['urtcHead', 'urtcExpansion']} />}
+          {activeTab === 'hydraFlasher' && <Flasher tiers={['kinematicBrain', 'controllerBoard']} />}
+          {activeTab === 'hydraTester' && <Tester tiers={['kinematicBrain', 'controllerBoard']} />}
+          {activeTab === 'kinematicBrainStage' && <KinematicBrainStage />}
           {activeTab === 'xytable' && <XYTableConfig />}
           {activeTab === 'atc' && <ATCToolsConfig />}
           {activeTab === 'rack' && <RackConfigView />}
@@ -893,7 +945,7 @@ function OverviewPanel() {
     <div className="w-full mx-auto space-y-6 px-2 2xl:px-8">
       <h2 className="text-2xl font-semibold text-slate-100">{t('dashboard.micro_factory_status', 'Micro-Factory Status')}</h2>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 2xl:gap-6">
-        {robots.map(r => (
+        {robots.map((r, i) => (
           <div key={r.id} className={cn(
             "p-3 rounded-lg border flex flex-col gap-2",
             r.online ? "bg-slate-900 border-slate-700 hover:glow-border-emerald transition-all duration-300 shadow-lg" : "bg-slate-900/50 border-slate-800 opacity-60"
@@ -906,8 +958,20 @@ function OverviewPanel() {
     {r.online ? t('dashboard.status.online', 'Online') : t('dashboard.connect', 'Connect')}
   </button>
             </div>
-            
-            
+
+            {/* STACK A slot / Robot Controller Board (STM32G474RET6, Tier 1) at a
+                glance - BOARD_ID slot label + real firmware version if known.
+                See docs/PINOUT_STM32G474_ROBOT_CONTROLLER.TXT section 1c and
+                docs/CANBUS_STM32G474.TXT for what this hardware actually is. */}
+            <div className="flex items-center justify-between text-[10px] font-mono bg-slate-950 px-2 py-1 rounded border border-slate-800">
+              <span className="text-slate-500 uppercase tracking-wider">{t('dashboard.stack_a_slot', 'STACK A')} {slotLabel(i)}</span>
+              <span className={cn("flex items-center gap-1", r.controllerBoard ? "text-emerald-400" : "text-slate-600")}>
+                <span className={cn("w-1.5 h-1.5 rounded-full", r.controllerBoard ? "bg-emerald-500" : "bg-slate-700")} />
+                {r.controllerBoard?.firmwareVersion || t('dashboard.no_version_short', '—')}
+              </span>
+            </div>
+
+
             {(() => {
               const hosts = robots.filter(other => other.combinedWith?.includes(r.id));
               if (hosts.length === 0) return null;

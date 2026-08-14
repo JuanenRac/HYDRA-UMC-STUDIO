@@ -564,7 +564,24 @@ console.log("Loading example:", id);
           if (!globalPlaybacks[rId]) break;
 
           const rState = robotsRef.current.find(r => r.id === rId);
-          const currentVelocity = baseVelocity * ((rState?.playbackState?.speed || 100) / 100);
+          // Acceleration control - we'd always had a speed control here but
+          // never one for acceleration (project owner). Trapezoidal-ish
+          // velocity envelope over the move's own progress `t`: ramps from 0
+          // up to full velocity over the first rampFraction of the move,
+          // cruises, then ramps back down over the last rampFraction - a
+          // real speed-vs-time shape, not just a label on the same constant-
+          // velocity motion as before. Lower acceleration% -> longer ramp
+          // (gentler, more visible acceleration/deceleration); higher -> a
+          // near-instant ramp (closest to the old constant-velocity feel).
+          // Default (100%) keeps a small, mostly-unnoticeable ramp so
+          // existing recordings/robots that never touch this control still
+          // look close to how they did before this feature existed.
+          const accelPercent = rState?.playbackState?.acceleration || 100;
+          const rampFraction = Math.min(0.45, Math.max(0.02, 0.15 * (100 / accelPercent)));
+          const accelEnvelope = t < rampFraction ? (t / rampFraction)
+            : t > 1 - rampFraction ? ((1 - t) / rampFraction)
+            : 1;
+          const currentVelocity = baseVelocity * ((rState?.playbackState?.speed || 100) / 100) * Math.max(0.05, accelEnvelope);
           const distancePerTick = currentVelocity * (16 / 1000);
           
           let tStep = distancePerTick / effectiveDist;
@@ -698,6 +715,7 @@ console.log("Loading example:", id);
   const isStartAll = combinedBotsInfo.length > 0;
 
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(robot.playbackState?.speed || 100);
+  const [playbackAcceleration, setPlaybackAcceleration] = useState<number>(robot.playbackState?.acceleration || 100);
 
   useEffect(() => {
     if (robot.playbackState?.speed !== undefined && robot.playbackState.speed !== playbackSpeed) {
@@ -705,9 +723,22 @@ console.log("Loading example:", id);
     }
   }, [robot.playbackState?.speed, robot.id]);
 
+  useEffect(() => {
+    if (robot.playbackState?.acceleration !== undefined && robot.playbackState.acceleration !== playbackAcceleration) {
+      setPlaybackAcceleration(robot.playbackState.acceleration);
+    }
+  }, [robot.playbackState?.acceleration, robot.id]);
+
   const handleSpeedChange = (newSpeed: number) => {
     setPlaybackSpeed(newSpeed);
     updateRobot(robot.id, { playbackState: { ...(robot.playbackState || {}), speed: newSpeed } });
+  };
+
+  // We'd always had a speed control here but never one for acceleration -
+  // same 10-500% scale as speed, same RotaryKnob+FuturisticSlider pair.
+  const handleAccelerationChange = (newAcceleration: number) => {
+    setPlaybackAcceleration(newAcceleration);
+    updateRobot(robot.id, { playbackState: { ...(robot.playbackState || {}), acceleration: newAcceleration } });
   };
     const playbackSpeedRef = useRef(100);
 
@@ -1127,6 +1158,26 @@ console.log("Loading example:", id);
                 </div>
 
                 <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 min-h-[44px]">
+                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('robot_detail.acceleration', 'Acceleration:')}</span>
+                  <RotaryKnob
+                    min={10}
+                    max={500}
+                    value={playbackAcceleration}
+                    onChange={handleAccelerationChange}
+                    size={40}
+                  />
+                  <div className="w-32 ml-2">
+                    <FuturisticSlider
+                      min={10}
+                      max={500}
+                      value={playbackAcceleration}
+                      onChange={handleAccelerationChange}
+                    />
+                  </div>
+                  <span className="text-xs font-mono text-amber-400 w-10 text-right">{playbackAcceleration}%</span>
+                </div>
+
+                <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 min-h-[44px]">
                   <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('robot_detail.step', 'Step:')}</span>
                   <select value={jogStep} onChange={e => setJogStep(Number(e.target.value))} className="bg-transparent border-none text-sm outline-none font-mono text-slate-200">
                     <option value={0.1}>0.1</option>
@@ -1486,7 +1537,7 @@ console.log("Loading example:", id);
                       {(['x1', 'x2', 'y1', 'y2', 'z0'] as const).map(axis => (
                         <div key={axis} className={cn(
                           "flex-1 py-3 min-h-[48px] rounded-lg flex items-center justify-center gap-2 text-sm border font-mono font-bold uppercase",
-                          robot.endstops[axis] 
+                          robot.endstops[axis]
                             ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
                             : "bg-slate-950 border-slate-800 text-slate-500"
                         )}>
@@ -1495,6 +1546,30 @@ console.log("Loading example:", id);
                         </div>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Robot Controller Board (STM32G474RET6, Tier 1) - real hardware status,
+                      not previously shown outside Flasher/Tester. See HYDRA-UMC's own
+                      docs/CANBUS_STM32G474.TXT and docs/PINOUT_STM32G474_ROBOT_CONTROLLER.TXT. */}
+                  <div className="mt-4 pt-4 border-t border-slate-800">
+                    <h4 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+                      {t('robot_detail.controller_board_upper', 'ROBOT CONTROLLER BOARD')}
+                      <span className={cn("w-2 h-2 rounded-full", robot.controllerBoard ? "bg-emerald-500" : "bg-slate-700")} />
+                    </h4>
+                    {robot.controllerBoard ? (
+                      <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+                        <span className="text-slate-500">{t('robot_detail.hardware_id', 'Hardware ID')}</span>
+                        <span className="font-mono text-slate-200 text-right">{robot.controllerBoard.hardwareId || '?'}</span>
+                        <span className="text-slate-500">{t('flasher.current_version', 'Firmware')}</span>
+                        <span className="font-mono text-emerald-400 text-right">{robot.controllerBoard.firmwareVersion || '?'}</span>
+                        <span className="text-slate-500">{t('flasher.bootloader', 'Bootloader')}</span>
+                        <span className="font-mono text-slate-300 text-right">{robot.controllerBoard.bootloaderVersion || '?'}</span>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-500">
+                        {t('robot_detail.controller_board_unknown', 'No version known - query it from HYDRA-UMC → Tester.')}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
