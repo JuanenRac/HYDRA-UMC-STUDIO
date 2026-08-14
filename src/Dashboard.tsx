@@ -25,22 +25,32 @@ function cn(...inputs: ClassValue[]) {
 
 // Components
 import { HelpModal } from './components/HelpModal';
-import { RobotDetail } from './components/RobotDetail';
-import { CamerasView } from './components/CamerasView';
-import { XYTableConfig } from './components/XYTableConfig';
-import { PickAndPlace } from './components/PickAndPlace';
-
-import { CNC } from './components/CNC';
-import { Laser } from './components/Laser';
-import { VacuumTableConfig } from './components/VacuumTableConfig';
-import { HeatedBedConfig } from './components/HeatedBedConfig';
-import { ATCToolsConfig } from './components/ATCToolsConfig';
-import { RackConfigView } from './components/RackConfigView';
-import { GamepadConfig } from './components/GamepadConfig';
-import { Flasher } from './components/Flasher';
-import { Tester } from './components/Tester';
-import { KinematicBrainStage } from './components/KinematicBrainStage';
 import { slotLabel } from './lib/canOta';
+
+// Lazy-loaded: everything below is only rendered once a specific nav tab is
+// selected (RobotDetail/the module configs also pull in @react-three/fiber
+// + three.js, the single biggest dependency in this app) - splitting these
+// into their own chunks, fetched on demand instead of bundled into the
+// initial JS, is what actually addresses the "chunks larger than 500kB"
+// build warning (code-splitting via dynamic import(), exactly what that
+// warning itself suggests) rather than just raising the size limit to
+// silence it. OverviewPanel (this file's own default landing tab) stays a
+// normal import - it's lightweight and always needed on first paint, so
+// splitting it out would only add a network round-trip for no benefit.
+const RobotDetail = React.lazy(() => import('./components/RobotDetail').then(m => ({ default: m.RobotDetail })));
+const CamerasView = React.lazy(() => import('./components/CamerasView').then(m => ({ default: m.CamerasView })));
+const XYTableConfig = React.lazy(() => import('./components/XYTableConfig').then(m => ({ default: m.XYTableConfig })));
+const PickAndPlace = React.lazy(() => import('./components/PickAndPlace').then(m => ({ default: m.PickAndPlace })));
+const CNC = React.lazy(() => import('./components/CNC').then(m => ({ default: m.CNC })));
+const Laser = React.lazy(() => import('./components/Laser').then(m => ({ default: m.Laser })));
+const VacuumTableConfig = React.lazy(() => import('./components/VacuumTableConfig').then(m => ({ default: m.VacuumTableConfig })));
+const HeatedBedConfig = React.lazy(() => import('./components/HeatedBedConfig').then(m => ({ default: m.HeatedBedConfig })));
+const ATCToolsConfig = React.lazy(() => import('./components/ATCToolsConfig').then(m => ({ default: m.ATCToolsConfig })));
+const RackConfigView = React.lazy(() => import('./components/RackConfigView').then(m => ({ default: m.RackConfigView })));
+const GamepadConfig = React.lazy(() => import('./components/GamepadConfig').then(m => ({ default: m.GamepadConfig })));
+const Flasher = React.lazy(() => import('./components/Flasher').then(m => ({ default: m.Flasher })));
+const Tester = React.lazy(() => import('./components/Tester').then(m => ({ default: m.Tester })));
+const KinematicBrainStage = React.lazy(() => import('./components/KinematicBrainStage').then(m => ({ default: m.KinematicBrainStage })));
 
 /**
  * Executes the  dashboard logic. 
@@ -854,24 +864,25 @@ export default function Dashboard() {
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col overflow-hidden bg-slate-950/80 pt-2 px-2 pb-1 backdrop-blur-sm">
           {activeTab === 'overview' && <OverviewPanel />}
-          {activeTab === 'robot' && activeRobot && <RobotDetail key={activeRobot.id} robot={activeRobot} />}
-          {activeTab === 'cameras' && <CamerasView />}
-          {activeTab === 'flasher' && <Flasher tiers={['urtcHead', 'urtcExpansion']} />}
-          {activeTab === 'tester' && <Tester tiers={['urtcHead', 'urtcExpansion']} />}
-          {activeTab === 'hydraFlasher' && <Flasher tiers={['kinematicBrain', 'controllerBoard']} />}
-          {activeTab === 'hydraTester' && <Tester tiers={['kinematicBrain', 'controllerBoard']} />}
-          {activeTab === 'kinematicBrainStage' && <KinematicBrainStage />}
-          {activeTab === 'xytable' && <XYTableConfig />}
-          {activeTab === 'atc' && <ATCToolsConfig />}
-          {activeTab === 'rack' && <RackConfigView />}
+          <React.Suspense fallback={<PanelLoadingFallback />}>
+            {activeTab === 'robot' && activeRobot && <RobotDetail key={activeRobot.id} robot={activeRobot} />}
+            {activeTab === 'cameras' && <CamerasView />}
+            {activeTab === 'flasher' && <Flasher tiers={['urtcHead', 'urtcExpansion']} />}
+            {activeTab === 'tester' && <Tester tiers={['urtcHead', 'urtcExpansion']} />}
+            {activeTab === 'hydraFlasher' && <Flasher tiers={['kinematicBrain', 'controllerBoard']} />}
+            {activeTab === 'hydraTester' && <Tester tiers={['kinematicBrain', 'controllerBoard']} />}
+            {activeTab === 'kinematicBrainStage' && <KinematicBrainStage />}
+            {activeTab === 'xytable' && <XYTableConfig />}
+            {activeTab === 'atc' && <ATCToolsConfig />}
+            {activeTab === 'rack' && <RackConfigView />}
 
-        {activeTab === 'pickandplace' && <PickAndPlace />}
-        
-        {activeTab === 'cnc' && <CNC />}
-        {activeTab === 'laser' && <Laser />}
-        {activeTab === 'vacuumtable' && <VacuumTableConfig />}
-        {activeTab === 'heatedbed' && <HeatedBedConfig />}
+            {activeTab === 'pickandplace' && <PickAndPlace />}
 
+            {activeTab === 'cnc' && <CNC />}
+            {activeTab === 'laser' && <Laser />}
+            {activeTab === 'vacuumtable' && <VacuumTableConfig />}
+            {activeTab === 'heatedbed' && <HeatedBedConfig />}
+          </React.Suspense>
         </main>
 
       </div>
