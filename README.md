@@ -90,13 +90,17 @@ Full interface translation across **English, Spanish, German, French, and Italia
 
 Server-side storage (Express backend, `server.ts`) synchronizes every configuration, path, and active machine/robot state to disk (`data/settings.json`) - state survives a page reload or a server restart. `data/settings.json` itself is deliberately excluded from the server's own static file serving (it holds controller IPs, CAN-OTA configuration, and full per-robot state), even though the rest of `data/` (e.g. `WORKS/`, saved trajectories) is served normally.
 
+The same `GET`/`POST /api/settings` contract, plus a discovery endpoint (`GET /api/hydra-info`) and a `WebSocket /ws` for live push updates, is also how external clients connect - this is what lets [HYDRA-UMC SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE) discover a running HYDRA-UMC STUDIO server on the network, read/modify its state, and see changes made from a browser tab reflected live (and vice versa). Full contract in [`docs/REMOTE_API.md`](docs/REMOTE_API.md).
+
 ---
 
 ## 📂 Repository Structure
 
 ```text
 HYDRA-UMC-STUDIO/
-├── server.ts                   # Express backend - static serving, settings persistence, Vite dev middleware
+├── server.ts                   # Express backend - static serving, settings persistence, Vite dev middleware, WebSocket live sync
+├── docs/
+│   └── REMOTE_API.md            # HTTP/WebSocket contract for remote clients (HYDRA-UMC SUITE, the mobile control apps)
 ├── src/
 │   ├── Dashboard.tsx            # Top-level app shell - navigation, Config modal, CAN-OTA panels
 │   ├── store.tsx                # Global state: RobotModel/RobotState/HydraController/SystemSettings

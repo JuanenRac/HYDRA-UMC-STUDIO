@@ -478,9 +478,24 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   });
   const [isLoaded, setIsLoaded] = useState(false);
+  // Guards against a feedback loop: the server broadcasts every write to
+  // every connected client, sender included (simpler than tracking "who
+  // sent this", and harmless for any OTHER client) - but without this
+  // guard, THIS tab would treat its own echoed-back write as a fresh
+  // external change, call setSettings/setControllers with a fresh object
+  // reference even though the content is identical, which re-triggers the
+  // save-effect below, POSTs again, gets broadcast again, forever. Storing
+  // the last applied/sent payload's own JSON and skipping when the
+  // incoming (or outgoing) payload matches it exactly breaks the loop at
+  // the source - no state update means no re-render means no re-save.
+  const lastPayloadJsonRef = React.useRef<string | null>(null);
 
-  React.useEffect(() => {
-    fetch('/api/settings').then(r => r.json()).then(data => {
+  const applyServerData = React.useCallback((data: any) => {
+      if (data && Object.keys(data).length > 0) {
+        const dataJson = JSON.stringify(data);
+        if (dataJson === lastPayloadJsonRef.current) return;
+        lastPayloadJsonRef.current = dataJson;
+      }
       let host = '192.168.1.100';
       if (typeof window !== 'undefined' && window.location.hostname) {
         host = window.location.hostname;
@@ -533,10 +548,48 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setActiveControllerId(host);
       }
       setIsLoaded(true);
-    }).catch(() => {
-      setIsLoaded(true);
-    });
   }, []);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch('/api/settings').then(r => r.json()).then(data => {
+      if (!cancelled) applyServerData(data);
+    }).catch(() => {
+      if (!cancelled) setIsLoaded(true);
+    });
+
+    // Live sync: any client (this tab, another tab, HYDRA-UMC SUITE, a
+    // mobile control app) that POSTs /api/settings or sends a WS "settings"
+    // message gets broadcast back to every connected client, this one
+    // included - see server.ts's own broadcastSettings(). Without this,
+    // two open tabs (or a native remote client and a tab) silently
+    // overwrite each other on their own next unrelated save, since neither
+    // ever re-fetches after its initial mount-time load.
+    let ws: WebSocket | null = null;
+    try {
+      const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${proto}//${window.location.host}/ws`);
+      ws.onmessage = (ev) => {
+        try {
+          const msg = JSON.parse(ev.data);
+          if (msg && msg.type === 'settings' && msg.payload) {
+            applyServerData(msg.payload);
+          }
+        } catch {
+          // ignore malformed frames rather than tear down the connection
+        }
+      };
+    } catch {
+      // WebSocket unavailable (very old browser, or a dev proxy that
+      // doesn't forward upgrades) - the app still works via the existing
+      // fetch-once/debounced-POST path below, just without live push.
+    }
+
+    return () => {
+      cancelled = true;
+      ws?.close();
+    };
+  }, [applyServerData]);
 
   React.useEffect(() => {
     if (!isLoaded) return;
@@ -546,10 +599,13 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       activeControllerId
     };
     const timer = setTimeout(() => {
+      const payloadJson = JSON.stringify(payload);
+      if (payloadJson === lastPayloadJsonRef.current) return; // unchanged since the last send/receive - nothing to do
+      lastPayloadJsonRef.current = payloadJson;
       fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: payloadJson
       }).catch(() => {});
     }, 500);
     return () => clearTimeout(timer);
