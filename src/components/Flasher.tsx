@@ -117,7 +117,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
     setGhLoading(true);
     setGhAssets(null);
     try {
-      const assets = await fetchGithubFirmwareReleases(githubRepo);
+      const assets = await fetchGithubFirmwareReleases(githubRepo, tier);
       setGhAssets(assets);
       pushLog(t('flasher.log.github_found', { count: assets.length, repo: githubRepo }));
     } catch (err) {
@@ -265,10 +265,12 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
           {!file && !ghAssets && <div className="text-xs text-slate-500">{t('flasher.no_file', 'No file selected')}</div>}
           {ghAssets && (
             <div className="bg-slate-900 border border-slate-800 rounded-lg divide-y divide-slate-800 max-h-40 overflow-y-auto custom-scrollbar">
-              {ghAssets.length === 0 && <div className="px-3 py-2 text-xs text-slate-500">{t('flasher.no_releases', 'No .bin releases published yet.')}</div>}
+              {ghAssets.length === 0 && <div className="px-3 py-2 text-xs text-slate-500">{t('flasher.no_releases', 'Nothing published on GitHub yet for this target - firmware_manifest.json not found in that repo.')}</div>}
               {ghAssets.map((a, i) => (
                 <button key={i} onClick={() => handleUseGithubAsset(a)} className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-slate-800 transition-colors text-left">
-                  <span className="font-mono text-slate-300">{a.name} <span className="text-slate-600">({a.releaseTag})</span></span>
+                  <span className="font-mono text-slate-300">
+                    {a.displayName || a.name} <span className="text-slate-600">v{a.releaseTag}{a.chip ? ` - ${a.chip}` : ''}</span>
+                  </span>
                   <span className="text-slate-500">{(a.size / 1024).toFixed(1)} KB</span>
                 </button>
               ))}
