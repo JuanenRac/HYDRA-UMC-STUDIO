@@ -23,6 +23,15 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Suspense fallback for the lazy-loaded panels below - shown only for the brief moment their own chunk is being fetched (typically imperceptible on a warm cache, real on first visit to a given tab). */
+function PanelLoadingFallback() {
+  return (
+    <div className="flex-1 flex items-center justify-center text-slate-600 text-sm">
+      <RefreshCw size={18} className="animate-spin mr-2" /> Loading…
+    </div>
+  );
+}
+
 // Components
 import { HelpModal } from './components/HelpModal';
 import { slotLabel } from './lib/canOta';
@@ -616,7 +625,9 @@ export default function Dashboard() {
                   </div>
                 )}
                 {configTab === 'gamepad' && (
-                  <GamepadConfig />
+                  <React.Suspense fallback={<PanelLoadingFallback />}>
+                    <GamepadConfig />
+                  </React.Suspense>
                 )}
               </div>
             </div>
