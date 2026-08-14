@@ -73,7 +73,16 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   const expansionAvailable = hasAdvancedExpansion(robot?.urtcHead?.expansionBoardType);
   const githubRepo = GITHUB_FIRMWARE_REPO[tier];
 
-  useEffect(() => { setGhAssets(null); }, [tier, robotId]);
+  // Current target, kept in a ref so an in-flight handleFetchGithub() can
+  // tell, once its await resolves, whether the user has since switched
+  // tier/robot - and if so, drop the stale result instead of applying it to
+  // state the UI now attributes to a different target (e.g. urtcHead
+  // firmware assets appearing under urtcExpansion). Plain assignment during
+  // render (no effect) so it's always current by the time the callback checks.
+  const targetKeyRef = useRef('');
+  targetKeyRef.current = `${tier}:${robotId}`;
+
+  useEffect(() => { setGhAssets(null); setGhLoading(false); }, [tier, robotId]);
   useEffect(() => { if (tier === 'urtcExpansion' && !expansionAvailable) setTier('urtcHead'); }, [robotId]); // eslint-disable-line
 
   const target: CanOtaTarget | null = useMemo(() => {
@@ -114,17 +123,20 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
 
   async function handleFetchGithub() {
     if (!githubRepo) return;
+    const requestKey = targetKeyRef.current;
     setGhLoading(true);
     setGhAssets(null);
     try {
       const assets = await fetchGithubFirmwareReleases(githubRepo, tier);
+      if (targetKeyRef.current !== requestKey) return; // tier/robot changed mid-flight - drop stale result
       setGhAssets(assets);
       pushLog(t('flasher.log.github_found', { count: assets.length, repo: githubRepo }));
     } catch (err) {
+      if (targetKeyRef.current !== requestKey) return;
       pushLog(t('flasher.log.github_error', { error: String(err) }), 'error');
       setGhAssets([]);
     } finally {
-      setGhLoading(false);
+      if (targetKeyRef.current === requestKey) setGhLoading(false);
     }
   }
 
@@ -207,7 +219,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('flasher.target', 'Target')}</h3>
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] text-slate-500 uppercase font-bold">{t('flasher.board', 'Board')}</label>
-            <select value={tier} onChange={e => setTier(e.target.value as CanOtaTier)} className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500">
+            <select value={tier} onChange={e => setTier(e.target.value as CanOtaTier)} aria-label={t('flasher.board', 'Board')} className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500">
               {tiers.includes('kinematicBrain') && <option value="kinematicBrain">{t('flasher.target_kinematic_brain')} ({chipNameFor('kinematicBrain')})</option>}
               {tiers.includes('controllerBoard') && <option value="controllerBoard">{t('flasher.target_controller_board')} ({chipNameFor('controllerBoard')})</option>}
               {tiers.includes('urtcHead') && <option value="urtcHead" disabled={!robot?.urtcConnected}>{t('flasher.target_urtc_head')} ({chipNameFor('urtcHead')})</option>}
@@ -217,7 +229,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
           {needsRobotSlot && (
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] text-slate-500 uppercase font-bold">{t('flasher.robot_slot', 'Robot Slot')}</label>
-              <select value={robotId} onChange={e => setRobotId(Number(e.target.value))} className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500">
+              <select value={robotId} onChange={e => setRobotId(Number(e.target.value))} aria-label={t('flasher.robot_slot', 'Robot Slot')} className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500">
                 {robots.map((r, i) => (
                   <option key={r.id} value={r.id}>{slotLabel(i)} - {r.name}{r.urtcConnected ? '' : ` (${t('flasher.urtc_unreachable')})`}</option>
                 ))}

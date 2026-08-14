@@ -11,6 +11,11 @@ import Parol6Arm from './Parol6Arm';
 import Faze4Arm from './Faze4Arm';
 import AR3Arm from './AR3Arm';
 import AR4Arm from './AR4Arm';
+import UR3eArm from './UR3eArm';
+import UR5eArm from './UR5eArm';
+import UR10eArm from './UR10eArm';
+import UR16eArm from './UR16eArm';
+import UR20Arm from './UR20Arm';
 
 /**
  * Executes the  robot arm logic.
@@ -44,6 +49,36 @@ export default function RobotArm({ robot }: { robot: RobotState }) {
             return (
                 <Suspense fallback={null}>
                     <AR4Arm robot={robot} />
+                </Suspense>
+            );
+        case 'UR3e (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <UR3eArm robot={robot} />
+                </Suspense>
+            );
+        case 'UR5e (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <UR5eArm robot={robot} />
+                </Suspense>
+            );
+        case 'UR10e (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <UR10eArm robot={robot} />
+                </Suspense>
+            );
+        case 'UR16e (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <UR16eArm robot={robot} />
+                </Suspense>
+            );
+        case 'UR20 (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <UR20Arm robot={robot} />
                 </Suspense>
             );
         default:

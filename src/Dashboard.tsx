@@ -651,8 +651,10 @@ export default function Dashboard() {
 {/* Header - larger for touch */}
       <header className="h-16 shrink-0 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 z-20">
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            aria-label={isSidebarOpen ? t('dashboard.collapse_sidebar', 'Collapse sidebar') : t('dashboard.expand_sidebar', 'Expand sidebar')}
+            aria-expanded={isSidebarOpen}
             className="p-2 -ml-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
           >
             <Menu size={24} />
@@ -695,6 +697,7 @@ export default function Dashboard() {
               setSelectedRobotId(1); // Reset selected robot
               setActiveTab('overview');
             }}
+            aria-label={t('dashboard.active_controller', 'Active controller')}
             className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 font-mono text-slate-200 outline-none focus:border-sky-400 focus:glow-border-sky transition-all appearance-none cursor-pointer"
           >
             {controllers.map(c => (

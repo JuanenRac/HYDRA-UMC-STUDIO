@@ -23,6 +23,9 @@
     "camera_offline": "Caméra Hors Ligne",
     "networked_robots": "Robots en Réseau",
     "shared_resources": "Ressources Partagées",
+    "kinematic_brain_stage": "Table du Kinematic Brain",
+    "stack_a_slot": "STACK A",
+    "no_version_short": "—",
     "modules": "Modules",
     "back": "Retour",
     "overview": "Aperçu",
@@ -35,7 +38,10 @@
     "about_author": "Auteur",
     "about_email": "E-mail",
     "about_license": "Licence",
-    "close": "Fermer"
+    "close": "Fermer",
+    "collapse_sidebar": "Réduire le panneau latéral",
+    "expand_sidebar": "Développer le panneau latéral",
+    "active_controller": "Contrôleur actif"
   },
   "config": {
     "title": "Configuration du Système",
@@ -105,6 +111,7 @@
     "tool": "Outil:",
     "step": "Pas:",
     "speed": "Vitesse:",
+    "acceleration": "Accélération:",
     "joints": "Articulations",
     "points": "Points",
     "config": "Config",
@@ -151,7 +158,10 @@
     "select": "-- Sélectionner --",
     "pause": "PAUSE",
     "pause_all": "TOUT PAUSER",
-    "continue": "CONTINUER"
+    "continue": "CONTINUER",
+    "controller_board_upper": "CARTE CONTRÔLEUR DE ROBOT",
+    "hardware_id": "ID Matériel",
+    "controller_board_unknown": "Version inconnue - interrogez-la depuis HYDRA-UMC → Tester."
   },
   "cameras": {
     "title": "Matrice de Vision Octale",
@@ -400,5 +410,39 @@
     },
     "expansion_type": "Carte d'Extension",
     "expansion_none": "Aucune"
+  },
+  "kbstage": {
+    "title": "Table du Kinematic Brain",
+    "subtitle": "Table locale à 6 axes du STM32H745 : table XY, lit chauffant, revolver ATC, tapis convoyeur",
+    "gantry": "Portique XY (X, Y1, Y2, Z)",
+    "height_z": "Hauteur (Z mm)",
+    "ssr_230vac": "SSR, secteur 230VAC",
+    "therm1": "Thermistance 1",
+    "therm2": "Thermistance 2",
+    "target_temp": "Température cible °C",
+    "atc_revolver": "Revolver ATC (E0)",
+    "of_slots": "sur {{count}} emplacements",
+    "tool_count": "Emplacements d'outils",
+    "homed": "Référencé",
+    "not_homed": "Non référencé",
+    "conveyor": "Tapis Convoyeur (E1)",
+    "conveyor_future": "Câblé et brochage défini, fonctionnalité pas encore implémentée",
+    "conveyor_not_installed": "Aucun tapis convoyeur installé sur cette machine",
+    "conveyor_mark_installed": "Marquer comme installé",
+    "running": "En marche",
+    "stopped": "Arrêté",
+    "endstops": "Fins de course (2 par axe)",
+    "triggered": "Déclenché",
+    "open": "Ouvert",
+    "fans": "Ventilateurs (3x)",
+    "pumps": "Pompes (8+2)",
+    "valves": "Électrovannes (8+2)",
+    "jog_axis_neg": "Déplacer axe {{axis}} -",
+    "jog_axis_pos": "Déplacer axe {{axis}} +",
+    "atc_prev": "Emplacement d'outil précédent",
+    "atc_next": "Emplacement d'outil suivant",
+    "fan_n": "Ventilateur {{n}} : {{state}}",
+    "pump_n": "Pompe {{n}} : {{state}}",
+    "valve_n": "Électrovanne {{n}} : {{state}}"
   }
 }

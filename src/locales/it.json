@@ -23,6 +23,9 @@
     "camera_offline": "Fotocamera Offline",
     "networked_robots": "Robot in Rete",
     "shared_resources": "Risorse Condivise",
+    "kinematic_brain_stage": "Tavolo del Kinematic Brain",
+    "stack_a_slot": "STACK A",
+    "no_version_short": "—",
     "modules": "Moduli",
     "back": "Indietro",
     "overview": "Panoramica",
@@ -35,7 +38,10 @@
     "about_author": "Autore",
     "about_email": "Email",
     "about_license": "Licenza",
-    "close": "Chiudi"
+    "close": "Chiudi",
+    "collapse_sidebar": "Comprimi barra laterale",
+    "expand_sidebar": "Espandi barra laterale",
+    "active_controller": "Controller attivo"
   },
   "config": {
     "title": "Configurazione di Sistema",
@@ -105,6 +111,7 @@
     "tool": "Strumento:",
     "step": "Passo:",
     "speed": "Velocità:",
+    "acceleration": "Accelerazione:",
     "joints": "Articolazioni",
     "points": "Punti",
     "config": "Config",
@@ -151,7 +158,10 @@
     "select": "-- Seleziona --",
     "pause": "PAUSA",
     "pause_all": "PAUSA TUTTO",
-    "continue": "CONTINUA"
+    "continue": "CONTINUA",
+    "controller_board_upper": "SCHEDA CONTROLLER ROBOT",
+    "hardware_id": "ID Hardware",
+    "controller_board_unknown": "Versione sconosciuta - interrogala da HYDRA-UMC → Tester."
   },
   "cameras": {
     "title": "Matrice di Visione Ottale",
@@ -400,5 +410,39 @@
     },
     "expansion_type": "Scheda di Espansione",
     "expansion_none": "Nessuna"
+  },
+  "kbstage": {
+    "title": "Tavolo del Kinematic Brain",
+    "subtitle": "Tavolo locale a 6 assi dello STM32H745: tavolo XY, piatto riscaldato, revolver ATC, nastro trasportatore",
+    "gantry": "Portale XY (X, Y1, Y2, Z)",
+    "height_z": "Altezza (Z mm)",
+    "ssr_230vac": "SSR, rete 230VAC",
+    "therm1": "Termistore 1",
+    "therm2": "Termistore 2",
+    "target_temp": "Temperatura obiettivo °C",
+    "atc_revolver": "Revolver ATC (E0)",
+    "of_slots": "di {{count}} posizioni",
+    "tool_count": "Posizioni utensile",
+    "homed": "Azzerato",
+    "not_homed": "Non azzerato",
+    "conveyor": "Nastro Trasportatore (E1)",
+    "conveyor_future": "Cablato e con piedinatura assegnata, funzione non ancora implementata",
+    "conveyor_not_installed": "Nessun nastro trasportatore installato su questa macchina",
+    "conveyor_mark_installed": "Segna come installato",
+    "running": "In funzione",
+    "stopped": "Fermo",
+    "endstops": "Finecorsa (2 per asse)",
+    "triggered": "Attivato",
+    "open": "Aperto",
+    "fans": "Ventole (3x)",
+    "pumps": "Pompe (8+2)",
+    "valves": "Valvole (8+2)",
+    "jog_axis_neg": "Sposta asse {{axis}} -",
+    "jog_axis_pos": "Sposta asse {{axis}} +",
+    "atc_prev": "Posizione utensile precedente",
+    "atc_next": "Posizione utensile successiva",
+    "fan_n": "Ventola {{n}}: {{state}}",
+    "pump_n": "Pompa {{n}}: {{state}}",
+    "valve_n": "Valvola {{n}}: {{state}}"
   }
 }

@@ -73,7 +73,14 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   const [testSteps, setTestSteps] = useState<SelfTestStep[]>([]);
   const [testing, setTesting] = useState(false);
   const [frames, setFrames] = useState<CanFrame[]>([]);
-  const monitorStop = useRef<(() => void) | null>(null);
+  // useState, not useRef: the Start/Stop button needs to re-render the instant
+  // this changes (a ref mutation is invisible to React until something else
+  // happens to force a re-render, which left the button visually stuck on
+  // "Stop" after being pressed). The actual stop callback itself still lives
+  // in a ref (monitorStopFnRef) since it's an unstoppable-through-props
+  // function-in-flight, not something the UI needs to react to.
+  const [monitorActive, setMonitorActive] = useState(false);
+  const monitorStopFnRef = useRef<(() => void) | null>(null);
 
   const robot = robots.find(r => r.id === robotId);
   const robotIndex0 = robots.findIndex(r => r.id === robotId);
@@ -93,24 +100,37 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
     : robot?.urtcExpansion;
   const category = robot ? categoryFor(robot.tool) : 'generic';
 
+  // Current target, kept in a ref so in-flight async work (handleSelfTest/
+  // handleFramQuery below) can tell, once its await resolves, whether the
+  // user has since switched tier/robot - and if so, drop the stale result
+  // instead of applying it to state the UI now attributes to a different
+  // target. Plain assignment during render (no effect) so it's always
+  // current by the time any async callback checks it.
+  const targetKeyRef = useRef('');
+  targetKeyRef.current = `${tier}:${robotId}`;
+
   useEffect(() => {
     setTestSteps([]);
+    setTesting(false);
     setFramState(null);
     setFrames([]);
-    monitorStop.current?.();
-    monitorStop.current = null;
+    monitorStopFnRef.current?.();
+    monitorStopFnRef.current = null;
+    setMonitorActive(false);
   }, [robotId, tier]);
 
   useEffect(() => { if (tier === 'urtcExpansion' && !expansionAvailable) setTier('urtcHead'); }, [robotId]); // eslint-disable-line
 
   function toggleMonitor() {
-    if (monitorStop.current) {
-      monitorStop.current();
-      monitorStop.current = null;
+    if (monitorStopFnRef.current) {
+      monitorStopFnRef.current();
+      monitorStopFnRef.current = null;
+      setMonitorActive(false);
       return;
     }
     if (!target) return;
-    monitorStop.current = startMockBusMonitor(target, f => setFrames(prev => [...prev.slice(-99), f]));
+    monitorStopFnRef.current = startMockBusMonitor(target, f => setFrames(prev => [...prev.slice(-99), f]));
+    setMonitorActive(true);
   }
 
   async function handleQueryVersion() {
@@ -133,18 +153,22 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   }
 
   async function handleFramQuery() {
+    const requestKey = targetKeyRef.current;
     await new Promise(r => setTimeout(r, 150));
+    if (targetKeyRef.current !== requestKey) return; // tier/robot changed mid-flight - drop stale result
     setFramState({ hasValidState: Math.random() > 0.3 });
   }
 
   async function handleSelfTest() {
     if (!target) return;
+    const requestKey = targetKeyRef.current;
     setTesting(true);
     setTestSteps([]);
     for await (const step of mockSelfTest(target)) {
+      if (targetKeyRef.current !== requestKey) return; // tier/robot changed mid-flight - abandon this run
       setTestSteps(prev => [...prev, step]);
     }
-    setTesting(false);
+    if (targetKeyRef.current === requestKey) setTesting(false);
   }
 
   return (
@@ -169,7 +193,7 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('flasher.target', 'Target')}</h3>
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] text-slate-500 uppercase font-bold">{t('flasher.board', 'Board')}</label>
-            <select value={tier} onChange={e => setTier(e.target.value as CanOtaTier)} className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
+            <select value={tier} onChange={e => setTier(e.target.value as CanOtaTier)} aria-label={t('flasher.board', 'Board')} className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
               {tiers.includes('kinematicBrain') && <option value="kinematicBrain">{t('flasher.target_kinematic_brain')} ({chipNameFor('kinematicBrain')})</option>}
               {tiers.includes('controllerBoard') && <option value="controllerBoard">{t('flasher.target_controller_board')} ({chipNameFor('controllerBoard')})</option>}
               {tiers.includes('urtcHead') && <option value="urtcHead" disabled={!robot?.urtcConnected}>{t('flasher.target_urtc_head')} ({chipNameFor('urtcHead')})</option>}
@@ -179,7 +203,7 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
           {needsRobotSlot && (
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] text-slate-500 uppercase font-bold">{t('flasher.robot_slot', 'Robot Slot')}</label>
-              <select value={robotId} onChange={e => setRobotId(Number(e.target.value))} className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
+              <select value={robotId} onChange={e => setRobotId(Number(e.target.value))} aria-label={t('flasher.robot_slot', 'Robot Slot')} className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-emerald-500">
                 {robots.map((r, i) => (
                   <option key={r.id} value={r.id}>{slotLabel(i)} - {r.name}</option>
                 ))}
@@ -212,7 +236,7 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('tester.global_controls', 'Global Controls')}</h3>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-400">{t('tester.status_led', 'Status LED')}</span>
-                <input type="color" value={statusColor} onChange={e => setStatusColor(e.target.value)} className="w-10 h-7 rounded bg-transparent border border-slate-800 cursor-pointer" />
+                <input type="color" aria-label={t('tester.status_led', 'Status LED')} value={statusColor} onChange={e => setStatusColor(e.target.value)} className="w-10 h-7 rounded bg-transparent border border-slate-800 cursor-pointer" />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-400">{t('tester.ring_led', 'Ring LED')}</span>
@@ -222,7 +246,7 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-400">{t('tester.oled_mode', 'OLED Mode')}</span>
-                <select value={oledMode} onChange={e => setOledMode(e.target.value as any)} className="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 outline-none">
+                <select value={oledMode} onChange={e => setOledMode(e.target.value as any)} aria-label={t('tester.oled_mode', 'OLED Mode')} className="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 outline-none">
                   <option value="standard">{t('tester.oled_standard', 'Standard')}</option>
                   <option value="night">{t('tester.oled_night', 'Night')}</option>
                   <option value="off">{t('tester.oled_off', 'Off')}</option>
@@ -297,9 +321,9 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
         <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('tester.bus_monitor', 'Raw Bus Monitor')}</h3>
-            <button onClick={toggleMonitor} disabled={!target} className={cn('flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors border', monitorStop.current ? 'bg-rose-500/10 text-rose-400 border-rose-500/30' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700')}>
-              <Circle size={10} className={monitorStop.current ? 'fill-rose-400 text-rose-400 animate-pulse' : 'fill-slate-500 text-slate-500'} />
-              {monitorStop.current ? t('tester.monitor_stop', 'Stop') : t('tester.monitor_start', 'Start')}
+            <button onClick={toggleMonitor} disabled={!target} aria-pressed={monitorActive} aria-label={monitorActive ? t('tester.monitor_stop', 'Stop') : t('tester.monitor_start', 'Start')} className={cn('flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors border', monitorActive ? 'bg-rose-500/10 text-rose-400 border-rose-500/30' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700')}>
+              <Circle size={10} className={monitorActive ? 'fill-rose-400 text-rose-400 animate-pulse' : 'fill-slate-500 text-slate-500'} />
+              {monitorActive ? t('tester.monitor_stop', 'Stop') : t('tester.monitor_start', 'Start')}
             </button>
           </div>
           <div className="bg-black/40 rounded-lg h-40 overflow-y-auto custom-scrollbar font-mono text-[10px]">

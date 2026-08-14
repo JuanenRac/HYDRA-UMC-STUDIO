@@ -9,7 +9,7 @@ import { RotaryKnob } from "./RotaryKnob";
 import { FuturisticSlider } from "./FuturisticSlider";
 import { motion, useDragControls } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { type RobotState, useHydraStore, type RobotRole, type ToolType, type RobotModel, unthrottledDelay, globalPlaybacks } from '../store';
+import { type RobotState, useHydraStore, type RobotRole, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, unthrottledDelay, globalPlaybacks } from '../store';
 import { RotateCcw, Home, Video, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, ShieldAlert, Save, Plus, Play, Square, Pause, Crosshair, RefreshCw, Upload, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -19,6 +19,11 @@ import { parol6CartesianToJoints, parol6JointsToCartesian, PAROL6_JOINT_LIMITS_D
 import { faze4CartesianToJoints, FAZE4_HOME_POSE } from '../examples/faze4Kinematics';
 import { ar3CartesianToJoints, AR3_HOME_POSE } from '../examples/ar3Kinematics';
 import { ar4CartesianToJoints, AR4_HOME_POSE, AR4_JOINT_LIMITS_DEG } from '../examples/ar4Kinematics';
+import { ur3eCartesianToJoints, UR3E_HOME_POSE, UR3E_JOINT_LIMITS_DEG } from '../examples/ur3eKinematics';
+import { ur5eCartesianToJoints, UR5E_HOME_POSE, UR5E_JOINT_LIMITS_DEG } from '../examples/ur5eKinematics';
+import { ur10eCartesianToJoints, UR10E_HOME_POSE, UR10E_JOINT_LIMITS_DEG } from '../examples/ur10eKinematics';
+import { ur16eCartesianToJoints, UR16E_HOME_POSE, UR16E_JOINT_LIMITS_DEG } from '../examples/ur16eKinematics';
+import { ur20CartesianToJoints, UR20_HOME_POSE, UR20_JOINT_LIMITS_DEG } from '../examples/ur20Kinematics';
 import { convertToCartesian } from '../examples/utils';
 import { jointsToCartesianForModel } from '../examples/robotKinematicsDispatch';
 
@@ -30,6 +35,23 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Stable identity for a recordedPoints[] row, keyed off object reference rather
+// than array index. Reorder (ArrowUp/ArrowDown) and delete swap/splice the SAME
+// point objects in place, so identity survives a reorder even though position
+// doesn't - unlike `key={i}`/an index-based "currently editing" state, which
+// silently re-points at whatever object now occupies that index after a
+// reorder/delete and can merge one point's edit into a different point's data.
+const pointKeyMap = new WeakMap<object, number>();
+let pointKeySeq = 0;
+function pointKeyFor(pt: object): number {
+  let k = pointKeyMap.get(pt);
+  if (k === undefined) {
+    k = ++pointKeySeq;
+    pointKeyMap.set(pt, k);
+  }
+  return k;
+}
+
 // Generic home pose (j2:-45,j3:45,j5:90) is fine for the shared-convention rigs, but
 // robots with their own real kinematics need their own reachable, sensible pose instead.
 function homePoseFor(model: RobotModel) {
@@ -37,6 +59,11 @@ function homePoseFor(model: RobotModel) {
   if (model === 'Faze4 (6-DOF)') return { ...FAZE4_HOME_POSE };
   if (model === 'AR3 (6-DOF)') return { ...AR3_HOME_POSE };
   if (model === 'AR4 (6-DOF)') return { ...AR4_HOME_POSE };
+  if (model === 'UR3e (6-DOF)') return { ...UR3E_HOME_POSE };
+  if (model === 'UR5e (6-DOF)') return { ...UR5E_HOME_POSE };
+  if (model === 'UR10e (6-DOF)') return { ...UR10E_HOME_POSE };
+  if (model === 'UR16e (6-DOF)') return { ...UR16E_HOME_POSE };
+  if (model === 'UR20 (6-DOF)') return { ...UR20_HOME_POSE };
   return { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 };
 }
 
@@ -55,6 +82,11 @@ function resolveTargetJoints(
   if (model === 'AR4 (6-DOF)') return ar4CartesianToJoints(x, y, z, a, b, c);
   if (model === 'Faze4 (6-DOF)') return faze4CartesianToJoints(x, y, z, a, b, c);
   if (model === 'AR3 (6-DOF)') return ar3CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR3e (6-DOF)') return ur3eCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR5e (6-DOF)') return ur5eCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR10e (6-DOF)') return ur10eCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR16e (6-DOF)') return ur16eCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR20 (6-DOF)') return ur20CartesianToJoints(x, y, z, a, b, c);
   return genericJoints;
 }
 
@@ -297,7 +329,7 @@ export function RobotDetail({ robot }: { robot: RobotState }) {
   const [workFiles, setWorkFiles] = useState<string[]>([]);
   const [selectedWorkFile, setSelectedWorkFile] = useState<string>(robot.selectedWorkFile || '');
   useEffect(() => { setSelectedWorkFile(robot.selectedWorkFile || ''); }, [robot.id]);
-  const [editingPointIndex, setEditingPointIndex] = useState<number | null>(null);
+  const [editingPointKey, setEditingPointKey] = useState<number | null>(null);
   const [editingPointData, setEditingPointData] = useState<any>({});
 
   const fetchWorks = async () => {
@@ -1204,6 +1236,11 @@ console.log("Loading example:", id);
                   // their own URDFs (genuinely no limit), so they keep the generic range.
                   const [jMin, jMax] = robot.model === 'Parol6 (6-DOF)' ? PAROL6_JOINT_LIMITS_DEG[j]
                     : robot.model === 'AR4 (6-DOF)' ? AR4_JOINT_LIMITS_DEG[j]
+                    : robot.model === 'UR3e (6-DOF)' ? UR3E_JOINT_LIMITS_DEG[j]
+                    : robot.model === 'UR5e (6-DOF)' ? UR5E_JOINT_LIMITS_DEG[j]
+                    : robot.model === 'UR10e (6-DOF)' ? UR10E_JOINT_LIMITS_DEG[j]
+                    : robot.model === 'UR16e (6-DOF)' ? UR16E_JOINT_LIMITS_DEG[j]
+                    : robot.model === 'UR20 (6-DOF)' ? UR20_JOINT_LIMITS_DEG[j]
                     : [-180, 180];
                   return (
                   <div key={j} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
@@ -1404,20 +1441,42 @@ console.log("Loading example:", id);
                     <h4 className="text-sm font-bold text-slate-200 uppercase tracking-wider">{t('robot_detail.model_and_tools', 'Model & Tools')}</h4>
                     
                     <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('robot_detail.model', 'Model')}</label>
-                    <select 
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      {t('robot_detail.model', 'Model')}
+                      {ROBOT_MANUFACTURERS[robot.model] && (
+                        <span className="text-slate-500 normal-case font-normal"> &middot; {ROBOT_MANUFACTURERS[robot.model]}</span>
+                      )}
+                    </label>
+                    <select
                       value={robot.model}
                       onChange={e => updateRobot(robot.id, { model: e.target.value as any })}
                       className="bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
                     >
-                      <option value="Parol6 (6-DOF)">Parol6 (6-DOF)</option>
-                      <option value="Faze4 (6-DOF)">Faze4 (6-DOF)</option>
-                      <option value="AR3 (6-DOF)">AR3 (6-DOF)</option>
-                      <option value="AR4 (6-DOF)">AR4 (6-DOF)</option>
-                      <option value="Generic (6-DOF)">Generic (6-DOF)</option>
-                      {settings.customModels?.map(m => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
+                      <optgroup label="Source Robotics">
+                        <option value="Parol6 (6-DOF)">Parol6 (6-DOF)</option>
+                        <option value="Faze4 (6-DOF)">Faze4 (6-DOF)</option>
+                      </optgroup>
+                      <optgroup label="Annin Robotics">
+                        <option value="AR3 (6-DOF)">AR3 (6-DOF)</option>
+                        <option value="AR4 (6-DOF)">AR4 (6-DOF)</option>
+                      </optgroup>
+                      <optgroup label="Universal Robots">
+                        <option value="UR3e (6-DOF)">UR3e (6-DOF)</option>
+                        <option value="UR5e (6-DOF)">UR5e (6-DOF)</option>
+                        <option value="UR10e (6-DOF)">UR10e (6-DOF)</option>
+                        <option value="UR16e (6-DOF)">UR16e (6-DOF)</option>
+                        <option value="UR20 (6-DOF)">UR20 (6-DOF)</option>
+                      </optgroup>
+                      <optgroup label="Generic">
+                        <option value="Generic (6-DOF)">Generic (6-DOF)</option>
+                      </optgroup>
+                      {settings.customModels && settings.customModels.length > 0 && (
+                        <optgroup label={t('robot_detail.custom_models', 'Custom')}>
+                          {settings.customModels.map(m => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </optgroup>
+                      )}
                     </select>
                   </div>
 
@@ -1588,8 +1647,10 @@ console.log("Loading example:", id);
             
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 relative">
               <div className="space-y-2">
-                {robot.recordedPoints.map((pt, i) => (
-                  <div id={`step-${robot.id}-${i}`} key={i} className={cn("bg-slate-900 border rounded p-2 text-xs flex flex-col gap-1 transition-colors", robot.playbackState?.activeStep === i ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]" : "border-slate-800")}>
+                {robot.recordedPoints.map((pt, i) => {
+                const ptKey = pointKeyFor(pt);
+                return (
+                  <div id={`step-${robot.id}-${i}`} key={ptKey} className={cn("bg-slate-900 border rounded p-2 text-xs flex flex-col gap-1 transition-colors", robot.playbackState?.activeStep === i ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]" : "border-slate-800")}>
                     <div className="flex justify-between items-center border-b border-slate-800/50 pb-1 mb-1">
                       <div className="flex items-center gap-2">
                         {robot.playbackState?.activeStep === i ? (
@@ -1621,7 +1682,7 @@ console.log("Loading example:", id);
                           <ArrowDown size={14} />
                         </button>
                         <button onClick={() => {
-                          setEditingPointIndex(i);
+                          setEditingPointKey(ptKey);
                           setEditingPointData(pt);
                         }} className="text-slate-500 hover:text-amber-400 p-1 transition-colors">
                           <Edit2 size={14} />
@@ -1636,7 +1697,7 @@ console.log("Loading example:", id);
                       </div>
                     </div>
                     
-                    {editingPointIndex === i ? (
+                    {editingPointKey === ptKey ? (
                       <div className="flex flex-col gap-2 mt-1">
                         <div className="grid grid-cols-6 gap-2">
                           {['j1', 'j2', 'j3', 'j4', 'j5', 'j6'].map((jKey) => (
@@ -1674,20 +1735,28 @@ console.log("Loading example:", id);
                           </div>
                         )}
                         <div className="flex justify-end gap-2 mt-2 border-t border-slate-800/50 pt-2">
-                          <button onClick={() => setEditingPointIndex(null)} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs transition-colors">
+                          <button onClick={() => setEditingPointKey(null)} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs transition-colors">
                             Cancel
                           </button>
                           <button onClick={() => {
                             const newPts = [...robot.recordedPoints];
-                            const merged = { ...newPts[i], ...editingPointData };
+                            // Locate the point by stable identity (ptKey), not by `i` - if the
+                            // list was reordered/edited elsewhere while this form was open, `i`
+                            // may no longer point at the same object. This is exactly what
+                            // `i` still correctly resolves to inside a fresh render where this
+                            // row matched editingPointKey, but re-deriving defensively here
+                            // keeps Save correct even if that assumption ever changes.
+                            const targetIndex = newPts.findIndex(p => pointKeyFor(p) === ptKey);
+                            if (targetIndex === -1) { setEditingPointKey(null); return; }
+                            const merged = { ...newPts[targetIndex], ...editingPointData };
                             // j1..j6 just changed above - re-derive x/y/z/a/b/c from the edited
                             // joints (via this robot's own FK) so they don't go stale and get
                             // preferred over the edit by PathVisualizer/playback (both read
                             // pt.x first when present - see robotKinematicsDispatch.ts).
                             const cart = jointsToCartesianForModel(robot.model, merged);
-                            newPts[i] = { ...merged, x: cart.x, y: cart.y, z: cart.z, a: cart.a, b: cart.b, c: cart.c };
+                            newPts[targetIndex] = { ...merged, x: cart.x, y: cart.y, z: cart.z, a: cart.a, b: cart.b, c: cart.c };
                             updateRobot(robot.id, { recordedPoints: newPts });
-                            setEditingPointIndex(null);
+                            setEditingPointKey(null);
                           }} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold shadow-lg shadow-emerald-900/20 transition-colors">
                             Save
                           </button>
@@ -1712,7 +1781,8 @@ console.log("Loading example:", id);
                       </>
                     )}
                   </div>
-                ))}
+                );
+                })}
                 {robot.recordedPoints.length === 0 && (
                   <div className="text-center text-slate-500 py-4 text-sm">
                     No points recorded

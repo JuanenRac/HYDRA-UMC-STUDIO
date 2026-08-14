@@ -16,7 +16,33 @@ export const unthrottledDelay = () => new Promise<void>(resolve => setTimeout(re
 export const globalPlaybacks: Record<number, boolean> = {};
 
 /** Type definition representing  robot model configurations or states. */
-export type RobotModel = 'Parol6 (6-DOF)' | 'Faze4 (6-DOF)' | 'AR3 (6-DOF)' | 'AR4 (6-DOF)' | 'Generic (6-DOF)';
+export type RobotModel =
+  | 'Parol6 (6-DOF)' | 'Faze4 (6-DOF)' | 'AR3 (6-DOF)' | 'AR4 (6-DOF)' | 'Generic (6-DOF)'
+  | 'UR3e (6-DOF)' | 'UR5e (6-DOF)' | 'UR10e (6-DOF)' | 'UR16e (6-DOF)' | 'UR20 (6-DOF)';
+
+/**
+ * Manufacturer grouping for the model picker (RobotDetail.tsx's Config tab) -
+ * purely a UI label, doesn't affect kinematics/rendering dispatch (that
+ * still keys off the RobotModel string itself, same as before). Real
+ * manufacturer per ATTRIBUTION.txt in each model's own public/models/
+ * folder - Source Robotics (Parol6/Faze4), Annin Robotics (AR3/AR4, same
+ * design lineage even though AR3 predates the Annin Robotics brand itself
+ * - see public/models/ar3/ATTRIBUTION.txt), Universal Robots (UR3e/UR5e/
+ * UR10e/UR16e/UR20, official github.com/UniversalRobots/
+ * Universal_Robots_ROS2_Description meshes, BSD-3-Clause).
+ */
+export const ROBOT_MANUFACTURERS: Record<RobotModel, string> = {
+  'Parol6 (6-DOF)': 'Source Robotics',
+  'Faze4 (6-DOF)': 'Source Robotics',
+  'AR3 (6-DOF)': 'Annin Robotics',
+  'AR4 (6-DOF)': 'Annin Robotics',
+  'Generic (6-DOF)': 'Generic',
+  'UR3e (6-DOF)': 'Universal Robots',
+  'UR5e (6-DOF)': 'Universal Robots',
+  'UR10e (6-DOF)': 'Universal Robots',
+  'UR16e (6-DOF)': 'Universal Robots',
+  'UR20 (6-DOF)': 'Universal Robots',
+};
 /** Type definition representing  robot role configurations or states. */
 export type RobotRole = 'Idle' | 'CNC' | 'Laser' | 'Pnp' | '3D printing' | 'Inspection';
 /** Type definition representing  tool type configurations or states. */

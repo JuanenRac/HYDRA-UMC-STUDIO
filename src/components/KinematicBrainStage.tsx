@@ -32,6 +32,16 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// The `min`/`max` on <input type="number"> below are HTML hints only - they
+// don't stop the browser handing onChange a value outside that range (or
+// NaN, on an empty/invalid field), so every numeric field here clamps in
+// its own onChange the same way toolCount already did, instead of letting
+// e.g. a negative table height leave the Z jog silently stuck at 0.
+function clampNum(v: number, min: number, max: number): number {
+  if (Number.isNaN(v)) return min;
+  return Math.max(min, Math.min(max, v));
+}
+
 type AxisKey = 'x' | 'y1' | 'y2' | 'z';
 
 export function KinematicBrainStage() {
@@ -62,6 +72,7 @@ export function KinematicBrainStage() {
   }
 
   function handleAtcRevolverStep(direction: number) {
+    if (!stage) return;
     const n = stage.atcRevolver.toolCount;
     const next = ((stage.atcRevolver.targetIndex + direction) % n + n) % n;
     patch({ atcRevolver: { ...stage.atcRevolver, targetIndex: next, currentIndex: next, homed: true } });
@@ -115,10 +126,10 @@ export function KinematicBrainStage() {
                 <div className="text-[10px] font-bold text-slate-500 uppercase">{axis.toUpperCase()}</div>
                 <div className="text-lg font-mono text-amber-400">{stage.xyTable[axis].toFixed(2)}</div>
                 <div className="flex gap-2 mt-1 w-full justify-center">
-                  <button onClick={() => handleJog(axis, -1)} className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded text-slate-300">
+                  <button onClick={() => handleJog(axis, -1)} aria-label={t('kbstage.jog_axis_neg', 'Jog {{axis}} -', { axis: axis.toUpperCase() })} className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded text-slate-300">
                     {axis === 'z' ? <ArrowDown size={16} /> : <ArrowLeft size={16} />}
                   </button>
-                  <button onClick={() => handleJog(axis, 1)} className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded text-slate-300">
+                  <button onClick={() => handleJog(axis, 1)} aria-label={t('kbstage.jog_axis_pos', 'Jog {{axis}} +', { axis: axis.toUpperCase() })} className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded text-slate-300">
                     {axis === 'z' ? <ArrowUp size={16} /> : <ArrowRight size={16} />}
                   </button>
                 </div>
@@ -129,21 +140,21 @@ export function KinematicBrainStage() {
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block text-[11px] font-medium text-slate-400 mb-1">{t('modules.width_x', 'Width (X mm)')}</label>
-              <input type="number" min="100" max="5000" step="10" className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[36px] text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+              <input type="number" min="100" max="5000" step="10" aria-label={t('modules.width_x', 'Width (X mm)')} className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[36px] text-xs text-slate-200 focus:outline-none focus:border-amber-500"
                 value={stage.xyTable.tableSize.width}
-                onChange={e => patch({ xyTable: { ...stage.xyTable, tableSize: { ...stage.xyTable.tableSize, width: Number(e.target.value) } } })} />
+                onChange={e => patch({ xyTable: { ...stage.xyTable, tableSize: { ...stage.xyTable.tableSize, width: clampNum(Number(e.target.value), 100, 5000) } } })} />
             </div>
             <div>
               <label className="block text-[11px] font-medium text-slate-400 mb-1">{t('modules.length_y', 'Length (Y mm)')}</label>
-              <input type="number" min="100" max="5000" step="10" className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[36px] text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+              <input type="number" min="100" max="5000" step="10" aria-label={t('modules.length_y', 'Length (Y mm)')} className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[36px] text-xs text-slate-200 focus:outline-none focus:border-amber-500"
                 value={stage.xyTable.tableSize.length}
-                onChange={e => patch({ xyTable: { ...stage.xyTable, tableSize: { ...stage.xyTable.tableSize, length: Number(e.target.value) } } })} />
+                onChange={e => patch({ xyTable: { ...stage.xyTable, tableSize: { ...stage.xyTable.tableSize, length: clampNum(Number(e.target.value), 100, 5000) } } })} />
             </div>
             <div>
               <label className="block text-[11px] font-medium text-slate-400 mb-1">{t('kbstage.height_z', 'Height (Z mm)')}</label>
-              <input type="number" min="10" max="1000" step="5" className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[36px] text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+              <input type="number" min="10" max="1000" step="5" aria-label={t('kbstage.height_z', 'Height (Z mm)')} className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[36px] text-xs text-slate-200 focus:outline-none focus:border-amber-500"
                 value={stage.xyTable.tableSize.height}
-                onChange={e => patch({ xyTable: { ...stage.xyTable, tableSize: { ...stage.xyTable.tableSize, height: Number(e.target.value) } } })} />
+                onChange={e => patch({ xyTable: { ...stage.xyTable, tableSize: { ...stage.xyTable.tableSize, height: clampNum(Number(e.target.value), 10, 1000) } } })} />
             </div>
           </div>
         </div>
@@ -165,9 +176,9 @@ export function KinematicBrainStage() {
             </div>
             <div className="flex items-center gap-3">
               <label className="text-[11px] text-slate-400 shrink-0">{t('kbstage.target_temp', 'Target °C')}</label>
-              <input type="number" min="0" max="150" className="w-24 bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[36px] text-xs text-slate-200 focus:outline-none focus:border-rose-500"
+              <input type="number" min="0" max="150" aria-label={t('kbstage.target_temp', 'Target °C')} className="w-24 bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[36px] text-xs text-slate-200 focus:outline-none focus:border-rose-500"
                 value={stage.heatedBed.targetTemp}
-                onChange={e => patch({ heatedBed: { ...stage.heatedBed, targetTemp: Number(e.target.value) } })} />
+                onChange={e => patch({ heatedBed: { ...stage.heatedBed, targetTemp: clampNum(Number(e.target.value), 0, 150) } })} />
               <button
                 onClick={() => patch({ heatedBed: { ...stage.heatedBed, ssrActive: !stage.heatedBed.ssrActive } })}
                 className={cn('ml-auto px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-colors', stage.heatedBed.ssrActive ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-slate-800 text-slate-500 border border-slate-700')}
@@ -183,22 +194,22 @@ export function KinematicBrainStage() {
               <RotateCw size={14} className="text-violet-400" /> {t('kbstage.atc_revolver', 'ATC Revolver (E0)')}
             </h3>
             <div className="flex items-center justify-center gap-4">
-              <button onClick={() => handleAtcRevolverStep(-1)} className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-slate-300">
+              <button onClick={() => handleAtcRevolverStep(-1)} aria-label={t('kbstage.atc_prev', 'Previous tool slot')} className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-slate-300">
                 <RotateCcw size={16} />
               </button>
               <div className="text-center">
                 <div className="text-2xl font-mono text-violet-400">{stage.atcRevolver.currentIndex + 1}</div>
                 <div className="text-[10px] text-slate-500 uppercase">{t('kbstage.of_slots', 'of {{count}} slots', { count: stage.atcRevolver.toolCount })}</div>
               </div>
-              <button onClick={() => handleAtcRevolverStep(1)} className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-slate-300">
+              <button onClick={() => handleAtcRevolverStep(1)} aria-label={t('kbstage.atc_next', 'Next tool slot')} className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-slate-300">
                 <RotateCw size={16} />
               </button>
             </div>
             <div className="flex items-center justify-between text-xs text-slate-400">
               <span>{t('kbstage.tool_count', 'Tool slots')}</span>
-              <input type="number" min="2" max="16" className="w-16 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 text-center focus:outline-none focus:border-violet-500"
+              <input type="number" min="2" max="16" aria-label={t('kbstage.tool_count', 'Tool slots')} className="w-16 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 text-center focus:outline-none focus:border-violet-500"
                 value={stage.atcRevolver.toolCount}
-                onChange={e => patch({ atcRevolver: { ...stage.atcRevolver, toolCount: Math.max(2, Number(e.target.value)) } })} />
+                onChange={e => patch({ atcRevolver: { ...stage.atcRevolver, toolCount: clampNum(Number(e.target.value), 2, 16) } })} />
             </div>
             <div className="flex items-center gap-1.5 text-[10px]">
               {stage.atcRevolver.homed ? <CheckCircle2 size={12} className="text-emerald-400" /> : <AlertCircle size={12} className="text-amber-400" />}
@@ -267,6 +278,7 @@ export function KinematicBrainStage() {
             <div className="grid grid-cols-3 gap-2">
               {stage.fans.map((on, i) => (
                 <button key={i} onClick={() => patch({ fans: stage.fans.map((v, j) => j === i ? !v : v) as [boolean, boolean, boolean] })}
+                  aria-pressed={on} aria-label={t('kbstage.fan_n', 'Fan {{n}}: {{state}}', { n: i + 1, state: on ? t('modules.on', 'ON') : t('modules.off', 'OFF') })}
                   className={cn('px-2 py-2 rounded text-[10px] font-bold uppercase border transition-colors', on ? 'bg-sky-500/20 border-sky-500/40 text-sky-400' : 'bg-slate-900 border-slate-800 text-slate-500')}>
                   {i + 1}
                 </button>
@@ -278,6 +290,7 @@ export function KinematicBrainStage() {
             <div className="grid grid-cols-5 gap-1.5">
               {stage.pumps.map((on, i) => (
                 <button key={i} onClick={() => patch({ pumps: stage.pumps.map((v, j) => j === i ? !v : v) })}
+                  aria-pressed={on} aria-label={t('kbstage.pump_n', 'Pump {{n}}: {{state}}', { n: i + 1, state: on ? t('modules.on', 'ON') : t('modules.off', 'OFF') })}
                   className={cn('px-1 py-2 rounded text-[9px] font-bold border transition-colors', on ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' : 'bg-slate-900 border-slate-800 text-slate-500', i >= 8 && 'ring-1 ring-slate-700')}>
                   {i + 1}
                 </button>
@@ -289,6 +302,7 @@ export function KinematicBrainStage() {
             <div className="grid grid-cols-5 gap-1.5">
               {stage.valves.map((on, i) => (
                 <button key={i} onClick={() => patch({ valves: stage.valves.map((v, j) => j === i ? !v : v) })}
+                  aria-pressed={on} aria-label={t('kbstage.valve_n', 'Valve {{n}}: {{state}}', { n: i + 1, state: on ? t('modules.on', 'ON') : t('modules.off', 'OFF') })}
                   className={cn('px-1 py-2 rounded text-[9px] font-bold border transition-colors', on ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-900 border-slate-800 text-slate-500', i >= 8 && 'ring-1 ring-slate-700')}>
                   {i + 1}
                 </button>

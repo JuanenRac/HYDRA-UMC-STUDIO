@@ -23,6 +23,9 @@
     "camera_offline": "Kamera Inaktiv",
     "networked_robots": "Vernetzte Roboter",
     "shared_resources": "Gemeinsame Ressourcen",
+    "kinematic_brain_stage": "Kinematic-Brain-Tisch",
+    "stack_a_slot": "STACK A",
+    "no_version_short": "—",
     "modules": "Module",
     "back": "Zurück",
     "overview": "Übersicht",
@@ -35,7 +38,10 @@
     "about_author": "Autor",
     "about_email": "E-Mail",
     "about_license": "Lizenz",
-    "close": "Schließen"
+    "close": "Schließen",
+    "collapse_sidebar": "Seitenleiste einklappen",
+    "expand_sidebar": "Seitenleiste ausklappen",
+    "active_controller": "Aktiver Controller"
   },
   "config": {
     "title": "Systemkonfiguration",
@@ -105,6 +111,7 @@
     "tool": "Werkzeug:",
     "step": "Schritt:",
     "speed": "Geschwindigkeit:",
+    "acceleration": "Beschleunigung:",
     "joints": "Gelenke",
     "points": "Punkte",
     "config": "Konfig",
@@ -151,7 +158,10 @@
     "select": "-- Auswählen --",
     "pause": "PAUSE",
     "pause_all": "ALLE PAUSIEREN",
-    "continue": "WEITER"
+    "continue": "WEITER",
+    "controller_board_upper": "ROBOTERSTEUERPLATINE",
+    "hardware_id": "Hardware-ID",
+    "controller_board_unknown": "Version unbekannt - über HYDRA-UMC → Tester abfragen."
   },
   "cameras": {
     "title": "Oktal Vision Matrix",
@@ -400,5 +410,39 @@
     },
     "expansion_type": "Erweiterungsplatine",
     "expansion_none": "Keine"
+  },
+  "kbstage": {
+    "title": "Kinematic-Brain-Tisch",
+    "subtitle": "Lokaler 6-Achsen-Tisch des STM32H745: XY-Tisch, Heizbett, ATC-Revolver, Förderband",
+    "gantry": "XY-Portal (X, Y1, Y2, Z)",
+    "height_z": "Höhe (Z mm)",
+    "ssr_230vac": "SSR, 230-V-AC-Netz",
+    "therm1": "Thermistor 1",
+    "therm2": "Thermistor 2",
+    "target_temp": "Zieltemperatur °C",
+    "atc_revolver": "ATC-Revolver (E0)",
+    "of_slots": "von {{count}} Plätzen",
+    "tool_count": "Werkzeugplätze",
+    "homed": "Referenziert",
+    "not_homed": "Nicht referenziert",
+    "conveyor": "Förderband (E1)",
+    "conveyor_future": "Verkabelt und mit Pinbelegung, aber noch keine implementierte Funktion",
+    "conveyor_not_installed": "Kein Förderband an dieser Maschine installiert",
+    "conveyor_mark_installed": "Als installiert markieren",
+    "running": "Läuft",
+    "stopped": "Gestoppt",
+    "endstops": "Endschalter (2 pro Achse)",
+    "triggered": "Ausgelöst",
+    "open": "Offen",
+    "fans": "Lüfter (3x)",
+    "pumps": "Pumpen (8+2)",
+    "valves": "Ventile (8+2)",
+    "jog_axis_neg": "Achse {{axis}} tippen -",
+    "jog_axis_pos": "Achse {{axis}} tippen +",
+    "atc_prev": "Vorheriger Werkzeugplatz",
+    "atc_next": "Nächster Werkzeugplatz",
+    "fan_n": "Lüfter {{n}}: {{state}}",
+    "pump_n": "Pumpe {{n}}: {{state}}",
+    "valve_n": "Ventil {{n}}: {{state}}"
   }
 }

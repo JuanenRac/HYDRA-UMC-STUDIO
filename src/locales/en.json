@@ -38,7 +38,10 @@
     "about_author": "Author",
     "about_email": "Email",
     "about_license": "License",
-    "close": "Close"
+    "close": "Close",
+    "collapse_sidebar": "Collapse sidebar",
+    "expand_sidebar": "Expand sidebar",
+    "active_controller": "Active controller"
   },
   "config": {
     "title": "System Configuration",
@@ -433,6 +436,13 @@
     "open": "Open",
     "fans": "Fans (3x)",
     "pumps": "Pumps (8+2)",
-    "valves": "Valves (8+2)"
+    "valves": "Valves (8+2)",
+    "jog_axis_neg": "Jog {{axis}} -",
+    "jog_axis_pos": "Jog {{axis}} +",
+    "atc_prev": "Previous tool slot",
+    "atc_next": "Next tool slot",
+    "fan_n": "Fan {{n}}: {{state}}",
+    "pump_n": "Pump {{n}}: {{state}}",
+    "valve_n": "Valve {{n}}: {{state}}"
   }
 }

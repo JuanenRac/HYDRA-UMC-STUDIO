@@ -82,7 +82,7 @@
           "h": 144,
           "x": 7,
           "y": -283,
-          "isOpen": true
+          "isOpen": false
         }
       },
       "threeDHeight": 529
@@ -107,20 +107,17 @@
           "tool": "SMT Solder Paste Dispenser",
           "urtcConnected": true,
           "pos": {
-            "x": 174.9886300424334,
-            "y": 17.830878602283967,
-            "z": 109.99999999999994,
+            "x": 0,
+            "y": 0,
+            "z": 0,
             "a": 0,
             "b": 0,
-            "c": 0,
-            "tx": 290.8269353926545,
-            "ty": 221.18985853801857,
-            "trz": 0
+            "c": 0
           },
           "joints": {
-            "j1": 5.834476041851129,
-            "j2": 16.668136615962784,
-            "j3": -68.7730277066898,
+            "j1": 0,
+            "j2": -25,
+            "j3": 20,
             "j4": 0,
             "j5": 0,
             "j6": 0
@@ -1105,9 +1102,9 @@
           "playbackState": {
             "isPlaying": false,
             "activeStep": -1,
-            "speed": 464,
+            "speed": 485.6,
             "isLooping": true,
-            "isFinished": true,
+            "isFinished": false,
             "isPaused": false
           },
           "hasXYTable": true,
@@ -1160,8 +1157,8 @@
           "vacuumTable": {
             "enabled": true,
             "size": {
-              "width": 100,
-              "length": 100
+              "width": 300,
+              "length": 200
             },
             "pumpActive": false,
             "valveActive": false,
@@ -1286,12 +1283,12 @@
           },
           "xyTable": {
             "pos": {
-              "x": 290.8269353926545,
-              "y": 221.18985853801857
+              "x": 291.3133347502325,
+              "y": 278.06115213282516
             },
             "tableSize": {
-              "width": 500,
-              "length": 500
+              "width": 750,
+              "length": 400
             },
             "worldPos": {
               "x": -187.23128667743572,
@@ -1302,9 +1299,9 @@
           },
           "cameraView": {
             "position": [
-              1.9690029437488612,
-              1.1078176038236733,
-              1.7084828916331158
+              2.2726503457094656,
+              3.010935415087677,
+              -0.9701949447747966
             ],
             "target": [
               0.06309207717274687,
@@ -1317,7 +1314,7 @@
             3,
             8
           ],
-          "selectedWorkFile": "mover_objetos_palet.json",
+          "selectedWorkFile": "soldadura_chasis.json",
           "selectedExample": "example-23-xy-table-flower",
           "renderScale": 1,
           "centerCameraTrigger": 1786693697421,
@@ -1327,10 +1324,10 @@
             "lastSeen": 1786709496240
           },
           "urtcHead": {
-            "firmwareVersion": "1.2.7",
+            "firmwareVersion": "URTC_V1.1_F303CC",
             "bootloaderVersion": "1.0.0",
             "hardwareId": "URTC-001",
-            "lastSeen": 1786707778355,
+            "lastSeen": 1786721896521,
             "expansionBoardType": 0
           },
           "atc": {
@@ -1468,9 +1465,9 @@
           "tool": "Engraving Laser Diode (10W optical)",
           "urtcConnected": true,
           "pos": {
-            "x": 186.6079365821892,
+            "x": 169.99989235364507,
             "y": 0,
-            "z": 39.999876306992235,
+            "z": 39.93949808494369,
             "a": 0,
             "b": 0,
             "c": 0,
@@ -1479,9 +1476,9 @@
             "trz": 0
           },
           "joints": {
-            "j1": -207.71313963555036,
-            "j2": 3.8253187934744606,
-            "j3": -10.637179459778265,
+            "j1": -204.113139899821,
+            "j2": 2.5474477124330224,
+            "j3": -9.599044796462962,
             "j4": 0,
             "j5": 0,
             "j6": 0
@@ -1628,7 +1625,7 @@
             "activeStep": -1,
             "speed": 100,
             "isLooping": true,
-            "isFinished": true,
+            "isFinished": false,
             "isPaused": false
           },
           "hasXYTable": false,
@@ -1811,9 +1808,9 @@
           "tool": "AOI (Automated Optical Inspection) System",
           "urtcConnected": true,
           "pos": {
-            "x": 154.77601276033883,
+            "x": 213.597239242442,
             "y": 0,
-            "z": 127.5839573091157,
+            "z": 148.38529650794106,
             "a": 0,
             "b": 0,
             "c": 0,
@@ -1822,9 +1819,9 @@
             "trz": 0
           },
           "joints": {
-            "j1": -89.9998022908932,
-            "j2": -25.861451953200376,
-            "j3": 52,
+            "j1": -89.99977757144605,
+            "j2": -14.069638641850656,
+            "j3": 46.16420292567103,
             "j4": 0,
             "j5": 0,
             "j6": 0
@@ -2271,7 +2268,7 @@
             "activeStep": -1,
             "speed": 100,
             "isLooping": true,
-            "isFinished": true,
+            "isFinished": false,
             "isPaused": false
           },
           "hasXYTable": false,
@@ -3187,7 +3184,7 @@
           "id": 8,
           "name": "Robot A8",
           "online": true,
-          "model": "Faze4 (6-DOF)",
+          "model": "Parol6 (6-DOF)",
           "role": "Idle",
           "tool": "None",
           "urtcConnected": false,
@@ -3201,10 +3198,10 @@
           },
           "joints": {
             "j1": 0,
-            "j2": -45,
-            "j3": 45,
+            "j2": -25,
+            "j3": 20,
             "j4": 0,
-            "j5": 90,
+            "j5": 0,
             "j6": 0
           },
           "valves": [
@@ -3371,6 +3368,18 @@
               "width": 500,
               "length": 500
             }
+          },
+          "cameraView": {
+            "position": [
+              0.49583425807608933,
+              0.3044071725176166,
+              1.0373535851067424
+            ],
+            "target": [
+              0,
+              0.2,
+              0
+            ]
           }
         }
       ],
@@ -3601,10 +3610,10 @@
         }
       ],
       "kinematicBrain": {
-        "firmwareVersion": "1.0.1",
+        "firmwareVersion": "HYDRA_KB_CM7_BOOTLOADER_v1.0.0",
         "bootloaderVersion": "1.0.0",
         "hardwareId": "KB-000",
-        "lastSeen": 1786707802146
+        "lastSeen": 1786721946150
       }
     }
   ],

@@ -25,7 +25,18 @@ async function startServer() {
     return path.join(dataPath, "settings.json");
   };
 
-  // Serve static data files (like WORKS/) at the root level
+  // Serve static data files (like WORKS/) at the root level - but never
+  // settings.json itself, which holds controller IPs, CAN-OTA config, and
+  // full per-robot state and has no business being reachable by a plain
+  // unauthenticated GET. Client code only ever fetches WORKS/*, never
+  // settings.json directly (it goes through /api/settings below).
+  app.use((req, res, next) => {
+    if (req.path === "/settings.json") {
+      res.status(404).end();
+      return;
+    }
+    next();
+  });
   app.use(express.static(dataPath));
 
   // API routes FIRST

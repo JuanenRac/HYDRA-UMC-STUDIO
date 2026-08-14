@@ -38,7 +38,10 @@
     "about_author": "Autor",
     "about_email": "Email",
     "about_license": "Licencia",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "collapse_sidebar": "Contraer panel lateral",
+    "expand_sidebar": "Expandir panel lateral",
+    "active_controller": "Controlador activo"
   },
   "config": {
     "title": "Configuración del Sistema",
@@ -433,6 +436,13 @@
     "open": "Abierto",
     "fans": "Ventiladores (3x)",
     "pumps": "Bombas (8+2)",
-    "valves": "Electroválvulas (8+2)"
+    "valves": "Electroválvulas (8+2)",
+    "jog_axis_neg": "Mover eje {{axis}} -",
+    "jog_axis_pos": "Mover eje {{axis}} +",
+    "atc_prev": "Posición de herramienta anterior",
+    "atc_next": "Siguiente posición de herramienta",
+    "fan_n": "Ventilador {{n}}: {{state}}",
+    "pump_n": "Bomba {{n}}: {{state}}",
+    "valve_n": "Electroválvula {{n}}: {{state}}"
   }
 }
