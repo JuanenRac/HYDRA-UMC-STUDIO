@@ -45,10 +45,10 @@
     "customModels": [],
     "autoConnectRobots": false,
     "theme": "HYDRA-UMC Studio Fasion",
-    "language": "es",
+    "language": "en",
     "worksPaths": {},
     "canOta": {
-      "transport": "hardware",
+      "transport": "mock",
       "robotControllerBoardMcu": "",
       "firmwarePaths": {}
     },
@@ -1322,9 +1322,9 @@
           "renderScale": 1,
           "centerCameraTrigger": 1786693697421,
           "controllerBoard": {
-            "firmwareVersion": "URTC_V1.1_F303CC",
+            "firmwareVersion": "HYDRA_RCB_APP_v1.0",
             "bootloaderVersion": "1.0.0",
-            "lastSeen": 1786665145217
+            "lastSeen": 1786709496240
           },
           "urtcHead": {
             "firmwareVersion": "1.2.7",
