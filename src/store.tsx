@@ -19,7 +19,8 @@ export const globalPlaybacks: Record<number, boolean> = {};
 export type RobotModel =
   | 'Parol6 (6-DOF)' | 'Faze4 (6-DOF)' | 'AR3 (6-DOF)' | 'AR4 (6-DOF)' | 'Generic (6-DOF)'
   | 'UR3e (6-DOF)' | 'UR5e (6-DOF)' | 'UR10e (6-DOF)' | 'UR16e (6-DOF)' | 'UR20 (6-DOF)'
-  | 'xArm6 (6-DOF)' | 'Lite 6 (6-DOF)' | 'e.DO (6-DOF)';
+  | 'xArm6 (6-DOF)' | 'Lite 6 (6-DOF)' | 'e.DO (6-DOF)'
+  | 'Gen3 Lite (6-DOF)' | 'M-710iC (6-DOF)';
 
 /**
  * Manufacturer grouping for the model picker (RobotDetail.tsx's Config tab) -
@@ -46,6 +47,8 @@ export const ROBOT_MANUFACTURERS: Record<RobotModel, string> = {
   'xArm6 (6-DOF)': 'UFACTORY',
   'Lite 6 (6-DOF)': 'UFACTORY',
   'e.DO (6-DOF)': 'Comau',
+  'Gen3 Lite (6-DOF)': 'Kinova',
+  'M-710iC (6-DOF)': 'FANUC',
 };
 /** Type definition representing  robot role configurations or states. */
 export type RobotRole = 'Idle' | 'CNC' | 'Laser' | 'Pnp' | '3D printing' | 'Inspection';

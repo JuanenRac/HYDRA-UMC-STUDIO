@@ -19,6 +19,8 @@ import UR20Arm from './UR20Arm';
 import XArm6Arm from './XArm6Arm';
 import Lite6Arm from './Lite6Arm';
 import EdoArm from './EdoArm';
+import Gen3LiteArm from './Gen3LiteArm';
+import M710icArm from './M710icArm';
 
 /**
  * Executes the  robot arm logic.
@@ -100,6 +102,18 @@ export default function RobotArm({ robot }: { robot: RobotState }) {
             return (
                 <Suspense fallback={null}>
                     <EdoArm robot={robot} />
+                </Suspense>
+            );
+        case 'Gen3 Lite (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <Gen3LiteArm robot={robot} />
+                </Suspense>
+            );
+        case 'M-710iC (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <M710icArm robot={robot} />
                 </Suspense>
             );
         default:

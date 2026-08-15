@@ -25,6 +25,10 @@ Manage multiple independent 6-DOF robots simultaneously, each with its own real 
 - 🏭 **Source Robotics** - Parol6, Faze4 (MIT-licensed and GPL-3.0-licensed meshes respectively, see each model's own `ATTRIBUTION.txt`)
 - 🏭 **Annin Robotics** - AR3, AR4 (MIT-licensed meshes)
 - 🏭 **Universal Robots** - UR3e, UR5e, UR10e, UR16e, UR20 - official geometry, joint limits, and link kinematics pulled directly from Universal Robots' own [Universal_Robots_ROS2_Description](https://github.com/UniversalRobots/Universal_Robots_ROS2_Description) repository (BSD-3-Clause), covering the small-to-heavy payload range of their e-Series lineup
+- 🏭 **UFACTORY** - xArm6, Lite 6 (BSD-3-Clause meshes, official [xarm_ros2](https://github.com/xArm-Developer/xarm_ros2) geometry/kinematics)
+- 🏭 **Comau** - e.DO (BSD-3-Clause meshes, official [eDO_description](https://github.com/ianathompson/eDO_description) geometry/kinematics)
+- 🏭 **Kinova** - Gen3 Lite (BSD-3-Clause meshes, official [ros2_kortex](https://github.com/Kinovarobotics/ros2_kortex) geometry/kinematics)
+- 🏭 **FANUC** - M-710iC (BSD-3-Clause meshes, official [fanuc_m710ic_description](https://github.com/robot-descriptions/fanuc_m710ic_description) geometry/kinematics)
 - ⚙️ **Generic** - a simplified two-link arm for any rig without a dedicated model
 
 Every real model (everything except Generic) loads its actual STL mesh geometry per link and drives it through that manufacturer's own real joint transform chain - not a stylized placeholder. Forward/inverse kinematics are computed against each robot's own real geometry (Newton-Raphson solve for position, real per-joint limits where the robot defines any), so a recorded trajectory or a jogged Cartesian target moves the correct arm the way the physical robot actually would. Universal Robots' 5 models additionally share one common FK/IK engine (`src/examples/urKinematicsShared.ts`) and one common 3D rig renderer (`src/components/3d/URArm.tsx`), since every UR e-Series joint shares the exact same kinematic structure - only the numeric link lengths differ per model.
@@ -138,7 +142,7 @@ HYDRA-UMC-STUDIO/
 │   └── locales/                 # en/es/de/fr/it translation files
 ├── public/models/                # Real 3D mesh assets, one folder per robot
 │   ├── parol6/, faze4/, ar3/, ar4/  # Each with its own ATTRIBUTION.txt (MIT or GPL-3.0)
-│   └── ur3e/, ur5e/, ur10e/, ur16e/, ur20/  # Each with its own ATTRIBUTION.txt (BSD-3-Clause)
+│   └── ur3e/, ur5e/, ur10e/, ur16e/, ur20/, xarm6/, lite6/, edo/, gen3lite/, m710ic/  # Each with its own ATTRIBUTION.txt (BSD-3-Clause)
 ├── images/                       # README banner
 └── data/                         # Server-persisted state (settings.json, WORKS/) - created at runtime
 ```
@@ -219,6 +223,10 @@ The source code of this application is available under the **GNU General Public 
 | Source Robotics | Faze4 | MIT |
 | Annin Robotics | AR3, AR4 | MIT |
 | Universal Robots | UR3e, UR5e, UR10e, UR16e, UR20 | BSD-3-Clause |
+| UFACTORY | xArm6, Lite 6 | BSD-3-Clause |
+| Comau | e.DO | BSD-3-Clause |
+| Kinova | Gen3 Lite | BSD-3-Clause |
+| FANUC | M-710iC | BSD-3-Clause |
 
 Each model's own exact source repository, path, and license text reference lives in that model's own `public/models/<slug>/ATTRIBUTION.txt` - consult that file before redistributing a specific mesh set, rather than assuming the table above is a substitute for it.
 

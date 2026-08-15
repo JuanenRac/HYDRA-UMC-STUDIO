@@ -102,7 +102,7 @@
           "id": 1,
           "name": "Robot A1",
           "online": true,
-          "model": "e.DO (6-DOF)",
+          "model": "Generic (6-DOF)",
           "role": "Pnp",
           "tool": "SMT Solder Paste Dispenser",
           "urtcConnected": true,
@@ -1301,9 +1301,9 @@
           },
           "cameraView": {
             "position": [
-              1.1519742982727894,
-              1.9322327911967905,
-              3.5345520129045673
+              -0.8433920632427393,
+              1.5127443629223487,
+              0.5819508889630406
             ],
             "target": [
               0.06309207717274687,

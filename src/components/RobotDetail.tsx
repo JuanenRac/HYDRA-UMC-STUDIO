@@ -27,6 +27,8 @@ import { ur20CartesianToJoints, UR20_HOME_POSE, UR20_JOINT_LIMITS_DEG } from '..
 import { xarm6CartesianToJoints, XARM6_HOME_POSE, XARM6_JOINT_LIMITS_DEG } from '../examples/xarm6Kinematics';
 import { lite6CartesianToJoints, LITE6_HOME_POSE, LITE6_JOINT_LIMITS_DEG } from '../examples/lite6Kinematics';
 import { edoCartesianToJoints, EDO_HOME_POSE } from '../examples/edoKinematics';
+import { gen3LiteCartesianToJoints, GEN3LITE_HOME_POSE, GEN3LITE_JOINT_LIMITS_DEG } from '../examples/gen3LiteKinematics';
+import { m710icCartesianToJoints, M710IC_HOME_POSE } from '../examples/m710icKinematics';
 import { convertToCartesian } from '../examples/utils';
 import { jointsToCartesianForModel } from '../examples/robotKinematicsDispatch';
 
@@ -70,6 +72,8 @@ function homePoseFor(model: RobotModel) {
   if (model === 'xArm6 (6-DOF)') return { ...XARM6_HOME_POSE };
   if (model === 'Lite 6 (6-DOF)') return { ...LITE6_HOME_POSE };
   if (model === 'e.DO (6-DOF)') return { ...EDO_HOME_POSE };
+  if (model === 'Gen3 Lite (6-DOF)') return { ...GEN3LITE_HOME_POSE };
+  if (model === 'M-710iC (6-DOF)') return { ...M710IC_HOME_POSE };
   return { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 };
 }
 
@@ -96,6 +100,8 @@ function resolveTargetJoints(
   if (model === 'xArm6 (6-DOF)') return xarm6CartesianToJoints(x, y, z, a, b, c);
   if (model === 'Lite 6 (6-DOF)') return lite6CartesianToJoints(x, y, z, a, b, c);
   if (model === 'e.DO (6-DOF)') return edoCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'Gen3 Lite (6-DOF)') return gen3LiteCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'M-710iC (6-DOF)') return m710icCartesianToJoints(x, y, z, a, b, c);
   return genericJoints;
 }
 
@@ -1252,6 +1258,7 @@ console.log("Loading example:", id);
                     : robot.model === 'UR20 (6-DOF)' ? UR20_JOINT_LIMITS_DEG[j]
                     : robot.model === 'xArm6 (6-DOF)' ? XARM6_JOINT_LIMITS_DEG[j]
                     : robot.model === 'Lite 6 (6-DOF)' ? LITE6_JOINT_LIMITS_DEG[j]
+                    : robot.model === 'Gen3 Lite (6-DOF)' ? GEN3LITE_JOINT_LIMITS_DEG[j]
                     : [-180, 180];
                   return (
                   <div key={j} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
@@ -1484,6 +1491,12 @@ console.log("Loading example:", id);
                       </optgroup>
                       <optgroup label="Comau">
                         <option value="e.DO (6-DOF)">e.DO (6-DOF)</option>
+                      </optgroup>
+                      <optgroup label="Kinova">
+                        <option value="Gen3 Lite (6-DOF)">Gen3 Lite (6-DOF)</option>
+                      </optgroup>
+                      <optgroup label="FANUC">
+                        <option value="M-710iC (6-DOF)">M-710iC (6-DOF)</option>
                       </optgroup>
                       <optgroup label="Generic">
                         <option value="Generic (6-DOF)">Generic (6-DOF)</option>
