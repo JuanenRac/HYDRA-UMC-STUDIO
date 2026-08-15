@@ -102,7 +102,7 @@
           "id": 1,
           "name": "Robot A1",
           "online": true,
-          "model": "Parol6 (6-DOF)",
+          "model": "e.DO (6-DOF)",
           "role": "Pnp",
           "tool": "SMT Solder Paste Dispenser",
           "urtcConnected": true,
