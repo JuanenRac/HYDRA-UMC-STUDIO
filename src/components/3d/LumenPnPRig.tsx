@@ -40,15 +40,27 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { PnPModule } from '../../store';
 
 // Same defensive mm-vs-m scale check every other real-mesh component in
 // this folder applies (see URArm.tsx's own copy) - these STLs are
 // exported straight from the CAD in millimeters.
+//
+// mergeVertices() is NOT cosmetic here - STLLoader produces a non-indexed
+// geometry (3 unique vertices per triangle, none shared, since binary STL
+// itself has no concept of vertex sharing), which for these real
+// multi-million-triangle CAD exports was enough raw GPU buffer data to
+// hit "THREE.WebGLRenderer: Context Lost" in real testing (verified via
+// a headless Chromium run against the live dev server, not assumed) -
+// deduplicating shared vertices into an indexed geometry cuts that
+// footprint substantially since CAD-tessellated surfaces have heavy
+// vertex sharing between adjacent triangles.
 function useRealScaleSTL(url: string): THREE.BufferGeometry {
   const raw = useLoader(STLLoader, url);
   return useMemo(() => {
-    const geometry = raw.clone();
+    const geometry = mergeVertices(raw);
+    geometry.computeVertexNormals();
     geometry.computeBoundingBox();
     const box = geometry.boundingBox;
     const maxDim = box ? Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z) : 0;
