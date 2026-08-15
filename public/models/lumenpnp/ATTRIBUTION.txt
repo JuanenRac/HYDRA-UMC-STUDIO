@@ -1,5 +1,5 @@
-LumenPnP v4 mesh files (base.stl, y_carriage.stl, x_carriage.stl,
-z_carriage_n1.stl, z_carriage_n2.stl)
+LumenPnP v4 mesh files (base.stl/.glb, y_carriage.stl/.glb,
+x_carriage.stl/.glb, z_carriage_n1.stl/.glb, z_carriage_n2.stl/.glb)
 
 Source: https://github.com/opulo-inc/lumenpnp
 Path:   pnp/cad/assembly.FCStd (and the linked FreeCAD sub-documents it
@@ -22,11 +22,48 @@ structure - determined by reading every leaf part's own real bounding box
 (e.g. GT2BeltClamp's bbox tracks the toolhead's own X position exactly,
 so it's grouped with the moving X-carriage; X-Motor's bbox stays fixed
 regardless of toolhead position, so it's grouped with the Y-carriage
-bridge instead), not guessed. Small fasteners (screws/nuts/washers,
-anything under 15mm) were excluded from the merge - real triangle count
-from threaded geometry at full CAD tessellation quality made the naive
-export exceed 800MB per file for the base group alone, with no visual
-benefit at any zoom level this viewport is ever used at.
+bridge instead), not guessed.
+
+Two real problems surfaced only by testing this against the actual live
+dev server (not assumed from file size alone), each requiring a real fix
+rather than a bigger number:
+
+1. Triangle budget. The first honest export (every part down to washers,
+fine CAD tessellation) ran past 800MB for the base group alone - orders
+of magnitude past what any other robot mesh in this app needs (e.g.
+ur5classic's entire 7-part arm is 284KB total) - and even after repeated
+tessellation-only cuts, still hit ~40MB / ~840K triangles combined, well
+past that same working-precedent scale. The base group's own single
+biggest offender (~281K of ~500K facets, found by tessellating each
+base_roots entry in isolation and comparing) was Group027 ("control-box"
+- the electronics enclosure, including a modeled motherboard PCB): a
+mostly-hidden internal part whose small repeated features (connectors,
+mounting bosses) each demand their own minimum triangle count regardless
+of how coarse the tessellation deflection is set, for zero payoff at any
+zoom level this viewport is used at - dropped entirely. Combined with a
+much higher minimum-kept-part size (real fasteners AND now most brackets
+under ~30-250mm depending on the group, up from the original 15mm),
+final counts land at base ~32.6K / y_carriage ~23.9K / x_carriage ~19.2K
+/ z_carriage_n1+n2 ~5.5K each - a recognizable silhouette, not a
+bolt-for-bolt replica, at last in the same ballpark as this app's other
+robot meshes.
+
+2. Runtime merge cost. Even at that reduced count, loading 5 raw .stl
+files through STLLoader + client-side mergeVertices() (this app's
+standard pattern for every *Arm.tsx mesh) still hit a real
+"THREE.WebGLRenderer: Context Lost" in live testing, verified via headless
+Chromium against the dev server - a plain robot arm never does this. The
+cause: 5 synchronous mergeVertices() calls landing in the same React
+commit right as all 5 STL fetches resolved together blocked the main
+thread long enough in one burst to trip the browser's own GPU-hang
+watchdog, and the resulting blank canvas never recovered on its own (no
+"webglcontextrestored" fired even 40+ seconds later - this project's
+Canvas has no restore handler, so once lost it stays lost). Fix: the
+.stl files are kept alongside the .glb ones as the source of truth (feed
+them back into FreeCAD/three.js's own STLLoader+mergeVertices+
+GLTFExporter pipeline to regenerate), but LumenPnPRig.tsx itself only
+ever loads the .glb files - pre-merged/indexed offline, so the browser
+has nothing left to compute on load, just a buffer to upload.
 
 Real axis travel limits (LumenPnPRig.tsx's own X/Y ranges) come from this
 same repo's own openpnp/machine.xml (the real machine's own OpenPnP
