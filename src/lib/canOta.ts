@@ -272,10 +272,11 @@ export function startMockBusMonitor(target: CanOtaTarget, onFrame: (f: CanFrame)
 // CORRECT answer to the wrong question - the fix is reading the manifest
 // that actually exists, not a Releases feature this project never uses.
 // HYDRA-UMC now follows the exact same pattern (see this repo's own
-// generate_manifest.py) - see MANIFEST_PATH below for where each repo
-// keeps it, since the two differ (URTC commits output straight into
-// `firmware/`; HYDRA-UMC's own `firmware/` is SOURCE, its build output
-// goes to `firmware_out/` instead).
+// generate_manifest.py) - both repos use the same `src/` (source) vs.
+// `firmware/` (committed build output) split as of 2026-08-15, so
+// MANIFEST_DIR below is the same value for both today, kept as a
+// per-repo map rather than one shared constant in case a future repo
+// ever needs a different layout.
 // ---------------------------------------------------------------------------
 
 /** Repo to check per tier. */
@@ -286,10 +287,10 @@ export const GITHUB_FIRMWARE_REPO: Partial<Record<CanOtaTier, string>> = {
   urtcExpansion: 'JuanenRac/URTC',
 };
 
-/** Where firmware_manifest.json (and the .bin files it indexes) live within each repo - see this file's own header for why the two differ. */
+/** Where firmware_manifest.json (and the .bin files it indexes) live within each repo - see this file's own header. */
 const MANIFEST_DIR: Record<string, string> = {
   'JuanenRac/URTC': 'firmware',
-  'JuanenRac/HYDRA-UMC': 'firmware_out',
+  'JuanenRac/HYDRA-UMC': 'firmware',
 };
 
 /** Which manifest component key(s) belong to which tier - one tier can span several components (e.g. kinematicBrain covers both STM32H745 cores' bootloader+application, 4 components total), mirroring how URTC's own urtcHead tier already spans that chip's own bootloader+application (2 components). */
@@ -328,10 +329,11 @@ export async function fetchGithubFirmwareReleases(repo: string, tier: CanOtaTier
   if (!res.ok) {
     if (res.status === 404) {
       // Real, expected state until the repo owner actually commits+pushes a
-      // build's own output (HYDRA-UMC's `firmware_out/` is gitignored
-      // locally by design - nothing to fetch here until that changes) -
-      // not a bug, so this returns an empty list rather than throwing, same
-      // as "repo has no releases yet" used to behave for the caller.
+      // build's own output (both repos' own `firmware/` folder is
+      // intentionally NOT gitignored, but a fresh clone has nothing there
+      // until a real build runs) - not a bug, so this returns an empty
+      // list rather than throwing, same as "repo has no releases yet"
+      // used to behave for the caller.
       return [];
     }
     throw new Error(`GitHub raw content ${res.status} fetching ${manifestUrl}`);
