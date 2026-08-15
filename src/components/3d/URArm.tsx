@@ -48,7 +48,19 @@ export interface UrArmConfig {
   meshBase: string;
   chain: UrChain;
   meshOffsets: UrMeshOffsets;
+  /** Real on-disk filenames, base..wrist_3 order - defaults to Universal
+   * Robots' own naming (base.stl/shoulder.stl/upperarm.stl/forearm.stl/
+   * wrist1.stl/wrist2.stl/wrist3.stl) for every existing UR*Arm.tsx
+   * wrapper, which don't need to change. Robots sharing this same "every
+   * joint rotates about local Z" engine but NOT Universal Robots' own
+   * naming convention (xArm6Arm.tsx/Lite6Arm.tsx use link1.stl.."link6".stl)
+   * pass their own real filenames here instead. */
+  meshFiles?: [string, string, string, string, string, string, string];
 }
+
+const DEFAULT_UR_MESH_FILES: [string, string, string, string, string, string, string] = [
+  'base.stl', 'shoulder.stl', 'upperarm.stl', 'forearm.stl', 'wrist1.stl', 'wrist2.stl', 'wrist3.stl',
+];
 
 // Same ROS rpy = Rz(yaw)*Ry(pitch)*Rx(roll) = three.js 'ZYX' composition
 // fix already applied throughout this folder (see Parol6Arm.tsx's own
@@ -77,9 +89,9 @@ function useRealScaleSTL(url: string): THREE.BufferGeometry {
 }
 
 const bodyMat = { color: '#d0d3d8', roughness: 0.45, metalness: 0.4 };
-const MESH_FILES = ['base.stl', 'shoulder.stl', 'upperarm.stl', 'forearm.stl', 'wrist1.stl', 'wrist2.stl', 'wrist3.stl'];
 
 export default function URArm({ robot, config }: { robot: RobotState; config: UrArmConfig }) {
+  const MESH_FILES = config.meshFiles ?? DEFAULT_UR_MESH_FILES;
   const joints = [
     robot.joints.j1 * Math.PI / 180,
     robot.joints.j2 * Math.PI / 180,
