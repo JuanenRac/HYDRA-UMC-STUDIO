@@ -29,6 +29,12 @@ import { lite6CartesianToJoints, LITE6_HOME_POSE, LITE6_JOINT_LIMITS_DEG } from 
 import { edoCartesianToJoints, EDO_HOME_POSE } from '../examples/edoKinematics';
 import { gen3LiteCartesianToJoints, GEN3LITE_HOME_POSE, GEN3LITE_JOINT_LIMITS_DEG } from '../examples/gen3LiteKinematics';
 import { m710icCartesianToJoints, M710IC_HOME_POSE } from '../examples/m710icKinematics';
+import { soArm100CartesianToJoints, SOARM100_HOME_POSE } from '../examples/soArm100Kinematics';
+import { gen2CartesianToJoints, GEN2_HOME_POSE, GEN2_JOINT_LIMITS_DEG } from '../examples/gen2Kinematics';
+import { piperCartesianToJoints, PIPER_HOME_POSE, PIPER_JOINT_LIMITS_DEG } from '../examples/piperKinematics';
+import { z1CartesianToJoints, Z1_HOME_POSE } from '../examples/z1Kinematics';
+import { vx300sCartesianToJoints, VX300S_HOME_POSE } from '../examples/vx300sKinematics';
+import { wx250sCartesianToJoints, WX250S_HOME_POSE } from '../examples/wx250sKinematics';
 import { convertToCartesian } from '../examples/utils';
 import { jointsToCartesianForModel } from '../examples/robotKinematicsDispatch';
 
@@ -74,6 +80,12 @@ function homePoseFor(model: RobotModel) {
   if (model === 'e.DO (6-DOF)') return { ...EDO_HOME_POSE };
   if (model === 'Gen3 Lite (6-DOF)') return { ...GEN3LITE_HOME_POSE };
   if (model === 'M-710iC (6-DOF)') return { ...M710IC_HOME_POSE };
+  if (model === 'SO-ARM100 (5-DOF)') return { ...SOARM100_HOME_POSE };
+  if (model === 'Gen2 (6-DOF)') return { ...GEN2_HOME_POSE };
+  if (model === 'PiPER (6-DOF)') return { ...PIPER_HOME_POSE };
+  if (model === 'Z1 (6-DOF)') return { ...Z1_HOME_POSE };
+  if (model === 'ViperX 300 (6-DOF)') return { ...VX300S_HOME_POSE };
+  if (model === 'WidowX 250 (6-DOF)') return { ...WX250S_HOME_POSE };
   return { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 };
 }
 
@@ -102,6 +114,12 @@ function resolveTargetJoints(
   if (model === 'e.DO (6-DOF)') return edoCartesianToJoints(x, y, z, a, b, c);
   if (model === 'Gen3 Lite (6-DOF)') return gen3LiteCartesianToJoints(x, y, z, a, b, c);
   if (model === 'M-710iC (6-DOF)') return m710icCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'SO-ARM100 (5-DOF)') return soArm100CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'Gen2 (6-DOF)') return gen2CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'PiPER (6-DOF)') return piperCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'Z1 (6-DOF)') return z1CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'ViperX 300 (6-DOF)') return vx300sCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'WidowX 250 (6-DOF)') return wx250sCartesianToJoints(x, y, z, a, b, c);
   return genericJoints;
 }
 
@@ -1259,6 +1277,8 @@ console.log("Loading example:", id);
                     : robot.model === 'xArm6 (6-DOF)' ? XARM6_JOINT_LIMITS_DEG[j]
                     : robot.model === 'Lite 6 (6-DOF)' ? LITE6_JOINT_LIMITS_DEG[j]
                     : robot.model === 'Gen3 Lite (6-DOF)' ? GEN3LITE_JOINT_LIMITS_DEG[j]
+                    : robot.model === 'Gen2 (6-DOF)' ? GEN2_JOINT_LIMITS_DEG[j]
+                    : robot.model === 'PiPER (6-DOF)' ? PIPER_JOINT_LIMITS_DEG[j]
                     : [-180, 180];
                   return (
                   <div key={j} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
@@ -1494,9 +1514,23 @@ console.log("Loading example:", id);
                       </optgroup>
                       <optgroup label="Kinova">
                         <option value="Gen3 Lite (6-DOF)">Gen3 Lite (6-DOF)</option>
+                        <option value="Gen2 (6-DOF)">Gen2 (6-DOF)</option>
                       </optgroup>
                       <optgroup label="FANUC">
                         <option value="M-710iC (6-DOF)">M-710iC (6-DOF)</option>
+                      </optgroup>
+                      <optgroup label="The Robot Studio">
+                        <option value="SO-ARM100 (5-DOF)">SO-ARM100 (5-DOF)</option>
+                      </optgroup>
+                      <optgroup label="AgileX">
+                        <option value="PiPER (6-DOF)">PiPER (6-DOF)</option>
+                      </optgroup>
+                      <optgroup label="Unitree">
+                        <option value="Z1 (6-DOF)">Z1 (6-DOF)</option>
+                      </optgroup>
+                      <optgroup label="Trossen Robotics">
+                        <option value="ViperX 300 (6-DOF)">ViperX 300 (6-DOF)</option>
+                        <option value="WidowX 250 (6-DOF)">WidowX 250 (6-DOF)</option>
                       </optgroup>
                       <optgroup label="Generic">
                         <option value="Generic (6-DOF)">Generic (6-DOF)</option>

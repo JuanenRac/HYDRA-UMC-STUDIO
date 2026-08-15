@@ -38,6 +38,12 @@ import { lite6JointsToCartesian } from './lite6Kinematics';
 import { edoJointsToCartesian } from './edoKinematics';
 import { gen3LiteJointsToCartesian } from './gen3LiteKinematics';
 import { m710icJointsToCartesian } from './m710icKinematics';
+import { soArm100JointsToCartesian } from './soArm100Kinematics';
+import { gen2JointsToCartesian } from './gen2Kinematics';
+import { piperJointsToCartesian } from './piperKinematics';
+import { z1JointsToCartesian } from './z1Kinematics';
+import { vx300sJointsToCartesian } from './vx300sKinematics';
+import { wx250sJointsToCartesian } from './wx250sKinematics';
 import type { KinematicsPoint } from './utils';
 
 export function jointsToCartesianForModel(model: RobotModel | undefined, pt: KinematicsPoint): { x: number; y: number; z: number; a: number; b: number; c: number } {
@@ -55,6 +61,12 @@ export function jointsToCartesianForModel(model: RobotModel | undefined, pt: Kin
   if (model === 'e.DO (6-DOF)') return edoJointsToCartesian(pt);
   if (model === 'Gen3 Lite (6-DOF)') return gen3LiteJointsToCartesian(pt);
   if (model === 'M-710iC (6-DOF)') return m710icJointsToCartesian(pt);
+  if (model === 'SO-ARM100 (5-DOF)') return soArm100JointsToCartesian(pt);
+  if (model === 'Gen2 (6-DOF)') return gen2JointsToCartesian(pt);
+  if (model === 'PiPER (6-DOF)') return piperJointsToCartesian(pt);
+  if (model === 'Z1 (6-DOF)') return z1JointsToCartesian(pt);
+  if (model === 'ViperX 300 (6-DOF)') return vx300sJointsToCartesian(pt);
+  if (model === 'WidowX 250 (6-DOF)') return wx250sJointsToCartesian(pt);
 
   const j1Rad = (pt.j1 || 0) * (Math.PI / 180);
   const j2Rad = (pt.j2 || 0) * (Math.PI / 180);

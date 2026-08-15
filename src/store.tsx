@@ -20,7 +20,9 @@ export type RobotModel =
   | 'Parol6 (6-DOF)' | 'Faze4 (6-DOF)' | 'AR3 (6-DOF)' | 'AR4 (6-DOF)' | 'Generic (6-DOF)'
   | 'UR3e (6-DOF)' | 'UR5e (6-DOF)' | 'UR10e (6-DOF)' | 'UR16e (6-DOF)' | 'UR20 (6-DOF)'
   | 'xArm6 (6-DOF)' | 'Lite 6 (6-DOF)' | 'e.DO (6-DOF)'
-  | 'Gen3 Lite (6-DOF)' | 'M-710iC (6-DOF)';
+  | 'Gen3 Lite (6-DOF)' | 'M-710iC (6-DOF)'
+  | 'SO-ARM100 (5-DOF)'
+  | 'Gen2 (6-DOF)' | 'PiPER (6-DOF)' | 'Z1 (6-DOF)' | 'ViperX 300 (6-DOF)' | 'WidowX 250 (6-DOF)';
 
 /**
  * Manufacturer grouping for the model picker (RobotDetail.tsx's Config tab) -
@@ -49,6 +51,12 @@ export const ROBOT_MANUFACTURERS: Record<RobotModel, string> = {
   'e.DO (6-DOF)': 'Comau',
   'Gen3 Lite (6-DOF)': 'Kinova',
   'M-710iC (6-DOF)': 'FANUC',
+  'SO-ARM100 (5-DOF)': 'The Robot Studio',
+  'Gen2 (6-DOF)': 'Kinova',
+  'PiPER (6-DOF)': 'AgileX',
+  'Z1 (6-DOF)': 'Unitree',
+  'ViperX 300 (6-DOF)': 'Trossen Robotics',
+  'WidowX 250 (6-DOF)': 'Trossen Robotics',
 };
 /** Type definition representing  robot role configurations or states. */
 export type RobotRole = 'Idle' | 'CNC' | 'Laser' | 'Pnp' | '3D printing' | 'Inspection';

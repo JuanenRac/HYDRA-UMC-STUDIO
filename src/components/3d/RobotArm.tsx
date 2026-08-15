@@ -21,6 +21,12 @@ import Lite6Arm from './Lite6Arm';
 import EdoArm from './EdoArm';
 import Gen3LiteArm from './Gen3LiteArm';
 import M710icArm from './M710icArm';
+import SoArm100Arm from './SoArm100Arm';
+import Gen2Arm from './Gen2Arm';
+import PiperArm from './PiperArm';
+import Z1Arm from './Z1Arm';
+import Vx300sArm from './Vx300sArm';
+import Wx250sArm from './Wx250sArm';
 
 /**
  * Executes the  robot arm logic.
@@ -114,6 +120,42 @@ export default function RobotArm({ robot }: { robot: RobotState }) {
             return (
                 <Suspense fallback={null}>
                     <M710icArm robot={robot} />
+                </Suspense>
+            );
+        case 'SO-ARM100 (5-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <SoArm100Arm robot={robot} />
+                </Suspense>
+            );
+        case 'Gen2 (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <Gen2Arm robot={robot} />
+                </Suspense>
+            );
+        case 'PiPER (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <PiperArm robot={robot} />
+                </Suspense>
+            );
+        case 'Z1 (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <Z1Arm robot={robot} />
+                </Suspense>
+            );
+        case 'ViperX 300 (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <Vx300sArm robot={robot} />
+                </Suspense>
+            );
+        case 'WidowX 250 (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <Wx250sArm robot={robot} />
                 </Suspense>
             );
         default:
