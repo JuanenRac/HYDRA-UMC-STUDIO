@@ -96,7 +96,9 @@
     "can_ota_transport_desc": "El modo simulado reproduce todo el protocolo CAN-OTA para que Flasher/Tester ya sean totalmente usables. Cambia a hardware cuando exista firmware CM5<->STM32H745 con el que hablar.",
     "can_ota_mcu": "MCU de la tarjeta de robot",
     "can_ota_mcu_placeholder": "STM32G474RET6",
-    "can_ota_mcu_desc": "Confirmado: STM32G474RET6 (Cortex-M4 a 170 MHz, LQFP-64, 512 KB de flash) - usa 2 de sus 3 periféricos FDCAN a bordo (uno de subida al STM32H745, uno de bajada al cabezal URTC). Ver docs/architecture.md de HYDRA-UMC, sección 1/4. Se deja editable por si una futura revisión de placa lo cambia."
+    "can_ota_mcu_desc": "Confirmado: STM32G474RET6 (Cortex-M4 a 170 MHz, LQFP-64, 512 KB de flash) - usa 2 de sus 3 periféricos FDCAN a bordo (uno de subida al STM32H745, uno de bajada al cabezal URTC). Ver docs/architecture.md de HYDRA-UMC, sección 1/4. Se deja editable por si una futura revisión de placa lo cambia.",
+    "remote_access": "Acceso de Apps Remotas (SUITE, iOS/Android)",
+    "remote_access_desc": "Controla si el escaneo de red propio de HYDRA-UMC SUITE y el descubrimiento propio de las apps móviles de control pueden encontrar e identificar este servidor. No afecta a la conexión de esta propia pestaña del navegador. Desactivarlo no protege la API con contraseña - cualquiera que ya conozca la IP de este servidor puede seguir accediendo directamente - solo impide que el escaneo de \"buscar servidores en mi red\" de una app remota lo vea."
   },
   "robot_detail": {
     "back": "Volver al Panel",

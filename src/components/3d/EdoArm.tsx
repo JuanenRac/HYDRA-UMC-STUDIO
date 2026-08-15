@@ -31,7 +31,7 @@ import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
-import Toolhead from './Toolhead';
+import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 const MESH_BASE = '/models/edo/';
 
@@ -121,7 +121,7 @@ export default function EdoArm({ robot }: { robot: RobotState }) {
 
                 <group position={EDO_CHAIN[5].pos} quaternion={q6}>
                   <mesh geometry={link6Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
-                  <group position={[0, 0.02, 0]}>
+                  <group position={toolheadMountOffset(link6Geo)}>
                     <Toolhead tool={robot.tool} />
                   </group>
                 </group>

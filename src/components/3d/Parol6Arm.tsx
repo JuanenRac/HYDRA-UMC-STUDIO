@@ -57,7 +57,7 @@ import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
-import Toolhead from './Toolhead';
+import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 const MESH_BASE = '/models/parol6/';
 
@@ -167,7 +167,7 @@ export default function Parol6Arm({ robot }: { robot: RobotState }) {
                               <mesh geometry={l6Geo} castShadow receiveShadow>
                                 <meshStandardMaterial {...bodyMat} />
                               </mesh>
-                              <group position={[0, 0.02, 0]}>
+                              <group position={toolheadMountOffset(l6Geo)}>
                                 <Toolhead tool={robot.tool} />
                               </group>
                             </group>

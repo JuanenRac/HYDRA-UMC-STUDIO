@@ -44,6 +44,21 @@ A subnet scan is a plain, unauthenticated HTTP GET per candidate IP on the
 known port - no mDNS/Bonjour service is advertised (yet; see "Future work"
 at the end of this document).
 
+**Remote-access gate:** if `SystemSettings.remoteAccess.enabled` is
+explicitly `false` (set from the browser UI's own Settings -> Integrations
+-> "Remote App Access" checkbox), this endpoint responds `404` instead -
+the server becomes indistinguishable from "not running HYDRA-UMC STUDIO"
+to a scanning remote client. The field defaults to enabled when absent, so
+a `settings.json` predating this feature keeps working for everyone
+already using SUITE/the mobile apps. This gate covers `/api/hydra-info`
+only - `GET`/`POST /api/settings` and `/ws` stay open regardless, since
+the browser UI's own tab depends on that exact same contract for its own
+connection to its own server; disabling those would break the core web UI,
+not just remote apps. In practice this means: a client that has already
+discovered and connected to a server before the toggle is flipped off
+keeps working normally (its open WebSocket isn't dropped); the toggle only
+prevents *new* discovery.
+
 ## 2. Full state: `GET` / `POST /api/settings`
 
 The same endpoint the web UI itself has always used - a remote client

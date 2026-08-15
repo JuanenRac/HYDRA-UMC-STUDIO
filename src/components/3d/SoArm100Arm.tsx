@@ -25,7 +25,7 @@ import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
-import Toolhead from './Toolhead';
+import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 const MESH_BASE = '/models/so100/';
 
@@ -109,7 +109,7 @@ export default function SoArm100Arm({ robot }: { robot: RobotState }) {
 
               <group position={SOARM100_CHAIN[4].pos} quaternion={q5}>
                 <mesh geometry={gripperGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
-                <group position={[0, 0.02, 0]}>
+                <group position={toolheadMountOffset(gripperGeo)}>
                   <Toolhead tool={robot.tool} />
                 </group>
               </group>

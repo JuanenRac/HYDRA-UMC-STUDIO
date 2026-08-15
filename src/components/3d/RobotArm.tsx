@@ -27,6 +27,10 @@ import PiperArm from './PiperArm';
 import Z1Arm from './Z1Arm';
 import Vx300sArm from './Vx300sArm';
 import Wx250sArm from './Wx250sArm';
+import KochArm from './KochArm';
+import Ur3ClassicArm from './Ur3ClassicArm';
+import Ur5ClassicArm from './Ur5ClassicArm';
+import Ur10ClassicArm from './Ur10ClassicArm';
 
 /**
  * Executes the  robot arm logic.
@@ -156,6 +160,30 @@ export default function RobotArm({ robot }: { robot: RobotState }) {
             return (
                 <Suspense fallback={null}>
                     <Wx250sArm robot={robot} />
+                </Suspense>
+            );
+        case 'Koch v1.1 (5-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <KochArm robot={robot} />
+                </Suspense>
+            );
+        case 'UR3 (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <Ur3ClassicArm robot={robot} />
+                </Suspense>
+            );
+        case 'UR5 (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <Ur5ClassicArm robot={robot} />
+                </Suspense>
+            );
+        case 'UR10 (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <Ur10ClassicArm robot={robot} />
                 </Suspense>
             );
         default:

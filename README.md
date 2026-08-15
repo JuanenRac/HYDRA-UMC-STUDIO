@@ -141,9 +141,8 @@ HYDRA-UMC-STUDIO/
 │   │   └── list/                # Canned example trajectories
 │   ├── lib/canOta.ts            # CAN-OTA simulation/protocol layer, GitHub firmware download
 │   └── locales/                 # en/es/de/fr/it translation files
-├── public/models/                # Real 3D mesh assets, one folder per robot
-│   ├── parol6/, faze4/, ar3/, ar4/  # Each with its own ATTRIBUTION.txt (MIT or GPL-3.0)
-│   └── ur3e/, ur5e/, ur10e/, ur16e/, ur20/, xarm6/, lite6/, edo/, gen3lite/, m710ic/  # Each with its own ATTRIBUTION.txt (BSD-3-Clause)
+├── public/models/                # Real 3D mesh assets - one folder per robot (24 total),
+│                                  # each with its own ATTRIBUTION.txt - see the license table below
 ├── images/                       # README banner
 └── data/                         # Server-persisted state (settings.json, WORKS/) - created at runtime
 ```
@@ -229,6 +228,12 @@ The source code of this application is available under the **GNU General Public 
 | Kinova | Gen3 Lite | BSD-3-Clause |
 | FANUC | M-710iC | BSD-3-Clause |
 | The Robot Studio | SO-ARM100 | Apache-2.0 |
+| Kinova | Gen2 (j2s6s200) | BSD-3-Clause |
+| AgileX | PiPER | Apache-2.0 |
+| Unitree | Z1 | BSD-3-Clause |
+| Trossen Robotics | ViperX 300, WidowX 250 | BSD-3-Clause |
+| Koch / Low-Cost Robot Arm | Koch v1.1 | Apache-2.0 |
+| Universal Robots (classic) | UR3, UR5, UR10 | BSD-3-Clause |
 
 Each model's own exact source repository, path, and license text reference lives in that model's own `public/models/<slug>/ATTRIBUTION.txt` - consult that file before redistributing a specific mesh set, rather than assuming the table above is a substitute for it.
 

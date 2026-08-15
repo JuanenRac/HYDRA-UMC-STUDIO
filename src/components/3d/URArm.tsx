@@ -38,7 +38,7 @@ import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
 import type { UrChain, UrJointStep } from '../../examples/urKinematicsShared';
-import Toolhead from './Toolhead';
+import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 /** meshOffsets order: base, shoulder, upper_arm, forearm, wrist_1, wrist_2, wrist_3 - 7 entries. */
 export type UrMeshOffsets = [UrJointStep, UrJointStep, UrJointStep, UrJointStep, UrJointStep, UrJointStep, UrJointStep];
@@ -124,11 +124,15 @@ export default function URArm({ robot, config }: { robot: RobotState; config: Ur
     );
 
     if (depth === 6) {
-      // wrist_3_link - end of chain, tool mounts here.
+      // wrist_3_link - end of chain, tool mounts here. Offset derived
+      // from this model's OWN wrist_3 mesh bounding box (toolheadMountOffset),
+      // not a blind constant - a fixed guess looked fine for UR5e's own
+      // small wrist mesh but buried the tool inside a bigger one on other
+      // models (see Toolhead.tsx's own header for the full explanation).
       return (
         <>
           {meshNode}
-          <group position={[0, 0.02, 0]}>
+          <group position={toolheadMountOffset(geos[6])}>
             <Toolhead tool={robot.tool} />
           </group>
         </>

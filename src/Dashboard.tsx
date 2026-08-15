@@ -515,10 +515,26 @@ export default function Dashboard() {
                           <option value="LightBurn">LightBurn</option>
                           <option value="LaserGRBL">LaserGRBL</option>
                         </select>
-                        <input placeholder={t('config.port', 'Port')} type="number" value={settings.integrations?.cnc?.port} 
+                        <input placeholder={t('config.port', 'Port')} type="number" value={settings.integrations?.cnc?.port}
                           onChange={(e) => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, port: parseInt(e.target.value) } } })}
                           className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-rose-500 text-slate-200" />
                       </div>
+                    </div>
+
+                    {/* Remote App Access - HYDRA-UMC SUITE + mobile control apps */}
+                    <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-bold text-emerald-400">{t('config.remote_access', 'Remote App Access (SUITE, iOS/Android)')}</span>
+                        <label className="flex items-center gap-2 text-sm">
+                          <input type="checkbox" checked={settings.remoteAccess?.enabled ?? true}
+                            onChange={(e) => updateSettings({ remoteAccess: { enabled: e.target.checked } })}
+                            className="rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-emerald-500" />
+                          {t('config.enabled', 'Enabled')}
+                        </label>
+                      </div>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        {t('config.remote_access_desc', "Controls whether HYDRA-UMC SUITE's own network scan and the mobile control apps' own discovery can find and identify this server. Doesn't affect this browser tab's own connection. Disabling it doesn't password-protect the API - anyone who already knows this server's IP can still reach it directly - it only stops a remote app's own 'find servers on my network' scan from seeing it.")}
+                      </p>
                     </div>
 
                   </div>

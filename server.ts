@@ -123,6 +123,25 @@ async function startServer() {
   // WebSocket broadcast path already maintains, not a fresh disk read
   // per request.
   app.get("/api/hydra-info", (req, res) => {
+    // Real enable/disable gate (Settings -> Integrations -> "Remote App
+    // Access" in the browser UI, src/store.tsx's own SystemSettings.remoteAccess) -
+    // defaults to true (undefined settings.remoteAccess treated the same
+    // as enabled, so an existing settings.json predating this feature
+    // doesn't silently stop working for anyone already using SUITE).
+    // When disabled, this endpoint responds 404 - the same as a plain
+    // "not running HYDRA-UMC STUDIO" host looks like to a scanning
+    // client (HYDRA-UMC SUITE's own discovery.py's own probe_host()
+    // already treats a non-200 as "not found", no client-side change
+    // needed) - the server becomes undiscoverable/unidentifiable to a
+    // remote app's own scan, without touching GET/POST /api/settings or
+    // /ws (this SAME browser tab's own connection to its own server also
+    // goes through those, so gating them would break the core web UI,
+    // not just remote apps - see that settings field's own comment in
+    // store.tsx for the full reasoning).
+    if (lastKnownSettings?.remoteAccess?.enabled === false) {
+      res.status(404).end();
+      return;
+    }
     const s = lastKnownSettings;
     res.json({
       product: "HYDRA-UMC STUDIO",

@@ -96,7 +96,9 @@
     "can_ota_transport_desc": "Mock simuliert das gesamte CAN-OTA-Protokoll, damit Flasher/Tester schon jetzt voll nutzbar sind. Auf Hardware umschalten, sobald CM5<->STM32H745-Firmware existiert.",
     "can_ota_mcu": "MCU der Robotersteuerplatine",
     "can_ota_mcu_placeholder": "STM32G474RET6",
-    "can_ota_mcu_desc": "Bestätigt: STM32G474RET6 (Cortex-M4 @ 170 MHz, LQFP-64, 512 KB Flash) - nutzt 2 seiner 3 integrierten FDCAN-Peripherien (eine Uplink zum STM32H745, eine Downlink zum URTC-Kopf). Siehe HYDRA-UMC docs/architecture.md Abschnitt 1/4. Bleibt editierbar, falls eine künftige Platinenrevision dies ändert."
+    "can_ota_mcu_desc": "Bestätigt: STM32G474RET6 (Cortex-M4 @ 170 MHz, LQFP-64, 512 KB Flash) - nutzt 2 seiner 3 integrierten FDCAN-Peripherien (eine Uplink zum STM32H745, eine Downlink zum URTC-Kopf). Siehe HYDRA-UMC docs/architecture.md Abschnitt 1/4. Bleibt editierbar, falls eine künftige Platinenrevision dies ändert.",
+    "remote_access": "Fernzugriff für Apps (SUITE, iOS/Android)",
+    "remote_access_desc": "Steuert, ob der eigene Netzwerk-Scan von HYDRA-UMC SUITE und die eigene Erkennung der mobilen Steuerungs-Apps diesen Server finden und identifizieren können. Betrifft nicht die eigene Verbindung dieses Browser-Tabs. Das Deaktivieren schützt die API nicht mit einem Passwort - wer die IP dieses Servers bereits kennt, kann weiterhin direkt darauf zugreifen - es verhindert nur, dass der eigene \"Server im Netzwerk suchen\"-Scan einer Remote-App ihn sieht."
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",

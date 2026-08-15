@@ -44,6 +44,10 @@ import { piperJointsToCartesian } from './piperKinematics';
 import { z1JointsToCartesian } from './z1Kinematics';
 import { vx300sJointsToCartesian } from './vx300sKinematics';
 import { wx250sJointsToCartesian } from './wx250sKinematics';
+import { kochJointsToCartesian } from './kochKinematics';
+import { ur3ClassicJointsToCartesian } from './ur3ClassicKinematics';
+import { ur5ClassicJointsToCartesian } from './ur5ClassicKinematics';
+import { ur10ClassicJointsToCartesian } from './ur10ClassicKinematics';
 import type { KinematicsPoint } from './utils';
 
 export function jointsToCartesianForModel(model: RobotModel | undefined, pt: KinematicsPoint): { x: number; y: number; z: number; a: number; b: number; c: number } {
@@ -67,6 +71,10 @@ export function jointsToCartesianForModel(model: RobotModel | undefined, pt: Kin
   if (model === 'Z1 (6-DOF)') return z1JointsToCartesian(pt);
   if (model === 'ViperX 300 (6-DOF)') return vx300sJointsToCartesian(pt);
   if (model === 'WidowX 250 (6-DOF)') return wx250sJointsToCartesian(pt);
+  if (model === 'Koch v1.1 (5-DOF)') return kochJointsToCartesian(pt);
+  if (model === 'UR3 (6-DOF)') return ur3ClassicJointsToCartesian(pt);
+  if (model === 'UR5 (6-DOF)') return ur5ClassicJointsToCartesian(pt);
+  if (model === 'UR10 (6-DOF)') return ur10ClassicJointsToCartesian(pt);
 
   const j1Rad = (pt.j1 || 0) * (Math.PI / 180);
   const j2Rad = (pt.j2 || 0) * (Math.PI / 180);

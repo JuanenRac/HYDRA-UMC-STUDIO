@@ -96,7 +96,9 @@
     "can_ota_transport_desc": "Mock simulates the whole CAN-OTA protocol so Flasher/Tester are fully usable now. Switch to hardware once CM5<->STM32H745 firmware exists to talk to.",
     "can_ota_mcu": "Robot Controller Board MCU",
     "can_ota_mcu_placeholder": "STM32G474RET6",
-    "can_ota_mcu_desc": "Confirmed: STM32G474RET6 (Cortex-M4 @ 170 MHz, LQFP-64, 512 KB flash) - uses 2 of its 3 onboard FDCAN peripherals (one uplink to the STM32H745, one downlink to the URTC head). See HYDRA-UMC docs/architecture.md section 1/4. Kept editable here in case a future board revision changes it."
+    "can_ota_mcu_desc": "Confirmed: STM32G474RET6 (Cortex-M4 @ 170 MHz, LQFP-64, 512 KB flash) - uses 2 of its 3 onboard FDCAN peripherals (one uplink to the STM32H745, one downlink to the URTC head). See HYDRA-UMC docs/architecture.md section 1/4. Kept editable here in case a future board revision changes it.",
+    "remote_access": "Remote App Access (SUITE, iOS/Android)",
+    "remote_access_desc": "Controls whether HYDRA-UMC SUITE's own network scan and the mobile control apps' own discovery can find and identify this server. Doesn't affect this browser tab's own connection. Disabling it doesn't password-protect the API - anyone who already knows this server's IP can still reach it directly - it only stops a remote app's own 'find servers on my network' scan from seeing it."
   },
   "robot_detail": {
     "back": "Back to Dashboard",

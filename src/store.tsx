@@ -22,7 +22,9 @@ export type RobotModel =
   | 'xArm6 (6-DOF)' | 'Lite 6 (6-DOF)' | 'e.DO (6-DOF)'
   | 'Gen3 Lite (6-DOF)' | 'M-710iC (6-DOF)'
   | 'SO-ARM100 (5-DOF)'
-  | 'Gen2 (6-DOF)' | 'PiPER (6-DOF)' | 'Z1 (6-DOF)' | 'ViperX 300 (6-DOF)' | 'WidowX 250 (6-DOF)';
+  | 'Gen2 (6-DOF)' | 'PiPER (6-DOF)' | 'Z1 (6-DOF)' | 'ViperX 300 (6-DOF)' | 'WidowX 250 (6-DOF)'
+  | 'Koch v1.1 (5-DOF)'
+  | 'UR3 (6-DOF)' | 'UR5 (6-DOF)' | 'UR10 (6-DOF)';
 
 /**
  * Manufacturer grouping for the model picker (RobotDetail.tsx's Config tab) -
@@ -57,6 +59,10 @@ export const ROBOT_MANUFACTURERS: Record<RobotModel, string> = {
   'Z1 (6-DOF)': 'Unitree',
   'ViperX 300 (6-DOF)': 'Trossen Robotics',
   'WidowX 250 (6-DOF)': 'Trossen Robotics',
+  'Koch v1.1 (5-DOF)': 'Koch / Low-Cost Robot Arm',
+  'UR3 (6-DOF)': 'Universal Robots (classic)',
+  'UR5 (6-DOF)': 'Universal Robots (classic)',
+  'UR10 (6-DOF)': 'Universal Robots (classic)',
 };
 /** Type definition representing  robot role configurations or states. */
 export type RobotRole = 'Idle' | 'CNC' | 'Laser' | 'Pnp' | '3D printing' | 'Inspection';
@@ -323,6 +329,20 @@ export interface SystemSettings {
   gamepadEnabled?: boolean;
   gamepadConnectionType?: 'USB' | 'Bluetooth';
   gamepadMapping?: Record<string, string>;
+  // Whether this server responds to GET /api/hydra-info (docs/REMOTE_API.md
+  // section 1) - the discovery/identity endpoint HYDRA-UMC SUITE's own
+  // subnet scan and the mobile control apps' own discovery flow use to
+  // find and identify a server. Defaults to true (matches this feature's
+  // own pre-existing always-on behavior, so an existing settings.json
+  // with no remoteAccess key doesn't silently stop working for anyone
+  // already using SUITE against this server). Deliberately does NOT gate
+  // GET/POST /api/settings or the /ws WebSocket - both of those are also
+  // how this SAME browser tab talks to its own server, so blocking them
+  // would break the core web UI, not just remote apps; only the
+  // discovery endpoint is genuinely remote-client-only.
+  remoteAccess?: {
+    enabled: boolean;
+  };
   uiLayout?: {
     rightPanelWidth?: number;
     pointsTableHeight?: number;
@@ -490,7 +510,10 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     uiLayout: {
       rightPanelWidth: 320,
       pointsTableHeight: 300,
-    }
+    },
+    remoteAccess: {
+      enabled: true,
+    },
   });
   const [isLoaded, setIsLoaded] = useState(false);
   // Guards against a feedback loop: the server broadcasts every write to

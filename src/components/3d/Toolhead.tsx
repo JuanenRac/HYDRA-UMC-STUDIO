@@ -5,10 +5,34 @@
 // =============================================================================
 
 import React from 'react';
+import * as THREE from 'three';
 import { Box, Cylinder } from '@react-three/drei';
 
 /**
- * Executes the  toolhead logic. 
+ * Where to mount the Toolhead group, in the last link's own local frame -
+ * previously every *Arm.tsx hard-coded the same `[0, 0.02, 0]` guess
+ * regardless of that robot's own last-link mesh size, which worked fine
+ * for a small mesh (a few cm) but visually buried the tool INSIDE a
+ * bigger one (SO-ARM100's own Fixed_Jaw.stl alone spans ~10.6cm) instead
+ * of sitting past its tip - "the tool looks like it's on the wrong
+ * piece" is exactly what that looks like. Derives the offset from the
+ * mesh's own real bounding box instead of a blind constant, +1cm margin
+ * so the tool sits just clear of the geometry rather than flush against
+ * it. Assumes the robot's own "outward"/tool-mount direction is +Y in
+ * that mesh's own local frame, matching every *Arm.tsx's existing
+ * convention (not a universal guarantee for an arbitrary mesh, but true
+ * for every real robot mesh in this project so far).
+ */
+export function toolheadMountOffset(geometry: THREE.BufferGeometry | undefined | null, margin = 0.01): [number, number, number] {
+  if (!geometry) return [0, 0.02, 0];
+  geometry.computeBoundingBox();
+  const box = geometry.boundingBox;
+  const maxY = box ? box.max.y : 0.01;
+  return [0, Math.max(maxY, 0.005) + margin, 0];
+}
+
+/**
+ * Executes the  toolhead logic.
  * This function handles the necessary computations and state updates.
  */
 export default function Toolhead({ tool }: { tool: string }) {

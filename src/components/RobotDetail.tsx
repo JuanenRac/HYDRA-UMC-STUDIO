@@ -35,6 +35,10 @@ import { piperCartesianToJoints, PIPER_HOME_POSE, PIPER_JOINT_LIMITS_DEG } from 
 import { z1CartesianToJoints, Z1_HOME_POSE } from '../examples/z1Kinematics';
 import { vx300sCartesianToJoints, VX300S_HOME_POSE } from '../examples/vx300sKinematics';
 import { wx250sCartesianToJoints, WX250S_HOME_POSE } from '../examples/wx250sKinematics';
+import { kochCartesianToJoints, KOCH_HOME_POSE } from '../examples/kochKinematics';
+import { ur3ClassicCartesianToJoints, UR3CLASSIC_HOME_POSE } from '../examples/ur3ClassicKinematics';
+import { ur5ClassicCartesianToJoints, UR5CLASSIC_HOME_POSE } from '../examples/ur5ClassicKinematics';
+import { ur10ClassicCartesianToJoints, UR10CLASSIC_HOME_POSE } from '../examples/ur10ClassicKinematics';
 import { convertToCartesian } from '../examples/utils';
 import { jointsToCartesianForModel } from '../examples/robotKinematicsDispatch';
 
@@ -86,6 +90,10 @@ function homePoseFor(model: RobotModel) {
   if (model === 'Z1 (6-DOF)') return { ...Z1_HOME_POSE };
   if (model === 'ViperX 300 (6-DOF)') return { ...VX300S_HOME_POSE };
   if (model === 'WidowX 250 (6-DOF)') return { ...WX250S_HOME_POSE };
+  if (model === 'Koch v1.1 (5-DOF)') return { ...KOCH_HOME_POSE };
+  if (model === 'UR3 (6-DOF)') return { ...UR3CLASSIC_HOME_POSE };
+  if (model === 'UR5 (6-DOF)') return { ...UR5CLASSIC_HOME_POSE };
+  if (model === 'UR10 (6-DOF)') return { ...UR10CLASSIC_HOME_POSE };
   return { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 };
 }
 
@@ -120,6 +128,10 @@ function resolveTargetJoints(
   if (model === 'Z1 (6-DOF)') return z1CartesianToJoints(x, y, z, a, b, c);
   if (model === 'ViperX 300 (6-DOF)') return vx300sCartesianToJoints(x, y, z, a, b, c);
   if (model === 'WidowX 250 (6-DOF)') return wx250sCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'Koch v1.1 (5-DOF)') return kochCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR3 (6-DOF)') return ur3ClassicCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR5 (6-DOF)') return ur5ClassicCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR10 (6-DOF)') return ur10ClassicCartesianToJoints(x, y, z, a, b, c);
   return genericJoints;
 }
 
@@ -1504,6 +1516,9 @@ console.log("Loading example:", id);
                         <option value="UR10e (6-DOF)">UR10e (6-DOF)</option>
                         <option value="UR16e (6-DOF)">UR16e (6-DOF)</option>
                         <option value="UR20 (6-DOF)">UR20 (6-DOF)</option>
+                        <option value="UR3 (6-DOF)">UR3 (6-DOF, classic)</option>
+                        <option value="UR5 (6-DOF)">UR5 (6-DOF, classic)</option>
+                        <option value="UR10 (6-DOF)">UR10 (6-DOF, classic)</option>
                       </optgroup>
                       <optgroup label="UFACTORY">
                         <option value="xArm6 (6-DOF)">xArm6 (6-DOF)</option>
@@ -1531,6 +1546,9 @@ console.log("Loading example:", id);
                       <optgroup label="Trossen Robotics">
                         <option value="ViperX 300 (6-DOF)">ViperX 300 (6-DOF)</option>
                         <option value="WidowX 250 (6-DOF)">WidowX 250 (6-DOF)</option>
+                      </optgroup>
+                      <optgroup label="Koch / Low-Cost Robot Arm">
+                        <option value="Koch v1.1 (5-DOF)">Koch v1.1 (5-DOF)</option>
                       </optgroup>
                       <optgroup label="Generic">
                         <option value="Generic (6-DOF)">Generic (6-DOF)</option>

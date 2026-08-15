@@ -102,9 +102,9 @@
           "id": 1,
           "name": "Robot A1",
           "online": true,
-          "model": "SO-ARM100 (5-DOF)",
+          "model": "Parol6 (6-DOF)",
           "role": "Pnp",
-          "tool": "SMT Solder Paste Dispenser",
+          "tool": "Soldering Station (T12)",
           "urtcConnected": true,
           "pos": {
             "x": 0,
@@ -115,12 +115,12 @@
             "c": 0
           },
           "joints": {
-            "j1": 178.8,
-            "j2": 31.8,
-            "j3": -105.9,
-            "j4": 0,
-            "j5": 0,
-            "j6": 0
+            "j1": -80.7,
+            "j2": 29.5,
+            "j3": -105.8,
+            "j4": -16.4,
+            "j5": -17.5,
+            "j6": -36
           },
           "valves": [
             false,
@@ -1299,9 +1299,9 @@
           },
           "cameraView": {
             "position": [
-              0.10787907622362358,
-              0.26537492697885506,
-              0.653063725490686
+              1.0670312037141685,
+              0.7820954357875818,
+              0.448092509219314
             ],
             "target": [
               0.06309207717274687,
@@ -3548,7 +3548,7 @@
           "id": 1,
           "connected": true,
           "type": "USB Vision Camera",
-          "yoloEnabled": true,
+          "yoloEnabled": false,
           "detections": [
             {
               "label": "PCB_PANEL",

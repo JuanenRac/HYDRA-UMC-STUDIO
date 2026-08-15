@@ -26,7 +26,7 @@ import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
-import Toolhead from './Toolhead';
+import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 const MESH_BASE = '/models/z1/';
 
@@ -116,7 +116,7 @@ export default function Z1Arm({ robot }: { robot: RobotState }) {
 
                 <group position={Z1_CHAIN[5].pos} quaternion={q6}>
                   <mesh geometry={link06Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
-                  <group position={[0, 0.02, 0]}>
+                  <group position={toolheadMountOffset(link06Geo)}>
                     <Toolhead tool={robot.tool} />
                   </group>
                 </group>
