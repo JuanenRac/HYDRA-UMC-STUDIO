@@ -1112,18 +1112,22 @@
           },
           "hasXYTable": true,
           "juanenPnP": {
-            "enabled": true,
+            "enabled": false,
             "size": {
               "width": 500,
               "length": 500
             },
             "worldPos": {
-              "x": -1750.4931323493058,
-              "y": 503.70899886849116
+              "x": 0,
+              "y": 0
             },
             "worldRot": 0,
             "renderScale": 1,
-            "axisX": 300
+            "axisX": 0,
+            "axisY": 0,
+            "axisZ": 0,
+            "nozzle1Rotation": 0,
+            "nozzle2Rotation": 0
           },
           "lumenPnP": {
             "enabled": false,
