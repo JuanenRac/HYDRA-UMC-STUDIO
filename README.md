@@ -234,8 +234,9 @@ The source code of this application is available under the **GNU General Public 
 | Trossen Robotics | ViperX 300, WidowX 250 | BSD-3-Clause |
 | Koch / Low-Cost Robot Arm | Koch v1.1 | Apache-2.0 |
 | Universal Robots (classic) | UR3, UR5, UR10 | BSD-3-Clause |
+| Opulo | LumenPnP v4 (also used for JuanenPnP) | CERN-OHL-W v2 |
 
-Each model's own exact source repository, path, and license text reference lives in that model's own `public/models/<slug>/ATTRIBUTION.txt` - consult that file before redistributing a specific mesh set, rather than assuming the table above is a substitute for it.
+Each model's own exact source repository, path, and license text reference lives in that model's own `public/models/<slug>/ATTRIBUTION.txt` - consult that file before redistributing a specific mesh set, rather than assuming the table above is a substitute for it. LumenPnP's own `ATTRIBUTION.txt` is worth reading in full - unlike every robot arm above (a manufacturer's own pre-made STL files, downloaded verbatim), those 5 mesh files were generated in-house from Opulo's real FreeCAD source, not redistributed as-is.
 
 This dashboard is the web control panel for the [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) motherboard project - see that repository for its own hardware (CERN-OHL-S v2) and firmware (GPL-3.0) licensing, which this repository's own license doesn't extend to, and vice versa. It also implements CAN-OTA tooling against the [URTC](https://github.com/JuanenRac/URTC) protocol - see that project's own repository for its own separate license.
 

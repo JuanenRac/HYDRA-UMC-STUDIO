@@ -6,6 +6,8 @@
 
 import React from 'react';
 import { Box, Cylinder } from '@react-three/drei';
+import LumenPnPRig from './LumenPnPRig';
+import type { PnPModule } from '../../store';
 
 /**
  * Executes the  lumen style frame logic. 
@@ -124,7 +126,15 @@ export default function SharedModule3DView({ module, type }: { module: any, type
     );
   }
 
-  if (['juanenPnP', 'lumenPnP', 'juanenCNC', 'juanenLaser'].includes(type)) {
+  if (type === 'juanenPnP' || type === 'lumenPnP') {
+    // Real geometry (LumenPnPRig, see that file's own header) - unlike
+    // the generic width/length-box LumenStyleFrame below, the real
+    // machine's own footprint isn't user-resizable, so `module.size`
+    // isn't consulted here at all.
+    return <LumenPnPRig module={module as PnPModule} />;
+  }
+
+  if (['juanenCNC', 'juanenLaser'].includes(type)) {
     const feederCount = Math.max(1, Math.floor((width - 0.1) / 0.015));
     return <LumenStyleFrame width={width} length={length} type={type} feederCount={feederCount} />;
   }

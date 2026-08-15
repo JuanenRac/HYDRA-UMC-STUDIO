@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 .env.example
 HYDRA-UMC-STUDIO.zip
+public/models/lumenpnp/base.stl

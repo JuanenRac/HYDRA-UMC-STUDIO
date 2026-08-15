@@ -1122,7 +1122,8 @@
               "y": 503.70899886849116
             },
             "worldRot": 0,
-            "renderScale": 1
+            "renderScale": 1,
+            "axisX": 300
           },
           "lumenPnP": {
             "enabled": false,

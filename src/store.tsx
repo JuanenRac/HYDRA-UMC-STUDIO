@@ -153,6 +153,27 @@ export interface HeatedBedModule extends SharedModuleGeneric {
   ssrActive: boolean;
 }
 
+/**
+ * LumenPnP/JuanenPnP real axis pose - no live firmware feed exists for this
+ * machine anywhere in the ecosystem yet (it runs its own OpenPnP control
+ * software, not HYDRA-UMC's CAN-OTA/REMOTE_API), so this is manually-set,
+ * persisted, synced state (same honesty pattern as the Cameras panel's own
+ * metadata) rather than a live telemetry readout - the 3D view renders
+ * whatever pose is stored here, defaulting to the machine's own home.
+ * Real travel limits from the machine's own openpnp/machine.xml
+ * (opulo-inc/lumenpnp): X 0-433mm, Y 0-487mm. Z's own soft limits in that
+ * file are disabled in favor of a safe-zone check, so 0-90mm here is an
+ * estimate from the real CAD's own Z-carriage rail length, not a quoted
+ * published spec.
+ */
+export interface PnPModule extends SharedModuleGeneric {
+  axisX: number;   // 0-433mm, real machine.xml soft limit
+  axisY: number;   // 0-487mm, real machine.xml soft limit
+  axisZ: number;   // 0-90mm, shared by both nozzles (machine.xml's own z2 mirrors z1)
+  nozzle1Rotation: number; // degrees, OpenPnP axis "A"
+  nozzle2Rotation: number; // degrees, OpenPnP axis "B"
+}
+
 /** Firmware/identity state for one board reachable over CAN-OTA (Robot Controller Board or URTC Tool Head) - see HYDRA-UMC's docs/architecture.md. */
 export interface CanOtaBoardState {
   firmwareVersion?: string;
@@ -242,8 +263,8 @@ export interface RobotState {
   cameraView?: { position: [number, number, number]; target: [number, number, number] };
   centerCameraTrigger?: number;
 
-  juanenPnP: SharedModuleGeneric;
-  lumenPnP: SharedModuleGeneric;
+  juanenPnP: PnPModule;
+  lumenPnP: PnPModule;
   juanenCNC: SharedModuleGeneric;
   juanenLaser: SharedModuleGeneric;
   vacuumTable: VacuumTableModule;
@@ -398,8 +419,8 @@ export const createDefaultRobots = (): RobotState[] => {
     playbackState: { isPlaying: false, activeStep: 0, speed: 100, isLooping: false },
     hasXYTable: false,
 
-    juanenPnP: { enabled: false, size: { width: 500, length: 500 } },
-    lumenPnP: { enabled: false, size: { width: 500, length: 500 } },
+    juanenPnP: { enabled: false, size: { width: 500, length: 500 }, axisX: 0, axisY: 0, axisZ: 0, nozzle1Rotation: 0, nozzle2Rotation: 0 },
+    lumenPnP: { enabled: false, size: { width: 500, length: 500 }, axisX: 0, axisY: 0, axisZ: 0, nozzle1Rotation: 0, nozzle2Rotation: 0 },
     juanenCNC: { enabled: false, size: { width: 500, length: 500 } },
     juanenLaser: { enabled: false, size: { width: 500, length: 500 } },
     vacuumTable: { enabled: false, size: { width: 100, length: 100 }, pumpActive: false, valveActive: false },

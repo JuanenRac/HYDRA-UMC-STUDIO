@@ -40,10 +40,21 @@ export function PickAndPlace() {
       [machineType]: { ...moduleData, size: { ...moduleData.size, [axis]: value } }
     } as any);
   };
-  
+
+  const isPnpMachine = machineType === 'juanenPnP' || machineType === 'lumenPnP';
+
+  const handleAxisChange = (axis: 'axisX' | 'axisY' | 'axisZ' | 'nozzle1Rotation' | 'nozzle2Rotation', value: number) => {
+    updateRobot(selectedRobot.id, {
+      [machineType]: { ...moduleData, [axis]: value }
+    } as any);
+  };
+
   const handleReset = () => {
     updateRobot(selectedRobot.id, {
-      [machineType]: { enabled: true, size: { width: 500, length: 500 }, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
+      [machineType]: {
+        enabled: true, size: { width: 500, length: 500 }, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1,
+        ...(isPnpMachine ? { axisX: 0, axisY: 0, axisZ: 0, nozzle1Rotation: 0, nozzle2Rotation: 0 } : {}),
+      }
     } as any);
   };
   
@@ -109,37 +120,70 @@ export function PickAndPlace() {
                 </button>
               </div>
               
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
-                      <Maximize2 size={12} /> {t('modules.width_x', 'Width (X mm)')}
-                    </label>
-                    <input 
-                      type="number"
-                      min="10" max="5000" step="10"
-                      className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-xs text-slate-200 focus:outline-none focus:border-sky-500"
-                      value={moduleData?.size?.width || 500}
-                      onChange={(e) => handleSizeChange('width', Number(e.target.value))}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
-                      <Maximize2 size={12} className="rotate-90" /> {t('modules.length_y', 'Length (Y mm)')}
-                    </label>
-                    <input 
-                      type="number"
-                      min="10" max="5000" step="10"
-                      className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-xs text-slate-200 focus:outline-none focus:border-sky-500"
-                      value={moduleData?.size?.length || 500}
-                      onChange={(e) => handleSizeChange('length', Number(e.target.value))}
-                    />
+              {isPnpMachine ? (
+                // Real machine, real fixed footprint (see LumenPnPRig.tsx) -
+                // width/length don't apply here. These sliders pose the
+                // real rig for preview - there's no live firmware feed for
+                // this machine anywhere in the ecosystem yet (see
+                // PnPModule's own comment in store.tsx), so this is a
+                // manual jog, not a telemetry readout.
+                <div className="space-y-3">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">{t('modules.pnp_pose_preview', 'Pose preview (manual - no live feed yet)')}</p>
+                  {([
+                    ['axisX', t('modules.pnp_axis_x', 'X axis (mm)'), 0, 433],
+                    ['axisY', t('modules.pnp_axis_y', 'Y axis (mm)'), 0, 487],
+                    ['axisZ', t('modules.pnp_axis_z', 'Z axis, both nozzles (mm)'), 0, 90],
+                    ['nozzle1Rotation', t('modules.pnp_nozzle1', 'Nozzle 1 rotation (deg)'), -180, 180],
+                    ['nozzle2Rotation', t('modules.pnp_nozzle2', 'Nozzle 2 rotation (deg)'), -180, 180],
+                  ] as const).map(([key, label, min, max]) => (
+                    <div key={key}>
+                      <label className="flex items-center justify-between text-[11px] font-medium text-slate-400 mb-1">
+                        <span>{label}</span>
+                        <span className="text-slate-300 font-mono">{Math.round((moduleData as any)?.[key] ?? 0)}</span>
+                      </label>
+                      <input
+                        type="range"
+                        min={min} max={max} step={1}
+                        className="w-full accent-sky-500"
+                        value={(moduleData as any)?.[key] ?? 0}
+                        onChange={(e) => handleAxisChange(key, Number(e.target.value))}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
+                        <Maximize2 size={12} /> {t('modules.width_x', 'Width (X mm)')}
+                      </label>
+                      <input
+                        type="number"
+                        min="10" max="5000" step="10"
+                        className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                        value={moduleData?.size?.width || 500}
+                        onChange={(e) => handleSizeChange('width', Number(e.target.value))}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
+                        <Maximize2 size={12} className="rotate-90" /> {t('modules.length_y', 'Length (Y mm)')}
+                      </label>
+                      <input
+                        type="number"
+                        min="10" max="5000" step="10"
+                        className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                        value={moduleData?.size?.length || 500}
+                        onChange={(e) => handleSizeChange('length', Number(e.target.value))}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
-          
+
           <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden relative h-[400px] md:h-auto min-h-[400px]">
             <div className="absolute top-3 left-3 z-10 pointer-events-none">
               <span className="bg-slate-950/80 backdrop-blur text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-800">
