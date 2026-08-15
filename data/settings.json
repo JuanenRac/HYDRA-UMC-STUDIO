@@ -87,6 +87,9 @@
       },
       "threeDHeight": 529
     },
+    "remoteAccess": {
+      "enabled": true
+    },
     "gamepadEnabled": false
   },
   "controllers": [
