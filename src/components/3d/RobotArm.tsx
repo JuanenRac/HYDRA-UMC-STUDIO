@@ -16,6 +16,9 @@ import UR5eArm from './UR5eArm';
 import UR10eArm from './UR10eArm';
 import UR16eArm from './UR16eArm';
 import UR20Arm from './UR20Arm';
+import XArm6Arm from './XArm6Arm';
+import Lite6Arm from './Lite6Arm';
+import EdoArm from './EdoArm';
 
 /**
  * Executes the  robot arm logic.
@@ -79,6 +82,24 @@ export default function RobotArm({ robot }: { robot: RobotState }) {
             return (
                 <Suspense fallback={null}>
                     <UR20Arm robot={robot} />
+                </Suspense>
+            );
+        case 'xArm6 (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <XArm6Arm robot={robot} />
+                </Suspense>
+            );
+        case 'Lite 6 (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <Lite6Arm robot={robot} />
+                </Suspense>
+            );
+        case 'e.DO (6-DOF)':
+            return (
+                <Suspense fallback={null}>
+                    <EdoArm robot={robot} />
                 </Suspense>
             );
         default:

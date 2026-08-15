@@ -33,6 +33,9 @@ import { ur5eJointsToCartesian } from './ur5eKinematics';
 import { ur10eJointsToCartesian } from './ur10eKinematics';
 import { ur16eJointsToCartesian } from './ur16eKinematics';
 import { ur20JointsToCartesian } from './ur20Kinematics';
+import { xarm6JointsToCartesian } from './xarm6Kinematics';
+import { lite6JointsToCartesian } from './lite6Kinematics';
+import { edoJointsToCartesian } from './edoKinematics';
 import type { KinematicsPoint } from './utils';
 
 export function jointsToCartesianForModel(model: RobotModel | undefined, pt: KinematicsPoint): { x: number; y: number; z: number; a: number; b: number; c: number } {
@@ -45,6 +48,9 @@ export function jointsToCartesianForModel(model: RobotModel | undefined, pt: Kin
   if (model === 'UR10e (6-DOF)') return ur10eJointsToCartesian(pt);
   if (model === 'UR16e (6-DOF)') return ur16eJointsToCartesian(pt);
   if (model === 'UR20 (6-DOF)') return ur20JointsToCartesian(pt);
+  if (model === 'xArm6 (6-DOF)') return xarm6JointsToCartesian(pt);
+  if (model === 'Lite 6 (6-DOF)') return lite6JointsToCartesian(pt);
+  if (model === 'e.DO (6-DOF)') return edoJointsToCartesian(pt);
 
   const j1Rad = (pt.j1 || 0) * (Math.PI / 180);
   const j2Rad = (pt.j2 || 0) * (Math.PI / 180);

@@ -24,6 +24,9 @@ import { ur5eCartesianToJoints, UR5E_HOME_POSE, UR5E_JOINT_LIMITS_DEG } from '..
 import { ur10eCartesianToJoints, UR10E_HOME_POSE, UR10E_JOINT_LIMITS_DEG } from '../examples/ur10eKinematics';
 import { ur16eCartesianToJoints, UR16E_HOME_POSE, UR16E_JOINT_LIMITS_DEG } from '../examples/ur16eKinematics';
 import { ur20CartesianToJoints, UR20_HOME_POSE, UR20_JOINT_LIMITS_DEG } from '../examples/ur20Kinematics';
+import { xarm6CartesianToJoints, XARM6_HOME_POSE, XARM6_JOINT_LIMITS_DEG } from '../examples/xarm6Kinematics';
+import { lite6CartesianToJoints, LITE6_HOME_POSE, LITE6_JOINT_LIMITS_DEG } from '../examples/lite6Kinematics';
+import { edoCartesianToJoints, EDO_HOME_POSE } from '../examples/edoKinematics';
 import { convertToCartesian } from '../examples/utils';
 import { jointsToCartesianForModel } from '../examples/robotKinematicsDispatch';
 
@@ -64,6 +67,9 @@ function homePoseFor(model: RobotModel) {
   if (model === 'UR10e (6-DOF)') return { ...UR10E_HOME_POSE };
   if (model === 'UR16e (6-DOF)') return { ...UR16E_HOME_POSE };
   if (model === 'UR20 (6-DOF)') return { ...UR20_HOME_POSE };
+  if (model === 'xArm6 (6-DOF)') return { ...XARM6_HOME_POSE };
+  if (model === 'Lite 6 (6-DOF)') return { ...LITE6_HOME_POSE };
+  if (model === 'e.DO (6-DOF)') return { ...EDO_HOME_POSE };
   return { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 };
 }
 
@@ -87,6 +93,9 @@ function resolveTargetJoints(
   if (model === 'UR10e (6-DOF)') return ur10eCartesianToJoints(x, y, z, a, b, c);
   if (model === 'UR16e (6-DOF)') return ur16eCartesianToJoints(x, y, z, a, b, c);
   if (model === 'UR20 (6-DOF)') return ur20CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'xArm6 (6-DOF)') return xarm6CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'Lite 6 (6-DOF)') return lite6CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'e.DO (6-DOF)') return edoCartesianToJoints(x, y, z, a, b, c);
   return genericJoints;
 }
 
@@ -1241,6 +1250,8 @@ console.log("Loading example:", id);
                     : robot.model === 'UR10e (6-DOF)' ? UR10E_JOINT_LIMITS_DEG[j]
                     : robot.model === 'UR16e (6-DOF)' ? UR16E_JOINT_LIMITS_DEG[j]
                     : robot.model === 'UR20 (6-DOF)' ? UR20_JOINT_LIMITS_DEG[j]
+                    : robot.model === 'xArm6 (6-DOF)' ? XARM6_JOINT_LIMITS_DEG[j]
+                    : robot.model === 'Lite 6 (6-DOF)' ? LITE6_JOINT_LIMITS_DEG[j]
                     : [-180, 180];
                   return (
                   <div key={j} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
@@ -1466,6 +1477,13 @@ console.log("Loading example:", id);
                         <option value="UR10e (6-DOF)">UR10e (6-DOF)</option>
                         <option value="UR16e (6-DOF)">UR16e (6-DOF)</option>
                         <option value="UR20 (6-DOF)">UR20 (6-DOF)</option>
+                      </optgroup>
+                      <optgroup label="UFACTORY">
+                        <option value="xArm6 (6-DOF)">xArm6 (6-DOF)</option>
+                        <option value="Lite 6 (6-DOF)">Lite 6 (6-DOF)</option>
+                      </optgroup>
+                      <optgroup label="Comau">
+                        <option value="e.DO (6-DOF)">e.DO (6-DOF)</option>
                       </optgroup>
                       <optgroup label="Generic">
                         <option value="Generic (6-DOF)">Generic (6-DOF)</option>
