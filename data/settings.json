@@ -107,19 +107,19 @@
           "tool": "SMT Solder Paste Dispenser",
           "urtcConnected": true,
           "pos": {
-            "x": 209.03279480134478,
-            "y": 15.747126223466662,
-            "z": 109.99999999999997,
+            "x": 202.88892313076997,
+            "y": 14.706899009509636,
+            "z": 109.99999999999999,
             "a": 0,
             "b": 0,
             "c": 0,
-            "tx": 225.54344317357678,
-            "ty": 206.4218316834867
+            "tx": 292.4192230386652,
+            "ty": 231.20567514749752
           },
           "joints": {
-            "j1": 4.29195307556848,
-            "j2": 27.489427706864728,
-            "j3": -75.65576569345374,
+            "j1": 4.863778879571213,
+            "j2": 26.494477768641246,
+            "j3": -77.5879852372405,
             "j4": 0,
             "j5": 0,
             "j6": 0
@@ -1102,11 +1102,11 @@
             }
           ],
           "playbackState": {
-            "isPlaying": true,
-            "activeStep": 41,
+            "isPlaying": false,
+            "activeStep": -1,
             "speed": 485.6,
             "isLooping": true,
-            "isFinished": false,
+            "isFinished": true,
             "isPaused": false
           },
           "hasXYTable": true,
@@ -1285,8 +1285,8 @@
           },
           "xyTable": {
             "pos": {
-              "x": 225.54344317357678,
-              "y": 206.4218316834867
+              "x": 292.4192230386652,
+              "y": 231.20567514749752
             },
             "tableSize": {
               "width": 750,
@@ -1467,9 +1467,9 @@
           "tool": "Engraving Laser Diode (10W optical)",
           "urtcConnected": true,
           "pos": {
-            "x": 170.00016123772934,
+            "x": 238.552383155883,
             "y": 0,
-            "z": 30.303963333463585,
+            "z": 99.33678171538467,
             "a": 0,
             "b": 0,
             "c": 0,
@@ -1478,9 +1478,9 @@
             "trz": 0
           },
           "joints": {
-            "j1": -204.1131815084313,
-            "j2": 2.200431159876763,
-            "j3": -7.468165894302475,
+            "j1": -217.55693799798178,
+            "j2": 12.238788650176026,
+            "j3": -29.989605733711635,
             "j4": 0,
             "j5": 0,
             "j6": 0
@@ -1623,11 +1623,11 @@
             }
           ],
           "playbackState": {
-            "isPlaying": true,
-            "activeStep": 4,
+            "isPlaying": false,
+            "activeStep": -1,
             "speed": 100,
             "isLooping": true,
-            "isFinished": false,
+            "isFinished": true,
             "isPaused": false
           },
           "hasXYTable": false,
@@ -1810,9 +1810,9 @@
           "tool": "AOI (Automated Optical Inspection) System",
           "urtcConnected": true,
           "pos": {
-            "x": 222.26971092342407,
+            "x": 161.7439579928473,
             "y": 0,
-            "z": 116.73473036874599,
+            "z": 142.01102844771287,
             "a": 0,
             "b": 0,
             "c": 0,
@@ -1821,9 +1821,9 @@
             "trz": 0
           },
           "joints": {
-            "j1": -89.99980854670171,
-            "j2": -6.752690118407868,
-            "j3": 49.436499716327184,
+            "j1": -89.99978358119384,
+            "j2": -25.965056300581313,
+            "j3": 52,
             "j4": 0,
             "j5": 0,
             "j6": 0
@@ -2266,11 +2266,11 @@
             }
           ],
           "playbackState": {
-            "isPlaying": true,
-            "activeStep": 21,
+            "isPlaying": false,
+            "activeStep": -1,
             "speed": 100,
             "isLooping": true,
-            "isFinished": false,
+            "isFinished": true,
             "isPaused": false
           },
           "hasXYTable": false,
@@ -3191,8 +3191,8 @@
           "tool": "None",
           "urtcConnected": false,
           "pos": {
-            "x": 179.70812837552765,
-            "y": -27.31421012840516,
+            "x": 197.09439008567807,
+            "y": -23.018451628283856,
             "z": 9.999999999999952,
             "a": 0,
             "b": 0,
@@ -3202,9 +3202,9 @@
             "trz": -1.5866574327989225
           },
           "joints": {
-            "j1": -8.914608816439536,
-            "j2": -79.30378118416122,
-            "j3": -21.531334147961545,
+            "j1": -6.77440395823167,
+            "j2": -62.357406737953006,
+            "j3": -38.42710750872552,
             "j4": 0,
             "j5": 0,
             "j6": 0
@@ -3381,11 +3381,11 @@
             }
           ],
           "playbackState": {
-            "isPlaying": true,
-            "activeStep": 7,
+            "isPlaying": false,
+            "activeStep": -1,
             "speed": 100,
             "isLooping": false,
-            "isFinished": false
+            "isFinished": true
           },
           "hasXYTable": false,
           "juanenPnP": {
