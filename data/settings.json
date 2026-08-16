@@ -85,7 +85,7 @@
           "isOpen": false
         }
       },
-      "threeDHeight": 529
+      "threeDHeight": 426
     },
     "remoteAccess": {
       "enabled": true
@@ -103,27 +103,29 @@
       "robots": [
         {
           "id": 1,
-          "name": "Robot A1",
+          "name": "Robot JUANEN",
           "online": true,
           "model": "Parol6 (6-DOF)",
           "role": "Pnp",
-          "tool": "Soldering Station (T12)",
+          "tool": "PCB Advanced Inspection",
           "urtcConnected": true,
           "pos": {
-            "x": 0,
-            "y": 0,
-            "z": 0,
+            "x": 236.47679354856479,
+            "y": 3.678545925178367,
+            "z": 109.99999999999994,
             "a": 0,
             "b": 0,
-            "c": 0
+            "c": 0,
+            "tx": 299.7362139709134,
+            "ty": 255.03333727731354
           },
           "joints": {
-            "j1": -80.7,
-            "j2": 29.5,
-            "j3": -105.8,
-            "j4": -16.4,
-            "j5": -17.5,
-            "j6": -36
+            "j1": 0.8917041030813929,
+            "j2": 23.15780068483323,
+            "j3": -75,
+            "j4": 0,
+            "j5": 0,
+            "j6": 0
           },
           "valves": [
             false,
@@ -1107,7 +1109,7 @@
             "activeStep": -1,
             "speed": 485.6,
             "isLooping": true,
-            "isFinished": false,
+            "isFinished": true,
             "isPaused": false
           },
           "hasXYTable": true,
@@ -1118,23 +1120,29 @@
               "length": 500
             },
             "worldPos": {
-              "x": 0,
-              "y": 0
+              "x": -558.2187357771132,
+              "y": -1918.6477438066
             },
             "worldRot": 0,
             "renderScale": 1,
             "axisX": 0,
-            "axisY": 0,
-            "axisZ": 0,
+            "axisY": 128,
+            "axisZ": 33,
             "nozzle1Rotation": 0,
             "nozzle2Rotation": 0
           },
           "lumenPnP": {
-            "enabled": false,
+            "enabled": true,
             "size": {
               "width": 500,
               "length": 500
-            }
+            },
+            "worldPos": {
+              "x": 183.86452143929765,
+              "y": -1983.4084954502891
+            },
+            "worldRot": 0,
+            "renderScale": 1
           },
           "juanenCNC": {
             "enabled": true,
@@ -1143,8 +1151,8 @@
               "length": 500
             },
             "worldPos": {
-              "x": -1067.5494261514211,
-              "y": 1875.9652570023063
+              "x": -2008.1250594998185,
+              "y": 2139.2880836215413
             },
             "worldRot": 0,
             "renderScale": 1
@@ -1156,8 +1164,8 @@
               "length": 500
             },
             "worldPos": {
-              "x": -1182.4140983490802,
-              "y": 1041.9890032583533
+              "x": -2027.6464528654747,
+              "y": 1475.2638897805737
             },
             "worldRot": 0,
             "renderScale": 1
@@ -1171,8 +1179,8 @@
             "pumpActive": false,
             "valveActive": false,
             "worldPos": {
-              "x": -1423.1763263271157,
-              "y": 31.314888134451614
+              "x": -2166.222045507342,
+              "y": 107.24833863841867
             },
             "worldRot": 0,
             "renderScale": 1
@@ -1188,8 +1196,8 @@
             "currentTemp2": 25,
             "ssrActive": false,
             "worldPos": {
-              "x": 325.5842732508986,
-              "y": 1713.23257536859
+              "x": -1738.3001969900918,
+              "y": 609.0516993120101
             },
             "worldRot": 0,
             "renderScale": 1
@@ -1236,8 +1244,8 @@
                 "ty": 0
               },
               "renderPos": {
-                "x": 76.65603881984434,
-                "y": 1761.6500158910208
+                "x": -2132.0668744964587,
+                "y": 643.999752868407
               },
               "renderRot": -1.4113845051265357,
               "renderScale": 1
@@ -1282,8 +1290,8 @@
                 "ty": 0
               },
               "renderPos": {
-                "x": -288.4143445337285,
-                "y": 1777.5597561210811
+                "x": -2183.7717610491272,
+                "y": 979.6362930154876
               },
               "renderRot": 1.5307147252636373,
               "renderScale": 1
@@ -1291,30 +1299,30 @@
           },
           "xyTable": {
             "pos": {
-              "x": 265.42841066872114,
-              "y": 297.55883834009114
+              "x": 299.7362139709134,
+              "y": 255.03333727731354
             },
             "tableSize": {
               "width": 750,
               "length": 400
             },
             "worldPos": {
-              "x": -187.23128667743572,
-              "y": -91.46594199772257
+              "x": -31.208274803191223,
+              "y": -107.22088540446877
             },
             "worldRot": 0,
             "renderScale": 1
           },
           "cameraView": {
             "position": [
-              1.0670312037141685,
-              0.7820954357875818,
-              0.448092509219314
+              0.5945329556187827,
+              1.101637966065605,
+              -0.1048373119921179
             ],
             "target": [
-              0.06309207717274687,
-              0.20007099652684257,
-              0.15937402397410033
+              0.5944082067437145,
+              0.2990291895098029,
+              -0.10246102949588273
             ]
           },
           "combinedWith": [
@@ -1325,7 +1333,7 @@
           "selectedWorkFile": "soldadura_chasis.json",
           "selectedExample": "example-23-xy-table-flower",
           "renderScale": 1,
-          "centerCameraTrigger": 1786693697421,
+          "centerCameraTrigger": 1786837848146,
           "controllerBoard": {
             "firmwareVersion": "HYDRA_RCB_APP_v1.0",
             "bootloaderVersion": "1.0.0",
@@ -1457,8 +1465,8 @@
               }
             ],
             "renderPos": {
-              "x": -1213.0910421188455,
-              "y": -787.8961228218132
+              "x": -1994.723484612456,
+              "y": -660.1782395533068
             },
             "renderRot": 0,
             "renderScale": 1
@@ -1466,29 +1474,29 @@
         },
         {
           "id": 2,
-          "name": "Robot A2",
+          "name": "Robot BORJA",
           "online": true,
           "model": "Faze4 (6-DOF)",
-          "role": "CNC",
-          "tool": "Engraving Laser Diode (10W optical)",
+          "role": "3D printing",
+          "tool": "3D Printing Hotend",
           "urtcConnected": true,
           "pos": {
-            "x": 546.026094153039,
-            "y": 306.78663182278365,
-            "z": 297.7744062300797,
+            "x": 202.71543484092686,
+            "y": 0,
+            "z": 60.000357754187796,
             "a": 0,
             "b": 0,
             "c": 0,
-            "tx": 90.36261223542309,
-            "ty": 583.9720782603629,
+            "tx": 289.3030211902636,
+            "ty": 1125.6439855007534,
             "trz": 0
           },
           "joints": {
-            "j1": -210.76439770020338,
-            "j2": 45.9,
-            "j3": -18.7256296804983,
+            "j1": -210.99671758566737,
+            "j2": 6.132477495949197,
+            "j3": -16.475202168357217,
             "j4": 0,
-            "j5": -27.1,
+            "j5": 0,
             "j6": 0
           },
           "valves": [
@@ -1631,11 +1639,11 @@
           "playbackState": {
             "isPlaying": false,
             "activeStep": -1,
-            "speed": 167.9,
+            "speed": 100.64080047607422,
             "isLooping": true,
             "isFinished": true,
             "isPaused": false,
-            "acceleration": 10
+            "acceleration": 135.8995361328125
           },
           "hasXYTable": false,
           "juanenPnP": {
@@ -1810,27 +1818,27 @@
         },
         {
           "id": 3,
-          "name": "Robot A3",
+          "name": "Robot YECLA",
           "online": true,
           "model": "AR4 (6-DOF)",
           "role": "Inspection",
           "tool": "AOI (Automated Optical Inspection) System",
           "urtcConnected": true,
           "pos": {
-            "x": 156.88621852641694,
+            "x": 190.21350829610037,
             "y": 0,
-            "z": 124.63369867183351,
+            "z": 146.11993836974926,
             "a": 0,
             "b": 0,
             "c": 0,
-            "tx": 23.08985013710485,
-            "ty": -648.3209092897303,
+            "tx": 229.75795092444596,
+            "ty": -908.0454769601658,
             "trz": 0
           },
           "joints": {
-            "j1": -89.99980744203302,
-            "j2": -23.93289847383871,
-            "j3": 52,
+            "j1": -89.9997792793228,
+            "j2": -19.348569397131847,
+            "j3": 49.966614718415094,
             "j4": 0,
             "j5": 0,
             "j6": 0
@@ -2277,7 +2285,7 @@
             "activeStep": -1,
             "speed": 100,
             "isLooping": true,
-            "isFinished": false,
+            "isFinished": true,
             "isPaused": false
           },
           "hasXYTable": false,
@@ -3198,20 +3206,20 @@
           "tool": "None",
           "urtcConnected": false,
           "pos": {
-            "x": 155.82424880202322,
-            "y": 34.038173103933524,
-            "z": 9.999999999999943,
+            "x": 259.3194916055153,
+            "y": 0.9296835870496523,
+            "z": 10.000000000000083,
             "a": 0,
             "b": 0,
             "c": 0,
-            "tx": 1695.9683523042245,
-            "ty": 1671.1432961615378,
+            "tx": 1925.5847325973966,
+            "ty": 1706.9666156053977,
             "trz": -1.5866574327989225
           },
           "joints": {
-            "j1": 12.459767165442273,
-            "j2": -113.71131758087478,
-            "j3": 13.434337688430638,
+            "j1": 0.23842424612384505,
+            "j2": -69.90355763708989,
+            "j3": -33.73622392998809,
             "j4": 0,
             "j5": 0,
             "j6": 0
@@ -3392,7 +3400,8 @@
             "activeStep": -1,
             "speed": 100,
             "isLooping": false,
-            "isFinished": false
+            "isFinished": true,
+            "isPaused": false
           },
           "hasXYTable": false,
           "juanenPnP": {
