@@ -77,6 +77,12 @@ export default function Dashboard() {
   const activeRobot = robots.find(r => r.id === selectedRobotId);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const robotIdParam = params.get('robotId');
+    if (robotIdParam) {
+      setSelectedRobotId(parseInt(robotIdParam));
+    }
+
     document.body.dataset.theme = settings.theme;
     if (settings.language && i18n.language !== settings.language) {
       i18n.changeLanguage(settings.language);
