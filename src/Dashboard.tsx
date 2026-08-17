@@ -80,7 +80,10 @@ export default function Dashboard() {
     const params = new URLSearchParams(window.location.search);
     const robotIdParam = params.get('robotId');
     if (robotIdParam) {
-      setSelectedRobotId(parseInt(robotIdParam));
+      const id = parseInt(robotIdParam);
+      console.log(`[Industrial] Identified Remote Target: Robot A${id}`);
+      setSelectedRobotId(id);
+      setActiveTab('robot');
     }
 
     document.body.dataset.theme = settings.theme;

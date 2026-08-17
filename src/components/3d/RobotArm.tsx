@@ -5,8 +5,6 @@
 // =============================================================================
 
 import React, { Suspense } from 'react';
-import { Html } from '@react-three/drei';
-import { RefreshCw } from 'lucide-react';
 import type { RobotState } from '../../store';
 import GenericRobotArm from './GenericRobotArm';
 import Parol6Arm from './Parol6Arm';
@@ -42,41 +40,29 @@ import Ur10ClassicArm from './Ur10ClassicArm';
 // (see their own header comments) - that suspends on first load, so each
 // needs its own Suspense boundary. GenericRobotArm renders synchronously
 // (procedural geometry only) and doesn't need one.
-function RobotLoading() {
-  return (
-    <Html center>
-      <div className="flex flex-col items-center gap-2 text-sky-400 bg-slate-900/80 px-4 py-2 rounded-lg border border-sky-500/30">
-        <RefreshCw size={16} className="animate-spin" />
-        <span className="text-[10px] font-black uppercase tracking-widest">Loading STL Assets...</span>
-      </div>
-    </Html>
-  );
-}
-
 export default function RobotArm({ robot }: { robot: RobotState }) {
-    const fallback = <RobotLoading />;
     switch (robot.model) {
         case 'Parol6 (6-DOF)':
             return (
-                <Suspense fallback={fallback}>
+                <Suspense fallback={null}>
                     <Parol6Arm robot={robot} />
                 </Suspense>
             );
         case 'Faze4 (6-DOF)':
             return (
-                <Suspense fallback={fallback}>
+                <Suspense fallback={null}>
                     <Faze4Arm robot={robot} />
                 </Suspense>
             );
         case 'AR3 (6-DOF)':
             return (
-                <Suspense fallback={fallback}>
+                <Suspense fallback={null}>
                     <AR3Arm robot={robot} />
                 </Suspense>
             );
         case 'AR4 (6-DOF)':
             return (
-                <Suspense fallback={fallback}>
+                <Suspense fallback={null}>
                     <AR4Arm robot={robot} />
                 </Suspense>
             );

@@ -114,7 +114,7 @@
         {
           "id": 1,
           "name": "Robot JUANEN",
-          "online": false,
+          "online": true,
           "model": "Parol6 (6-DOF)",
           "role": "Pnp",
           "tool": "NEMA Gripper",

@@ -1891,13 +1891,13 @@ console.log("Loading example:", id);
                       ? 100 
                       : (robot.recordedPoints.length > 0 
                         ? Math.round((Math.max(0, robot.playbackState?.activeStep || 0) / Math.max(1, robot.recordedPoints.length - 1)) * 100) 
-                        : 0)}%
+                        : 0)}{'%'}
                   </span>
                 </div>
                 <div className="bg-slate-900/50 rounded-full h-3 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] overflow-hidden relative border border-slate-800 z-10">
                   <div 
                     className="bg-gradient-to-r from-emerald-600 to-emerald-400 h-full rounded-full shadow-[inset_0_2px_4px_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)] transition-all duration-300 ease-out relative"
-                    style={{ width: `${robot.playbackState?.isFinished ? 100 : (robot.recordedPoints.length > 0 ? (Math.max(0, robot.playbackState?.activeStep || 0) / Math.max(1, robot.recordedPoints.length - 1)) * 100 : 0)}%` }}
+                    style={{ width: (robot.playbackState?.isFinished ? '100%' : (robot.recordedPoints.length > 0 ? `${(Math.max(0, robot.playbackState?.activeStep || 0) / Math.max(1, robot.recordedPoints.length - 1)) * 100}%` : '0%')) }}
                   >
                     <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent rounded-t-full"></div>
                   </div>
@@ -1906,7 +1906,8 @@ console.log("Loading example:", id);
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
-  );
+  </div>
+);
 }

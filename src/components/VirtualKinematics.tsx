@@ -7,7 +7,7 @@
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Html, TransformControls, Box, Cylinder, Sphere, RoundedBox, Line, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, TransformControls, Box, Cylinder, Sphere, RoundedBox, Line, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { useHydraStore, type RobotState } from '../store';
 import Toolhead from './3d/Toolhead';
@@ -120,19 +120,6 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
         <ambientLight intensity={0.4} />
         <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
         <pointLight position={[-5, 5, -5]} intensity={0.5} color="#00E5FF" />
-
-        {/* IDENTITY LABEL IN 3D SPACE */}
-        <Html position={[0, 0.5, 0]}>
-          <div className="pointer-events-none select-none flex flex-col items-center">
-            <div className="px-3 py-1 bg-sky-500 text-slate-950 text-[10px] font-black uppercase rounded shadow-[0_0_15px_rgba(0,229,255,0.5)] border border-sky-300">
-              {robot.name} (A{robot.id})
-            </div>
-            <div className="mt-1 px-2 py-0.5 bg-slate-900/90 text-sky-400 text-[8px] font-bold uppercase rounded border border-slate-700">
-              {robot.model}
-            </div>
-            <div className="w-px h-8 bg-gradient-to-b from-sky-500 to-transparent mt-1"></div>
-          </div>
-        </Html>
 
         {/* ATC Visualization */}
         {robot.atc && (
