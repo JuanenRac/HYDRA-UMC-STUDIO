@@ -205,9 +205,15 @@ async function startServer() {
               break;
             case "jog":
               if (params?.axis && params?.amount) {
-                robot.pos[params.axis] += params.amount;
-                const calculated = calculateJoints(robot.pos);
-                robot.joints = calculated;
+                const target = params.target || "robot";
+                if (target === "robot") {
+                  robot.pos[params.axis] += params.amount;
+                  const calculated = calculateJoints(robot.pos);
+                  robot.joints = calculated;
+                } else if (target === "xytable" && robot.xyTable) {
+                  const axis = params.axis === "x" ? "x" : (params.axis === "y" ? "y" : null);
+                  if (axis) robot.xyTable.pos[axis] += params.amount;
+                }
               }
               break;
             case "tool":
