@@ -107,11 +107,11 @@
           "online": true,
           "model": "Parol6 (6-DOF)",
           "role": "Pnp",
-          "tool": "PCB Advanced Inspection",
+          "tool": "NEMA Gripper",
           "urtcConnected": true,
           "pos": {
-            "x": 236.47679354856479,
-            "y": 3.678545925178367,
+            "x": 216.47679354856479,
+            "y": 13.67854592517837,
             "z": 109.99999999999994,
             "a": 0,
             "b": 0,
@@ -1107,10 +1107,11 @@
           "playbackState": {
             "isPlaying": false,
             "activeStep": -1,
-            "speed": 485.6,
+            "speed": 160.69091796875,
             "isLooping": true,
-            "isFinished": true,
-            "isPaused": false
+            "isFinished": false,
+            "isPaused": false,
+            "acceleration": 725.6372680664062
           },
           "hasXYTable": true,
           "juanenPnP": {
@@ -1151,8 +1152,8 @@
               "length": 500
             },
             "worldPos": {
-              "x": -2008.1250594998185,
-              "y": 2139.2880836215413
+              "x": 0,
+              "y": 0
             },
             "worldRot": 0,
             "renderScale": 1
@@ -1315,9 +1316,9 @@
           },
           "cameraView": {
             "position": [
-              0.5945329556187827,
-              1.101637966065605,
-              -0.1048373119921179
+              1.5644253905839811,
+              1.2427683378051244,
+              -1.1839794201069829
             ],
             "target": [
               0.5944082067437145,
@@ -1326,9 +1327,9 @@
             ]
           },
           "combinedWith": [
-            2,
             3,
-            8
+            8,
+            2
           ],
           "selectedWorkFile": "soldadura_chasis.json",
           "selectedExample": "example-23-xy-table-flower",
@@ -1350,126 +1351,7 @@
             "type": "revolver",
             "panelGrid": "2x2",
             "revolverSlots": 8,
-            "tools": [
-              {
-                "slot": 0,
-                "tool": "Soldering Station (T12)",
-                "pos": {
-                  "j1": 0,
-                  "j2": 0,
-                  "j3": 0,
-                  "j4": 0,
-                  "j5": 0,
-                  "j6": 0,
-                  "tx": 0,
-                  "ty": 0
-                }
-              },
-              {
-                "slot": 1,
-                "tool": "Drill (BL4260)",
-                "pos": {
-                  "j1": 0,
-                  "j2": 0,
-                  "j3": 0,
-                  "j4": 0,
-                  "j5": 0,
-                  "j6": 0,
-                  "tx": 0,
-                  "ty": 0
-                }
-              },
-              {
-                "slot": 2,
-                "tool": "Functional Testing Head",
-                "pos": {
-                  "j1": 0,
-                  "j2": 0,
-                  "j3": 0,
-                  "j4": 0,
-                  "j5": 0,
-                  "j6": 0,
-                  "tx": 0,
-                  "ty": 0
-                }
-              },
-              {
-                "slot": 3,
-                "tool": "Functional Testing Head",
-                "pos": {
-                  "j1": 0,
-                  "j2": 0,
-                  "j3": 0,
-                  "j4": 0,
-                  "j5": 0,
-                  "j6": 0,
-                  "tx": 0,
-                  "ty": 0
-                }
-              },
-              {
-                "slot": 4,
-                "tool": "Conformal Coating Airbrush",
-                "pos": {
-                  "j1": 0,
-                  "j2": 0,
-                  "j3": 0,
-                  "j4": 0,
-                  "j5": 0,
-                  "j6": 0,
-                  "tx": 0,
-                  "ty": 0
-                }
-              },
-              {
-                "slot": 5,
-                "tool": "PCB Advanced Inspection",
-                "pos": {
-                  "j1": 0,
-                  "j2": 0,
-                  "j3": 0,
-                  "j4": 0,
-                  "j5": 0,
-                  "j6": 0,
-                  "tx": 0,
-                  "ty": 0
-                }
-              },
-              {
-                "slot": 6,
-                "tool": "3D Printing Hotend",
-                "pos": {
-                  "j1": 0,
-                  "j2": 0,
-                  "j3": 0,
-                  "j4": 0,
-                  "j5": 0,
-                  "j6": 0,
-                  "tx": 0,
-                  "ty": 0
-                }
-              },
-              {
-                "slot": 7,
-                "tool": "NEMA Gripper",
-                "pos": {
-                  "j1": 0,
-                  "j2": 0,
-                  "j3": 0,
-                  "j4": 0,
-                  "j5": 0,
-                  "j6": 0,
-                  "tx": 0,
-                  "ty": 0
-                }
-              }
-            ],
-            "renderPos": {
-              "x": -1994.723484612456,
-              "y": -660.1782395533068
-            },
-            "renderRot": 0,
-            "renderScale": 1
+            "tools": []
           }
         },
         {
@@ -1481,9 +1363,9 @@
           "tool": "3D Printing Hotend",
           "urtcConnected": true,
           "pos": {
-            "x": 202.71543484092686,
-            "y": 0,
-            "z": 60.000357754187796,
+            "x": 222.47479548227523,
+            "y": -204.21475629881684,
+            "z": 49.83477101715158,
             "a": 0,
             "b": 0,
             "c": 0,
@@ -1492,9 +1374,9 @@
             "trz": 0
           },
           "joints": {
-            "j1": -210.99671758566737,
-            "j2": 6.132477495949197,
-            "j3": -16.475202168357217,
+            "j1": -199.61598706312242,
+            "j2": 0.08317007654755937,
+            "j3": -0.17133121307567833,
             "j4": 0,
             "j5": 0,
             "j6": 0
@@ -1639,11 +1521,16 @@
           "playbackState": {
             "isPlaying": false,
             "activeStep": -1,
-            "speed": 100.64080047607422,
+            "speed": 99.430419921875,
             "isLooping": true,
             "isFinished": true,
             "isPaused": false,
-            "acceleration": 135.8995361328125
+            "acceleration": 100,
+            "playing": false,
+            "finished": false,
+            "paused": false,
+            "requestStop": true,
+            "requestPause": false
           },
           "hasXYTable": false,
           "juanenPnP": {
@@ -1789,14 +1676,14 @@
           },
           "cameraView": {
             "position": [
-              1.1978799015164265,
-              1.051360840128675,
-              0.589175214293766
+              1.3273113990792198,
+              0.6152370457556295,
+              2.371150508173182
             ],
             "target": [
-              0.057126049512659934,
-              0.3265923947873445,
-              0.43487485628762335
+              0.28930300708119333,
+              0.20000000769284304,
+              1.125643943523678
             ]
           },
           "renderScale": 1,
@@ -1813,7 +1700,7 @@
             "expansionBoardType": 0
           },
           "selectedExample": "example-7-wave",
-          "centerCameraTrigger": 1786693750107,
+          "centerCameraTrigger": 1786961685886,
           "selectedWorkFile": "escalera_dibujo.json"
         },
         {
@@ -3566,7 +3453,7 @@
           "id": 1,
           "connected": true,
           "type": "USB Vision Camera",
-          "yoloEnabled": false,
+          "yoloEnabled": true,
           "detections": [
             {
               "label": "PCB_PANEL",
@@ -3622,7 +3509,7 @@
           "id": 3,
           "connected": true,
           "type": "USB Vision Camera",
-          "yoloEnabled": true,
+          "yoloEnabled": false,
           "detections": [
             {
               "label": "PCB_PANEL",

@@ -11,6 +11,7 @@ import fs from "fs";
 import http from "http";
 import os from "os";
 import { WebSocketServer, WebSocket } from "ws";
+import { calculateJoints } from "./kinematics";
 
 // Bumped whenever the /api/hydra-info or /ws message contract changes in a
 // way a remote client (HYDRA-UMC SUITE, the mobile control apps) might need
@@ -105,13 +106,118 @@ async function startServer() {
   app.post("/api/settings", (req, res) => {
     const settingsPath = getSettingsPath();
     try {
-      fs.writeFileSync(settingsPath, JSON.stringify(req.body, null, 2), "utf-8");
-      broadcastSettings(req.body);
+      let payload = req.body;
+
+      // Server-side Kinematics processing
+      // If a robot's Cartesian position was updated, ensure joints are synchronized
+      if (payload.controllers) {
+        payload.controllers.forEach((controller: any) => {
+          if (controller.robots) {
+            controller.robots.forEach((robot: any) => {
+              if (robot.pos) {
+                const calculated = calculateJoints(robot.pos);
+                // Simple sync: if joints are missing or we want to force server-side IK
+                // In a real industrial app, the server would always compute this to be the source of truth
+                robot.joints = {
+                  j1: Number(calculated.j1.toFixed(3)),
+                  j2: Number(calculated.j2.toFixed(3)),
+                  j3: Number(calculated.j3.toFixed(3)),
+                  j4: Number(calculated.j4.toFixed(3)),
+                  j5: Number(calculated.j5.toFixed(3)),
+                  j6: Number(calculated.j6.toFixed(3))
+                };
+              }
+            });
+          }
+        });
+      }
+
+      fs.writeFileSync(settingsPath, JSON.stringify(payload, null, 2), "utf-8");
+      broadcastSettings(payload);
       res.json({ success: true });
     } catch (e) {
       console.error("Error writing settings", e);
       res.status(500).json({ error: "Failed to save settings" });
     }
+  });
+
+  // Direct Atomic API for Industrial Control
+  // Reduces lag by only updating what's necessary and avoiding full JSON overwrites
+  app.post("/api/robot/:id/command", (req, res) => {
+    const robotId = parseInt(req.params.id);
+    const { command, params } = req.body;
+
+    if (!lastKnownSettings.controllers) {
+      return res.status(400).json({ error: "No settings loaded" });
+    }
+
+    let targetRobot: any = null;
+    lastKnownSettings.controllers.forEach((c: any) => {
+      const r = c.robots?.find((r: any) => r.id === robotId);
+      if (r) targetRobot = r;
+    });
+
+    if (!targetRobot) {
+      return res.status(404).json({ error: "Robot not found" });
+    }
+
+    // Identify all robots that should receive this command (Self + Combined)
+    const affectedIds = [robotId, ...(targetRobot.combinedWith || [])];
+
+    lastKnownSettings.controllers.forEach((controller: any) => {
+      controller.robots?.forEach((robot: any) => {
+        if (affectedIds.includes(robot.id)) {
+          switch (command) {
+            case "stop":
+              robot.playbackState = { ...robot.playbackState, isPlaying: false, activeStep: -1, isPaused: false, paused: false };
+              break;
+            case "play":
+              robot.playbackState = { ...robot.playbackState, isPlaying: true, activeStep: 0, isPaused: false, paused: false };
+              break;
+            case "pause":
+              const newPauseState = !robot.playbackState.isPaused;
+              robot.playbackState = { ...robot.playbackState, isPaused: newPauseState, paused: newPauseState };
+              break;
+            case "jog":
+              if (params?.axis && params?.amount) {
+                robot.pos[params.axis] += params.amount;
+                const calculated = calculateJoints(robot.pos);
+                robot.joints = calculated;
+              }
+              break;
+            case "tool":
+              if (params?.tool) robot.tool = params.tool;
+              break;
+          }
+        }
+      });
+    });
+
+    fs.writeFileSync(getSettingsPath(), JSON.stringify(lastKnownSettings, null, 2), "utf-8");
+    broadcastSettings(lastKnownSettings);
+    res.json({ success: true, affectedCount: affectedIds.length });
+  });
+
+  // Industrial Native Streaming Server (MJPEG Proxy Placeholder)
+  // Allows the Android app to show video directly from the CM5
+  app.get("/api/camera/:id/stream", (req, res) => {
+    res.writeHead(200, {
+      'Content-Type': 'multipart/x-mixed-replace; boundary=--boundary',
+      'Cache-Control': 'no-cache',
+      'Connection': 'close',
+      'Pragma': 'no-cache'
+    });
+
+    // In a real CM5 implementation, this would pipe from a libcamera or ffmpeg process
+    // For now, we send a "Camera Offline" placeholder frame periodically
+    const interval = setInterval(() => {
+      const frame = Buffer.from("placeholder_frame_data");
+      res.write(`--boundary\r\nContent-Type: image/jpeg\r\nContent-Length: ${frame.length}\r\n\r\n`);
+      res.write(frame);
+      res.write("\r\n");
+    }, 100);
+
+    req.on('close', () => clearInterval(interval));
   });
 
   // Discovery/identity endpoint - what a remote client (HYDRA-UMC SUITE

@@ -250,6 +250,7 @@ export interface RobotState {
     rack2: RackConfig;
   };
   hasXYTable: boolean;
+  visionEnabled: boolean;
   playbackState: {
     isPlaying: boolean;
     isPaused?: boolean;
@@ -418,6 +419,8 @@ export const createDefaultRobots = (): RobotState[] => {
     recordedPoints: [],
     playbackState: { isPlaying: false, activeStep: 0, speed: 100, isLooping: false },
     hasXYTable: false,
+    visionEnabled: i < 2,
+    camera: { connected: false, type: 'USB Vision Camera', yoloEnabled: false, detections: [] },
 
     juanenPnP: { enabled: false, size: { width: 500, length: 500 }, axisX: 0, axisY: 0, axisZ: 0, nozzle1Rotation: 0, nozzle2Rotation: 0 },
     lumenPnP: { enabled: false, size: { width: 500, length: 500 }, axisX: 0, axisY: 0, axisZ: 0, nozzle1Rotation: 0, nozzle2Rotation: 0 },
