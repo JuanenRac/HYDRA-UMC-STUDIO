@@ -5,6 +5,8 @@
 // =============================================================================
 
 import React, { Suspense } from 'react';
+import { Html } from '@react-three/drei';
+import { RefreshCw } from 'lucide-react';
 import type { RobotState } from '../../store';
 import GenericRobotArm from './GenericRobotArm';
 import Parol6Arm from './Parol6Arm';
@@ -40,149 +42,161 @@ import Ur10ClassicArm from './Ur10ClassicArm';
 // (see their own header comments) - that suspends on first load, so each
 // needs its own Suspense boundary. GenericRobotArm renders synchronously
 // (procedural geometry only) and doesn't need one.
+function RobotLoading() {
+  return (
+    <Html center>
+      <div className="flex flex-col items-center gap-2 text-sky-400 bg-slate-900/80 px-4 py-2 rounded-lg border border-sky-500/30">
+        <RefreshCw size={16} className="animate-spin" />
+        <span className="text-[10px] font-black uppercase tracking-widest">Loading STL Assets...</span>
+      </div>
+    </Html>
+  );
+}
+
 export default function RobotArm({ robot }: { robot: RobotState }) {
+    const fallback = <RobotLoading />;
     switch (robot.model) {
         case 'Parol6 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <Parol6Arm robot={robot} />
                 </Suspense>
             );
         case 'Faze4 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <Faze4Arm robot={robot} />
                 </Suspense>
             );
         case 'AR3 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <AR3Arm robot={robot} />
                 </Suspense>
             );
         case 'AR4 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <AR4Arm robot={robot} />
                 </Suspense>
             );
         case 'UR3e (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <UR3eArm robot={robot} />
                 </Suspense>
             );
         case 'UR5e (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <UR5eArm robot={robot} />
                 </Suspense>
             );
         case 'UR10e (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <UR10eArm robot={robot} />
                 </Suspense>
             );
         case 'UR16e (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <UR16eArm robot={robot} />
                 </Suspense>
             );
         case 'UR20 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <UR20Arm robot={robot} />
                 </Suspense>
             );
         case 'xArm6 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <XArm6Arm robot={robot} />
                 </Suspense>
             );
         case 'Lite 6 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <Lite6Arm robot={robot} />
                 </Suspense>
             );
         case 'e.DO (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <EdoArm robot={robot} />
                 </Suspense>
             );
         case 'Gen3 Lite (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <Gen3LiteArm robot={robot} />
                 </Suspense>
             );
         case 'M-710iC (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <M710icArm robot={robot} />
                 </Suspense>
             );
         case 'SO-ARM100 (5-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <SoArm100Arm robot={robot} />
                 </Suspense>
             );
         case 'Gen2 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <Gen2Arm robot={robot} />
                 </Suspense>
             );
         case 'PiPER (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <PiperArm robot={robot} />
                 </Suspense>
             );
         case 'Z1 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <Z1Arm robot={robot} />
                 </Suspense>
             );
         case 'ViperX 300 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <Vx300sArm robot={robot} />
                 </Suspense>
             );
         case 'WidowX 250 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <Wx250sArm robot={robot} />
                 </Suspense>
             );
         case 'Koch v1.1 (5-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <KochArm robot={robot} />
                 </Suspense>
             );
         case 'UR3 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <Ur3ClassicArm robot={robot} />
                 </Suspense>
             );
         case 'UR5 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <Ur5ClassicArm robot={robot} />
                 </Suspense>
             );
         case 'UR10 (6-DOF)':
             return (
-                <Suspense fallback={null}>
+                <Suspense fallback={fallback}>
                     <Ur10ClassicArm robot={robot} />
                 </Suspense>
             );

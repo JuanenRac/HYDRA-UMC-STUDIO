@@ -114,7 +114,7 @@
         {
           "id": 1,
           "name": "Robot JUANEN",
-          "online": true,
+          "online": false,
           "model": "Parol6 (6-DOF)",
           "role": "Pnp",
           "tool": "NEMA Gripper",
@@ -2795,7 +2795,7 @@
         {
           "id": 4,
           "name": "Robot A4",
-          "online": false,
+          "online": true,
           "model": "Faze4 (6-DOF)",
           "role": "Idle",
           "tool": "None",

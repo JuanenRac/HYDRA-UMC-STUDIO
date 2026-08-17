@@ -361,7 +361,7 @@ const CameraPIP = ({ bot, initialX, initialY, label, t }: { bot: RobotState, ini
  * Executes the  robot detail logic. 
  * This function handles the necessary computations and state updates.
  */
-export function RobotDetail({ robot }: { robot: RobotState }) {
+export function RobotDetail({ robot, viewportOnly = false }: { robot: RobotState, viewportOnly?: boolean }) {
   const { t } = useTranslation();
   const { updateRobot, saveKinematics, loadKinematics, settings, robots, updateSettings } = useHydraStore();
   const robotsRef = useRef(robots);
@@ -933,73 +933,79 @@ console.log("Loading example:", id);
 
   return (
     <div className="flex flex-col h-full bg-slate-950 text-slate-200">
-      <div className="flex items-center justify-between p-3 border-b border-slate-800 bg-slate-900 shrink-0">
-        <div className="flex items-center gap-4">
-          <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2">
-            <span className={cn("w-2 h-2 rounded-full", robot.online ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]")} />
-            {robot.name}
-          </h2>
-          <div className="flex items-center gap-2">
-            <span className="text-xs px-2 py-1 bg-slate-800 text-slate-400 rounded-md uppercase font-bold tracking-wider">{robot.model}</span>
-            <span className="text-xs px-2 py-1 bg-slate-800 text-slate-400 rounded-md uppercase font-bold tracking-wider">{robot.tool}</span>
+      {!viewportOnly && (
+        <div className="flex items-center justify-between p-3 border-b border-slate-800 bg-slate-900 shrink-0">
+          <div className="flex items-center gap-4">
+            <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2">
+              <span className={cn("w-2 h-2 rounded-full", robot.online ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]")} />
+              {robot.name}
+            </h2>
+            <div className="flex items-center gap-2">
+              <span className="text-xs px-2 py-1 bg-slate-800 text-slate-400 rounded-md uppercase font-bold tracking-wider">{robot.model}</span>
+              <span className="text-xs px-2 py-1 bg-slate-800 text-slate-400 rounded-md uppercase font-bold tracking-wider">{robot.tool}</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="flex-1 flex overflow-hidden pt-2 px-2 pb-0 gap-2">
         {/* Left Panel: 3D View */}
         <div className="flex-1 flex flex-col gap-2 min-w-0">
           <div 
-            className="relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col group shrink-0 min-h-[200px]"
-            style={{ flex: threeDHeight ? `0 0 ${threeDHeight}px` : '1 1 0%' }}
+            className={cn("relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col group shrink-0", viewportOnly ? "flex-1" : "min-h-[200px]")}
+            style={!viewportOnly ? { flex: threeDHeight ? `0 0 ${threeDHeight}px` : '1 1 0%' } : {}}
           >
             <VirtualKinematics key={reset3DKey} robot={robot} controlMode={controlMode} />
 
-            <div className="absolute bottom-4 left-4 z-50 flex gap-2 pointer-events-auto">
-              <button 
-                onClick={() => toggleControl('translate')}
-                className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'translate' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
-                title={t('robot_detail.move', 'Move')}
-              >
-                <ArrowUp size={16} />
-              </button>
-              <button 
-                onClick={() => toggleControl('rotate')}
-                className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'rotate' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
-                title={t('robot_detail.rotate', 'Rotate')}
-              >
-                <RotateCcw size={16} />
-              </button>
-              <button 
-                onClick={() => toggleControl('scale')}
-                className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'scale' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
-                title={t('robot_detail.resize', 'Resize')}
-              >
-                <Maximize2 size={16} />
-              </button>
-              <div className="w-px h-6 bg-slate-800 self-center mx-1"></div>
-              <button 
-                onClick={() => {
-                  updateRobot(robot.id, { 
-                    cameraView: undefined,
-                    centerCameraTrigger: Date.now()
-                  });
-                }}
-                className="p-2 rounded bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-300 backdrop-blur-sm transition-colors"
-                title={t('robot_detail.center_view', 'Center View')}
-              >
-                <Crosshair size={16} />
-              </button>
-            </div>
+            {!viewportOnly && (
+              <>
+                <div className="absolute bottom-4 left-4 z-50 flex gap-2 pointer-events-auto">
+                  <button
+                    onClick={() => toggleControl('translate')}
+                    className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'translate' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
+                    title={t('robot_detail.move', 'Move')}
+                  >
+                    <ArrowUp size={16} />
+                  </button>
+                  <button
+                    onClick={() => toggleControl('rotate')}
+                    className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'rotate' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
+                    title={t('robot_detail.rotate', 'Rotate')}
+                  >
+                    <RotateCcw size={16} />
+                  </button>
+                  <button
+                    onClick={() => toggleControl('scale')}
+                    className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'scale' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
+                    title={t('robot_detail.resize', 'Resize')}
+                  >
+                    <Maximize2 size={16} />
+                  </button>
+                  <div className="w-px h-6 bg-slate-800 self-center mx-1"></div>
+                  <button
+                    onClick={() => {
+                      updateRobot(robot.id, {
+                        cameraView: undefined,
+                        centerCameraTrigger: Date.now()
+                      });
+                    }}
+                    className="p-2 rounded bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-300 backdrop-blur-sm transition-colors"
+                    title={t('robot_detail.center_view', 'Center View')}
+                  >
+                    <Crosshair size={16} />
+                  </button>
+                </div>
 
-            <div className="absolute top-4 right-4 z-50 flex gap-2 pointer-events-auto">
-              <button
-                onClick={() => setIsFullscreen(!isFullscreen)}
-                className="p-2 rounded bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-300 backdrop-blur-sm transition-colors"
-              >
-                {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-              </button>
-            </div>
+                <div className="absolute top-4 right-4 z-50 flex gap-2 pointer-events-auto">
+                  <button
+                    onClick={() => setIsFullscreen(!isFullscreen)}
+                    className="p-2 rounded bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-300 backdrop-blur-sm transition-colors"
+                  >
+                    {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Closed Camera Icons (Bottom Right) */}
             <div className="absolute bottom-4 right-4 z-50 flex gap-2 pointer-events-auto">
@@ -1360,7 +1366,7 @@ console.log("Loading example:", id);
           </div>
         </div>
 
-        {!isFullscreen && (
+        {!isFullscreen && !viewportOnly && (
           <div 
             className="hidden lg:flex w-2 cursor-col-resize hover:bg-slate-700/50 rounded mx-[-12px] z-10 shrink-0 items-center justify-center transition-colors touch-none"
             onPointerDown={(e) => {
@@ -1375,10 +1381,11 @@ console.log("Loading example:", id);
         )}
 
         {/* Right Panel */}
-        <div 
-          className={cn("w-full lg:w-auto flex flex-col shrink-0 min-h-0 gap-2 transition-all duration-75", isFullscreen && "hidden")}
-          style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? rightPanelWidth : '100%' }}
-        >
+        {!viewportOnly && (
+          <div
+            className={cn("w-full lg:w-auto flex flex-col shrink-0 min-h-0 gap-2 transition-all duration-75", isFullscreen && "hidden")}
+            style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? rightPanelWidth : '100%' }}
+          >
           {/* Top Panel: Config, I/O, Points */}
           <div className="flex flex-col bg-slate-950 border border-slate-800 rounded-xl overflow-hidden min-h-0 shrink-0 max-h-[50%]">
             <div className="flex items-center border-b border-slate-800 bg-slate-900 overflow-x-auto custom-scrollbar shrink-0">

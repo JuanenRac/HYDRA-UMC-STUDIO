@@ -492,7 +492,7 @@ export default function Dashboard() {
           <React.Suspense fallback={<PanelLoadingFallback />}>
             <div className={cn("w-full h-full overflow-hidden flex flex-col", !hideUI && "pt-8 px-8 pb-4")}>
                {activeTab === 'overview' && !hideUI && <OverviewPanel />}
-               {activeTab === 'robot' && activeRobot && <RobotDetail key={activeRobot.id} robot={activeRobot} />}
+               {activeTab === 'robot' && activeRobot && <RobotDetail key={activeRobot.id} robot={activeRobot} viewportOnly={hideUI} />}
                {activeTab === 'cameras' && <CamerasView />}
                {activeTab === 'xytable' && <XYTableConfig />}
                {activeTab === 'atctools' && <ATCToolsConfig />}
