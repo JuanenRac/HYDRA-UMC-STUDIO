@@ -45,8 +45,17 @@
     "customModels": [],
     "autoConnectRobots": false,
     "theme": "HYDRA-UMC Studio Fasion",
-    "language": "en",
-    "worksPaths": {},
+    "language": "es",
+    "worksPaths": {
+      "1": "WORKS/RobotA1",
+      "2": "WORKS/RobotA2",
+      "3": "WORKS/RobotA3",
+      "4": "WORKS/RobotA4",
+      "5": "WORKS/RobotA5",
+      "6": "WORKS/RobotA6",
+      "7": "WORKS/RobotA7",
+      "8": "WORKS/RobotA8"
+    },
     "canOta": {
       "transport": "mock",
       "robotControllerBoardMcu": "",
@@ -90,6 +99,7 @@
     "remoteAccess": {
       "enabled": true
     },
+    "serverName": "HYDRA-UMC TEST",
     "gamepadEnabled": false
   },
   "controllers": [
@@ -110,21 +120,21 @@
           "tool": "NEMA Gripper",
           "urtcConnected": true,
           "pos": {
-            "x": 216.47679354856479,
-            "y": 13.67854592517837,
-            "z": 109.99999999999994,
+            "x": 242.6353734755507,
+            "y": 2.103712980612686,
+            "z": 273.3821857081718,
             "a": 0,
             "b": 0,
             "c": 0,
-            "tx": 299.7362139709134,
-            "ty": 255.03333727731354
+            "tx": 343.42077424570067,
+            "ty": 199.9764528669911
           },
           "joints": {
-            "j1": 0.8917041030813929,
-            "j2": 23.15780068483323,
-            "j3": -75,
+            "j1": 0.4858986202961031,
+            "j2": 5.814991938625031,
+            "j3": -50.49267214377423,
             "j4": 0,
-            "j5": 0,
+            "j5": -48.7280833587194,
             "j6": 0
           },
           "valves": [
@@ -1107,11 +1117,16 @@
           "playbackState": {
             "isPlaying": false,
             "activeStep": -1,
-            "speed": 160.69091796875,
+            "speed": 405.3,
             "isLooping": true,
             "isFinished": false,
             "isPaused": false,
-            "acceleration": 725.6372680664062
+            "acceleration": 725.6372680664062,
+            "playing": false,
+            "requestStop": true,
+            "finished": false,
+            "paused": false,
+            "requestPause": false
           },
           "hasXYTable": true,
           "juanenPnP": {
@@ -1152,8 +1167,8 @@
               "length": 500
             },
             "worldPos": {
-              "x": 0,
-              "y": 0
+              "x": -2054.481000651859,
+              "y": 2151.342596877214
             },
             "worldRot": 0,
             "renderScale": 1
@@ -1300,8 +1315,8 @@
           },
           "xyTable": {
             "pos": {
-              "x": 299.7362139709134,
-              "y": 255.03333727731354
+              "x": 343.42077424570067,
+              "y": 199.9764528669911
             },
             "tableSize": {
               "width": 750,
@@ -1316,9 +1331,9 @@
           },
           "cameraView": {
             "position": [
-              1.5644253905839811,
-              1.2427683378051244,
-              -1.1839794201069829
+              2.5679793843940555,
+              2.4144903610774207,
+              -0.14584459403513686
             ],
             "target": [
               0.5944082067437145,
@@ -1351,8 +1366,15 @@
             "type": "revolver",
             "panelGrid": "2x2",
             "revolverSlots": 8,
-            "tools": []
-          }
+            "tools": [],
+            "renderPos": {
+              "x": -1510.243126744627,
+              "y": 176.44729237396666
+            },
+            "renderRot": 0,
+            "renderScale": 1
+          },
+          "visionEnabled": false
         },
         {
           "id": 2,
@@ -1363,9 +1385,9 @@
           "tool": "3D Printing Hotend",
           "urtcConnected": true,
           "pos": {
-            "x": 222.47479548227523,
-            "y": -204.21475629881684,
-            "z": 49.83477101715158,
+            "x": 364.93438621034636,
+            "y": 150,
+            "z": 79.99914356101816,
             "a": 0,
             "b": 0,
             "c": 0,
@@ -1374,9 +1396,9 @@
             "trz": 0
           },
           "joints": {
-            "j1": -199.61598706312242,
-            "j2": 0.08317007654755937,
-            "j3": -0.17133121307567833,
+            "j1": -213.36500276149258,
+            "j2": 8.418664034495746,
+            "j3": -22.46084919777948,
             "j4": 0,
             "j5": 0,
             "j6": 0
@@ -1521,7 +1543,7 @@
           "playbackState": {
             "isPlaying": false,
             "activeStep": -1,
-            "speed": 99.430419921875,
+            "speed": 355.5,
             "isLooping": true,
             "isFinished": true,
             "isPaused": false,
@@ -1701,7 +1723,8 @@
           },
           "selectedExample": "example-7-wave",
           "centerCameraTrigger": 1786961685886,
-          "selectedWorkFile": "escalera_dibujo.json"
+          "selectedWorkFile": "escalera_dibujo.json",
+          "visionEnabled": false
         },
         {
           "id": 3,
@@ -1712,9 +1735,9 @@
           "tool": "AOI (Automated Optical Inspection) System",
           "urtcConnected": true,
           "pos": {
-            "x": 190.21350829610037,
-            "y": 0,
-            "z": 146.11993836974926,
+            "x": 150.0958648255289,
+            "y": 39.86517138508335,
+            "z": 129.0587850521243,
             "a": 0,
             "b": 0,
             "c": 0,
@@ -1723,11 +1746,11 @@
             "trz": 0
           },
           "joints": {
-            "j1": -89.9997792793228,
-            "j2": -19.348569397131847,
-            "j3": 49.966614718415094,
+            "j1": -24.51170612404012,
+            "j2": -26.556879022727976,
+            "j3": 93.26785591538993,
             "j4": 0,
-            "j5": 0,
+            "j5": -14.135050768253839,
             "j6": 0
           },
           "valves": [
@@ -2170,7 +2193,7 @@
           "playbackState": {
             "isPlaying": false,
             "activeStep": -1,
-            "speed": 100,
+            "speed": 374.6,
             "isLooping": true,
             "isFinished": true,
             "isPaused": false
@@ -2326,7 +2349,8 @@
             "expansionBoardType": 0
           },
           "selectedExample": "example-22-bouncing-ball",
-          "centerCameraTrigger": 1786693743796
+          "centerCameraTrigger": 1786693743796,
+          "visionEnabled": false
         },
         {
           "id": 4,
@@ -2346,10 +2370,10 @@
           },
           "joints": {
             "j1": 0,
-            "j2": -45,
-            "j3": 45,
+            "j2": -112.247,
+            "j3": 115.522,
             "j4": 0,
-            "j5": 90,
+            "j5": 47.769,
             "j6": 0
           },
           "valves": [
@@ -2515,7 +2539,8 @@
               "width": 500,
               "length": 500
             }
-          }
+          },
+          "visionEnabled": false
         },
         {
           "id": 5,
@@ -2535,10 +2560,10 @@
           },
           "joints": {
             "j1": 0,
-            "j2": -45,
-            "j3": 45,
+            "j2": -112.247,
+            "j3": 115.522,
             "j4": 0,
-            "j5": 90,
+            "j5": 47.769,
             "j6": 0
           },
           "valves": [
@@ -2704,7 +2729,8 @@
               "width": 500,
               "length": 500
             }
-          }
+          },
+          "visionEnabled": false
         },
         {
           "id": 6,
@@ -2724,10 +2750,10 @@
           },
           "joints": {
             "j1": 0,
-            "j2": -45,
-            "j3": 45,
+            "j2": -112.247,
+            "j3": 115.522,
             "j4": 0,
-            "j5": 90,
+            "j5": 47.769,
             "j6": 0
           },
           "valves": [
@@ -2893,7 +2919,8 @@
               "width": 500,
               "length": 500
             }
-          }
+          },
+          "visionEnabled": false
         },
         {
           "id": 7,
@@ -2913,10 +2940,10 @@
           },
           "joints": {
             "j1": 0,
-            "j2": -45,
-            "j3": 45,
+            "j2": -112.247,
+            "j3": 115.522,
             "j4": 0,
-            "j5": 90,
+            "j5": 47.769,
             "j6": 0
           },
           "valves": [
@@ -3082,7 +3109,8 @@
               "width": 500,
               "length": 500
             }
-          }
+          },
+          "visionEnabled": false
         },
         {
           "id": 8,
@@ -3093,9 +3121,9 @@
           "tool": "None",
           "urtcConnected": false,
           "pos": {
-            "x": 259.3194916055153,
-            "y": 0.9296835870496523,
-            "z": 10.000000000000083,
+            "x": 250.64589156787804,
+            "y": 12.798046727372817,
+            "z": 10.000000000000053,
             "a": 0,
             "b": 0,
             "c": 0,
@@ -3104,11 +3132,11 @@
             "trz": -1.5866574327989225
           },
           "joints": {
-            "j1": 0.23842424612384505,
-            "j2": -69.90355763708989,
-            "j3": -33.73622392998809,
+            "j1": 2.924674466940686,
+            "j2": -92.03138444012967,
+            "j3": 58.690953525016006,
             "j4": 0,
-            "j5": 0,
+            "j5": -26.538894441712703,
             "j6": 0
           },
           "valves": [
@@ -3445,15 +3473,16 @@
             ]
           },
           "renderScale": 1,
-          "centerCameraTrigger": 1786752759574
+          "centerCameraTrigger": 1786752759574,
+          "visionEnabled": false
         }
       ],
       "cameras": [
         {
           "id": 1,
-          "connected": true,
+          "connected": false,
           "type": "USB Vision Camera",
-          "yoloEnabled": true,
+          "yoloEnabled": false,
           "detections": [
             {
               "label": "PCB_PANEL",
@@ -3479,9 +3508,9 @@
         },
         {
           "id": 2,
-          "connected": true,
+          "connected": false,
           "type": "USB Vision Camera",
-          "yoloEnabled": true,
+          "yoloEnabled": false,
           "detections": [
             {
               "label": "PCB_PANEL",
@@ -3507,7 +3536,7 @@
         },
         {
           "id": 3,
-          "connected": true,
+          "connected": false,
           "type": "USB Vision Camera",
           "yoloEnabled": false,
           "detections": [
@@ -3679,6 +3708,13 @@
         "bootloaderVersion": "1.0.0",
         "hardwareId": "KB-000",
         "lastSeen": 1786721946150
+      },
+      "kinematicBrainStage": {
+        "xyTable": {
+          "x": 432.88099329035026,
+          "y1": 96.91248034115733,
+          "y2": 96.91248034115733
+        }
       }
     }
   ],

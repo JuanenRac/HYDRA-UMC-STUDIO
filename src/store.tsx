@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, useRef, useCallback } from 'react';
 
 /**
  * Renders the Unthrottled delay component.
@@ -365,6 +365,7 @@ export interface SystemSettings {
   remoteAccess?: {
     enabled: boolean;
   };
+  serverName?: string;
   uiLayout?: {
     rightPanelWidth?: number;
     pointsTableHeight?: number;
@@ -419,8 +420,8 @@ export const createDefaultRobots = (): RobotState[] => {
     recordedPoints: [],
     playbackState: { isPlaying: false, activeStep: 0, speed: 100, isLooping: false },
     hasXYTable: false,
-    visionEnabled: i < 2,
-    camera: { connected: false, type: 'USB Vision Camera', yoloEnabled: false, detections: [] },
+    visionEnabled: true,
+    camera: { connected: i < 2, type: 'USB Vision Camera', yoloEnabled: false, detections: [] },
 
     juanenPnP: { enabled: false, size: { width: 500, length: 500 }, axisX: 0, axisY: 0, axisZ: 0, nozzle1Rotation: 0, nozzle2Rotation: 0 },
     lumenPnP: { enabled: false, size: { width: 500, length: 500 }, axisX: 0, axisY: 0, axisZ: 0, nozzle1Rotation: 0, nozzle2Rotation: 0 },
@@ -502,6 +503,28 @@ const defaultControllers: HydraController[] = [
   }
 ];
 
+/** Defines the data structure and expected properties for  hydra store context type entities. */
+interface HydraStoreContextType {
+  controllers: HydraController[];
+  activeControllerId: string;
+  activeController: HydraController;
+  setActiveControllerId: (id: string) => void;
+  robots: RobotState[];
+  cameras: CameraState[];
+  settings: SystemSettings;
+  updateController: (id: string, updates: Partial<HydraController>) => void;
+  updateRobot: (id: number, updates: Partial<RobotState>) => void;
+  updateCamera: (id: number, updates: Partial<CameraState>) => void;
+  updateSettings: (updates: Partial<SystemSettings>) => void;
+  addController: (controller: HydraController) => void;
+  removeController: (id: string) => void;
+  saveKinematics: (id: number) => void;
+  loadKinematics: (id: number, e: React.ChangeEvent<HTMLInputElement>) => void;
+  exportScene: () => void;
+  importScene: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  factoryReset: () => void;
+}
+
 /** Stores the  hydra context configuration or state data. */
 const HydraContext = createContext<HydraStoreContextType | null>(null);
 
@@ -538,6 +561,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     remoteAccess: {
       enabled: true,
     },
+    serverName: "HYDRA-UMC TEST",
   });
   const [isLoaded, setIsLoaded] = useState(false);
   // Guards against a feedback loop: the server broadcasts every write to
@@ -550,9 +574,9 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // the last applied/sent payload's own JSON and skipping when the
   // incoming (or outgoing) payload matches it exactly breaks the loop at
   // the source - no state update means no re-render means no re-save.
-  const lastPayloadJsonRef = React.useRef<string | null>(null);
+  const lastPayloadJsonRef = useRef<string | null>(null);
 
-  const applyServerData = React.useCallback((data: any) => {
+  const applyServerData = useCallback((data: any) => {
       if (data && Object.keys(data).length > 0) {
         const dataJson = JSON.stringify(data);
         if (dataJson === lastPayloadJsonRef.current) return;
@@ -612,7 +636,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsLoaded(true);
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
     fetch('/api/settings').then(r => r.json()).then(data => {
       if (!cancelled) applyServerData(data);
@@ -653,7 +677,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, [applyServerData]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isLoaded) return;
     const payload = {
       settings,

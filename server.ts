@@ -106,32 +106,7 @@ async function startServer() {
   app.post("/api/settings", (req, res) => {
     const settingsPath = getSettingsPath();
     try {
-      let payload = req.body;
-
-      // Server-side Kinematics processing
-      // If a robot's Cartesian position was updated, ensure joints are synchronized
-      if (payload.controllers) {
-        payload.controllers.forEach((controller: any) => {
-          if (controller.robots) {
-            controller.robots.forEach((robot: any) => {
-              if (robot.pos) {
-                const calculated = calculateJoints(robot.pos);
-                // Simple sync: if joints are missing or we want to force server-side IK
-                // In a real industrial app, the server would always compute this to be the source of truth
-                robot.joints = {
-                  j1: Number(calculated.j1.toFixed(3)),
-                  j2: Number(calculated.j2.toFixed(3)),
-                  j3: Number(calculated.j3.toFixed(3)),
-                  j4: Number(calculated.j4.toFixed(3)),
-                  j5: Number(calculated.j5.toFixed(3)),
-                  j6: Number(calculated.j6.toFixed(3))
-                };
-              }
-            });
-          }
-        });
-      }
-
+      const payload = req.body;
       fs.writeFileSync(settingsPath, JSON.stringify(payload, null, 2), "utf-8");
       broadcastSettings(payload);
       res.json({ success: true });
@@ -188,6 +163,28 @@ async function startServer() {
             case "tool":
               if (params?.tool) robot.tool = params.tool;
               break;
+            case "valve":
+              if (typeof params?.index === "number" && typeof params?.state === "boolean") {
+                if (!robot.valves) robot.valves = [false, false];
+                robot.valves[params.index] = params.state;
+              }
+              break;
+            case "pump":
+              if (typeof params?.index === "number" && typeof params?.state === "boolean") {
+                if (!robot.pumps) robot.pumps = [false, false];
+                robot.pumps[params.index] = params.state;
+              }
+              break;
+            case "speed":
+              if (typeof params?.speed === "number") {
+                if (!robot.playbackState) robot.playbackState = { isPlaying: false, activeStep: 0, speed: 100 };
+                robot.playbackState.speed = params.speed;
+              }
+              if (typeof params?.acceleration === "number") {
+                if (!robot.playbackState) robot.playbackState = { isPlaying: false, activeStep: 0, speed: 100 };
+                robot.playbackState.acceleration = params.acceleration;
+              }
+              break;
           }
         }
       });
@@ -220,6 +217,16 @@ async function startServer() {
     req.on('close', () => clearInterval(interval));
   });
 
+  // System Metrics API for industrial monitoring
+  app.get("/api/system/metrics", (req, res) => {
+    res.json({
+      cpu_load: Math.round(os.loadavg()[0] * 10), // simplified load
+      memory_usage: Math.round((1 - os.freemem() / os.totalmem()) * 100),
+      temp: 45 + Math.random() * 10, // Mock temperature for now, would read from vcgencmd on CM5
+      uptime: Math.round(process.uptime())
+    });
+  });
+
   // Discovery/identity endpoint - what a remote client (HYDRA-UMC SUITE
   // scanning a subnet for controllers, or one of the mobile control apps)
   // hits first to confirm a given host/IP is actually running HYDRA-UMC
@@ -250,7 +257,7 @@ async function startServer() {
     }
     const s = lastKnownSettings;
     res.json({
-      product: "HYDRA-UMC STUDIO",
+      product: lastKnownSettings.serverName || "HYDRA-UMC STUDIO",
       remoteApiVersion: REMOTE_API_VERSION,
       appVersion: pkgVersion,
       hostname: os.hostname(),
@@ -265,7 +272,14 @@ async function startServer() {
   app.post("/api/upload-work", (req, res) => {
     try {
       const { folderPath, fileName, content } = req.body;
-      const absoluteFolderPath = path.resolve(dataPath, folderPath);
+
+      // Sanitize folderPath to prevent Path Traversal
+      const sanitizedFolderPath = folderPath.replace(/\.\./g, "");
+      const absoluteFolderPath = path.resolve(dataPath, sanitizedFolderPath);
+
+      if (!absoluteFolderPath.startsWith(dataPath)) {
+        return res.status(403).json({ error: "Access denied: Path traversal detected" });
+      }
       
       if (!fs.existsSync(absoluteFolderPath)) {
         fs.mkdirSync(absoluteFolderPath, { recursive: true });

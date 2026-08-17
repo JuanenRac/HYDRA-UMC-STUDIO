@@ -4,26 +4,23 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
-import { useHydraStore, createDefaultRobots, createDefaultCameras } from './store';
+import { useHydraStore, createDefaultRobots, createDefaultCameras, ROBOT_MANUFACTURERS } from './store';
 import { 
   Activity, Crosshair, AlertOctagon, Layers, 
   Video, Focus, Settings, Menu, Plus, Trash2, Search, AlertTriangle, Power
-, Cpu, PenTool, Zap, Wind, Thermometer, RefreshCw, Server, Info, HelpCircle } from 'lucide-react';
+, Cpu, PenTool, Zap, Wind, Thermometer, RefreshCw, Server, Info, HelpCircle, Save, FolderOpen, ChevronDown, ChevronRight, Camera, X, ArrowLeft } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-/**
- * Executes the Cn logic. 
- * This function handles the necessary computations and state updates.
- */
+/** Utility for Tailwind class merging. */
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Suspense fallback for the lazy-loaded panels below - shown only for the brief moment their own chunk is being fetched (typically imperceptible on a warm cache, real on first visit to a given tab). */
+/** Suspense fallback for the lazy-loaded panels below. */
 function PanelLoadingFallback() {
   return (
     <div className="flex-1 flex items-center justify-center text-slate-600 text-sm">
@@ -36,16 +33,7 @@ function PanelLoadingFallback() {
 import { HelpModal } from './components/HelpModal';
 import { slotLabel } from './lib/canOta';
 
-// Lazy-loaded: everything below is only rendered once a specific nav tab is
-// selected (RobotDetail/the module configs also pull in @react-three/fiber
-// + three.js, the single biggest dependency in this app) - splitting these
-// into their own chunks, fetched on demand instead of bundled into the
-// initial JS, is what actually addresses the "chunks larger than 500kB"
-// build warning (code-splitting via dynamic import(), exactly what that
-// warning itself suggests) rather than just raising the size limit to
-// silence it. OverviewPanel (this file's own default landing tab) stays a
-// normal import - it's lightweight and always needed on first paint, so
-// splitting it out would only add a network round-trip for no benefit.
+// Lazy-loaded Panels
 const RobotDetail = React.lazy(() => import('./components/RobotDetail').then(m => ({ default: m.RobotDetail })));
 const CamerasView = React.lazy(() => import('./components/CamerasView').then(m => ({ default: m.CamerasView })));
 const XYTableConfig = React.lazy(() => import('./components/XYTableConfig').then(m => ({ default: m.XYTableConfig })));
@@ -61,13 +49,9 @@ const Flasher = React.lazy(() => import('./components/Flasher').then(m => ({ def
 const Tester = React.lazy(() => import('./components/Tester').then(m => ({ default: m.Tester })));
 const KinematicBrainStage = React.lazy(() => import('./components/KinematicBrainStage').then(m => ({ default: m.KinematicBrainStage })));
 
-/**
- * Executes the  dashboard logic. 
- * This function handles the necessary computations and state updates.
- */
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
-  const { controllers, activeControllerId, setActiveControllerId, activeController, updateController, robots, settings, updateSettings, updateRobot, addController, removeController, exportScene, importScene, factoryReset } = useHydraStore();
+  const { controllers, activeControllerId, setActiveControllerId, activeController, updateController, robots, settings, updateSettings, updateRobot, addController, removeController, factoryReset, cameras, updateCamera } = useHydraStore();
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -77,14 +61,18 @@ export default function Dashboard() {
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
-  const [configTab, setConfigTab] = useState<'controllers' | 'ui' | 'robots' | 'models' | 'integrations' | 'paths' | 'canota' | 'gamepad'>('controllers');
 
+  const [configTab, setConfigTab] = useState<'controllers' | 'ui' | 'robots' | 'models' | 'integrations' | 'paths' | 'canota' | 'gamepad'>('controllers');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isModulesMenuOpen, setIsModulesMenuOpen] = useState(false);
-  const [isUrtcMenuOpen, setIsUrtcMenuOpen] = useState(false);
-  const [isHydraUmcMenuOpen, setIsHydraUmcMenuOpen] = useState(false);
-  
+  const [navStack, setNavStack] = useState<string[]>([]);
+  const currentMenu = navStack[navStack.length - 1] || 'root';
+
+  const hideUI = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).get('hideUI') === 'true';
+  }, []);
 
   const activeRobot = robots.find(r => r.id === selectedRobotId);
 
@@ -95,35 +83,30 @@ export default function Dashboard() {
     }
   }, [settings.theme, settings.language, i18n]);
 
+  useEffect(() => {
+    if (hideUI && activeTab !== 'robot') {
+      setActiveTab('robot');
+    }
+  }, [hideUI]);
+
   return (
     <div className="w-full h-screen bg-slate-950 bg-electric-grid text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
       
-            
-            {isAboutOpen && (
+      {/* About Modal */}
+      {isAboutOpen && (
         <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
           <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[500px] max-w-full overflow-hidden flex flex-col">
             <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
-              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                <Info className="text-sky-400" size={20} /> {t('dashboard.about_title', 'About HYDRA-UMC STUDIO')}
-              </h2>
-              <button onClick={() => setIsAboutOpen(false)} className="text-slate-400 hover:text-slate-200 p-1">
-                &times;
-              </button>
+              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Info className="text-sky-400" size={20} /> About HYDRA-UMC STUDIO</h2>
+              <button onClick={() => setIsAboutOpen(false)} className="text-slate-400 hover:text-slate-200 p-1">&times;</button>
             </div>
             <div className="p-6 space-y-4 text-slate-300 text-sm flex flex-col items-center">
               <img src={HydraIcon} alt="Hydra Logo" className="w-24 h-24 object-contain mb-4" />
-              <h3 className="text-2xl font-bold text-slate-100 uppercase tracking-widest text-center">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span> <span className="text-slate-500 text-lg">v1.0</span></h3>
-              <p className="text-center text-slate-400 max-w-sm">{t('dashboard.about_tagline', 'Advanced Centralized Control Dashboard for Robotics, CNC, 3D Printers, and Laser engravers.')}</p>
-              <p className="text-center text-slate-500 text-xs max-w-md">{t('dashboard.about_description', 'Drive real 6-DOF arms (Parol6, Faze4, AR3, AR4) with accurate mesh geometry and manufacturer joint kinematics, or fall back to a Generic arm - alongside CNC, laser, pick-and-place, vacuum table and XY-table workflows, all from one synchronized dashboard.')}</p>
-
-              <div className="w-full bg-slate-950 p-4 rounded border border-slate-800 mt-6 space-y-2">
-                <div className="flex justify-between border-b border-slate-800/50 pb-2"><span className="text-slate-500 font-bold uppercase tracking-wider">{t('dashboard.about_author', 'Author')}</span><span className="font-medium text-slate-200">JuanenRac (Electro Hobby 3D)</span></div>
-                <div className="flex justify-between border-b border-slate-800/50 py-2"><span className="text-slate-500 font-bold uppercase tracking-wider">{t('dashboard.about_email', 'Email')}</span><span className="font-medium text-sky-400">electrohobby3d@gmail.com</span></div>
-                <div className="flex justify-between pt-2"><span className="text-slate-500 font-bold uppercase tracking-wider">{t('dashboard.about_license', 'License')}</span><span className="font-mono text-emerald-400">GPL-3.0</span></div>
-              </div>
+              <h3 className="text-2xl font-bold text-slate-100 uppercase tracking-widest text-center">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span></h3>
+              <p className="text-center text-slate-400 max-w-sm">{t('dashboard.about_tagline')}</p>
             </div>
             <div className="p-4 border-t border-slate-800 flex justify-end bg-slate-950 shrink-0">
-              <button onClick={() => setIsAboutOpen(false)} className="px-6 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded transition-colors shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400 hover:shadow-[0_0_20px_rgba(0,229,255,0.8)] uppercase">{t('dashboard.close', 'Close')}</button>
+              <button onClick={() => setIsAboutOpen(false)} className="px-6 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded shadow-lg border border-sky-400 uppercase">Close</button>
             </div>
           </div>
         </div>
@@ -131,973 +114,401 @@ export default function Dashboard() {
 
       {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} />}
 
-            {isSettingsOpen && (
+      {/* Full Settings Modal */}
+      {isSettingsOpen && (
         <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[800px] max-w-full overflow-hidden flex flex-col h-[600px]">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[850px] max-w-full overflow-hidden flex flex-col h-[700px]">
             <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
-              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                <Settings className="text-sky-400" size={20} /> System Configuration
-              </h2>
-              <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-slate-200 p-1">
-                &times;
-              </button>
+              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Settings className="text-sky-400" size={20} /> System Configuration</h2>
+              <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-slate-200 p-1">&times;</button>
             </div>
-            
+
             <div className="flex flex-1 overflow-hidden">
-              <div className="w-48 bg-slate-950 border-r border-slate-800 flex flex-col">
-                <button onClick={() => setConfigTab('controllers')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'controllers' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.controllers', 'Controllers')}</button>
-                <button onClick={() => setConfigTab('ui')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'ui' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.ui_themes', 'UI & Themes')}</button>
-                <button onClick={() => setConfigTab('robots')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'robots' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.robot_names', 'Robot Names')}</button>
-                <button onClick={() => setConfigTab('models')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'models' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.custom_models', 'Custom Models')}</button>
-                <button onClick={() => setConfigTab('integrations')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'integrations' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.integrations', 'Integrations')}</button>
-                <button onClick={() => setConfigTab('paths')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'paths' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.paths', 'Work Paths')}</button>
-                <button onClick={() => setConfigTab('canota')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'canota' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>{t('config.can_ota', 'CAN-OTA')}</button>
-                <button onClick={() => setConfigTab('gamepad')} className={cn("px-4 py-3 text-sm font-semibold text-left transition-colors", configTab === 'gamepad' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-400 hover:bg-slate-900')}>Gamepad</button>
-              
+              <div className="w-52 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0">
+                <button onClick={() => setConfigTab('controllers')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'controllers' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Controllers</button>
+                <button onClick={() => setConfigTab('ui')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'ui' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>UI & Themes</button>
+                <button onClick={() => setConfigTab('robots')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'robots' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Robot Names</button>
+                <button onClick={() => setConfigTab('models')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'models' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Models</button>
+                <button onClick={() => setConfigTab('integrations')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'integrations' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Integrations</button>
+                <button onClick={() => setConfigTab('paths')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'paths' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Work Paths</button>
+                <button onClick={() => setConfigTab('canota')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'canota' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>CAN-OTA</button>
+                <button onClick={() => setConfigTab('gamepad')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'gamepad' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Gamepad</button>
                 <div className="mt-auto border-t border-slate-800 p-4">
-                  <button 
-                    onClick={() => {
-                      if (window.confirm(t('config.reset_confirm', 'Are you sure you want to reset all configurations? This cannot be undone.'))) {
-                        localStorage.clear();
-                        window.location.reload();
-                      }
-                    }}
-                    className="w-full px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
-                  >
-                    <RefreshCw size={16} /> {t('config.reset', 'Factory Reset')}
-                  </button>
+                  <button onClick={() => { if (confirm(t('config.reset_confirm'))) factoryReset(); }} className="w-full px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"><RefreshCw size={14} /> Factory Reset</button>
+                </div>
+              </div>
+
+              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-900">
+                <div className="mb-8 p-6 bg-sky-500/5 border border-sky-500/20 rounded-2xl space-y-4 shadow-xl">
+                  <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest flex items-center gap-2"><Server size={18}/> Broadcast Identity</h3>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Public Server Name</label>
+                    <input
+                      value={settings.serverName || "HYDRA-UMC TEST"}
+                      onChange={e => updateSettings({ serverName: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-100 font-bold outline-none focus:border-sky-400 focus:glow-border-sky transition-all"
+                      placeholder="e.g. HYDRA-UMC TEST"
+                    />
+                    <p className="text-[10px] text-slate-600 italic leading-relaxed">This name identifies this workstation during network scans and Bluetooth advertisements. Default is "HYDRA-UMC TEST".</p>
+                  </div>
                 </div>
 
-              </div>
-              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-900">
                 {configTab === 'controllers' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{t('config.controller_management', 'Controller Management (Ethernet/IP)')}</h3>
-                    </div>
-                    <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden">
+                  <div className="space-y-6">
+                    <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden shadow-2xl">
                       <table className="w-full text-left text-sm">
                         <thead className="bg-slate-900 border-b border-slate-800">
-                          <tr>
-                            <th className="px-4 py-2 font-medium text-slate-400">{t('config.name', 'Name')}</th>
-                            <th className="px-4 py-2 font-medium text-slate-400">{t('config.ip_address', 'IP Address')}</th>
-                            <th className="px-4 py-2 font-medium text-slate-400">{t('config.status', 'Status')}</th>
-                            <th className="px-4 py-2 text-right"></th>
-                          </tr>
+                          <tr><th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">Node Name</th><th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">IPv4 Address</th><th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">Status</th><th className="px-4 py-3"></th></tr>
                         </thead>
                         <tbody>
                           {controllers.map(c => (
-                            <tr key={c.id} className="border-b border-slate-800/50 hover:bg-slate-900/50">
-                              <td className="px-4 py-2">
-                                <input
-                                  value={c.name}
-                                  onChange={e => updateController(c.id, { name: e.target.value })}
-                                  className="bg-transparent border-none outline-none text-slate-200 w-full"
-                                />
-                              </td>
-                              <td className="px-4 py-2 flex items-center gap-2">
-    <input
-      value={c.ip}
-      onChange={e => updateController(c.id, { ip: e.target.value })}
-      className="bg-transparent border-none outline-none font-mono text-slate-300 w-full"
-    />
-    <button
-      onClick={() => window.location.href = `http://${c.ip}:${window.location.port}`}
-      className="p-1 hover:bg-slate-700 rounded text-sky-400 transition-colors"
-      title="Connect to Host"
-    >
-      <Power size={14} />
-    </button>
-  </td>
-                              <td className="px-4 py-2">
-                                <select 
-                                  value={c.status}
-                                  onChange={e => updateController(c.id, { status: e.target.value as 'online' | 'offline' })}
-                                  className="bg-transparent border-none outline-none font-semibold w-full"
-                                  style={{ color: c.status === 'online' ? '#34d399' : '#f87171' }}
-                                >
-                                    <option value="online">{t('config.online', 'Online')}</option>
-                                  <option value="offline">{t('config.offline', 'Offline')}</option>
-                                </select>
-                              </td>
-                              <td className="px-4 py-2 text-right">
-                                <button
-                                  onClick={() => removeController(c.id)}
-                                  disabled={controllers.length <= 1}
-                                  className="text-slate-500 hover:text-rose-400 transition-colors disabled:opacity-30 p-1"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              </td>
+                            <tr key={c.id} className="border-b border-slate-800/50 hover:bg-slate-900/50 transition-colors">
+                              <td className="px-4 py-3"><input value={c.name} onChange={e => updateController(c.id, { name: e.target.value })} className="bg-transparent outline-none w-full text-slate-200 font-bold" /></td>
+                              <td className="px-4 py-3"><input value={c.ip} onChange={e => updateController(c.id, { ip: e.target.value })} className="bg-transparent outline-none w-full text-slate-400 font-mono text-xs" /></td>
+                              <td className="px-4 py-3"><span className="px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter" style={{ backgroundColor: c.status === 'online' ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)', color: c.status === 'online' ? '#10b981' : '#f43f5e' }}>{c.status}</span></td>
+                              <td className="px-4 py-3 text-right"><button onClick={() => removeController(c.id)} className="text-slate-600 hover:text-rose-500 transition-colors"><Trash2 size={16}/></button></td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
-                    
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => addController({
-                          id: 'new-' + Date.now(),
-                          name: 'New Controller',
-                          ip: '192.168.1.xxx',
-                          status: 'offline',
-                          fdcanBaudrate: 1000,
-                          fdcanDataBaudrate: 5000,
-                          robots: createDefaultRobots(),
-                          cameras: createDefaultCameras()
-                        })}
-                        className="flex-1 flex items-center gap-2 px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold rounded transition-colors justify-center border border-slate-700"
-                      >
-                        <Plus size={16} /> {t('config.add_node', 'Add Node')}
-                      </button>
-                      <button 
-                        className="flex-1 flex items-center gap-2 px-4 py-2 text-sm bg-sky-900/40 hover:bg-sky-800/60 text-sky-400 font-bold rounded transition-colors justify-center border border-sky-700/50"
-                      >
-                        <Search size={16} /> {t('config.auto_search', 'Auto-Search HYDRA-UMC')}
-                      </button>
-                    </div>
-
-                    <div className="mt-6 space-y-4">
-                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{t('config.advanced_config', 'Advanced Config')}</h3>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('config.fdcan_config', 'FDCAN Config')}</label>
-                          <select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
-                            <option>{t('config.classic_can', 'Classic CAN')}</option>
-                            <option>FDCAN</option>
-                          </select>
-                        </div>
-                        <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('config.canbus_bitrate', 'CANBUS Bitrate')}</label>
-                          <select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
-                            <option>500 kbps</option>
-                            <option>1 Mbps</option>
-                            <option>2 Mbps</option>
-                            <option>5 Mbps</option>
-                          </select>
-                        </div>
-                        <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-2">
-                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('config.telemetry', 'Telemetry')}</label>
-                          <select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
-                            <option>10ms (100Hz)</option>
-                            <option>20ms (50Hz)</option>
-                            <option>50ms (20Hz)</option>
-                            <option>100ms (10Hz)</option>
-                          </select>
-                        </div>
-                        <div className="bg-slate-950 p-4 rounded-lg border border-slate-800 flex flex-col justify-center gap-2">
-                          <button className="w-full py-2 bg-rose-900/40 hover:bg-rose-800/60 text-rose-400 border border-rose-700/50 rounded text-sm font-bold uppercase transition-colors flex items-center justify-center gap-2">
-                            <AlertTriangle size={16} /> {t('config.global_estop', 'Global E-Stop')}
-                          </button>
-                          <button className="w-full py-2 bg-amber-900/40 hover:bg-amber-800/60 text-amber-400 border border-amber-700/50 rounded text-sm font-bold uppercase transition-colors flex items-center justify-center gap-2">
-                            <Power size={16} /> {t('config.reboot_controller', 'Reboot Controller')}
-                          </button>
-                        </div>
-                      </div>
+                    <div className="grid grid-cols-2 gap-4">
+                       <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">FDCAN Protocol</label><select className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"><option>Classic CAN (2.0)</option><option selected>FDCAN (ISO 11898-1)</option></select></div>
+                       <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Data Phase Bitrate</label><select className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"><option>500 kbps</option><option>1 Mbps</option><option selected>2 Mbps</option><option>5 Mbps</option><option>10 Mbps</option></select></div>
                     </div>
                   </div>
                 )}
-                
                 {configTab === 'ui' && (
                   <div className="space-y-6">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">{t('config.theme', 'UI Theme')}</h3>
-                      <select 
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 min-h-[48px] text-sm text-slate-200 outline-none focus:border-sky-400 focus:glow-border-sky"
-                        value={settings.theme}
-                        onChange={(e) => updateSettings({ theme: e.target.value })}
-                      >
-                        <option value="HYDRA-UMC Studio Fasion">HYDRA-UMC Studio Fasion</option>
-                        <option value="Dark Mode (Default)">Dark Mode (Default)</option>
-                        <option value="Light Mode (White)">Light Mode (White)</option>
-                        <option value="Light Gray">Light Gray</option>
-                        <option value="High Contrast">High Contrast</option>
-                        <option value="Cyberpunk">Cyberpunk</option>
-                        <option value="Ocean">Ocean</option>
-                        <option value="Matrix">Matrix</option>
-                        <option value="Sunset">Sunset</option>
-                        <option value="Hacker">Hacker</option>
-                        <option value="Synthwave">Synthwave</option>
-  <option value="Dracula">Dracula</option>
-  <option value="Nord">Nord</option>
-  <option value="Solarized Dark">Solarized Dark</option>
-  <option value="Solarized Light">Solarized Light</option>
-  <option value="Monokai">Monokai</option>
-  <option value="Gruvbox">Gruvbox</option>
-  <option value="Tokyo Night">Tokyo Night</option>
-  <option value="Catppuccin">Catppuccin</option>
-  <option value="Midnight Blue">Midnight Blue</option>
-  <option value="Neon">Neon</option>
-                      </select>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">{t('config.language', 'Language')}</h3>
-                      <select 
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 min-h-[48px] text-sm text-slate-200 outline-none focus:border-sky-400 focus:glow-border-sky"
-                        value={settings.language}
-                        onChange={(e) => {
-                          updateSettings({ language: e.target.value });
-                          i18n.changeLanguage(e.target.value);
-                        }}
-                      >
-                        <option value="en">{t('config.language_en', 'English')}</option>
-                        <option value="es">{t('config.language_es', 'Spanish')}</option>
-                        <option value="de">{t('config.language_de', 'German')}</option>
-                        <option value="fr">{t('config.language_fr', 'French')}</option>
-                        <option value="it">{t('config.language_it', 'Italian')}</option>
-                      </select>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">{t('config.shared_resources', 'Shared Resources Visibility')}</h3>
-                      <div className="grid grid-cols-2 gap-2 bg-slate-950 p-4 rounded-lg border border-slate-800">
-                        {['Vision/Cameras', 'XY Table', 'ATC Tools', 'Rack', 'PickAndPlace', 'CNC', 'Laser', 'Vacuum Table', 'Heated Bed'].map(module => {
-                          const moduleTitleMap: Record<string, string> = {
-                            'Vision/Cameras': t('dashboard.vision_cameras', 'Vision / Cameras'),
-                            'XY Table': t('modules.xy_table_title', 'XY Table'),
-                            'ATC Tools': t('modules.atc_title', 'ATC Tool Changer'),
-                            'Rack': t('modules.rack_manager_title', 'Rack Manager'),
-                            'PickAndPlace': t('modules.pick_and_place_title', 'Pick & Place'),
-                            'CNC': t('modules.cnc_title', 'CNC'),
-                            'Laser': t('modules.laser_title', 'Laser'),
-                            'Vacuum Table': t('modules.vacuum_table_title', 'Vacuum Table'),
-                            'Heated Bed': t('modules.heated_bed_title', 'Heated Bed'),
-                          };
-                          
-                          return (
-                          <label key={module} className="flex items-center gap-3">
-                            <input 
-                              type="checkbox" 
-                              checked={settings.visibleModules.includes(module)}
-                              onChange={(e) => {
-                                let newModules = [...settings.visibleModules];
-                                if (e.target.checked) newModules.push(module);
-                                else newModules = newModules.filter(m => m !== module);
-                                updateSettings({ visibleModules: newModules });
-                              }}
-                              disabled={module === 'Vision/Cameras'}
-                              className="w-4 h-4 rounded border-slate-700 text-sky-500 focus:ring-sky-500 bg-slate-900"
-                            />
-                            <span className="text-sm text-slate-300 truncate" title={moduleTitleMap[module]}>{moduleTitleMap[module]} {module === 'Vision/Cameras' && t('config.vision_required', '(Required)')}</span>
-                          </label>
-                        )})}
-                      </div>
-                    </div>
+                    <div className="space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Visual Environment Theme</label><select value={settings.theme} onChange={e => updateSettings({ theme: e.target.value })} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-sky-400 transition-all"><option value="HYDRA-UMC Studio Fasion">HYDRA-UMC Studio Fasion</option><option value="Dark Mode (Default)">Dark Mode (Default)</option><option value="Matrix">Matrix Terminal</option><option value="Cyberpunk">Cyberpunk Neon</option><option value="Midnight Blue">Midnight Blue</option></select></div>
+                    <div className="space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">System Localization</label><select value={settings.language} onChange={e => { updateSettings({ language: e.target.value }); i18n.changeLanguage(e.target.value); }} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-sky-500 transition-all"><option value="en">English (US)</option><option value="es">Español (ES)</option><option value="de">Deutsch (DE)</option><option value="fr">Français (FR)</option><option value="it">Italiano (IT)</option></select></div>
                   </div>
                 )}
-
                 {configTab === 'robots' && (
                   <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{t('config.rename_robots', 'Rename Robots')}</h3>
-                    <div className="space-y-2">
+                    <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest border-b border-slate-800 pb-2 mb-4">Rename Swarm Robots</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {activeController.robots.map(r => (
-                        <div key={r.id} className="flex items-center gap-3 bg-slate-950 p-3 rounded-lg border border-slate-800">
-                          <span className="text-slate-400 font-mono text-xs w-8">#{r.id}</span>
-                          <input 
-                            value={r.name}
-                            onChange={(e) => updateRobot(r.id, { name: e.target.value })}
-                            className="bg-transparent border-none outline-none text-slate-200 flex-1 text-sm font-semibold"
-                            placeholder={t('config.robot_name_placeholder', 'Robot Name')}
-                          />
+                        <div key={r.id} className="flex items-center gap-3 bg-slate-950 p-4 rounded-xl border border-slate-800 shadow-inner">
+                          <span className="text-sky-500 font-mono text-xs font-bold w-8">#{r.id}</span>
+                          <input value={r.name} onChange={(e) => updateRobot(r.id, { name: e.target.value })} className="bg-transparent border-none outline-none text-slate-100 flex-1 text-sm font-bold" placeholder="Robot Name" />
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
-                
-                {configTab === 'models' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{t('config.custom_models', 'Custom Models')}</h3>
-                    </div>
-                    <div className="space-y-2">
-                      {settings.customModels.map((model, idx) => (
-                        <div key={idx} className="flex items-center gap-3 bg-slate-950 p-3 rounded-lg border border-slate-800">
-                          <input 
-                            value={model}
-                            onChange={(e) => {
-                              const newModels = [...settings.customModels];
-                              newModels[idx] = e.target.value;
-                              updateSettings({ customModels: newModels });
-                            }}
-                            className="bg-transparent border-none outline-none text-slate-200 flex-1 text-sm font-semibold"
-                            placeholder={t('config.model_name_placeholder', 'Model Name')}
-                          />
-                          <button 
-                            onClick={() => {
-                              const newModels = settings.customModels.filter((_, i) => i !== idx);
-                              updateSettings({ customModels: newModels });
-                            }}
-                            className="text-slate-500 hover:text-rose-400"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      ))}
-                      <button 
-                        onClick={() => updateSettings({ customModels: [...settings.customModels, 'New Custom Model'] })}
-                        className="flex items-center gap-2 px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold rounded transition-colors w-full justify-center border border-slate-700"
-                      >
-                        <Plus size={16} /> {t('config.add_custom_model', 'Add Custom Model')}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
                 {configTab === 'integrations' && (
-                  <div className="space-y-6">
-                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{t('config.software_integrations', 'Software Integrations')}</h3>
-                    
-                    {/* OpenPNP */}
-                    <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="font-bold text-sky-400">OpenPNP (Pick & Place)</span>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" checked={settings.integrations?.openPnP?.enabled} 
-                            onChange={(e) => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, enabled: e.target.checked } } })}
-                            className="rounded bg-slate-900 border-slate-700 text-sky-500 focus:ring-sky-500" />
-                          {t('config.enabled', 'Enabled')}
-                        </label>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <input placeholder={t('config.ip_address', 'IP Address')} value={settings.integrations?.openPnP?.ip} 
-                          onChange={(e) => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, ip: e.target.value } } })}
-                          className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-sky-500 text-slate-200" />
-                        <input placeholder={t('config.port', 'Port')} type="number" value={settings.integrations?.openPnP?.port} 
-                          onChange={(e) => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, port: parseInt(e.target.value) } } })}
-                          className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-sky-500 text-slate-200" />
-                      </div>
+                  <div className="space-y-8">
+                    <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-4 shadow-2xl">
+                      <div className="flex justify-between items-center border-b border-slate-800 pb-2"><span className="font-bold text-sky-400 uppercase tracking-widest text-xs">OpenPNP (Vision / Assembly)</span><input type="checkbox" checked={settings.integrations?.openPnP?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-sky-500" /></div>
+                      <div className="grid grid-cols-2 gap-6 pt-2"><div className="space-y-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Server IP</label><input value={settings.integrations?.openPnP?.ip} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, ip: e.target.value } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" /></div><div className="space-y-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Port</label><input type="number" value={settings.integrations?.openPnP?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" /></div></div>
                     </div>
-
-                    {/* Slic3r / PrusaSlicer */}
-                    <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="font-bold text-orange-400">PrusaSlicer / Slic3r (3D Print)</span>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" checked={settings.integrations?.prusaSlicer?.enabled} 
-                            onChange={(e) => updateSettings({ integrations: { ...settings.integrations, prusaSlicer: { ...settings.integrations?.prusaSlicer, enabled: e.target.checked } } })}
-                            className="rounded bg-slate-900 border-slate-700 text-orange-500 focus:ring-orange-500" />
-                          {t('config.enabled', 'Enabled')}
-                        </label>
-                      </div>
-
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <input placeholder={t('config.ip_address', 'IP Address')} value={settings.integrations?.prusaSlicer?.ip} 
-                          onChange={(e) => updateSettings({ integrations: { ...settings.integrations, prusaSlicer: { ...settings.integrations?.prusaSlicer, ip: e.target.value } } })}
-                          className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-orange-500 text-slate-200" />
-                        <input placeholder={t('config.port', 'Port')} type="number" value={settings.integrations?.prusaSlicer?.port} 
-                          onChange={(e) => updateSettings({ integrations: { ...settings.integrations, prusaSlicer: { ...settings.integrations?.prusaSlicer, port: parseInt(e.target.value) } } })}
-                          className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-orange-500 text-slate-200" />
-                      </div>
+                    <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-4 shadow-2xl">
+                       <div className="flex justify-between items-center border-b border-slate-800 pb-2"><span className="font-bold text-fuchsia-400 uppercase tracking-widest text-xs">CNC Control Integration</span><input type="checkbox" checked={settings.integrations?.cnc?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-fuchsia-500" /></div>
+                       <div className="grid grid-cols-2 gap-6 pt-2"><div className="space-y-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Software Backend</label><select className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" value={settings.integrations?.cnc?.software} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, software: e.target.value } } })}><option value="LinuxCNC">LinuxCNC (Standard)</option><option value="Mach3">Mach3 (Legacy)</option><option value="GRBL">GRBL (Basic)</option></select></div><div className="space-y-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Control Port</label><input type="number" value={settings.integrations?.cnc?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" /></div></div>
                     </div>
-
-                    {/* CNC / Laser */}
-                    <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="font-bold text-rose-400">CNC / Laser Software</span>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" checked={settings.integrations?.cnc?.enabled} 
-                            onChange={(e) => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, enabled: e.target.checked } } })}
-                            className="rounded bg-slate-900 border-slate-700 text-rose-500 focus:ring-rose-500" />
-                          {t('config.enabled', 'Enabled')}
-                        </label>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <select 
-                          value={settings.integrations?.cnc?.software}
-                          onChange={(e) => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, software: e.target.value } } })}
-                          className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-rose-500 text-slate-200"
-                        >
-                          <option value="LinuxCNC">LinuxCNC</option>
-                          <option value="Mach3">Mach3</option>
-                          <option value="LightBurn">LightBurn</option>
-                          <option value="LaserGRBL">LaserGRBL</option>
-                        </select>
-                        <input placeholder={t('config.port', 'Port')} type="number" value={settings.integrations?.cnc?.port}
-                          onChange={(e) => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, port: parseInt(e.target.value) } } })}
-                          className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm outline-none focus:border-rose-500 text-slate-200" />
-                      </div>
+                    <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-4 shadow-2xl">
+                       <div className="flex justify-between items-center border-b border-slate-800 pb-2"><span className="font-bold text-rose-500 uppercase tracking-widest text-xs">Laser Engraving Backend</span><input type="checkbox" checked={settings.integrations?.laser?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-rose-500" /></div>
+                       <div className="grid grid-cols-2 gap-6 pt-2"><div className="space-y-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Laser Protocol</label><select className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" value={settings.integrations?.laser?.software} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, software: e.target.value } } })}><option value="LightBurn">LightBurn (DSP)</option><option value="LaserGRBL">LaserGRBL (Serial)</option></select></div><div className="space-y-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Comm Port</label><input type="number" value={settings.integrations?.laser?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" /></div></div>
                     </div>
-
-                    {/* Remote App Access - HYDRA-UMC SUITE + mobile control apps */}
                     <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="font-bold text-emerald-400">{t('config.remote_access', 'Remote App Access (SUITE, iOS/Android)')}</span>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" checked={settings.remoteAccess?.enabled ?? true}
-                            onChange={(e) => updateSettings({ remoteAccess: { enabled: e.target.checked } })}
-                            className="rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-emerald-500" />
-                          {t('config.enabled', 'Enabled')}
-                        </label>
-                      </div>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        {t('config.remote_access_desc', "Controls whether HYDRA-UMC SUITE's own network scan and the mobile control apps' own discovery can find and identify this server. Doesn't affect this browser tab's own connection. Disabling it doesn't password-protect the API - anyone who already knows this server's IP can still reach it directly - it only stops a remote app's own 'find servers on my network' scan from seeing it.")}
-                      </p>
+                        <div className="flex items-center justify-between mb-3"><span className="font-bold text-emerald-400">Remote App Access</span><input type="checkbox" checked={settings.remoteAccess?.enabled ?? true} onChange={(e) => updateSettings({ remoteAccess: { enabled: e.target.checked } })} /></div>
+                        <p className="text-[10px] text-slate-500 leading-tight">Control if Android/iOS apps can discover this server.</p>
                     </div>
-
                   </div>
                 )}
                 {configTab === 'paths' && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                      <h3 className="text-lg font-bold text-slate-200 tracking-wider flex items-center gap-2">
-                        {t('config.work_paths', 'Work Directories for Points')}
-                      </h3>
-                    </div>
-                    <div className="bg-sky-900/20 border border-sky-800/50 rounded-lg p-4 mb-4">
-                      <p className="text-sm text-sky-200/80 leading-relaxed">
-                        {t('config.work_paths_desc', 'Define virtual paths for each robot. Note: as a web app in Firefox, downloads will still go to your default Downloads folder, but the filename will include this prefix.')}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      {activeController.robots.map(r => (
-                        <div key={r.id} className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800 shadow-sm hover:border-slate-700 transition-colors">
-                          <label className="text-xs text-slate-400 font-bold uppercase tracking-wider flex justify-between">
-                            <span>{r.name}</span>
-                            <span className="text-slate-600 font-mono">[{r.role}]</span>
-                          </label>
-                          <input 
-                            value={settings.worksPaths?.[r.id] || `WORKS/${r.name.replace(/\s+/g, '')}`}
-                            onChange={(e) => updateSettings({ worksPaths: { ...(settings.worksPaths || {}), [r.id]: e.target.value } })}
-                            className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 focus:glow-border-sky w-full font-mono transition-all"
-                            placeholder="WORKS/RobotName"
-                          />
-                        </div>
-                      ))}
-                    </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    {activeController.robots.map(r => (
+                      <div key={r.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col gap-2 shadow-inner">
+                        <div className="flex justify-between items-center"><label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{r.name}</label><span className="text-[9px] text-slate-700 font-mono italic">NODE_REF_A{r.id}</span></div>
+                        <div className="flex items-center gap-2"><div className="p-2 bg-slate-900 border border-slate-800 rounded text-slate-600"><FolderOpen size={16}/></div><input value={settings.worksPaths?.[r.id] || ""} onChange={e => updateSettings({ worksPaths: { ...(settings.worksPaths || {}), [r.id]: e.target.value } })} className="flex-1 bg-slate-900 border border-slate-800 rounded p-2 text-xs text-sky-400 font-mono outline-none focus:border-sky-500" placeholder={`WORKS/${r.name.replace(/\s+/g,'')}`} /></div>
+                      </div>
+                    ))}
                   </div>
                 )}
-                {configTab === 'canota' && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                      <h3 className="text-lg font-bold text-slate-200 tracking-wider">{t('config.can_ota', 'CAN-OTA')}</h3>
-                    </div>
-                    <div className="bg-sky-900/20 border border-sky-800/50 rounded-lg p-4">
-                      <p className="text-sm text-sky-200/80 leading-relaxed">
-                        {t('config.can_ota_desc', 'Settings shared by BOTH Flasher/Tester pairs in this dashboard: Shared Resources → URTC (Tool Head + its Advanced Expansion Board only) and Shared Resources → HYDRA-UMC (Kinematic Brain + Robot Controller Board only - split out from URTC\'s own menu, which used to incorrectly include them). Same underlying transport for the full chain: CM5 -> SPI -> STM32H745 -> FDCAN1 -> Robot Controller Board -> CAN -> URTC Tool Head -> I2C -> Advanced Expansion Board. See HYDRA-UMC\'s own docs/architecture.md, docs/CANBUS_STM32H745.TXT and docs/CANBUS_STM32G474.TXT for the full wire-level protocol.')}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
-                      <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('config.can_ota_transport', 'Transport')}</label>
-                      <select
-                        value={settings.canOta?.transport || 'mock'}
-                        onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), transport: e.target.value as 'mock' | 'hardware' } })}
-                        className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full max-w-sm"
-                      >
-                        <option value="mock">{t('config.can_ota_transport_mock', 'Simulated (mock) - no hardware needed')}</option>
-                        <option value="hardware">{t('config.can_ota_transport_hardware', 'Real hardware (SPI to STM32H745) - not implemented yet')}</option>
-                      </select>
-                      <p className="text-xs text-slate-500 mt-1">{t('config.can_ota_transport_desc', 'Mock simulates the whole CAN-OTA protocol so Flasher/Tester are fully usable now. Switch to hardware once CM5<->STM32H745 firmware exists to talk to.')}</p>
-                    </div>
-
-                    <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
-                      <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('config.can_ota_mcu', 'Robot Controller Board MCU')}</label>
-                      <input
-                        value={settings.canOta?.robotControllerBoardMcu || 'STM32G474RET6'}
-                        onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), robotControllerBoardMcu: e.target.value } })}
-                        placeholder="STM32G474RET6"
-                        className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full max-w-sm font-mono"
-                      />
-                      <p className="text-xs text-slate-500 mt-1">{t('config.can_ota_mcu_desc', 'CONFIRMED: STM32G474RET6, LQFP-64, 512KB flash, 3x FDCAN (2 in use) - see docs/PINOUT_STM32G474_ROBOT_CONTROLLER.TXT and docs/CANBUS_STM32G474.TXT. Editable here only in case a future board revision changes it.')}</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
-                        <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('flasher.target_kinematic_brain')}</label>
-                        <input
-                          value={settings.canOta?.firmwarePaths?.kinematicBrain || 'FIRMWARE/KinematicBrain'}
-                          onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), firmwarePaths: { ...(settings.canOta?.firmwarePaths || {}), kinematicBrain: e.target.value } } })}
-                          className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full font-mono"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
-                        <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('flasher.target_controller_board')}</label>
-                        <input
-                          value={settings.canOta?.firmwarePaths?.controllerBoard || 'FIRMWARE/ControllerBoard'}
-                          onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), firmwarePaths: { ...(settings.canOta?.firmwarePaths || {}), controllerBoard: e.target.value } } })}
-                          className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full font-mono"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
-                        <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('flasher.target_urtc_head')}</label>
-                        <input
-                          value={settings.canOta?.firmwarePaths?.urtcHead || 'FIRMWARE/URTCHead'}
-                          onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), firmwarePaths: { ...(settings.canOta?.firmwarePaths || {}), urtcHead: e.target.value } } })}
-                          className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full font-mono"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
-                        <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('flasher.target_urtc_expansion')}</label>
-                        <input
-                          value={settings.canOta?.firmwarePaths?.urtcExpansion || 'FIRMWARE/URTCExpansion'}
-                          onChange={(e) => updateSettings({ canOta: { ...(settings.canOta || { transport: 'mock' }), firmwarePaths: { ...(settings.canOta?.firmwarePaths || {}), urtcExpansion: e.target.value } } })}
-                          className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-sky-500 w-full font-mono"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {configTab === 'gamepad' && (
-                  <React.Suspense fallback={<PanelLoadingFallback />}>
-                    <GamepadConfig />
-                  </React.Suspense>
-                )}
+                {configTab === 'gamepad' && <React.Suspense fallback={<PanelLoadingFallback />}><GamepadConfig /></React.Suspense>}
               </div>
             </div>
 
-            <div className="p-4 border-t border-slate-800 flex justify-between gap-3 bg-slate-950 shrink-0">
-              <button 
-                onClick={() => {
-                  if (confirm(t('config.confirm_reset', 'Are you sure you want to restore all settings and scenes to factory defaults? This cannot be undone.'))) {
-                    factoryReset();
-                  }
-                }} 
-                className="px-4 py-2 text-sm bg-rose-950 text-rose-400 font-bold rounded transition-colors border border-rose-800 hover:bg-rose-900"
-              >
-                {t('config.factory_reset_upper', 'FACTORY RESET')}
-              </button>
-              <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded transition-colors shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400 hover:shadow-[0_0_20px_rgba(0,229,255,0.8)]">{t('config.done', 'DONE')}</button>
+            <div className="p-4 border-t border-slate-800 flex justify-end bg-slate-950 shrink-0">
+              <button onClick={() => setIsSettingsOpen(false)} className="px-10 py-2.5 text-sm bg-sky-500 text-slate-950 font-black rounded uppercase">Done</button>
             </div>
           </div>
         </div>
       )}
-{/* Header - larger for touch */}
-      <header className="h-16 shrink-0 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 z-20">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            aria-label={isSidebarOpen ? t('dashboard.collapse_sidebar', 'Collapse sidebar') : t('dashboard.expand_sidebar', 'Expand sidebar')}
-            aria-expanded={isSidebarOpen}
-            className="p-2 -ml-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
-          >
-            <Menu size={24} />
-          </button>
-          <img src={HydraIcon} alt="Hydra Logo" className="w-8 h-8 object-contain" />
-          <h1 className="text-2xl font-bold tracking-wider text-slate-100">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span></h1>
-        </div>
-        <div className="flex items-center gap-6 text-base font-medium">
-          
-          <button 
-            onClick={() => setIsSettingsOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 transition-colors"
-          >
-            <Settings size={18} />
-            <span className="text-sm">{t('dashboard.configure', 'Config')}</span>
-          </button>
 
-          <button
-            onClick={() => setIsHelpOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 transition-colors"
-          >
-            <HelpCircle size={18} />
-            <span className="text-sm">{t('dashboard.help', 'Help')}</span>
-          </button>
-          <button 
-            onClick={() => setIsAboutOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all border border-slate-700 text-slate-300 transition-colors"
-          >
-            <Info size={18} />
-            <span className="text-sm">{t('dashboard.about', 'About')}</span>
-          </button>
+      {/* Header */}
+      {!hideUI && (
+        <header className="h-16 shrink-0 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 z-20 shadow-xl relative">
           <div className="flex items-center gap-3">
-            <span className={cn("w-4 h-4 rounded-full animate-pulse", activeController?.status === 'online' ? "bg-emerald-500 shadow-[0_0_10px_rgba(0,255,102,0.5)]" : "bg-rose-500 shadow-[0_0_10px_rgba(255,102,0,0.5)]")} />
-            <span className={cn("tracking-wide font-bold", activeController?.status === 'online' ? "text-emerald-400" : "text-rose-400")}>{activeController?.status === 'online' ? t('dashboard.status.connected', 'System Online') : t('dashboard.status.disconnected', 'System Offline')}</span>
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 -ml-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"><Menu size={24} /></button>
+            <img src={HydraIcon} alt="Hydra Logo" className="w-8 h-8 object-contain" />
+            <h1 className="text-2xl font-bold tracking-wider text-slate-100">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span></h1>
           </div>
-          <select
-            value={activeControllerId}
-            onChange={(e) => {
-              setActiveControllerId(e.target.value);
-              setSelectedRobotId(1); // Reset selected robot
-              setActiveTab('overview');
-            }}
-            aria-label={t('dashboard.active_controller', 'Active controller')}
-            className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 font-mono text-slate-200 outline-none focus:border-sky-400 focus:glow-border-sky transition-all appearance-none cursor-pointer"
-          >
-            {controllers.map(c => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.ip})
-              </option>
-            ))}
-          </select>
-        </div>
-      </header>
+          <div className="flex items-center gap-4">
+            <IconButton onClick={() => setIsSettingsOpen(true)} icon={<Settings size={18}/>} label="Config" />
+            <IconButton onClick={() => setIsHelpOpen(true)} icon={<HelpCircle size={18}/>} label="Help" />
+            <IconButton onClick={() => setIsAboutOpen(true)} icon={<Info size={18}/>} label="About" />
+            <div className="w-px h-6 bg-slate-800 mx-2"></div>
+            <div className="flex items-center gap-3">
+              <span className={cn("w-4 h-4 rounded-full animate-pulse", activeController?.status === 'online' ? "bg-emerald-500 shadow-[0_0_10px_#10b981]" : "bg-rose-500 shadow-[0_0_10px_#f43f5e]")} />
+              <span className={cn("tracking-widest font-bold text-xs uppercase", activeController?.status === 'online' ? "text-emerald-400" : "text-rose-400")}>{activeController?.status === 'online' ? 'System Online' : 'System Offline'}</span>
+            </div>
+            <select value={activeControllerId} onChange={(e) => setActiveControllerId(e.target.value)} className="ml-4 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 font-mono text-xs font-bold text-sky-400 outline-none appearance-none cursor-pointer hover:border-sky-500 transition-all shadow-inner">
+              {controllers.map(c => <option key={c.id} value={c.id}>{c.name} ({c.ip})</option>)}
+            </select>
+          </div>
+        </header>
+      )}
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar Nav - larger targets for 10" touch */}
-        <nav className={cn(
-          "shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col gap-3 z-10 overflow-y-auto custom-scrollbar transition-all duration-300 ease-in-out relative",
-          isSidebarOpen ? "w-64 p-4 opacity-100" : "w-0 p-0 opacity-0 overflow-hidden border-none"
-        )}>
-          {isModulesMenuOpen ? (
-            <div className="flex flex-col gap-3 h-full animate-in slide-in-from-right-4 fade-in duration-300">
-              <button 
-                onClick={() => setIsModulesMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-slate-400 hover:text-slate-200 transition-colors uppercase tracking-wider mb-2"
-              >
-                ← {t('dashboard.back', 'Back')}
-              </button>
-              
-              <div className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                {t('dashboard.modules', 'Modules')}
-              </div>
-              
-              {settings.visibleModules?.includes('XY Table') && (
-                <NavItem icon={<Crosshair size={18} />} label={t('modules.xy_table_title', 'XY Table')} active={activeTab === 'xytable'} onClick={() => setActiveTab('xytable')} />
-              )}
-              {settings.visibleModules?.includes('ATC Tools') && (
-                <NavItem icon={<Focus size={18} />} label={t('modules.atc_title', 'ATC Tools')} active={activeTab === 'atc'} onClick={() => setActiveTab('atc')} />
-              )}
-              {settings.visibleModules?.includes('Rack') && (
-                <NavItem icon={<Layers size={18} />} label={t('modules.rack_manager_title', 'Rack')} active={activeTab === 'rack'} onClick={() => setActiveTab('rack')} />
-              )}
-              {settings.visibleModules?.includes('PickAndPlace') && (
-                <NavItem icon={<Cpu size={18} />} label={t('modules.pick_and_place_title', 'Pick & Place')} active={activeTab === 'pickandplace'} onClick={() => setActiveTab('pickandplace')} />
-              )}
-              {settings.visibleModules?.includes('CNC') && (
-                <NavItem icon={<PenTool size={18} />} label={t('modules.cnc_title', 'CNC')} active={activeTab === 'cnc'} onClick={() => setActiveTab('cnc')} />
-              )}
-              {settings.visibleModules?.includes('Laser') && (
-                <NavItem icon={<Zap size={18} />} label={t('modules.laser_title', 'Laser')} active={activeTab === 'laser'} onClick={() => setActiveTab('laser')} />
-              )}
-              {settings.visibleModules?.includes('Vacuum Table') && (
-                <NavItem icon={<Wind size={18} />} label={t('modules.vacuum_table_title', 'Vacuum Table')} active={activeTab === 'vacuumtable'} onClick={() => setActiveTab('vacuumtable')} />
-              )}
-              {settings.visibleModules?.includes('Heated Bed') && (
-                <NavItem icon={<Thermometer size={18} />} label={t('modules.heated_bed_title', 'Heated Bed')} active={activeTab === 'heatedbed'} onClick={() => setActiveTab('heatedbed')} />
-              )}
-            </div>
-          ) : isUrtcMenuOpen ? (
-            <div className="flex flex-col gap-3 h-full animate-in slide-in-from-right-4 fade-in duration-300">
-              <button
-                onClick={() => setIsUrtcMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-slate-400 hover:text-slate-200 transition-colors uppercase tracking-wider mb-2"
-              >
-                ← {t('dashboard.back', 'Back')}
-              </button>
+        {/* Sidebar Nav */}
+        {!hideUI && (
+          <nav className={cn("shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col gap-1 z-10 transition-all duration-300", isSidebarOpen ? "w-64 p-4" : "w-0 p-0 opacity-0 overflow-hidden border-none")}>
 
-              <div className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                URTC
-              </div>
+             {currentMenu === 'root' && (
+               <div className="flex flex-col h-full animate-in slide-in-from-left-4 duration-300 overflow-hidden">
+                  <NavItem icon={<Activity size={18} />} label="OVERVIEW" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
 
-              <NavItem icon={<Cpu size={18} />} label="Flasher" active={activeTab === 'flasher'} onClick={() => setActiveTab('flasher')} />
-              <NavItem icon={<Activity size={18} />} label="Tester" active={activeTab === 'tester'} onClick={() => setActiveTab('tester')} />
-            </div>
-          ) : isHydraUmcMenuOpen ? (
-            <div className="flex flex-col gap-3 h-full animate-in slide-in-from-right-4 fade-in duration-300">
-              <button
-                onClick={() => setIsHydraUmcMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-slate-400 hover:text-slate-200 transition-colors uppercase tracking-wider mb-2"
-              >
-                ← {t('dashboard.back', 'Back')}
-              </button>
+                  <div className="mt-6 mb-2 px-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1 shrink-0">Networked Robots</div>
 
-              <div className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                HYDRA-UMC
-              </div>
-
-              <NavItem icon={<Cpu size={18} />} label="Flasher" active={activeTab === 'hydraFlasher'} onClick={() => setActiveTab('hydraFlasher')} />
-              <NavItem icon={<Activity size={18} />} label="Tester" active={activeTab === 'hydraTester'} onClick={() => setActiveTab('hydraTester')} />
-              <NavItem icon={<Crosshair size={18} />} label={t('dashboard.kinematic_brain_stage', 'Kinematic Brain Stage')} active={activeTab === 'kinematicBrainStage'} onClick={() => setActiveTab('kinematicBrainStage')} />
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3 h-full animate-in slide-in-from-left-4 fade-in duration-300">
-              <NavItem 
-                icon={<Activity size={18} />} 
-                label={t('dashboard.overview', 'Overview')} 
-                active={activeTab === 'overview'} 
-                onClick={() => setActiveTab('overview')} 
-              />
-              <div className="mt-3 mb-1 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                {t('dashboard.networked_robots', 'Networked Robots')}
-              </div>
-              {robots.map(r => (
-                <button
-                  key={r.id}
-                  onClick={() => {
-                    setSelectedRobotId(r.id);
-                    setActiveTab('robot');
-                  }}
-                  className={cn(
-                    "flex items-center justify-between px-3 py-3 min-h-[50px] rounded-lg text-sm transition-all text-left",
-                    activeTab === 'robot' && selectedRobotId === r.id
-                      ? "bg-sky-500/10 text-sky-400 glow-border-sky"
-                      : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
-                  )}
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className={cn("w-2 h-2 rounded-full shrink-0", r.online ? "bg-emerald-500" : "bg-slate-700")} />
-                    <span className="truncate font-medium">{r.name}</span>
+                  <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 flex flex-col gap-1 min-h-0">
+                    {robots.map(r => (
+                      <button key={r.id} onClick={() => { setSelectedRobotId(r.id); setActiveTab('robot'); }} className={cn("flex items-center justify-between px-3 py-3 rounded-xl text-sm transition-all group shrink-0", activeTab === 'robot' && selectedRobotId === r.id ? "bg-sky-500/10 text-sky-400 border border-sky-500/30 shadow-2xl" : "text-slate-400 hover:bg-slate-800 hover:text-slate-200")}>
+                        <div className="flex items-center gap-3 truncate">
+                          <div className={cn("w-2 h-2 rounded-full shrink-0 shadow-[0_0_5px_currentColor]", r.online ? "bg-emerald-500" : "bg-slate-700")} />
+                          <span className="font-bold tracking-tight">{r.name}</span>
+                        </div>
+                        <span className="text-[8px] uppercase font-black opacity-30">{r.model.split(" ")[0]}</span>
+                      </button>
+                    ))}
                   </div>
-                  <span className="text-[10px] uppercase font-mono opacity-60 shrink-0 ml-1">{r.model}</span>
-                </button>
-              ))}
-              
-              <div className="mt-3 mb-1 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                {t('dashboard.shared_resources', 'Shared Resources')}
-              </div>
-              
-              {settings.visibleModules?.includes('Vision/Cameras') && (
-                <NavItem 
-                  icon={<Video size={18} />} 
-                  label={t('dashboard.vision_cameras', 'Vision / Cameras')} 
-                  active={activeTab === 'cameras'} 
-                  onClick={() => setActiveTab('cameras')} 
-                  className="py-3 min-h-[50px] text-base"
-                />
-              )}
 
-              <button
-                onClick={() => setIsUrtcMenuOpen(true)}
-                className={cn(
-                  "flex items-center gap-4 px-4 py-3 min-h-[50px] rounded-xl font-medium text-base transition-all",
-                  isUrtcMenuOpen || ['flasher', 'tester'].includes(activeTab)
-                    ? "bg-sky-500/10 text-sky-400 glow-border-sky"
-                    : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
-                )}
-              >
-                <Server size={18} />
-                <span className="truncate">URTC</span>
-              </button>
+                  <div className="mt-8 mb-2 px-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1 shrink-0">Resources</div>
+                  <div className="flex flex-col gap-1 pb-4 shrink-0">
+                    <button onClick={() => setNavStack(['industrial'])} className="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-800 transition-all">
+                      <div className="flex items-center gap-4"><Layers size={18} /> Industrial</div>
+                      <ChevronRight size={14} />
+                    </button>
+                    <button onClick={() => setNavStack(['urtc'])} className="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-800 transition-all">
+                      <div className="flex items-center gap-4"><Server size={18} /> URTC</div>
+                      <ChevronRight size={14} />
+                    </button>
+                    <button onClick={() => setNavStack(['hydraumc'])} className="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-800 transition-all">
+                      <div className="flex items-center gap-4"><Cpu size={18} /> HYDRA-UMC</div>
+                      <ChevronRight size={14} />
+                    </button>
+                    <NavItem icon={<Video size={18} />} label="VISION CENTER" active={activeTab === 'cameras'} onClick={() => setActiveTab('cameras')} className="mt-2 font-black text-[10px]" />
+                  </div>
+               </div>
+             )}
 
-              <button
-                onClick={() => setIsHydraUmcMenuOpen(true)}
-                className={cn(
-                  "flex items-center gap-4 px-4 py-3 min-h-[50px] rounded-xl font-medium text-base transition-all",
-                  isHydraUmcMenuOpen || ['hydraFlasher', 'hydraTester', 'kinematicBrainStage'].includes(activeTab)
-                    ? "bg-sky-500/10 text-sky-400 glow-border-sky"
-                    : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
-                )}
-              >
-                <Cpu size={18} />
-                <span className="truncate">HYDRA-UMC</span>
-              </button>
+             {currentMenu === 'industrial' && (
+               <div className="flex flex-col gap-1 animate-in slide-in-from-right-4 duration-300">
+                  <button onClick={() => setNavStack([])} className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-sky-500 uppercase tracking-widest mb-4 hover:text-sky-400 transition-colors"><ArrowLeft size={14}/> Back to Root</button>
+                  {['XY Table', 'ATC Tools', 'Rack', 'PickAndPlace', 'CNC', 'Laser', 'VacuumTable', 'HeatedBed'].map(m => (
+                    <button key={m} onClick={() => setActiveTab(m.toLowerCase().replace(" ",""))} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === m.toLowerCase().replace(" ","") ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{m}</button>
+                  ))}
+               </div>
+             )}
 
-              <button
-                onClick={() => setIsModulesMenuOpen(true)}
-                className={cn(
-                  "flex items-center gap-4 px-4 py-3 min-h-[50px] rounded-xl font-medium text-base transition-all",
-                  isModulesMenuOpen || ['xytable', 'atc', 'rack', 'pickandplace', 'cnc', 'laser', 'vacuumtable', 'heatedbed'].includes(activeTab)
-                    ? "bg-sky-500/10 text-sky-400 glow-border-sky" 
-                    : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent"
-                )}
-              >
-                <Layers size={18} />
-                <span className="truncate">{t('dashboard.modules', 'Modules')}</span>
-              </button>
-            </div>
-          )}
-        </nav>
+             {currentMenu === 'urtc' && (
+               <div className="flex flex-col gap-1 animate-in slide-in-from-right-4 duration-300">
+                  <button onClick={() => setNavStack([])} className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-sky-500 uppercase tracking-widest mb-4 hover:text-sky-400 transition-colors"><ArrowLeft size={14}/> Back to Root</button>
+                  <button onClick={() => setActiveTab('flasher')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'flasher' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Flasher Studio</button>
+                  <button onClick={() => setActiveTab('tester')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'tester' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Tester Center</button>
+               </div>
+             )}
+
+             {currentMenu === 'hydraumc' && (
+               <div className="flex flex-col gap-1 animate-in slide-in-from-right-4 duration-300">
+                  <button onClick={() => setNavStack([])} className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-sky-500 uppercase tracking-widest mb-4 hover:text-sky-400 transition-colors"><ArrowLeft size={14}/> Back to Root</button>
+                  <button onClick={() => setActiveTab('hydraFlasher')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'hydraFlasher' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Firmware Update</button>
+                  <button onClick={() => setActiveTab('hydraTester')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'hydraTester' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Hardware Tester</button>
+                  <button onClick={() => setActiveTab('kinematicBrainStage')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'kinematicBrainStage' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Kinematic Brain</button>
+               </div>
+             )}
+
+          </nav>
+        )}
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-slate-950/80 pt-2 px-2 pb-1 backdrop-blur-sm">
-          {activeTab === 'overview' && <OverviewPanel />}
+        <main className={cn(
+            "flex-1 flex flex-col overflow-hidden backdrop-blur-sm relative transition-all duration-300",
+            hideUI ? "bg-black pt-0 px-0 pb-0" : "bg-slate-950/80 pt-0 px-0 pb-0"
+        )}>
           <React.Suspense fallback={<PanelLoadingFallback />}>
-            {activeTab === 'robot' && activeRobot && <RobotDetail key={activeRobot.id} robot={activeRobot} />}
-            {activeTab === 'cameras' && <CamerasView />}
-            {activeTab === 'flasher' && <Flasher tiers={['urtcHead', 'urtcExpansion']} />}
-            {activeTab === 'tester' && <Tester tiers={['urtcHead', 'urtcExpansion']} />}
-            {activeTab === 'hydraFlasher' && <Flasher tiers={['kinematicBrain', 'controllerBoard']} />}
-            {activeTab === 'hydraTester' && <Tester tiers={['kinematicBrain', 'controllerBoard']} />}
-            {activeTab === 'kinematicBrainStage' && <KinematicBrainStage />}
-            {activeTab === 'xytable' && <XYTableConfig />}
-            {activeTab === 'atc' && <ATCToolsConfig />}
-            {activeTab === 'rack' && <RackConfigView />}
-
-            {activeTab === 'pickandplace' && <PickAndPlace />}
-
-            {activeTab === 'cnc' && <CNC />}
-            {activeTab === 'laser' && <Laser />}
-            {activeTab === 'vacuumtable' && <VacuumTableConfig />}
-            {activeTab === 'heatedbed' && <HeatedBedConfig />}
+            <div className={cn("w-full h-full overflow-hidden flex flex-col", !hideUI && "pt-8 px-8 pb-4")}>
+               {activeTab === 'overview' && !hideUI && <OverviewPanel />}
+               {activeTab === 'robot' && activeRobot && <RobotDetail key={activeRobot.id} robot={activeRobot} />}
+               {activeTab === 'cameras' && <CamerasView />}
+               {activeTab === 'xytable' && <XYTableConfig />}
+               {activeTab === 'atctools' && <ATCToolsConfig />}
+               {activeTab === 'rack' && <RackConfigView />}
+               {activeTab === 'pickandplace' && <PickAndPlace />}
+               {activeTab === 'cnc' && <CNC />}
+               {activeTab === 'laser' && <Laser />}
+               {activeTab === 'vacuumtable' && <VacuumTableConfig />}
+               {activeTab === 'heatedbed' && <HeatedBedConfig />}
+               {activeTab === 'flasher' && <Flasher tiers={['urtcHead', 'urtcExpansion']} />}
+               {activeTab === 'tester' && <Tester tiers={['urtcHead', 'urtcExpansion']} />}
+               {activeTab === 'hydraFlasher' && <Flasher tiers={['kinematicBrain', 'controllerBoard']} />}
+               {activeTab === 'hydraTester' && <Tester tiers={['kinematicBrain', 'controllerBoard']} />}
+               {activeTab === 'kinematicBrainStage' && <KinematicBrainStage />}
+            </div>
           </React.Suspense>
         </main>
-
       </div>
-      
-      {/* Global System Status Footer */}
-      <footer className="h-8 shrink-0 bg-slate-950 border-t border-slate-800 flex items-center justify-between px-4 z-20 text-[10px] uppercase font-bold tracking-wider text-slate-500 shadow-[0_-5px_15px_rgba(0,0,0,0.2)]">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-             <span className={cn("w-2 h-2 rounded-full", activeController?.status === 'online' ? "bg-emerald-500" : "bg-rose-500")} />
-             {activeController?.status === 'online' ? 'SYSTEM ONLINE' : 'SYSTEM OFFLINE'}
+
+      {/* Footer */}
+      {!hideUI && (
+        <footer className="h-10 shrink-0 bg-slate-950 border-t border-slate-800 flex items-center justify-between px-6 z-20 text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 shadow-2xl">
+          <div className="flex items-center gap-8">
+             <div className="flex items-center gap-3">
+                <span className="text-sky-400 font-black tracking-widest bg-sky-500/10 px-3 py-1 rounded border border-sky-500/20">{settings.serverName || "HYDRA-UMC TEST"}</span>
+                <div className="w-px h-4 bg-slate-800"></div>
+                <span className={cn("w-2.5 h-2.5 rounded-full", activeController?.status === 'online' ? "bg-emerald-500 shadow-[0_0_12px_#10b981]" : "bg-rose-500 shadow-[0_0_12px_#f43f5e]")} />
+                <span className="text-slate-200 tracking-[0.4em]">SYSTEM MASTER HUB</span>
+             </div>
+             <span>{robots.filter(r => r.online).length} / {robots.length} NODES ACTIVE</span>
           </div>
-          <div className="w-px h-3 bg-slate-800"></div>
-          <div className="flex items-center gap-2">
-            <Cpu size={12} className="text-slate-400" />
-            <span>{robots.filter(r => r.online).length} / {robots.length} ROBOTS ACTIVE</span>
+          <div className="flex items-center gap-8">
+            <button onClick={() => { if(confirm("EMERGENCY ABORT ALL NODES?")) robots.forEach(r => updateRobot(r.id, { online: false })); }} className="flex items-center gap-3 px-6 py-1 rounded-full bg-rose-600 text-white border border-rose-400 transition-all animate-pulse">GLOBAL E-STOP</button>
+            <div className="font-mono text-sky-400">{currentTime.toLocaleTimeString()}</div>
           </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => {
-              robots.forEach(r => updateRobot(r.id, { online: false }));
-            }}
-            className="flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/30 hover:bg-rose-500/20 transition-colors"
-          >
-            <AlertOctagon size={12} /> GLOBAL E-STOP
-          </button>
-          <div className="w-px h-3 bg-slate-800"></div>
-          <div>HYDRA-UMC STUDIO v1.0</div>
-          <div className="w-px h-3 bg-slate-800"></div>
-          <div className="px-2 py-0.5 rounded border border-slate-700 bg-slate-900 font-mono text-sky-400">
-            {currentTime.toLocaleTimeString()}
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }
 
-
-/**
- * Executes the  nav item logic. 
- * This function handles the necessary computations and state updates.
- */
 function NavItem({ icon, label, active, onClick, className }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void, className?: string }) {
   return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-4 px-4 py-4 min-h-[64px] rounded-xl font-medium text-lg transition-all",
-        active 
-          ? "bg-sky-500 text-slate-950 shadow-[0_0_15px_rgba(0,229,255,0.6)] border border-sky-400" 
-          : "text-slate-400 hover:bg-slate-800 hover:glow-border-sky hover:text-sky-400 transition-all hover:text-slate-200 border border-transparent",
-        className
-      )}
-    >
-      {icon}
+    <button onClick={onClick} className={cn("flex items-center gap-4 px-4 py-4 min-h-[56px] rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] transition-all", active ? "bg-sky-500 text-slate-950 shadow-[0_8px_20px_rgba(0,229,255,0.35)] border border-sky-300 scale-[1.02]" : "text-slate-500 hover:bg-slate-800 hover:text-sky-400", className)}>
+      <div className={cn("transition-transform duration-300", active && "scale-110")}>{icon}</div>
       <span className="truncate">{label}</span>
     </button>
   );
 }
 
-/**
- * Executes the  overview panel logic. 
- * This function handles the necessary computations and state updates.
- */
-function OverviewPanel() {
-  const { t } = useTranslation();
-  const { robots, cameras, updateRobot } = useHydraStore();
-  
+function IconButton({ icon, label, onClick }: { icon: React.ReactNode, label: string, onClick: () => void }) {
   return (
-    <div className="w-full mx-auto space-y-6 px-2 2xl:px-8">
-      <h2 className="text-2xl font-semibold text-slate-100">{t('dashboard.micro_factory_status', 'Micro-Factory Status')}</h2>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 2xl:gap-6">
-        {robots.map((r, i) => (
-          <div key={r.id} className={cn(
-            "p-3 rounded-lg border flex flex-col gap-2",
-            r.online ? "bg-slate-900 border-slate-700 hover:glow-border-emerald transition-all duration-300 shadow-lg" : "bg-slate-900/50 border-slate-800 opacity-60"
-          )}>
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-sm text-slate-200 flex items-center gap-2 truncate">
-                {r.name}
-              </span>
-              <button onClick={(e) => { e.stopPropagation(); updateRobot(r.id, { online: !r.online }) }} className={cn("px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider transition-colors", r.online ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20" : "bg-slate-800 text-slate-500 hover:text-slate-300 border border-slate-700 hover:border-slate-500")}>
-    {r.online ? t('dashboard.status.online', 'Online') : t('dashboard.connect', 'Connect')}
-  </button>
-            </div>
+    <button onClick={onClick} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-all group shadow-lg">
+      <div className="text-sky-400">{icon}</div>
+      <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
+    </button>
+  );
+}
 
-            {/* STACK A slot / Robot Controller Board (STM32G474RET6, Tier 1) at a
-                glance - BOARD_ID slot label + real firmware version if known.
-                See docs/PINOUT_STM32G474_ROBOT_CONTROLLER.TXT section 1c and
-                docs/CANBUS_STM32G474.TXT for what this hardware actually is. */}
-            <div className="flex items-center justify-between text-[10px] font-mono bg-slate-950 px-2 py-1 rounded border border-slate-800">
-              <span className="text-slate-500 uppercase tracking-wider">{t('dashboard.stack_a_slot', 'STACK A')} {slotLabel(i)}</span>
-              <span className={cn("flex items-center gap-1", r.controllerBoard ? "text-emerald-400" : "text-slate-600")}>
-                <span className={cn("w-1.5 h-1.5 rounded-full", r.controllerBoard ? "bg-emerald-500" : "bg-slate-700")} />
-                {r.controllerBoard?.firmwareVersion || t('dashboard.no_version_short', '—')}
-              </span>
-            </div>
+function OverviewPanel() {
+  const { robots, updateRobot, cameras, updateCamera } = useHydraStore();
 
+  return (
+    <div className="w-full h-full flex flex-col gap-6 overflow-hidden">
+      <div className="flex items-center justify-between border-b border-slate-800/50 pb-6 shrink-0 px-4">
+         <h2 className="text-3xl font-black text-slate-100 flex items-center gap-4 uppercase tracking-tighter italic"><Activity size={32} className="text-emerald-500 animate-pulse" /> MICRO-FACTORY <span className="text-sky-400 font-light tracking-[0.2em]">OPERATIONS</span></h2>
+      </div>
 
-            {(() => {
-              const hosts = robots.filter(other => other.combinedWith?.includes(r.id));
-              if (hosts.length === 0) return null;
-              return (
-                <div className="text-xs text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 px-2 py-1 rounded font-medium mt-1 mb-1 animate-pulse truncate" title={t('dashboard.combined_into', 'Combined into ') + hosts.map(h => h.name).join(', ')}>
-                  {t('dashboard.combined_into', 'Combined into ')} {hosts.map(h => h.name).join(', ')}
+      <div className="flex-1 overflow-y-auto custom-scrollbar pr-4 pb-20 px-4 scroll-smooth">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 pt-10">
+          {robots.map((r, i) => {
+            const cam = cameras.find(c => c.id === r.id);
+            return (
+            <div key={r.id} className={cn("p-6 rounded-[2.5rem] border-2 flex flex-col gap-5 transition-all duration-700 relative overflow-hidden group", r.online ? "bg-slate-900 border-slate-700 shadow-[0_25px_60px_rgba(0,0,0,0.5)] scale-[1.02]" : "bg-slate-950/40 border-slate-800/50 opacity-40 grayscale")}>
+
+              <div className="flex items-center justify-between relative z-10">
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className={cn("w-2.5 h-2.5 rounded-full shadow-[0_0_10px_currentColor]", r.online ? "bg-emerald-400 shadow-[0_0_10px_#10b981]" : "bg-slate-700")} />
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">NODE A{r.id}</span>
+                  </div>
+                  <span className="font-black text-2xl text-white truncate tracking-tighter uppercase">{r.name}</span>
                 </div>
-              );
-            })()}
-            <div className="text-[11px] text-slate-400 grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
-
-              <div>{t('dashboard.model', 'Model:')}</div>
-              <div className="text-slate-200 font-medium">{r.model}</div>
-              <div>{t('dashboard.role', 'Role:')}</div>
-              <div className="text-slate-200 truncate">{r.role}</div>
-              <div>{t('dashboard.tool', 'Tool:')}</div>
-              <div className="text-slate-200 truncate">{r.tool}</div>
-            </div>
-
-            {r.online && (
-              <div className="mt-1 grid grid-cols-3 gap-1 text-[10px] font-mono bg-slate-950 p-1.5 rounded border border-slate-800 text-slate-300">
-                <div className="text-center truncate">X:{r.pos.x.toFixed(0)}</div>
-                <div className="text-center truncate">Y:{r.pos.y.toFixed(0)}</div>
-                <div className="text-center truncate">Z:{r.pos.z.toFixed(0)}</div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); updateRobot(r.id, { online: !r.online }) }}
+                  className={cn("px-6 py-3 rounded-full text-[11px] font-black tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(16,185,129,0.5)] border-2",
+                  r.online ? "bg-[#10b981] text-white border-[#34d399] hover:bg-[#059669]" : "bg-slate-800 text-slate-500 border-slate-700 hover:border-slate-500")}
+                >
+                  {r.online ? 'ONLINE' : 'CONNECT'}
+                </button>
               </div>
-            )}
-            
-            <div className="mt-2 grid grid-cols-2 gap-1.5">
-              {r.hasXYTable && (
-                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-amber-400 bg-amber-400/10 p-1 rounded border border-amber-500/20">
-                  <Focus size={10} /> {t('dashboard.xy_assigned', 'XY Assigned')}
+
+              <div className="bg-black/40 backdrop-blur-xl p-5 rounded-[1.8rem] border border-white/5 space-y-2 relative z-10 shadow-inner">
+                  <div className="flex justify-between items-center text-[9px] font-black uppercase text-slate-500"><span>Manufacturer</span><span className="text-sky-400">{ROBOT_MANUFACTURERS[r.model] || "Generic"}</span></div>
+                  <div className="flex justify-between items-center text-[9px] font-black uppercase text-slate-500"><span>Model Ref</span><span className="text-slate-200 italic">{r.model}</span></div>
+                  <div className="flex justify-between items-center text-[9px] font-black uppercase text-slate-500"><span>URTC Tooling</span><span className="text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">{r.tool}</span></div>
+              </div>
+
+              <div className="space-y-4 relative z-10">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] flex items-center gap-2">Active Intelligence Matrix</span>
+                <div className="grid grid-cols-2 gap-3">
+                    <ModuleRow
+                      label="Vision System"
+                      active={r.visionEnabled || !!r.cameraView || (cam?.connected ?? false)}
+                      color="emerald"
+                      description={r.visionEnabled || (cam?.connected ?? false) ? "LIVE STREAM ACTIVE" : undefined}
+                      onClick={() => {
+                         // Sync BOTH robot property and camera state for double safety
+                         updateRobot(r.id, { visionEnabled: !r.visionEnabled });
+                         if (cam) updateCamera(cam.id, { connected: !cam.connected });
+                      }}
+                    />
+                    <ModuleRow label="XY Gantry" active={r.hasXYTable} color="amber" description={r.hasXYTable ? "QUAD-AXIS SYNC" : undefined} />
+                    <ModuleRow label="ATC Tooling" active={!!r.atc} color="sky" description={r.atc ? r.atc.type.toUpperCase().replace("_"," ") : undefined} />
+                    <ModuleRow label="Pick & Place" active={r.juanenPnP?.enabled || r.lumenPnP?.enabled} color="blue" description={r.juanenPnP?.enabled ? "JUANEN PNP" : (r.lumenPnP?.enabled ? "LUMEN PNP" : undefined)} />
+                    <ModuleRow label="CNC Milling" active={r.juanenCNC?.enabled} color="fuchsia" description={r.juanenCNC?.enabled ? "JUANEN CNC" : undefined} />
+                    <ModuleRow label="Laser Engrave" active={r.juanenLaser?.enabled} color="red" description={r.juanenLaser?.enabled ? "JUANEN LASER" : undefined} />
+                    <ModuleRow label="Heated Bed" active={r.heatedBed?.enabled} color="orange" description={r.heatedBed?.enabled ? "THERMAL READY" : undefined} />
+                    <ModuleRow label="Vacuum Table" active={r.vacuumTable?.enabled} color="teal" description={r.vacuumTable?.enabled ? "VACUUM ENGAGED" : undefined} />
+                    <ModuleRow label="Tool Rack" active={r.rackSystem?.enabled} color="rose" description={r.rackSystem?.enabled ? "RACK LINKED" : undefined} />
                 </div>
-              )}
-              {r.atc && (
-                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-sky-400 bg-sky-400/10 p-1 rounded border border-sky-500/20">
-                  <Settings size={10} /> ATC: {r.atc.type.replace("_", " ")}
-                </div>
-              )}
-              {r.rackSystem?.enabled && (
-                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-rose-400 bg-rose-400/10 p-1 rounded border border-rose-500/20">
-                  <Layers size={10} /> Rack Active
-                </div>
-              )}
-              {r.juanenPnP?.enabled && (
-                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-blue-400 bg-blue-400/10 p-1 rounded border border-blue-500/20">
-                  JuanenPnP
-                </div>
-              )}
-              {r.lumenPnP?.enabled && (
-                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-indigo-400 bg-indigo-400/10 p-1 rounded border border-indigo-500/20">
-                  LumenPnP
-                </div>
-              )}
-              {r.juanenCNC?.enabled && (
-                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-fuchsia-400 bg-fuchsia-400/10 p-1 rounded border border-fuchsia-500/20">
-                  CNC: JuanenCNC
-                </div>
-              )}
-              {r.juanenLaser?.enabled && (
-                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-red-400 bg-red-400/10 p-1 rounded border border-red-500/20">
-                  Laser: JuanenLaser
-                </div>
-              )}
-              {r.vacuumTable?.enabled && (
-                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-teal-400 bg-teal-400/10 p-1 rounded border border-teal-500/20">
-                  Vacuum Table
-                </div>
-              )}
-              {r.heatedBed?.enabled && (
-                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-orange-400 bg-orange-400/10 p-1 rounded border border-orange-500/20">
-                  Heated Bed
-                </div>
-              )}
-              {cameras.find(c => c.id === r.id)?.connected ? (
-                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-emerald-400 bg-emerald-500/10 p-1 rounded border border-emerald-500/20">
-                  <Video size={10} /> {t('dashboard.camera_active', 'Camera Active')}
-                </div>
-              ) : (
-                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase font-bold text-slate-500 bg-slate-800 p-1 rounded border border-slate-700">
-                  <Video size={10} /> {t('dashboard.camera_offline', 'Camera Offline')}
+              </div>
+
+              {r.online && (
+                <div className="mt-auto grid grid-cols-3 gap-4 text-[11px] font-mono bg-black/60 p-4 rounded-2xl border border-white/5 shadow-2xl relative z-10">
+                  <div className="flex flex-col items-center border-r border-white/10"><span className="text-[8px] text-slate-600 font-black mb-1 tracking-tighter">COORD X</span><span className="text-sky-400 font-black text-xs">{r.pos.x.toFixed(0)}</span></div>
+                  <div className="flex flex-col items-center border-r border-white/10"><span className="text-[8px] text-slate-600 font-black mb-1 tracking-tighter">COORD Y</span><span className="text-sky-400 font-black text-xs">{r.pos.y.toFixed(0)}</span></div>
+                  <div className="flex flex-col items-center"><span className="text-[8px] text-slate-600 font-black mb-1 tracking-tighter">COORD Z</span><span className="text-sky-400 font-black text-xs">{r.pos.z.toFixed(0)}</span></div>
                 </div>
               )}
             </div>
-          </div>
-        ))}
+          )})}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ModuleRow({ label, active, color, description, onClick }: { label: string, active: boolean, color: string, description?: string, onClick?: () => void }) {
+  const colorMap: Record<string, string> = {
+    emerald: "text-emerald-400 bg-emerald-400/5 border-emerald-400/30 shadow-[0_0_15px_rgba(52,211,153,0.15)]",
+    amber: "text-amber-400 bg-amber-400/5 border-amber-400/30 shadow-[0_0_15px_rgba(251,191,36,0.15)]",
+    sky: "text-sky-400 bg-sky-400/5 border-sky-400/30 shadow-[0_0_15px_rgba(56,189,248,0.15)]",
+    blue: "text-blue-400 bg-blue-400/5 border-blue-400/30 shadow-[0_0_15px_rgba(96,165,250,0.15)]",
+    fuchsia: "text-fuchsia-400 bg-fuchsia-400/5 border-fuchsia-400/30 shadow-[0_0_10px_rgba(232,121,249,0.15)]",
+    red: "text-red-400 bg-red-400/5 border-red-400/30 shadow-[0_0_10px_rgba(248,113,113,0.15)]",
+    orange: "text-orange-400 bg-orange-400/5 border-orange-400/30 shadow-[0_0_10px_rgba(251,146,60,0.15)]",
+    teal: "text-teal-400 bg-teal-400/5 border-teal-400/30 shadow-[0_0_15px_rgba(45,212,191,0.15)]",
+    rose: "text-rose-400 bg-rose-400/5 border-rose-400/30 shadow-[0_0_15px_rgba(251,113,133,0.15)]",
+  };
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        "flex flex-col px-3 py-3 rounded-2xl border transition-all duration-500 min-h-[64px] justify-center",
+        active ? colorMap[color] : "text-slate-800 bg-transparent border-slate-900 grayscale",
+        onClick && "cursor-pointer hover:border-white/20 active:scale-95"
+      )}
+    >
+      <div className="flex items-center justify-between mb-0.5">
+        <span className="text-[9px] font-black uppercase tracking-tighter truncate">{label}</span>
+        {active ? <Zap size={10} className="fill-current animate-pulse"/> : <Power size={10} className="opacity-20"/>}
+      </div>
+      <div className="flex items-end overflow-hidden">
+        <span className={cn("text-[7px] font-black tracking-widest leading-[1.1] transition-opacity break-words", active ? "opacity-100" : "opacity-0")}>
+          {description || "READY"}
+        </span>
       </div>
     </div>
   );

@@ -24,7 +24,7 @@ function cn(...inputs: ClassValue[]) {
  * This function handles the necessary computations and state updates.
  */
 export function CamerasView() {
-  const { cameras, updateCamera } = useHydraStore();
+  const { cameras, updateCamera, updateRobot } = useHydraStore();
   const { t } = useTranslation();
   const [fullScreenId, setFullScreenId] = useState<number | null>(null);
   const [recordingIds, setRecordingIds] = useState<Set<number>>(new Set());
@@ -56,6 +56,7 @@ export function CamerasView() {
       const cam = cameras.find(c => c.id === id);
       if (cam && !cam.connected) {
         updateCamera(id, { connected: true });
+        updateRobot(id, { visionEnabled: true });
       }
     }, 1500);
   };
@@ -63,7 +64,9 @@ export function CamerasView() {
   const toggleConnection = (id: number) => {
     const cam = cameras.find(c => c.id === id);
     if (cam) {
-      updateCamera(id, { connected: !cam.connected, yoloEnabled: false });
+      const newState = !cam.connected;
+      updateCamera(id, { connected: newState, yoloEnabled: false });
+      updateRobot(id, { visionEnabled: newState });
     }
   };
 
