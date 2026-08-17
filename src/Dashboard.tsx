@@ -11,7 +11,7 @@ import { useHydraStore, createDefaultRobots, createDefaultCameras, ROBOT_MANUFAC
 import { 
   Activity, Crosshair, AlertOctagon, Layers, 
   Video, Focus, Settings, Menu, Plus, Trash2, Search, AlertTriangle, Power
-, Cpu, PenTool, Zap, Wind, Thermometer, RefreshCw, Server, Info, HelpCircle, Save, FolderOpen, ChevronDown, ChevronRight, Camera, X, ArrowLeft } from 'lucide-react';
+, Cpu, PenTool, Zap, Wind, Thermometer, RefreshCw, Server, Info, HelpCircle, Save, FolderOpen, ChevronDown, ChevronRight, Camera, X, ArrowLeft, Edit2 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -64,7 +64,7 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  const [configTab, setConfigTab] = useState<'controllers' | 'ui' | 'robots' | 'models' | 'integrations' | 'paths' | 'canota' | 'gamepad'>('controllers');
+  const [configTab, setConfigTab] = useState<'identity' | 'controllers' | 'ui' | 'robots' | 'models' | 'integrations' | 'paths' | 'canota' | 'gamepad'>('identity');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [navStack, setNavStack] = useState<string[]>([]);
   const currentMenu = navStack[navStack.length - 1] || 'root';
@@ -117,7 +117,7 @@ export default function Dashboard() {
       {/* Full Settings Modal */}
       {isSettingsOpen && (
         <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[850px] max-w-full overflow-hidden flex flex-col h-[700px]">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[850px] max-w-full overflow-hidden flex flex-col h-[750px]">
             <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
               <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Settings className="text-sky-400" size={20} /> System Configuration</h2>
               <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-slate-200 p-1">&times;</button>
@@ -125,6 +125,7 @@ export default function Dashboard() {
 
             <div className="flex flex-1 overflow-hidden">
               <div className="w-52 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0">
+                <button onClick={() => setConfigTab('identity')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'identity' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Identity</button>
                 <button onClick={() => setConfigTab('controllers')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'controllers' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Controllers</button>
                 <button onClick={() => setConfigTab('ui')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'ui' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>UI & Themes</button>
                 <button onClick={() => setConfigTab('robots')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'robots' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Robot Names</button>
@@ -139,22 +140,27 @@ export default function Dashboard() {
               </div>
 
               <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-900">
-                <div className="mb-8 p-6 bg-sky-500/5 border border-sky-500/20 rounded-2xl space-y-4 shadow-xl">
-                  <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest flex items-center gap-2"><Server size={18}/> Broadcast Identity</h3>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Public Server Name</label>
-                    <input
-                      value={settings.serverName || "HYDRA-UMC TEST"}
-                      onChange={e => updateSettings({ serverName: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-100 font-bold outline-none focus:border-sky-400 focus:glow-border-sky transition-all"
-                      placeholder="e.g. HYDRA-UMC TEST"
-                    />
-                    <p className="text-[10px] text-slate-600 italic leading-relaxed">This name identifies this workstation during network scans and Bluetooth advertisements. Default is "HYDRA-UMC TEST".</p>
+                {configTab === 'identity' && (
+                  <div className="space-y-6 animate-in fade-in duration-300">
+                    <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2">Global Broadcast Identity</h3>
+                    <div className="p-6 bg-slate-950 border border-slate-800 rounded-2xl space-y-4 shadow-xl">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Public Server Name</label>
+                        <input
+                          value={settings.serverName || "HYDRA-UMC TEST"}
+                          onChange={e => updateSettings({ serverName: e.target.value })}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-slate-100 font-bold outline-none focus:border-sky-400 focus:glow-border-sky transition-all shadow-inner"
+                          placeholder="e.g. HYDRA-UMC TEST"
+                        />
+                        <p className="text-[10px] text-slate-600 italic leading-relaxed">This name identifies this workstation during network scans and Bluetooth advertisements. Visible in the dashboard footer.</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {configTab === 'controllers' && (
-                  <div className="space-y-6">
+                  <div className="space-y-6 animate-in fade-in duration-300">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Controller Management</h3>
                     <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden shadow-2xl">
                       <table className="w-full text-left text-sm">
                         <thead className="bg-slate-900 border-b border-slate-800">
@@ -164,75 +170,162 @@ export default function Dashboard() {
                           {controllers.map(c => (
                             <tr key={c.id} className="border-b border-slate-800/50 hover:bg-slate-900/50 transition-colors">
                               <td className="px-4 py-3"><input value={c.name} onChange={e => updateController(c.id, { name: e.target.value })} className="bg-transparent outline-none w-full text-slate-200 font-bold" /></td>
-                              <td className="px-4 py-3"><input value={c.ip} onChange={e => updateController(c.id, { ip: e.target.value })} className="bg-transparent outline-none w-full text-slate-400 font-mono text-xs" /></td>
-                              <td className="px-4 py-3"><span className="px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter" style={{ backgroundColor: c.status === 'online' ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)', color: c.status === 'online' ? '#10b981' : '#f43f5e' }}>{c.status}</span></td>
+                              <td className="px-4 py-3 font-mono text-xs text-slate-400"><input value={c.ip} onChange={e => updateController(c.id, { ip: e.target.value })} className="bg-transparent outline-none w-full" /></td>
+                              <td className="px-4 py-3"><span className={cn("px-2 py-1 rounded text-[10px] font-black uppercase", c.status === 'online' ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500")}>{c.status}</span></td>
                               <td className="px-4 py-3 text-right"><button onClick={() => removeController(c.id)} className="text-slate-600 hover:text-rose-500 transition-colors"><Trash2 size={16}/></button></td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">FDCAN Protocol</label><select className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"><option>Classic CAN (2.0)</option><option selected>FDCAN (ISO 11898-1)</option></select></div>
-                       <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Data Phase Bitrate</label><select className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"><option>500 kbps</option><option>1 Mbps</option><option selected>2 Mbps</option><option>5 Mbps</option><option>10 Mbps</option></select></div>
+                    <button onClick={() => addController({ id: 'new-' + Date.now(), name: 'New Controller', ip: '192.168.1.xxx', status: 'offline', fdcanBaudrate: 1000, fdcanDataBaudrate: 5000, robots: createDefaultRobots(), cameras: createDefaultCameras() })} className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-sky-400 rounded-lg border border-slate-700 text-xs font-bold uppercase hover:bg-slate-700"><Plus size={14}/> Add Node</button>
+
+                    <div className="pt-6 grid grid-cols-2 gap-4 border-t border-slate-800/50">
+                       <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">FDCAN Protocol</label><select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"><option>Classic CAN (2.0)</option><option selected>FDCAN (ISO 11898-1)</option></select></div>
+                       <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Data Bitrate</label><select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"><option>500 kbps</option><option>1 Mbps</option><option selected>2 Mbps</option><option>5 Mbps</option><option>10 Mbps</option></select></div>
                     </div>
                   </div>
                 )}
+
                 {configTab === 'ui' && (
-                  <div className="space-y-6">
-                    <div className="space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Visual Environment Theme</label><select value={settings.theme} onChange={e => updateSettings({ theme: e.target.value })} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-sky-400 transition-all"><option value="HYDRA-UMC Studio Fasion">HYDRA-UMC Studio Fasion</option><option value="Dark Mode (Default)">Dark Mode (Default)</option><option value="Matrix">Matrix Terminal</option><option value="Cyberpunk">Cyberpunk Neon</option><option value="Midnight Blue">Midnight Blue</option></select></div>
-                    <div className="space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">System Localization</label><select value={settings.language} onChange={e => { updateSettings({ language: e.target.value }); i18n.changeLanguage(e.target.value); }} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-sky-500 transition-all"><option value="en">English (US)</option><option value="es">Español (ES)</option><option value="de">Deutsch (DE)</option><option value="fr">Français (FR)</option><option value="it">Italiano (IT)</option></select></div>
+                  <div className="space-y-8 animate-in fade-in duration-300">
+                    <div className="space-y-4">
+                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Visual Environment</h3>
+                      <select className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 outline-none focus:border-sky-400" value={settings.theme} onChange={e => updateSettings({ theme: e.target.value })}>
+                        <option value="HYDRA-UMC Studio Fasion">HYDRA-UMC Studio Fasion</option>
+                        <option value="Dark Mode (Default)">Dark Mode (Default)</option>
+                        <option value="Matrix">Matrix Terminal</option>
+                        <option value="Cyberpunk">Cyberpunk Neon</option>
+                        <option value="Neon">Neon</option>
+                        <option value="Dracula">Dracula</option>
+                        <option value="Nord">Nord</option>
+                        <option value="Tokyo Night">Tokyo Night</option>
+                        <option value="Midnight Blue">Midnight Blue</option>
+                      </select>
+                    </div>
+                    <div className="space-y-4">
+                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">System Localization</h3>
+                      <select className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 outline-none focus:border-sky-400" value={settings.language} onChange={e => { updateSettings({ language: e.target.value }); i18n.changeLanguage(e.target.value); }}>
+                        <option value="en">English (US)</option><option value="es">Español (ES)</option><option value="de">Deutsch (DE)</option><option value="fr">Français (FR)</option><option value="it">Italiano (IT)</option>
+                      </select>
+                    </div>
+                    <div className="space-y-4">
+                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Module Visibility Control</h3>
+                      <div className="grid grid-cols-2 gap-3 bg-slate-950 p-6 rounded-2xl border border-slate-800">
+                        {['Vision/Cameras', 'XY Table', 'ATC Tools', 'Rack', 'PickAndPlace', 'CNC', 'Laser', 'Vacuum Table', 'Heated Bed'].map(module => (
+                          <label key={module} className="flex items-center gap-3 group cursor-pointer">
+                            <input type="checkbox" checked={settings.visibleModules.includes(module)} onChange={(e) => {
+                                let newModules = [...settings.visibleModules];
+                                if (e.target.checked) newModules.push(module); else newModules = newModules.filter(m => m !== module);
+                                updateSettings({ visibleModules: newModules });
+                              }} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-sky-500 focus:ring-sky-500" />
+                            <span className="text-sm text-slate-400 group-hover:text-slate-100 transition-colors">{module}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
+
                 {configTab === 'robots' && (
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest border-b border-slate-800 pb-2 mb-4">Rename Swarm Robots</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-6 animate-in fade-in duration-300">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Rename Swarm Robots</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {activeController.robots.map(r => (
-                        <div key={r.id} className="flex items-center gap-3 bg-slate-950 p-4 rounded-xl border border-slate-800 shadow-inner">
-                          <span className="text-sky-500 font-mono text-xs font-bold w-8">#{r.id}</span>
-                          <input value={r.name} onChange={(e) => updateRobot(r.id, { name: e.target.value })} className="bg-transparent border-none outline-none text-slate-100 flex-1 text-sm font-bold" placeholder="Robot Name" />
+                        <div key={r.id} className="flex items-center gap-4 bg-slate-950 p-4 rounded-2xl border border-slate-800 shadow-inner group">
+                          <span className="text-sky-500 font-mono text-xs font-black w-8">A{r.id}</span>
+                          <input value={r.name} onChange={(e) => updateRobot(r.id, { name: e.target.value })} className="bg-transparent border-none outline-none text-slate-100 flex-1 text-sm font-bold placeholder-slate-700" placeholder="Set Robot Name..." />
+                          <Edit2 size={12} className="text-slate-800 group-hover:text-slate-500 transition-colors" />
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
+
+                {configTab === 'models' && (
+                  <div className="space-y-6 animate-in fade-in duration-300">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Custom URDF Library</h3>
+                    <div className="space-y-3">
+                       {settings.customModels?.map((m, idx) => (
+                         <div key={idx} className="flex items-center gap-3 bg-slate-950 p-4 rounded-xl border border-slate-800 shadow-xl group">
+                           <div className="p-2 bg-slate-900 rounded border border-slate-800 text-emerald-500"><Plus size={14}/></div>
+                           <input value={m} onChange={e => { const updated = [...settings.customModels]; updated[idx] = e.target.value; updateSettings({ customModels: updated }); }} className="bg-transparent outline-none flex-1 text-xs font-mono text-slate-200" />
+                           <button onClick={() => updateSettings({ customModels: settings.customModels.filter((_,i)=>i!==idx) })} className="text-slate-600 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={16}/></button>
+                         </div>
+                       ))}
+                       <button onClick={() => updateSettings({ customModels: [...(settings.customModels||[]), "new_model_v1.urdf"] })} className="w-full py-3 bg-slate-800 text-sky-400 rounded-xl border border-slate-700 text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-all">+ Register New URDF Asset</button>
+                    </div>
+                  </div>
+                )}
+
                 {configTab === 'integrations' && (
-                  <div className="space-y-8">
-                    <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-4 shadow-2xl">
-                      <div className="flex justify-between items-center border-b border-slate-800 pb-2"><span className="font-bold text-sky-400 uppercase tracking-widest text-xs">OpenPNP (Vision / Assembly)</span><input type="checkbox" checked={settings.integrations?.openPnP?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-sky-500" /></div>
-                      <div className="grid grid-cols-2 gap-6 pt-2"><div className="space-y-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Server IP</label><input value={settings.integrations?.openPnP?.ip} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, ip: e.target.value } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" /></div><div className="space-y-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Port</label><input type="number" value={settings.integrations?.openPnP?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" /></div></div>
+                  <div className="space-y-8 animate-in fade-in duration-300">
+                    <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-2xl relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 blur-3xl" />
+                      <div className="flex justify-between items-center border-b border-slate-900 pb-3"><span className="font-black text-sky-400 uppercase tracking-widest text-[11px]">OpenPNP Control</span><input type="checkbox" checked={settings.integrations?.openPnP?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-sky-500" /></div>
+                      <div className="grid grid-cols-2 gap-6"><div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">Server IP</label><input value={settings.integrations?.openPnP?.ip} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, ip: e.target.value } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div><div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">Port</label><input type="number" value={settings.integrations?.openPnP?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div></div>
                     </div>
-                    <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-4 shadow-2xl">
-                       <div className="flex justify-between items-center border-b border-slate-800 pb-2"><span className="font-bold text-fuchsia-400 uppercase tracking-widest text-xs">CNC Control Integration</span><input type="checkbox" checked={settings.integrations?.cnc?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-fuchsia-500" /></div>
-                       <div className="grid grid-cols-2 gap-6 pt-2"><div className="space-y-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Software Backend</label><select className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" value={settings.integrations?.cnc?.software} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, software: e.target.value } } })}><option value="LinuxCNC">LinuxCNC (Standard)</option><option value="Mach3">Mach3 (Legacy)</option><option value="GRBL">GRBL (Basic)</option></select></div><div className="space-y-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Control Port</label><input type="number" value={settings.integrations?.cnc?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" /></div></div>
+                    <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-2xl relative overflow-hidden">
+                       <div className="absolute top-0 right-0 w-24 h-24 bg-fuchsia-500/5 blur-3xl" />
+                       <div className="flex justify-between items-center border-b border-slate-900 pb-3"><span className="font-black text-fuchsia-400 uppercase tracking-widest text-[11px]">CNC Milling Backend</span><input type="checkbox" checked={settings.integrations?.cnc?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-fuchsia-500" /></div>
+                       <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">Software Type</label><select className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" value={settings.integrations?.cnc?.software} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, software: e.target.value } } })}><option value="LinuxCNC">LinuxCNC</option><option value="Mach3">Mach3</option><option value="GRBL">GRBL Serial</option></select></div>
+                          <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">Control Port</label><input type="number" value={settings.integrations?.cnc?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div>
+                       </div>
                     </div>
-                    <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-4 shadow-2xl">
-                       <div className="flex justify-between items-center border-b border-slate-800 pb-2"><span className="font-bold text-rose-500 uppercase tracking-widest text-xs">Laser Engraving Backend</span><input type="checkbox" checked={settings.integrations?.laser?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-rose-500" /></div>
-                       <div className="grid grid-cols-2 gap-6 pt-2"><div className="space-y-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Laser Protocol</label><select className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" value={settings.integrations?.laser?.software} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, software: e.target.value } } })}><option value="LightBurn">LightBurn (DSP)</option><option value="LaserGRBL">LaserGRBL (Serial)</option></select></div><div className="space-y-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Comm Port</label><input type="number" value={settings.integrations?.laser?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" /></div></div>
+                    <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-2xl relative overflow-hidden">
+                       <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 blur-3xl" />
+                       <div className="flex justify-between items-center border-b border-slate-900 pb-3"><span className="font-black text-rose-500 uppercase tracking-widest text-[11px]">Laser Engrave Engine</span><input type="checkbox" checked={settings.integrations?.laser?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-rose-500" /></div>
+                       <div className="grid grid-cols-2 gap-6">
+                          <select className="bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" value={settings.integrations?.laser?.software} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, software: e.target.value } } })}><option value="LightBurn">LightBurn</option><option value="LaserGRBL">LaserGRBL</option></select>
+                          <input type="number" value={settings.integrations?.laser?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" />
+                       </div>
                     </div>
-                    <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3"><span className="font-bold text-emerald-400">Remote App Access</span><input type="checkbox" checked={settings.remoteAccess?.enabled ?? true} onChange={(e) => updateSettings({ remoteAccess: { enabled: e.target.checked } })} /></div>
-                        <p className="text-[10px] text-slate-500 leading-tight">Control if Android/iOS apps can discover this server.</p>
+                    <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-2 shadow-inner">
+                        <div className="flex items-center justify-between"><span className="font-black text-emerald-400 uppercase text-[10px] tracking-widest">Remote App Access Discovery</span><input type="checkbox" checked={settings.remoteAccess?.enabled ?? true} onChange={(e) => updateSettings({ remoteAccess: { enabled: e.target.checked } })} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500" /></div>
+                        <p className="text-[10px] text-slate-600 leading-tight">Control if Android/iOS apps can discover this server IP and identity.</p>
                     </div>
                   </div>
                 )}
+
                 {configTab === 'paths' && (
-                  <div className="grid grid-cols-1 gap-4">
-                    {activeController.robots.map(r => (
-                      <div key={r.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col gap-2 shadow-inner">
-                        <div className="flex justify-between items-center"><label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{r.name}</label><span className="text-[9px] text-slate-700 font-mono italic">NODE_REF_A{r.id}</span></div>
-                        <div className="flex items-center gap-2"><div className="p-2 bg-slate-900 border border-slate-800 rounded text-slate-600"><FolderOpen size={16}/></div><input value={settings.worksPaths?.[r.id] || ""} onChange={e => updateSettings({ worksPaths: { ...(settings.worksPaths || {}), [r.id]: e.target.value } })} className="flex-1 bg-slate-900 border border-slate-800 rounded p-2 text-xs text-sky-400 font-mono outline-none focus:border-sky-500" placeholder={`WORKS/${r.name.replace(/\s+/g,'')}`} /></div>
-                      </div>
-                    ))}
+                  <div className="space-y-6 animate-in fade-in duration-300">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Work Directory Mapping</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      {activeController.robots.map(r => (
+                        <div key={r.id} className="bg-slate-950 p-5 rounded-2xl border border-slate-800 flex flex-col gap-3 shadow-2xl relative group">
+                          <div className="flex justify-between items-center"><label className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{r.name}</label><span className="text-[9px] text-slate-700 font-mono uppercase">Node A{r.id}</span></div>
+                          <div className="flex items-center gap-3"><div className="p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-600 group-hover:text-sky-400 transition-colors"><FolderOpen size={18}/></div><input value={settings.worksPaths?.[r.id] || ""} onChange={e => updateSettings({ worksPaths: { ...(settings.worksPaths || {}), [r.id]: e.target.value } })} className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-sky-400 font-mono outline-none focus:border-sky-500 shadow-inner" placeholder={`WORKS/${r.name.replace(/\s+/g,'')}`} /></div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
-                {configTab === 'gamepad' && <React.Suspense fallback={<PanelLoadingFallback />}><GamepadConfig /></React.Suspense>}
+
+                {configTab === 'canota' && (
+                  <div className="space-y-8 animate-in fade-in duration-300">
+                    <div className="bg-slate-950 p-8 rounded-3xl border border-slate-800 space-y-8 shadow-2xl relative overflow-hidden">
+                       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-sky-500/20 to-transparent" />
+                       <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest flex items-center gap-3"><Cpu size={20}/> CAN-OTA Deployment Bus</h3>
+                       <div className="space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Transport Layer</label><select className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 outline-none focus:border-sky-500 shadow-inner transition-all"><option>Virtual Simulation Mode (MOCK)</option><option>Hardware Direct (SPI to STM32H7)</option><option>Network Tunnel (UDP Broadcast)</option></select></div>
+                       <div className="grid grid-cols-2 gap-8 border-t border-slate-900 pt-8">
+                          <div className="space-y-3"><label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Kinematic Brain Firmware</label><div className="flex items-center gap-3 bg-slate-900 p-3 rounded-xl border border-slate-800 shadow-inner"><Save size={16} className="text-slate-700"/><input className="bg-transparent border-none text-[11px] text-slate-500 font-mono w-full" value="FIRMWARE/KinematicBrain" readOnly /></div></div>
+                          <div className="space-y-3"><label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Robot Controller Firmware</label><div className="flex items-center gap-3 bg-slate-900 p-3 rounded-xl border border-slate-800 shadow-inner"><Save size={16} className="text-slate-700"/><input className="bg-transparent border-none text-[11px] text-slate-500 font-mono w-full" value="FIRMWARE/ControllerBoard" readOnly /></div></div>
+                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {configTab === 'gamepad' && (
+                  <div className="animate-in zoom-in-95 fade-in duration-500">
+                    <React.Suspense fallback={<PanelLoadingFallback />}><GamepadConfig /></React.Suspense>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="p-4 border-t border-slate-800 flex justify-end bg-slate-950 shrink-0">
-              <button onClick={() => setIsSettingsOpen(false)} className="px-10 py-2.5 text-sm bg-sky-500 text-slate-950 font-black rounded uppercase">Done</button>
+              <button onClick={() => setIsSettingsOpen(false)} className="px-12 py-3 text-sm bg-sky-500 text-slate-950 font-black rounded-xl shadow-[0_0_30px_rgba(0,229,255,0.4)] border border-sky-400 uppercase hover:bg-sky-400 transition-all tracking-[0.2em]">Commit & Close</button>
             </div>
           </div>
         </div>
@@ -285,7 +378,7 @@ export default function Dashboard() {
                     ))}
                   </div>
 
-                  <div className="mt-8 mb-2 px-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1 shrink-0">Resources</div>
+                  <div className="mt-12 mb-2 px-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1 shrink-0">Resources</div>
                   <div className="flex flex-col gap-1 pb-4 shrink-0">
                     <button onClick={() => setNavStack(['industrial'])} className="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-800 transition-all">
                       <div className="flex items-center gap-4"><Layers size={18} /> Industrial</div>
@@ -427,7 +520,7 @@ function OverviewPanel() {
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); updateRobot(r.id, { online: !r.online }) }}
-                  className={cn("px-6 py-3 rounded-full text-[11px] font-black tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(16,185,129,0.5)] border-2",
+                  className={cn("px-6 py-3 rounded-full text-[11px] font-black tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] border-2",
                   r.online ? "bg-[#10b981] text-white border-[#34d399] hover:bg-[#059669]" : "bg-slate-800 text-slate-500 border-slate-700 hover:border-slate-500")}
                 >
                   {r.online ? 'ONLINE' : 'CONNECT'}
@@ -511,5 +604,13 @@ function ModuleRow({ label, active, color, description, onClick }: { label: stri
         </span>
       </div>
     </div>
+  );
+}
+
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg className={cn("w-4 h-4 transition-transform", open ? "rotate-180" : "")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
   );
 }

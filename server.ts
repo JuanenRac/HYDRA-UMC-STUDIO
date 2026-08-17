@@ -354,7 +354,12 @@ async function startServer() {
   });
 
   httpServer.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT} (HTTP + WebSocket /ws)`);
+    const serverName = lastKnownSettings.serverName || "HYDRA-UMC STUDIO";
+    console.log(`=================================================`);
+    console.log(` HYDRA-UMC SERVER: ${serverName}`);
+    console.log(` STATUS: Running on port ${PORT}`);
+    console.log(` DISCOVERY: Active (HTTP + WebSocket /ws)`);
+    console.log(`=================================================`);
   });
 }
 
