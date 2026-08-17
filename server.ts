@@ -12,11 +12,49 @@ import http from "http";
 import os from "os";
 import { WebSocketServer, WebSocket } from "ws";
 import { calculateJoints } from "./kinematics";
+import Bonjour from 'bonjour-service';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = "hydra_industrial_secret_2026"; // In production, move to .env
+
+// Bonjour/mDNS service for instant discovery
+const bonjour = new Bonjour();
+let mdnsService: any = null;
+
+function setupDiscovery(serverName: string) {
+  if (mdnsService) mdnsService.stop();
+  mdnsService = bonjour.publish({ name: serverName, type: 'hydra', port: 3000 });
+  console.log(`[mDNS] Advertising as ${serverName}.local (_hydra._tcp)`);
+}
+
+// Log rotation utility
+const LOG_FILE = path.join(process.cwd(), "data", "logs", "server.log");
+if (!fs.existsSync(path.dirname(LOG_FILE))) fs.mkdirSync(path.dirname(LOG_FILE), { recursive: true });
+
+function industrialLog(msg: string) {
+  const entry = `[${new Date().toISOString()}] ${msg}\n`;
+  console.log(msg);
+  fs.appendFileSync(LOG_FILE, entry);
+}
 
 // Bumped whenever the /api/hydra-info or /ws message contract changes in a
 // way a remote client (HYDRA-UMC SUITE, the mobile control apps) might need
 // to branch on - NOT the same number as package.json's own app version.
 const REMOTE_API_VERSION = 1;
+
+// Middleware to verify JWT token
+function authenticate(req: any, res: any, next: any) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) return res.status(401).json({ error: "Access denied: No token provided" });
+
+  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    if (err) return res.status(403).json({ error: "Access denied: Invalid token" });
+    req.user = user;
+    next();
+  });
+}
 
 async function startServer() {
   const app = express();
@@ -65,12 +103,14 @@ async function startServer() {
   // tab's own next 500ms debounced re-fetch (which never happens today -
   // the browser client only fetches /api/settings once, on mount).
   const wsClients = new Set<WebSocket>();
-  function broadcastSettings(payload: any) {
+  function broadcastSettings(payload: any, deltaOnly: boolean = false) {
     lastKnownSettings = payload;
-    const msg = JSON.stringify({ type: "settings", payload });
+    const type = deltaOnly ? "delta" : "settings";
+    const msg = JSON.stringify({ type, payload });
     for (const client of wsClients) {
       if (client.readyState === WebSocket.OPEN) client.send(msg);
     }
+    if (payload.serverName) setupDiscovery(payload.serverName);
   }
 
   // Serve static data files (like WORKS/) at the root level - but never
@@ -86,6 +126,17 @@ async function startServer() {
     next();
   });
   app.use(express.static(dataPath));
+
+  app.post("/api/login", (req, res) => {
+    const { username, password } = req.body;
+    // Industrial logic: for now we use demo/demo, but with JWT overhead
+    if (username === "demo" && password === "demo") {
+      const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '24h' });
+      res.json({ success: true, token });
+    } else {
+      res.status(401).json({ error: "Invalid credentials" });
+    }
+  });
 
   // API routes FIRST
   app.get("/api/settings", (req, res) => {
@@ -103,7 +154,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/settings", (req, res) => {
+  app.post("/api/settings", authenticate, (req, res) => {
     const settingsPath = getSettingsPath();
     try {
       const payload = req.body;
@@ -117,8 +168,7 @@ async function startServer() {
   });
 
   // Direct Atomic API for Industrial Control
-  // Reduces lag by only updating what's necessary and avoiding full JSON overwrites
-  app.post("/api/robot/:id/command", (req, res) => {
+  app.post("/api/robot/:id/command", authenticate, (req, res) => {
     const robotId = parseInt(req.params.id);
     const { command, params } = req.body;
 
@@ -190,8 +240,10 @@ async function startServer() {
       });
     });
 
+    industrialLog(`Command: ${command} on Robot ${robotId}`);
+
     fs.writeFileSync(getSettingsPath(), JSON.stringify(lastKnownSettings, null, 2), "utf-8");
-    broadcastSettings(lastKnownSettings);
+    broadcastSettings(lastKnownSettings, true); // Use Delta-Sync for commands
     res.json({ success: true, affectedCount: affectedIds.length });
   });
 
@@ -355,11 +407,12 @@ async function startServer() {
 
   httpServer.listen(PORT, "0.0.0.0", () => {
     const serverName = lastKnownSettings.serverName || "HYDRA-UMC STUDIO";
-    console.log(`=================================================`);
-    console.log(` HYDRA-UMC SERVER: ${serverName}`);
-    console.log(` STATUS: Running on port ${PORT}`);
-    console.log(` DISCOVERY: Active (HTTP + WebSocket /ws)`);
-    console.log(`=================================================`);
+    setupDiscovery(serverName);
+    industrialLog(`=================================================`);
+    industrialLog(` HYDRA-UMC SERVER: ${serverName}`);
+    industrialLog(` STATUS: Running on port ${PORT}`);
+    industrialLog(` DISCOVERY: Active (mDNS + HTTP + WS)`);
+    industrialLog(`=================================================`);
   });
 }
 

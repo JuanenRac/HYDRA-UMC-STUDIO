@@ -64,7 +64,7 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  const [configTab, setConfigTab] = useState<'identity' | 'controllers' | 'ui' | 'robots' | 'models' | 'integrations' | 'paths' | 'canota' | 'gamepad'>('identity');
+  const [configTab, setConfigTab] = useState<'identity' | 'controllers' | 'ui' | 'robots' | 'cameras' | 'models' | 'integrations' | 'paths' | 'canota' | 'gamepad'>('identity');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [navStack, setNavStack] = useState<string[]>([]);
   const currentMenu = navStack[navStack.length - 1] || 'root';
@@ -129,6 +129,7 @@ export default function Dashboard() {
                 <button onClick={() => setConfigTab('controllers')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'controllers' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Controllers</button>
                 <button onClick={() => setConfigTab('ui')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'ui' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>UI & Themes</button>
                 <button onClick={() => setConfigTab('robots')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'robots' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Robot Names</button>
+                <button onClick={() => setConfigTab('cameras')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'cameras' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Camera Setup</button>
                 <button onClick={() => setConfigTab('models')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'models' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Models</button>
                 <button onClick={() => setConfigTab('integrations')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'integrations' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Integrations</button>
                 <button onClick={() => setConfigTab('paths')} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === 'paths' ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>Work Paths</button>
@@ -182,7 +183,7 @@ export default function Dashboard() {
 
                     <div className="pt-6 grid grid-cols-2 gap-4 border-t border-slate-800/50">
                        <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">FDCAN Protocol</label><select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"><option>Classic CAN (2.0)</option><option selected>FDCAN (ISO 11898-1)</option></select></div>
-                       <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Data Bitrate</label><select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"><option>500 kbps</option><option>1 Mbps</option><option selected>2 Mbps</option><option>5 Mbps</option><option>10 Mbps</option></select></div>
+                       <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Data Phase Bitrate</label><select className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"><option>500 kbps</option><option>1 Mbps</option><option selected>2 Mbps</option><option>5 Mbps</option><option>10 Mbps</option></select></div>
                     </div>
                   </div>
                 )}
@@ -242,6 +243,53 @@ export default function Dashboard() {
                   </div>
                 )}
 
+                {configTab === 'cameras' && (
+                  <div className="space-y-6 animate-in fade-in duration-300">
+                    <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2">Industrial Camera Mapping</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      {activeController.cameras.map((c, idx) => {
+                        const hasConflict = activeController.cameras.some(other => other.id !== c.id && (other.assignedRobotId === c.assignedRobotId && c.assignedRobotId));
+                        const hasSourceConflict = activeController.cameras.some(other => other.id !== c.id && (other.hardwareSource === c.hardwareSource && c.hardwareSource));
+
+                        return (
+                        <div key={c.id} className={cn("bg-slate-950 p-6 rounded-2xl border transition-all shadow-xl space-y-4", (hasConflict || hasSourceConflict) ? "border-rose-500/50 bg-rose-500/5 shadow-rose-500/10" : "border-slate-800")}>
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                               <div className={cn("w-10 h-10 rounded-full border flex items-center justify-center font-black", (hasConflict || hasSourceConflict) ? "bg-rose-500/20 border-rose-500 text-rose-400" : "bg-slate-900 border-slate-700 text-sky-400")}>C{c.id}</div>
+                               <span className="text-xs font-black text-slate-200 uppercase tracking-widest">Vision Slot {idx + 1}</span>
+                            </div>
+                            {(hasConflict || hasSourceConflict) && <div className="flex items-center gap-1 text-rose-400 text-[10px] font-bold uppercase"><AlertTriangle size={14}/> Resource Conflict</div>}
+                            {!hasConflict && !hasSourceConflict && <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter", c.connected ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-800 text-slate-600")}>{c.connected ? "Active Stream" : "Standby"}</span>}
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Assigned Robot</label>
+                              <select
+                                value={c.assignedRobotId || ""}
+                                onChange={e => updateCamera(c.id, { assignedRobotId: parseInt(e.target.value) || undefined })}
+                                className={cn("w-full bg-slate-900 border rounded-lg p-2 text-xs text-slate-200 outline-none transition-all", hasConflict ? "border-rose-500" : "border-slate-800 focus:border-sky-500")}
+                              >
+                                <option value="">None / Floating</option>
+                                {activeController.robots.map(r => <option key={r.id} value={r.id}>{r.name} (A{r.id})</option>)}
+                              </select>
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Physical Hardware Source</label>
+                              <input
+                                value={c.hardwareSource || ""}
+                                onChange={e => updateCamera(c.id, { hardwareSource: e.target.value })}
+                                className={cn("w-full bg-slate-900 border rounded-lg p-2 text-xs font-mono outline-none transition-all", hasSourceConflict ? "border-rose-500 text-rose-400" : "border-slate-800 text-emerald-400 focus:border-emerald-500")}
+                                placeholder="/dev/video0"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )})}
+                    </div>
+                  </div>
+                )}
+
                 {configTab === 'models' && (
                   <div className="space-y-6 animate-in fade-in duration-300">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Custom URDF Library</h3>
@@ -260,11 +308,13 @@ export default function Dashboard() {
 
                 {configTab === 'integrations' && (
                   <div className="space-y-8 animate-in fade-in duration-300">
+                    {/* OpenPNP */}
                     <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-2xl relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 blur-3xl" />
                       <div className="flex justify-between items-center border-b border-slate-900 pb-3"><span className="font-black text-sky-400 uppercase tracking-widest text-[11px]">OpenPNP Control</span><input type="checkbox" checked={settings.integrations?.openPnP?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-sky-500" /></div>
                       <div className="grid grid-cols-2 gap-6"><div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">Server IP</label><input value={settings.integrations?.openPnP?.ip} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, ip: e.target.value } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div><div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">Port</label><input type="number" value={settings.integrations?.openPnP?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div></div>
                     </div>
+                    {/* CNC */}
                     <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-2xl relative overflow-hidden">
                        <div className="absolute top-0 right-0 w-24 h-24 bg-fuchsia-500/5 blur-3xl" />
                        <div className="flex justify-between items-center border-b border-slate-900 pb-3"><span className="font-black text-fuchsia-400 uppercase tracking-widest text-[11px]">CNC Milling Backend</span><input type="checkbox" checked={settings.integrations?.cnc?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-fuchsia-500" /></div>
@@ -273,6 +323,7 @@ export default function Dashboard() {
                           <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">Control Port</label><input type="number" value={settings.integrations?.cnc?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div>
                        </div>
                     </div>
+                    {/* Laser */}
                     <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-2xl relative overflow-hidden">
                        <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 blur-3xl" />
                        <div className="flex justify-between items-center border-b border-slate-900 pb-3"><span className="font-black text-rose-500 uppercase tracking-widest text-[11px]">Laser Engrave Engine</span><input type="checkbox" checked={settings.integrations?.laser?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-rose-500" /></div>
@@ -281,6 +332,7 @@ export default function Dashboard() {
                           <input type="number" value={settings.integrations?.laser?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" />
                        </div>
                     </div>
+                    {/* Remote Access */}
                     <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-2 shadow-inner">
                         <div className="flex items-center justify-between"><span className="font-black text-emerald-400 uppercase text-[10px] tracking-widest">Remote App Access Discovery</span><input type="checkbox" checked={settings.remoteAccess?.enabled ?? true} onChange={(e) => updateSettings({ remoteAccess: { enabled: e.target.checked } })} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500" /></div>
                         <p className="text-[10px] text-slate-600 leading-tight">Control if Android/iOS apps can discover this server IP and identity.</p>

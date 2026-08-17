@@ -103,7 +103,10 @@ export function CamerasView() {
               <div className="flex flex-col gap-2 p-2 border-b border-slate-800 bg-slate-900/80 shrink-0 w-full z-10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-medium text-slate-200">{t('cameras.cam', 'Cam')} {i + 1}</span>
+                    <span className="text-[11px] font-bold text-slate-200">{t('cameras.cam', 'Cam')} {i + 1}</span>
+                    {c.assignedRobotId && (
+                      <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-sky-500/20 text-sky-400 border border-sky-500/30">ROBOT A{c.assignedRobotId}</span>
+                    )}
                     {c.connected && (
                       <span className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{t('cameras.live', 'LIVE')}</span>
                     )}

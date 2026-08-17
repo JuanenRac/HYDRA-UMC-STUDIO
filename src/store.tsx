@@ -290,6 +290,8 @@ export interface CameraState {
   id: number;
   connected: boolean;
   type: CameraType;
+  assignedRobotId?: number;
+  hardwareSource?: string;
   yoloEnabled: boolean;
   detections: { label: string; confidence: number; box: { x: number; y: number; w: number; h: number } }[];
 }
@@ -469,6 +471,8 @@ export const createDefaultCameras = (): CameraState[] => {
     id: i + 1,
     connected: i < 2,
     type: 'USB Vision Camera',
+    assignedRobotId: i + 1,
+    hardwareSource: `USB_DEV_${i}`,
     yoloEnabled: i === 0,
     detections: [
       { label: 'PCB_PANEL', confidence: 0.98, box: { x: 10 + (i * 5), y: 20 + (i * 2), w: 50, h: 40 } },
