@@ -659,10 +659,6 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }).catch(() => {
       if (!cancelled) setIsLoaded(true);
     });
-      if (!cancelled) applyServerData(data);
-    }).catch(() => {
-      if (!cancelled) setIsLoaded(true);
-    });
 
     // Live sync: any client (this tab, another tab, HYDRA-UMC SUITE, a
     // mobile control app) that POSTs /api/settings or sends a WS "settings"

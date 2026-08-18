@@ -1385,9 +1385,9 @@
           "tool": "3D Printing Hotend",
           "urtcConnected": true,
           "pos": {
-            "x": 141.517099596109,
-            "y": 237.76767725089553,
-            "z": 380,
+            "x": 259.3012963615874,
+            "y": 8.76857014968463,
+            "z": 129.99999999999994,
             "a": 0,
             "b": 0,
             "c": 0,
@@ -1396,9 +1396,9 @@
             "trz": 0
           },
           "joints": {
-            "j1": -196.5119323508042,
-            "j2": 9.112398048598402,
-            "j3": -33.57586871605524,
+            "j1": -222.170746456873,
+            "j2": 16.2110509658122,
+            "j3": -40.50188451191628,
             "j4": 0,
             "j5": 0,
             "j6": 0
@@ -1981,17 +1981,17 @@
             }
           ],
           "playbackState": {
-            "isPlaying": false,
-            "activeStep": -1,
-            "speed": 280.1347351074219,
+            "isPlaying": true,
+            "activeStep": 10,
+            "speed": 397.0277099609375,
             "isLooping": true,
             "isFinished": false,
             "isPaused": false,
-            "acceleration": 414.989990234375,
-            "playing": false,
+            "acceleration": 535.933349609375,
+            "playing": true,
             "finished": false,
             "paused": false,
-            "requestStop": true,
+            "requestStop": false,
             "requestPause": false
           },
           "hasXYTable": false,
@@ -2801,7 +2801,7 @@
         {
           "id": 4,
           "name": "Robot A4",
-          "online": true,
+          "online": false,
           "model": "Faze4 (6-DOF)",
           "role": "Idle",
           "tool": "None",
@@ -3561,7 +3561,7 @@
         {
           "id": 8,
           "name": "Robot A8",
-          "online": true,
+          "online": false,
           "model": "UR20 (6-DOF)",
           "role": "Idle",
           "tool": "None",
