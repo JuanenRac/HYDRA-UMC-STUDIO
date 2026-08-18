@@ -120,8 +120,8 @@
           "tool": "NEMA Gripper",
           "urtcConnected": true,
           "pos": {
-            "x": 193.23097139219183,
-            "y": -3.5136878689527244,
+            "x": -6.769028607808167,
+            "y": 96.48631213104727,
             "z": 109.99999999999996,
             "a": 0,
             "b": 0,
@@ -1117,11 +1117,11 @@
           "playbackState": {
             "isPlaying": false,
             "activeStep": -1,
-            "speed": 405.3,
+            "speed": 280.1347351074219,
             "isLooping": true,
-            "isFinished": true,
+            "isFinished": false,
             "isPaused": false,
-            "acceleration": 725.6372680664062,
+            "acceleration": 414.989990234375,
             "playing": false,
             "requestStop": true,
             "finished": false,
@@ -1385,9 +1385,9 @@
           "tool": "3D Printing Hotend",
           "urtcConnected": true,
           "pos": {
-            "x": 141.51709959610903,
-            "y": -12.232322749104515,
-            "z": 130,
+            "x": 141.517099596109,
+            "y": 237.76767725089553,
+            "z": 380,
             "a": 0,
             "b": 0,
             "c": 0,
@@ -1408,8 +1408,8 @@
             false
           ],
           "pumps": [
-            false,
-            false
+            true,
+            true
           ],
           "endstops": {
             "x1": false,
@@ -1983,11 +1983,11 @@
           "playbackState": {
             "isPlaying": false,
             "activeStep": -1,
-            "speed": 355.5,
+            "speed": 280.1347351074219,
             "isLooping": true,
-            "isFinished": true,
+            "isFinished": false,
             "isPaused": false,
-            "acceleration": 100,
+            "acceleration": 414.989990234375,
             "playing": false,
             "finished": false,
             "paused": false,
@@ -2175,8 +2175,8 @@
           "tool": "AOI (Automated Optical Inspection) System",
           "urtcConnected": true,
           "pos": {
-            "x": 213.80984815647855,
-            "y": 0,
+            "x": 13.809848156478552,
+            "y": 100,
             "z": 148.17086509679316,
             "a": 0,
             "b": 0,
@@ -2633,10 +2633,16 @@
           "playbackState": {
             "isPlaying": false,
             "activeStep": -1,
-            "speed": 374.6,
+            "speed": 280.1347351074219,
             "isLooping": true,
-            "isFinished": true,
-            "isPaused": false
+            "isFinished": false,
+            "isPaused": false,
+            "playing": false,
+            "requestStop": true,
+            "finished": false,
+            "paused": false,
+            "requestPause": false,
+            "acceleration": 414.989990234375
           },
           "hasXYTable": false,
           "juanenPnP": {
@@ -3561,8 +3567,8 @@
           "tool": "None",
           "urtcConnected": false,
           "pos": {
-            "x": 259.5381899432486,
-            "y": 0.17061473300417443,
+            "x": 59.5381899432486,
+            "y": 100.17061473300419,
             "z": 10.000000000000085,
             "a": 0,
             "b": 0,
@@ -3753,10 +3759,16 @@
           "playbackState": {
             "isPlaying": false,
             "activeStep": -1,
-            "speed": 100,
+            "speed": 280.1347351074219,
             "isLooping": false,
-            "isFinished": true,
-            "isPaused": false
+            "isFinished": false,
+            "isPaused": false,
+            "playing": false,
+            "requestStop": true,
+            "finished": false,
+            "paused": false,
+            "requestPause": false,
+            "acceleration": 414.989990234375
           },
           "hasXYTable": false,
           "juanenPnP": {

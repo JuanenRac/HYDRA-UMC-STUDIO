@@ -642,7 +642,23 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/settings').then(r => r.json()).then(data => {
+
+    // Industrial logic: allow token override from URL for headless/mobile views (e.g. Android WebView)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+    if (urlToken) {
+      console.log("[Industrial] Persisting session token from URL");
+      localStorage.setItem('hydra_token', urlToken);
+    }
+
+    const activeToken = urlToken || localStorage.getItem('hydra_token');
+    const headers = activeToken ? { 'Authorization': `Bearer ${activeToken}` } : {};
+
+    fetch('/api/settings', { headers }).then(r => r.json()).then(data => {
+      if (!cancelled) applyServerData(data);
+    }).catch(() => {
+      if (!cancelled) setIsLoaded(true);
+    });
       if (!cancelled) applyServerData(data);
     }).catch(() => {
       if (!cancelled) setIsLoaded(true);
@@ -692,9 +708,14 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const payloadJson = JSON.stringify(payload);
       if (payloadJson === lastPayloadJsonRef.current) return; // unchanged since the last send/receive - nothing to do
       lastPayloadJsonRef.current = payloadJson;
+
+      const token = localStorage.getItem('hydra_token');
+      const headers: any = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       fetch('/api/settings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: payloadJson
       }).catch(() => {});
     }, 500);

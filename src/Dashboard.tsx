@@ -86,6 +86,12 @@ export default function Dashboard() {
       setActiveTab('robot');
     }
 
+    const tokenParam = params.get('token');
+    if (tokenParam) {
+      console.log(`[Industrial] Session Token Received from Remote`);
+      localStorage.setItem('hydra_token', tokenParam);
+    }
+
     document.body.dataset.theme = settings.theme;
     if (settings.language && i18n.language !== settings.language) {
       i18n.changeLanguage(settings.language);
