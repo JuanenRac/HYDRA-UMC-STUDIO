@@ -8,7 +8,8 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Info, Mail } from 'lucide-react';
+import { Info, Mail, LogOut } from 'lucide-react';
+import { useHydraStore } from '../store';
 import HydraIcon from '../assets/HYDRA_UMC_ICON.svg';
 
 const AUTHOR_NAME = 'JuanenRac (Electro Hobby 3D)';
@@ -17,6 +18,7 @@ const LICENSE_NAME = 'GNU General Public License v3.0 (GPL-3.0)';
 
 export function About({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
+  const { authToken, logout } = useHydraStore();
   const [version, setVersion] = useState<string | null>(null);
 
   useEffect(() => {
