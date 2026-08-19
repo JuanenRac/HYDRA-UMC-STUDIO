@@ -572,5 +572,16 @@
     "fan_n": "Ventilateur {{n}} : {{state}}",
     "pump_n": "Pompe {{n}} : {{state}}",
     "valve_n": "Électrovanne {{n}} : {{state}}"
+  },
+  "auth": {
+    "title": "Accès HYDRA-UMC STUDIO",
+    "subtitle": "Connectez-vous pour enregistrer les modifications et recevoir les mises à jour en direct des autres clients connectés.",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "sign_in": "Se Connecter",
+    "signing_in": "Connexion…",
+    "continue_read_only": "Continuer en lecture seule",
+    "read_only_hint": "Vous pouvez naviguer sans vous connecter, mais les modifications ne seront pas enregistrées et les mises à jour en direct n'arriveront pas.",
+    "sign_out": "Se Déconnecter"
   }
 }

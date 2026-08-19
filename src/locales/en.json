@@ -572,5 +572,16 @@
     "fan_n": "Fan {{n}}: {{state}}",
     "pump_n": "Pump {{n}}: {{state}}",
     "valve_n": "Valve {{n}}: {{state}}"
+  },
+  "auth": {
+    "title": "HYDRA-UMC STUDIO Access",
+    "subtitle": "Sign in to save changes and receive live updates from other connected clients.",
+    "username": "Username",
+    "password": "Password",
+    "sign_in": "Sign In",
+    "signing_in": "Signing in…",
+    "continue_read_only": "Continue read-only",
+    "read_only_hint": "You can browse without signing in, but changes won't be saved and live updates won't arrive.",
+    "sign_out": "Sign Out"
   }
 }

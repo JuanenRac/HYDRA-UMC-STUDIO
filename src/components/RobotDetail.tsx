@@ -1761,12 +1761,17 @@ console.log("Loading example:", id);
                             type="checkbox" 
                             checked={(robot.combinedWith || []).includes(r.id)}
                             onChange={(e) => {
+                              // Dedupe defensively on every write, not just here - a stale
+                              // `robot` closure (or any future double-fire of this handler)
+                              // must not be able to grow this array unbounded. Found in
+                              // production 2026-08-19: one robot's combinedWith had grown to
+                              // 144 entries (the same 3 ids repeated 48x) - see
+                              // SONNET/HYDRA-UMC-STUDIO/auditoria_historial.txt.
                               const current = robot.combinedWith || [];
-                              if (e.target.checked) {
-                                updateRobot(robot.id, { combinedWith: [...current, r.id] });
-                              } else {
-                                updateRobot(robot.id, { combinedWith: current.filter(id => id !== r.id) });
-                              }
+                              const next = e.target.checked
+                                ? (current.includes(r.id) ? current : [...current, r.id])
+                                : current.filter(id => id !== r.id);
+                              updateRobot(robot.id, { combinedWith: Array.from(new Set(next)) });
                             }}
                             className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-sky-500 focus:ring-sky-500 focus:ring-opacity-50 focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer appearance-none checked:bg-sky-500 checked:border-sky-500 transition-colors relative"
                           />

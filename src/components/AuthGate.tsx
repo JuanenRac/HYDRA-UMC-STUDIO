@@ -1,0 +1,91 @@
+// =============================================================================
+// HYDRA-UMC STUDIO - Session Login Gate: AuthGate.tsx
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+// New 2026-08-19 - see store.tsx's own authToken comment for the full why:
+// server.ts's `authenticate` middleware has unconditionally required a bearer
+// token on every write (POST /api/settings, POST /api/robot/:id/command) and
+// on the /ws upgrade for a while now, but nothing in this app ever called
+// POST /api/login to get one - a plain browser tab could read state but could
+// never save a change or receive a live push. This is the login screen that
+// was missing. A ?token= URL param (the Android app's embedded 3D WebView,
+// ThreeDScreen.kt) or a token already in localStorage from a previous login
+// skips this screen entirely - see authToken's lazy initializer in store.tsx.
+
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Lock, User, LogIn } from 'lucide-react';
+import { useHydraStore } from '../store';
+import HydraIcon from '../assets/HYDRA_UMC_ICON.svg';
+
+export function AuthGate({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
+  const { authToken, login, loginError } = useHydraStore();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [readOnly, setReadOnly] = useState(false);
+
+  if (authToken || readOnly) return <>{children}</>;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    await login(username, password);
+    setIsSubmitting(false);
+  };
+
+  return (
+    <div className="w-full h-screen bg-slate-950 bg-electric-grid flex items-center justify-center p-6">
+      <form onSubmit={handleSubmit} className="w-[380px] max-w-full bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-5">
+        <img src={HydraIcon} alt="Hydra Logo" className="w-16 h-16 object-contain" />
+        <div className="text-center space-y-1">
+          <h1 className="text-lg font-bold text-slate-100">{t('auth.title')}</h1>
+          <p className="text-xs text-slate-500 leading-relaxed">{t('auth.subtitle')}</p>
+        </div>
+
+        <div className="w-full space-y-3">
+          <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 focus-within:border-sky-400 transition-all">
+            <User size={16} className="text-slate-500 shrink-0" />
+            <input
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              placeholder={t('auth.username')}
+              autoComplete="username"
+              className="bg-transparent outline-none text-sm text-slate-100 flex-1"
+            />
+          </div>
+          <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 focus-within:border-sky-400 transition-all">
+            <Lock size={16} className="text-slate-500 shrink-0" />
+            <input
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder={t('auth.password')}
+              type="password"
+              autoComplete="current-password"
+              className="bg-transparent outline-none text-sm text-slate-100 flex-1"
+            />
+          </div>
+        </div>
+
+        {loginError && <p className="text-xs text-rose-400 text-center">{loginError}</p>}
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 text-sm bg-sky-500 hover:bg-sky-400 disabled:opacity-50 text-slate-950 font-bold rounded-xl shadow-lg border border-sky-400 uppercase tracking-wide transition-all"
+        >
+          <LogIn size={16} /> {isSubmitting ? t('auth.signing_in') : t('auth.sign_in')}
+        </button>
+
+        <div className="w-full pt-3 border-t border-slate-800 text-center space-y-1">
+          <button type="button" onClick={() => setReadOnly(true)} className="text-xs text-slate-500 hover:text-slate-300 underline transition-colors">
+            {t('auth.continue_read_only')}
+          </button>
+          <p className="text-[10px] text-slate-600">{t('auth.read_only_hint')}</p>
+        </div>
+      </form>
+    </div>
+  );
+}

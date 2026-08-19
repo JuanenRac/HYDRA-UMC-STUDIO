@@ -312,7 +312,21 @@ function OverviewPanel() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 pt-10">
           {robots.map((r, i) => {
             const cam = cameras.find(c => c.id === r.id);
-            const combinedNames = (r.combinedWith || []).map(id => robots.find(o => o.id === id)?.name || `A${id}`);
+            // combinedWith is only ever stored on the robot that INITIATED the combine
+            // (RobotDetail.tsx's "Combine with Robot" checkbox writes to the LEADER robot
+            // whose Config tab is open, never to the follower's own side) - shown only on
+            // the FOLLOWER side here (2026-08-19, per the owner's explicit request: the
+            // leader itself shows nothing, only "Robot A2"/"Robot A3" each show "Combined
+            // With: Robot A1"), by scanning every OTHER robot's combinedWith for this
+            // robot's id - resolved by id at render time, not stored by name, so a rename
+            // never goes stale here. Array.from(new Set()) guards a follower combined into
+            // more than one leader at once from listing the same leader twice, and is also
+            // a display-layer safety net against the duplicate-id bug fixed the same day -
+            // see RobotDetail.tsx's combine-robot checkbox handler and
+            // auditoria_historial.txt (2026-08-19, a robot's own combinedWith was found
+            // with 144 entries, 3 ids repeated 48x) for the real fix (dedupe on write).
+            const combinedLeaders = robots.filter(other => other.id !== r.id && other.combinedWith?.includes(r.id)).map(other => other.id);
+            const combinedNames = Array.from(new Set(combinedLeaders)).map(id => robots.find(o => o.id === id)?.name || `A${id}`);
             const isRunning = r.online && !!r.playbackState?.isPlaying;
             return (
             <div key={r.id} className={cn("p-6 rounded-[2.5rem] border-2 flex flex-col gap-5 transition-all duration-700 relative overflow-hidden group", r.online ? "bg-slate-900 border-slate-700 shadow-[0_25px_60px_rgba(0,0,0,0.5)] scale-[1.02]" : "bg-slate-950/40 border-slate-800/50 opacity-40 grayscale")}>

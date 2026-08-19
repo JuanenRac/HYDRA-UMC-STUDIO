@@ -572,5 +572,16 @@
     "fan_n": "Ventola {{n}}: {{state}}",
     "pump_n": "Pompa {{n}}: {{state}}",
     "valve_n": "Valvola {{n}}: {{state}}"
+  },
+  "auth": {
+    "title": "Accesso a HYDRA-UMC STUDIO",
+    "subtitle": "Accedi per salvare le modifiche e ricevere aggiornamenti live dagli altri client connessi.",
+    "username": "Nome utente",
+    "password": "Password",
+    "sign_in": "Accedi",
+    "signing_in": "Accesso in corso…",
+    "continue_read_only": "Continua in sola lettura",
+    "read_only_hint": "Puoi navigare senza accedere, ma le modifiche non verranno salvate e non arriveranno aggiornamenti live.",
+    "sign_out": "Esci"
   }
 }

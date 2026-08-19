@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { HydraProvider } from './store';
 import Dashboard from './Dashboard';
 import { GamepadController } from './components/GamepadController';
+import { AuthGate } from './components/AuthGate';
 import SplashSvg from './assets/HYDRA_UMC_SPLASHSCREEN.svg';
 
 /**
@@ -49,8 +50,10 @@ function App() {
 
   return (
     <HydraProvider>
-      <GamepadController />
-      <Dashboard />
+      <AuthGate>
+        <GamepadController />
+        <Dashboard />
+      </AuthGate>
     </HydraProvider>
   );
 }

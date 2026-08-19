@@ -376,28 +376,6 @@ export interface SystemSettings {
   };
 }
 
-/** Defines the data structure and expected properties for  hydra store context type entities. */
-interface HydraStoreContextType {
-  controllers: HydraController[];
-  activeControllerId: string;
-  activeController: HydraController;
-  setActiveControllerId: (id: string) => void;
-  robots: RobotState[];
-  cameras: CameraState[];
-  settings: SystemSettings;
-  updateController: (id: string, updates: Partial<HydraController>) => void;
-  updateRobot: (id: number, updates: Partial<RobotState>) => void;
-  updateCamera: (id: number, updates: Partial<CameraState>) => void;
-  updateSettings: (updates: Partial<SystemSettings>) => void;
-  addController: (controller: HydraController) => void;
-  removeController: (id: string) => void;
-  saveKinematics: (id: number) => void;
-  loadKinematics: (id: number, e: React.ChangeEvent<HTMLInputElement>) => void;
-  exportScene: () => void;
-  importScene: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  factoryReset: () => void;
-}
-
 /**
  * Renders the Create default robots component.
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
@@ -527,6 +505,11 @@ interface HydraStoreContextType {
   exportScene: () => void;
   importScene: (e: React.ChangeEvent<HTMLInputElement>) => void;
   factoryReset: () => void;
+  /** Null until a valid session token exists (from a ?token= URL param - e.g. the Android app's embedded 3D WebView - a prior login persisted to localStorage, or a fresh login() call). server.ts requires this for POST /api/settings, POST /api/robot/:id/command, and the /ws upgrade itself - see login()'s own comment for why this exists at all. */
+  authToken: string | null;
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  loginError: string | null;
 }
 
 /** Stores the  hydra context configuration or state data. */
@@ -568,6 +551,57 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     serverName: "HYDRA-UMC TEST",
   });
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // Session token - lazy-initialized synchronously (not in a useEffect) so the
+  // very first render already knows whether we're authenticated, avoiding a
+  // flash of a login screen for a WebView launched with a real ?token= (the
+  // Android app's embedded 3D view, ThreeDScreen.kt) or a browser tab that
+  // already has one saved from a previous login. Found 2026-08-19: this app
+  // never actually calls POST /api/login anywhere - server.ts's own
+  // `authenticate` middleware unconditionally requires a bearer token on
+  // POST /api/settings, POST /api/robot/:id/command, and the /ws upgrade
+  // (no "security enabled" toggle despite what REMOTE_API.md implies), so
+  // without this, a plain browser tab (no ?token=) could read state but
+  // could never save a change or receive a live WebSocket push - it just
+  // silently 401'd/1008'd. See AuthGate.tsx for the login screen this powers.
+  const [authToken, setAuthToken] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const urlToken = new URLSearchParams(window.location.search).get('token');
+    if (urlToken) {
+      localStorage.setItem('hydra_token', urlToken);
+      return urlToken;
+    }
+    return localStorage.getItem('hydra_token');
+  });
+  const [loginError, setLoginError] = useState<string | null>(null);
+
+  const login = useCallback(async (username: string, password: string) => {
+    setLoginError(null);
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.token) {
+        setLoginError(data.error || 'Login failed');
+        return false;
+      }
+      localStorage.setItem('hydra_token', data.token);
+      setAuthToken(data.token);
+      return true;
+    } catch {
+      setLoginError('Cannot reach server');
+      return false;
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('hydra_token');
+    setAuthToken(null);
+  }, []);
+
   // Guards against a feedback loop: the server broadcasts every write to
   // every connected client, sender included (simpler than tracking "who
   // sent this", and harmless for any OTHER client) - but without this
@@ -643,16 +677,11 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     let cancelled = false;
 
-    // Industrial logic: allow token override from URL for headless/mobile views (e.g. Android WebView)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlToken = urlParams.get('token');
-    if (urlToken) {
-      console.log("[Industrial] Persisting session token from URL");
-      localStorage.setItem('hydra_token', urlToken);
-    }
-
-    const activeToken = urlToken || localStorage.getItem('hydra_token');
-    const headers = activeToken ? { 'Authorization': `Bearer ${activeToken}` } : {};
+    // GET /api/settings has no authenticate middleware (reads are open) - this
+    // still works even before login, so a fresh/unauthenticated tab shows real
+    // state immediately. Writes and the WebSocket below are a different story,
+    // see authToken's own comment above.
+    const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
 
     fetch('/api/settings', { headers }).then(r => r.json()).then(data => {
       if (!cancelled) applyServerData(data);
@@ -661,37 +690,49 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
 
     // Live sync: any client (this tab, another tab, HYDRA-UMC SUITE, a
-    // mobile control app) that POSTs /api/settings or sends a WS "settings"
-    // message gets broadcast back to every connected client, this one
-    // included - see server.ts's own broadcastSettings(). Without this,
-    // two open tabs (or a native remote client and a tab) silently
-    // overwrite each other on their own next unrelated save, since neither
-    // ever re-fetches after its initial mount-time load.
+    // mobile control app) that POSTs /api/settings, POSTs the atomic
+    // /api/robot/:id/command, or sends a WS "settings" message gets
+    // broadcast back to every connected client, this one included - see
+    // server.ts's own broadcastSettings(). Without this, two open tabs (or
+    // a native remote client and a tab) silently overwrite each other on
+    // their own next unrelated save, since neither ever re-fetches after
+    // its initial mount-time load. server.ts's /ws upgrade REQUIRES
+    // ?token= unconditionally (closes with code 1008 otherwise, even for
+    // this app's own tab) - skip opening it at all without one rather than
+    // reconnect-loop against a server that will keep rejecting it.
     let ws: WebSocket | null = null;
-    try {
-      const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      ws = new WebSocket(`${proto}//${window.location.host}/ws`);
-      ws.onmessage = (ev) => {
-        try {
-          const msg = JSON.parse(ev.data);
-          if (msg && msg.type === 'settings' && msg.payload) {
-            applyServerData(msg.payload);
+    if (authToken) {
+      try {
+        const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(`${proto}//${window.location.host}/ws?token=${encodeURIComponent(authToken)}`);
+        ws.onmessage = (ev) => {
+          try {
+            const msg = JSON.parse(ev.data);
+            // "delta" (an atomic /api/robot/:id/command write) and "settings" (a full
+            // POST /api/settings write) both carry the SAME full-tree payload shape -
+            // only the label differs, see server.ts's own broadcastSettings() - so both
+            // apply identically here.
+            if (msg && (msg.type === 'settings' || msg.type === 'delta') && msg.payload) {
+              applyServerData(msg.payload);
+            } else if (msg?.error) {
+              console.warn('[WS] ' + msg.error);
+            }
+          } catch {
+            // ignore malformed frames rather than tear down the connection
           }
-        } catch {
-          // ignore malformed frames rather than tear down the connection
-        }
-      };
-    } catch {
-      // WebSocket unavailable (very old browser, or a dev proxy that
-      // doesn't forward upgrades) - the app still works via the existing
-      // fetch-once/debounced-POST path below, just without live push.
+        };
+      } catch {
+        // WebSocket unavailable (very old browser, or a dev proxy that
+        // doesn't forward upgrades) - the app still works via the existing
+        // fetch-once/debounced-POST path below, just without live push.
+      }
     }
 
     return () => {
       cancelled = true;
       ws?.close();
     };
-  }, [applyServerData]);
+  }, [applyServerData, authToken]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -831,12 +872,13 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <HydraContext.Provider value={{ 
+    <HydraContext.Provider value={{
       controllers, activeControllerId, activeController, setActiveControllerId,
-      robots, cameras, settings, 
-      updateController, updateRobot, updateCamera, updateSettings, 
+      robots, cameras, settings,
+      updateController, updateRobot, updateCamera, updateSettings,
       saveKinematics, loadKinematics, addController, removeController,
-      exportScene, importScene, factoryReset
+      exportScene, importScene, factoryReset,
+      authToken, login, logout, loginError
     }}>
       {children}
     </HydraContext.Provider>

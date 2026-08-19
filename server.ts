@@ -322,7 +322,11 @@ async function startServer() {
     let temp: number | null = null;
     let tempIsReal = false;
     try {
-      const out = execSync("vcgencmd measure_temp", { timeout: 500 }).toString();
+      // stdio explicit: execSync's default inherits the child's stderr straight to
+      // this process' own console - without it, "vcgencmd not found" on any non-Pi
+      // dev machine (Windows/macOS/a plain Linux desktop) would print to every
+      // `npm run dev` terminal on every single poll, not just fail silently here.
+      const out = execSync("vcgencmd measure_temp", { timeout: 500, stdio: ["ignore", "pipe", "ignore"] }).toString();
       const match = out.match(/temp=([\d.]+)/);
       if (match) { temp = parseFloat(match[1]); tempIsReal = true; }
     } catch {
