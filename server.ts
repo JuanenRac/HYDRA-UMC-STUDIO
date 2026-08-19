@@ -168,9 +168,14 @@ async function startServer() {
 
   app.post("/api/login", (req, res) => {
     const { username, password } = req.body;
-    // Industrial logic: for now we use demo/demo, but with JWT overhead
+    // Industrial logic: for now we use demo/demo, but with JWT overhead.
+    // 30 days, not 24h - the project owner explicitly wants this session to
+    // stay signed in "a good while" (2026-08-19) rather than re-prompt daily;
+    // this is a trusted-LAN tool with a single hardcoded demo account, not a
+    // public multi-tenant service, so a long-lived token doesn't change the
+    // real security posture much either way.
     if (username === "demo" && password === "demo") {
-      const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '24h' });
+      const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '30d' });
       res.json({ success: true, token });
     } else {
       res.status(401).json({ error: "Invalid credentials" });

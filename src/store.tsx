@@ -867,7 +867,13 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const factoryReset = async () => {
-    await fetch("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    // POST /api/settings requires auth like every other write - this call was
+    // missing the header entirely before 2026-08-19 (would 401/no-op silently
+    // since the response is never checked), same root cause as the missing
+    // login screen this same session added (see authToken's own comment).
+    const headers: any = { "Content-Type": "application/json" };
+    if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+    await fetch("/api/settings", { method: "POST", headers, body: "{}" });
     window.location.reload();
   };
 

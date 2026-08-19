@@ -56,6 +56,12 @@ export function About({ onClose }: { onClose: () => void }) {
             />
             <InfoRow label={t('dashboard.about_license')} value={LICENSE_NAME} />
           </div>
+
+          {authToken && (
+            <button onClick={() => { logout(); onClose(); }} className="flex items-center gap-2 text-xs text-slate-500 hover:text-rose-400 transition-colors pt-1">
+              <LogOut size={12} /> {t('auth.sign_out')}
+            </button>
+          )}
         </div>
         <div className="p-4 border-t border-slate-800 flex justify-end bg-slate-950 shrink-0">
           <button onClick={onClose} className="px-6 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded shadow-lg border border-sky-400 uppercase">Close</button>
