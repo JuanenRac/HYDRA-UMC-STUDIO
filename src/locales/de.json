@@ -183,7 +183,37 @@
     "hw_direct": "Direkte Hardware (SPI zu STM32H7)",
     "net_tunnel": "Netzwerktunnel (UDP-Broadcast)",
     "gamepad": "Gamepad",
-    "commit_close": "Übernehmen & Schließen"
+    "commit_close": "Übernehmen & Schließen",
+    "remote_access_tab": "Fernzugriff",
+    "remote_access_tab_desc": "Jeder der 3 Remote-Clients identifiziert sich selbst gegenüber diesem Server, sodass jeder unabhängig erlaubt oder blockiert werden kann. Beeinflusst nicht die eigene Verbindung dieses Browser-Tabs und schützt die API allein nicht mit einem Passwort - wer die IP dieses Servers bereits kennt, kann weiterhin direkt darauf zugreifen; es verhindert nur, dass der eigene Erkennungsscan einer Remote-App den Server findet.",
+    "remote_access_suite": "HYDRA-UMC SUITE",
+    "remote_access_suite_desc": "Steuert, ob der eigene Netzwerkscan der SUITE-Desktop-App diesen Server finden und identifizieren kann.",
+    "remote_access_android": "Android-Steuerungs-App",
+    "remote_access_android_desc": "Steuert, ob die eigene Erkennung der Android-Steuerungs-App diesen Server finden und identifizieren kann.",
+    "remote_access_ios": "iOS-Steuerungs-App",
+    "remote_access_ios_desc": "Steuert, ob die eigene Erkennung der iOS/Flutter-Steuerungs-App diesen Server finden und identifizieren kann.",
+    "users": "Benutzer",
+    "users_desc": "Verwalten Sie die Konten, die sich bei diesem Server anmelden dürfen. \"Administrator\"-Konten haben vollen Zugriff (Einstellungen, Benutzer, Roboterbefehle); \"Operator\"-Konten können sich anmelden und Roboterbefehle senden, aber keine Einstellungen ändern oder Benutzer verwalten.",
+    "users_load_error": "Die Benutzerliste konnte nicht geladen werden.",
+    "users_create_error": "Das Konto konnte nicht erstellt werden.",
+    "users_create_success": "Konto erstellt.",
+    "users_update_error": "Das Konto konnte nicht aktualisiert werden.",
+    "users_update_success": "Konto aktualisiert.",
+    "users_delete_confirm": "Konto \"{{username}}\" löschen? Dies kann nicht rückgängig gemacht werden.",
+    "users_delete_error": "Das Konto konnte nicht gelöscht werden.",
+    "users_username": "Benutzername",
+    "users_role": "Rolle",
+    "users_role_admin": "Administrator",
+    "users_role_operator": "Operator",
+    "users_none": "Noch keine Konten vorhanden.",
+    "users_change_title": "Umbenennen / Passwort ändern",
+    "users_select_account": "Konto auswählen…",
+    "users_new_username": "Neuer Benutzername (optional)",
+    "users_new_password": "Neues Passwort (leer lassen, um es beizubehalten)",
+    "users_apply": "Änderungen übernehmen",
+    "users_create_title": "Neues Konto erstellen",
+    "users_role_hint": "Operator-Konten können Roboterbefehle senden, aber keine globalen Einstellungen überschreiben oder andere Benutzer verwalten.",
+    "users_create_button": "Konto erstellen"
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",
@@ -431,6 +461,16 @@
           "Config (obere Leiste) öffnet die Systemkonfiguration: Controller verwalten (Name, IP, Hinzufügen/Auto-Suche), UI & Themes (Theme, Sprache - dieses Hilfemenü folgt derselben Sprache), Robindernamen und benutzerdefinierte Modelle, Software-Integrationen, Arbeitspfade (wo die Works jedes Roboters gespeichert werden) und Gamepad-Zuordnung.",
           "Unter Config > CAN-OTA lässt sich der Transport wählen (eine vollständige integrierte Simulation, bis echte STM32H745-Firmware existiert, später echte Hardware), die eigene MCU der Robotersteuerplatine eintragen, sobald bestätigt, und die Firmware-Dateipfade festlegen, in denen Flasher sucht.",
           "Factory Reset in Config setzt die gesamte gespeicherte Konfiguration auf die Werkseinstellungen zurück - mit Vorsicht verwenden, dies kann nicht rückgängig gemacht werden."
+        ]
+      },
+      "accounts_access": {
+        "label": "Konten & Zugriff",
+        "heading": "Anmeldung, Benutzerkonten und Fernzugriff",
+        "paragraphs": [
+          "Jeder Server legt beim allerersten Start ein Standardkonto an: Benutzername admin, Passwort admin (am 19.08.2026 vom alten gemeinsamen demo/demo umbenannt). Ändern Sie dieses Passwort so bald wie möglich unter Config > Benutzer - sonst kann sich jeder im Netzwerk, der es kennt, mit vollem Zugriff anmelden.",
+          "Unter Config > Benutzer kann ein Administratorkonto zusätzliche Konten mit der Rolle Operator anlegen: Ein Operator kann sich anmelden, den Live-Status einsehen und Roboterbefehle senden (Jog/Play/Pause/Stop/Werkzeug/Ventil/Pumpe/Geschwindigkeit), aber keine globalen Einstellungen ändern oder andere Konten verwalten. So können Sie einem Kollegen die Robotersteuerung geben, ohne ihm auch die Schlüssel zur gesamten Konfiguration zu überlassen.",
+          "Sie müssen sich nicht anmelden, um sich umzusehen - \"Nur lesend fortfahren\" auf dem Anmeldebildschirm lässt Sie alle Panels und die Live-3D-Ansicht durchsuchen, Sie können aus dieser Sitzung nur keine Änderungen speichern oder Befehle senden.",
+          "Config > Fernzugriff hat einen eigenen Schalter pro Remote-Client - HYDRA-UMC SUITE, die Android-Steuerungs-App und die iOS-Steuerungs-App - sodass Sie einen erlauben und einen anderen unabhängig blockieren können. Das Deaktivieren eines Clients verhindert nur, dass dessen eigener Suchlauf \"meinen Server finden\" diesen Server sieht; es schützt die API allein nicht mit einem Passwort, da wer die IP-Adresse dieses Servers bereits kennt, ihn weiterhin direkt erreichen kann."
         ]
       }
     }

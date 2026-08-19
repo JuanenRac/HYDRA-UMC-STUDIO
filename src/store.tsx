@@ -365,7 +365,14 @@ export interface SystemSettings {
   // would break the core web UI, not just remote apps; only the
   // discovery endpoint is genuinely remote-client-only.
   remoteAccess?: {
-    enabled: boolean;
+    /** @deprecated legacy single toggle for all 3 remote clients at once - superseded 2026-08-19 by the 3 per-client flags below, kept only so a settings.json saved before this existed still defaults each of them the same way it always did (true) unless that client's own flag has since been set explicitly. */
+    enabled?: boolean;
+    /** Whether HYDRA-UMC SUITE (identifies itself via the X-Hydra-Client: suite request header) can discover this server. */
+    suite?: boolean;
+    /** Whether the Android control app (X-Hydra-Client: android) can discover this server. */
+    android?: boolean;
+    /** Whether the iOS/Flutter control app (X-Hydra-Client: ios) can discover this server. */
+    ios?: boolean;
   };
   serverName?: string;
   uiLayout?: {
@@ -547,6 +554,9 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     },
     remoteAccess: {
       enabled: true,
+      suite: true,
+      android: true,
+      ios: true,
     },
     serverName: "HYDRA-UMC TEST",
   });

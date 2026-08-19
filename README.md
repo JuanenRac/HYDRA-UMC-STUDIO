@@ -93,7 +93,13 @@ Full interface translation across **English, Spanish, German, French, and Italia
 
 ## ℹ️ About & System Configuration
 
-Two standalone dialogs, both reachable from the header (`Config`/`About` buttons): **About** shows the running app version (read live from `GET /api/hydra-info`), author, and license; **Config** covers server identity, controller/node management, UI theme + language, robot renaming, camera↔robot mapping with conflict detection, the custom URDF library, third-party software integrations (OpenPnP/CNC/Laser backends), remote app discovery, per-robot work directories, CAN-OTA transport, and gamepad mapping - each its own tab. Both are their own components (`src/components/About.tsx`, `src/components/Config.tsx`), not inlined into the main dashboard shell.
+Two standalone dialogs, both reachable from the header (`Config`/`About` buttons): **About** shows the running app version (read live from `GET /api/hydra-info`), author, and license; **Config** covers server identity, controller/node management, UI theme + language, robot renaming, camera↔robot mapping with conflict detection, the custom URDF library, third-party software integrations (OpenPnP/CNC/Laser backends), per-client remote access (independent switches for SUITE/Android/iOS), user accounts, per-robot work directories, CAN-OTA transport, and gamepad mapping - each its own tab. Both are their own components (`src/components/About.tsx`, `src/components/Config.tsx`), not inlined into the main dashboard shell.
+
+## 🔐 Accounts & Access
+
+Every server seeds one account on its own first-ever start - username `admin`, password `admin` (renamed 2026-08-19 from the earlier shared `demo`/`demo`) - change it from **Config > Users** as soon as the server is reachable beyond a fully trusted LAN. That same tab lets an admin account create additional **operator** accounts: an operator can sign in, watch live state, and drive robots (jog/play/pause/stop/tool/valve/pump/speed), but can't overwrite global settings or manage other accounts. No account is required just to look around - the login screen's own "Continue read-only" skips straight to the dashboard with writes disabled. Full contract (roles, tokens, the `/api/users` routes) documented in [`docs/REMOTE_API.md`](docs/REMOTE_API.md) sections 2a/2b.
+
+Each of the 3 remote clients (SUITE, Android, iOS) self-identifies via an `X-Hydra-Client` request header, so **Config > Remote Access** can allow or block each one independently instead of one combined switch for all three.
 
 ---
 
@@ -208,9 +214,11 @@ This project is part of a larger robotics ecosystem by the same author (JuanenRa
 **HYDRA-UMC platform** — the multi-robot micro-factory cell
 - **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** — the motherboard itself: Raspberry Pi CM5 host + dual-core STM32H745 real-time co-processor, orchestrating up to 8 distributed robot arms over CAN-OTA/SPI-OTA. Own hardware + firmware, GPL-3.0/CERN-OHL-S v2/CC BY-SA 4.0.
 - **HYDRA-UMC STUDIO** *(this repository)* — web-based control dashboard for HYDRA-UMC: multi-robot 3D visualization, kinematics/trajectory recording, CAN-OTA flashing and testing for the whole platform. React + Vite + Three.js.
-- **[HYDRA-UMC-ANDROID-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-ANDROID-CONTROL)** — Android control app for HYDRA-UMC over Wi-Fi/Bluetooth. Scaffolding stage (architecture doc + VSCode/Gradle project layout), real implementation pending.
-- **[HYDRA-UMC-IOS-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-IOS-CONTROL)** — iOS control app for HYDRA-UMC over Wi-Fi/Bluetooth. Scaffolding stage (architecture doc + VSCode/Swift Package layout), real implementation pending.
+- **[HYDRA-UMC-ANDROID-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-ANDROID-CONTROL)** — Android control app for HYDRA-UMC over Wi-Fi/Bluetooth. Real, working app - full remote-control feature set, JWT auth, encrypted credential storage.
+- **[HYDRA-UMC-IOS-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-IOS-CONTROL)** — iOS/iPadOS control app for HYDRA-UMC over Wi-Fi, built in Flutter (cross-platform, verifiable on Windows without a Mac; final `.ipa` packaging still needs Xcode). Real, working app - same feature set as the Android app.
 - **[HYDRA-UMC-SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE)** — desktop (Python/PySide6) swarm command center: multi-controller network discovery, live bidirectional sync, real 3D robot viewport, Photoshop-style dockable workspace. Real and working, not a placeholder.
+- **[HYDRA-UMC-EDITOR-URDF](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF)** — planned: a graphical URDF (3D object + kinematics) creator/editor for this project's own model catalog, pulling source files from GitHub or a local folder and pushing the finished result back to a running STUDIO server. Not started yet.
+- **[HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)** — planned: a native touch UI for HYDRA-UMC's own 7" DSI touchscreen (1280×800) on the Compute Module 5, controlling this same server directly from the board. Not started yet.
 
 **URTC platform** — the tool head controller every HYDRA-UMC robot arm carries
 - **[URTC](https://github.com/JuanenRac/URTC)** — Universal Robot Tool Controller: STM32F303-based CAN bus tool head controller, 25 fully-implemented tool profiles, CAN-OTA firmware update.

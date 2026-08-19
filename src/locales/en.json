@@ -183,7 +183,37 @@
     "hw_direct": "Hardware Direct (SPI to STM32H7)",
     "net_tunnel": "Network Tunnel (UDP Broadcast)",
     "gamepad": "Gamepad",
-    "commit_close": "Commit & Close"
+    "commit_close": "Commit & Close",
+    "remote_access_tab": "Remote Access",
+    "remote_access_tab_desc": "Each of the 3 remote clients self-identifies to this server, so each one can be allowed or blocked independently. Doesn't affect this browser tab's own connection, and doesn't password-protect the API by itself - anyone who already knows this server's IP can still reach it directly; it only stops a remote app's own discovery scan from seeing it.",
+    "remote_access_suite": "HYDRA-UMC SUITE",
+    "remote_access_suite_desc": "Controls whether the SUITE desktop app's own network scan can find and identify this server.",
+    "remote_access_android": "Android Control App",
+    "remote_access_android_desc": "Controls whether the Android control app's own discovery can find and identify this server.",
+    "remote_access_ios": "iOS Control App",
+    "remote_access_ios_desc": "Controls whether the iOS/Flutter control app's own discovery can find and identify this server.",
+    "users": "Users",
+    "users_desc": "Manage the accounts allowed to log in to this server. \"Administrator\" accounts have full access (settings, users, robot commands); \"Operator\" accounts can log in and send robot commands but can't change settings or manage users.",
+    "users_load_error": "Couldn't load the user list.",
+    "users_create_error": "Couldn't create the account.",
+    "users_create_success": "Account created.",
+    "users_update_error": "Couldn't update the account.",
+    "users_update_success": "Account updated.",
+    "users_delete_confirm": "Delete the account \"{{username}}\"? This can't be undone.",
+    "users_delete_error": "Couldn't delete the account.",
+    "users_username": "Username",
+    "users_role": "Role",
+    "users_role_admin": "Administrator",
+    "users_role_operator": "Operator",
+    "users_none": "No accounts yet.",
+    "users_change_title": "Rename / change password",
+    "users_select_account": "Select an account…",
+    "users_new_username": "New username (optional)",
+    "users_new_password": "New password (leave blank to keep it)",
+    "users_apply": "Apply changes",
+    "users_create_title": "Create new account",
+    "users_role_hint": "Operator accounts can send robot commands but can't overwrite global settings or manage other users.",
+    "users_create_button": "Create account"
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -431,6 +461,16 @@
           "Config (top bar) opens System Configuration: manage Controllers (name, IP, add/auto-search), UI & Themes (theme, language - this Help menu follows the same language), Robot Names and Custom Models, Software Integrations, Work Paths (where each robot's Works are stored), and Gamepad mapping.",
           "Config > CAN-OTA lets you pick the transport (a full built-in simulation until real STM32H745 firmware exists, or real hardware later), record the Robot Controller Board's own MCU once it's confirmed, and set the firmware-file paths Flasher looks in.",
           "Factory Reset, inside Config, wipes all saved configuration back to defaults - use with care, it cannot be undone."
+        ]
+      },
+      "accounts_access": {
+        "label": "Accounts & Access",
+        "heading": "Logging in, user accounts, and remote access",
+        "paragraphs": [
+          "Every server seeds one default account on its own first-ever start: username admin, password admin (renamed 2026-08-19 from the old shared demo/demo). Change that password as soon as you can from Config > Users - anyone on the network who knows it can sign in with full access otherwise.",
+          "Config > Users lets an Administrator account create additional accounts with the Operator role: an Operator can sign in, view live state, and send robot commands (jog/play/pause/stop/tool/valve/pump/speed), but can't change global settings or manage other accounts. Use it to hand a coworker robot control without also handing them the keys to the whole configuration.",
+          "You don't have to sign in at all to look around - \"Continue read-only\" on the login screen lets you browse every panel and the live 3D view, you just can't save changes or send commands from that session.",
+          "Config > Remote Access has one switch per remote client - HYDRA-UMC SUITE, the Android control app, and the iOS control app - so you can allow one and block another independently. Turning one off only stops that app's own \"find my server\" scan from seeing this one; it doesn't password-protect the API by itself, since anyone who already has this server's IP address can still reach it directly."
         ]
       }
     }

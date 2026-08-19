@@ -13,9 +13,10 @@ import { useTranslation } from 'react-i18next';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import {
-  Settings, Plus, Trash2, AlertTriangle, Cpu, RefreshCw, Save, FolderOpen, Edit2,
+  Settings, Plus, Trash2, AlertTriangle, Cpu, RefreshCw, Save, FolderOpen, Edit2, Wifi, Smartphone, Tablet,
 } from 'lucide-react';
 import { useHydraStore, createDefaultRobots, createDefaultCameras } from '../store';
+import { UsersPanel } from './UsersPanel';
 
 const GamepadConfig = React.lazy(() => import('./GamepadConfig').then(m => ({ default: m.GamepadConfig })));
 
@@ -31,7 +32,7 @@ function PanelLoadingFallback() {
   );
 }
 
-type ConfigTab = 'identity' | 'controllers' | 'ui' | 'robots' | 'cameras' | 'models' | 'integrations' | 'paths' | 'canota' | 'gamepad';
+type ConfigTab = 'identity' | 'controllers' | 'ui' | 'robots' | 'cameras' | 'models' | 'integrations' | 'remoteaccess' | 'users' | 'paths' | 'canota' | 'gamepad';
 
 export function Config({ onClose }: { onClose: () => void }) {
   const { t, i18n } = useTranslation();
@@ -46,6 +47,8 @@ export function Config({ onClose }: { onClose: () => void }) {
     { id: 'cameras', label: t('config.camera_setup') },
     { id: 'models', label: t('config.custom_models') },
     { id: 'integrations', label: t('config.integrations') },
+    { id: 'remoteaccess', label: t('config.remote_access_tab') },
+    { id: 'users', label: t('config.users') },
     { id: 'paths', label: t('config.paths') },
     { id: 'canota', label: t('config.can_ota') },
     { id: 'gamepad', label: t('config.gamepad') },
@@ -273,13 +276,32 @@ export function Config({ onClose }: { onClose: () => void }) {
                       <input type="number" value={settings.integrations?.laser?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" />
                    </div>
                 </div>
-                {/* Remote Access */}
+              </div>
+            )}
+
+            {configTab === 'remoteaccess' && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <div>
+                  <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><Wifi size={16} /> {t('config.remote_access_tab')}</h3>
+                  <p className="text-[10px] text-slate-600 leading-relaxed pt-2">{t('config.remote_access_tab_desc')}</p>
+                </div>
+                {/* Each remote client self-identifies via the X-Hydra-Client request header (server.ts's own remoteAccessAllowed()), so these 3 can be toggled independently - was a single combined switch until 2026-08-19. */}
                 <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-2 shadow-inner">
-                    <div className="flex items-center justify-between"><span className="font-black text-emerald-400 uppercase text-[10px] tracking-widest">{t('config.remote_access')}</span><input type="checkbox" checked={settings.remoteAccess?.enabled ?? true} onChange={(e) => updateSettings({ remoteAccess: { enabled: e.target.checked } })} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500" /></div>
-                    <p className="text-[10px] text-slate-600 leading-tight">{t('config.remote_access_desc')}</p>
+                  <div className="flex items-center justify-between"><span className="font-black text-emerald-400 uppercase text-[10px] tracking-widest flex items-center gap-2"><Cpu size={14} /> {t('config.remote_access_suite')}</span><input type="checkbox" checked={settings.remoteAccess?.suite ?? settings.remoteAccess?.enabled ?? true} onChange={(e) => updateSettings({ remoteAccess: { ...settings.remoteAccess, suite: e.target.checked } })} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500" /></div>
+                  <p className="text-[10px] text-slate-600 leading-tight">{t('config.remote_access_suite_desc')}</p>
+                </div>
+                <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-2 shadow-inner">
+                  <div className="flex items-center justify-between"><span className="font-black text-emerald-400 uppercase text-[10px] tracking-widest flex items-center gap-2"><Tablet size={14} /> {t('config.remote_access_android')}</span><input type="checkbox" checked={settings.remoteAccess?.android ?? settings.remoteAccess?.enabled ?? true} onChange={(e) => updateSettings({ remoteAccess: { ...settings.remoteAccess, android: e.target.checked } })} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500" /></div>
+                  <p className="text-[10px] text-slate-600 leading-tight">{t('config.remote_access_android_desc')}</p>
+                </div>
+                <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-2 shadow-inner">
+                  <div className="flex items-center justify-between"><span className="font-black text-emerald-400 uppercase text-[10px] tracking-widest flex items-center gap-2"><Smartphone size={14} /> {t('config.remote_access_ios')}</span><input type="checkbox" checked={settings.remoteAccess?.ios ?? settings.remoteAccess?.enabled ?? true} onChange={(e) => updateSettings({ remoteAccess: { ...settings.remoteAccess, ios: e.target.checked } })} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500" /></div>
+                  <p className="text-[10px] text-slate-600 leading-tight">{t('config.remote_access_ios_desc')}</p>
                 </div>
               </div>
             )}
+
+            {configTab === 'users' && <UsersPanel />}
 
             {configTab === 'paths' && (
               <div className="space-y-6 animate-in fade-in duration-300">

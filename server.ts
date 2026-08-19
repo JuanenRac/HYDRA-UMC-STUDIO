@@ -15,6 +15,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { calculateJoints } from "./kinematics";
 import Bonjour from 'bonjour-service';
 import jwt from 'jsonwebtoken';
+import { ensureSeedUser, findUser, verifyPassword, listUsers, createUser, updateUser, deleteUser, type UserRole } from './users';
 
 const JWT_SECRET = "hydra_industrial_secret_2026"; // In production, move to .env
 
@@ -74,12 +75,34 @@ function readNetworkStatus() {
   };
 }
 
+// Per-client remote-access toggles (Config > Remote Access in the browser
+// UI, src/store.tsx's own SystemSettings.remoteAccess) - split 2026-08-19
+// from a single combined switch into 3 independent ones (SUITE/Android/iOS)
+// per the project owner's own request, so e.g. Android access can be
+// revoked without also blocking SUITE. Each of the 3 real clients sends its
+// own `X-Hydra-Client: suite|android|ios` request header (see each
+// project's own network client) - a request with NO such header (a plain
+// browser tab, curl, or any other unidentified caller) is never gated here,
+// since this check only exists to control the 3 named remote apps, not
+// this same server's own browser UI (which never sends that header and
+// reaches this same route from About.tsx's own version check).
+function remoteAccessAllowed(settings: any, clientType: string | undefined): boolean {
+  if (clientType !== "suite" && clientType !== "android" && clientType !== "ios") return true;
+  const ra = settings?.remoteAccess;
+  if (!ra) return true; // no config saved at all yet - matches this feature's own original always-on default
+  const specific = ra[clientType];
+  if (specific !== undefined) return specific !== false;
+  return ra.enabled !== false; // legacy singular toggle, only consulted if this client's own flag was never set
+}
+
 // Bumped whenever the /api/hydra-info or /ws message contract changes in a
 // way a remote client (HYDRA-UMC SUITE, the mobile control apps) might need
 // to branch on - NOT the same number as package.json's own app version.
 const REMOTE_API_VERSION = 1;
 
-// Middleware to verify JWT token
+// Middleware to verify JWT token - the decoded payload now carries
+// {username, role}, not just {username}, so requireAdmin below can gate
+// the routes an "operator" account shouldn't reach.
 function authenticate(req: any, res: any, next: any) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -93,6 +116,17 @@ function authenticate(req: any, res: any, next: any) {
   });
 }
 
+/** Chain after authenticate() - rejects anyone whose token role isn't "admin".
+ * Gates POST /api/settings (full-tree overwrite) and every /api/users route -
+ * an "operator" account can still drive robots via the atomic
+ * /api/robot/:id/command endpoint, just can't touch global config or accounts. */
+function requireAdmin(req: any, res: any, next: any) {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ error: "Access denied: admin privileges required" });
+  }
+  next();
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -104,6 +138,11 @@ async function startServer() {
   if (!fs.existsSync(dataPath)) {
     fs.mkdirSync(dataPath, { recursive: true });
   }
+
+  // First-ever start seeds data/users.json with a single admin/admin
+  // account - see users.ts's own header comment for why this replaced the
+  // old hardcoded "demo"/"demo" check below.
+  ensureSeedUser();
 
   const getSettingsPath = () => {
     return path.join(dataPath, "settings.json");
@@ -158,7 +197,7 @@ async function startServer() {
   // unauthenticated GET. Client code only ever fetches WORKS/*, never
   // settings.json directly (it goes through /api/settings below).
   app.use((req, res, next) => {
-    if (req.path === "/settings.json") {
+    if (req.path === "/settings.json" || req.path === "/users.json") {
       res.status(404).end();
       return;
     }
@@ -167,19 +206,55 @@ async function startServer() {
   app.use(express.static(dataPath));
 
   app.post("/api/login", (req, res) => {
-    const { username, password } = req.body;
-    // Industrial logic: for now we use demo/demo, but with JWT overhead.
+    const { username, password } = req.body || {};
+    if (typeof username !== "string" || typeof password !== "string") {
+      return res.status(400).json({ error: "username and password required" });
+    }
+    const user = findUser(username);
+    if (!user || !verifyPassword(password, user.passwordHash)) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
     // 30 days, not 24h - the project owner explicitly wants this session to
     // stay signed in "a good while" (2026-08-19) rather than re-prompt daily;
-    // this is a trusted-LAN tool with a single hardcoded demo account, not a
-    // public multi-tenant service, so a long-lived token doesn't change the
-    // real security posture much either way.
-    if (username === "demo" && password === "demo") {
-      const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '30d' });
-      res.json({ success: true, token });
-    } else {
-      res.status(401).json({ error: "Invalid credentials" });
+    // this is a trusted-LAN tool, not a public multi-tenant service, so a
+    // long-lived token doesn't change the real security posture much either way.
+    const token = jwt.sign({ username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ success: true, token, role: user.role });
+  });
+
+  // Account management - admin-only (requireAdmin, chained after
+  // authenticate). Added 2026-08-19 alongside the users.ts module itself -
+  // lets an admin rename/re-password their own account from Config > Users
+  // instead of the account being permanently stuck as "admin"/"admin", and
+  // create additional lower-privilege "operator" accounts for day-to-day
+  // robot operation without exposing settings writes or user management.
+  app.get("/api/users", authenticate, requireAdmin, (req, res) => {
+    res.json({ users: listUsers() });
+  });
+
+  app.post("/api/users", authenticate, requireAdmin, (req, res) => {
+    const { username, password, role } = req.body || {};
+    const safeRole: UserRole = role === "operator" ? "operator" : "admin";
+    if (typeof username !== "string" || typeof password !== "string") {
+      return res.status(400).json({ error: "username and password required" });
     }
+    const result = createUser(username, password, safeRole);
+    if (!result.ok) return res.status(400).json({ error: result.error });
+    res.json({ success: true });
+  });
+
+  app.put("/api/users/:username", authenticate, requireAdmin, (req, res) => {
+    const { newUsername, password, role } = req.body || {};
+    const safeRole: UserRole | undefined = role === "operator" || role === "admin" ? role : undefined;
+    const result = updateUser(req.params.username, { newUsername, password, role: safeRole });
+    if (!result.ok) return res.status(400).json({ error: result.error });
+    res.json({ success: true });
+  });
+
+  app.delete("/api/users/:username", authenticate, requireAdmin, (req, res) => {
+    const result = deleteUser(req.params.username);
+    if (!result.ok) return res.status(400).json({ error: result.error });
+    res.json({ success: true });
   });
 
   // API routes FIRST
@@ -198,7 +273,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/settings", authenticate, async (req, res) => {
+  app.post("/api/settings", authenticate, requireAdmin, async (req, res) => {
     const settingsPath = getSettingsPath();
     try {
       const payload = req.body;
@@ -369,22 +444,20 @@ async function startServer() {
   // WebSocket broadcast path already maintains, not a fresh disk read
   // per request.
   app.get("/api/hydra-info", (req, res) => {
-    // Real enable/disable gate (Settings -> Integrations -> "Remote App
-    // Access" in the browser UI, src/store.tsx's own SystemSettings.remoteAccess) -
-    // defaults to true (undefined settings.remoteAccess treated the same
-    // as enabled, so an existing settings.json predating this feature
-    // doesn't silently stop working for anyone already using SUITE).
-    // When disabled, this endpoint responds 404 - the same as a plain
-    // "not running HYDRA-UMC STUDIO" host looks like to a scanning
-    // client (HYDRA-UMC SUITE's own discovery.py's own probe_host()
-    // already treats a non-200 as "not found", no client-side change
-    // needed) - the server becomes undiscoverable/unidentifiable to a
-    // remote app's own scan, without touching GET/POST /api/settings or
-    // /ws (this SAME browser tab's own connection to its own server also
-    // goes through those, so gating them would break the core web UI,
-    // not just remote apps - see that settings field's own comment in
-    // store.tsx for the full reasoning).
-    if (lastKnownSettings?.remoteAccess?.enabled === false) {
+    // Real enable/disable gate (Config > Remote Access in the browser UI,
+    // src/store.tsx's own SystemSettings.remoteAccess) - per-client since
+    // 2026-08-19 (see remoteAccessAllowed()'s own header comment above for
+    // the X-Hydra-Client header each real client sends). When disabled for
+    // that client, this endpoint responds 404 - the same as a plain "not
+    // running HYDRA-UMC STUDIO" host looks like to a scanning client (each
+    // client's own discovery code already treats a non-200 as "not
+    // found", no client-side change needed beyond sending the header) -
+    // the server becomes undiscoverable/unidentifiable to THAT app's own
+    // scan, without touching GET/POST /api/settings or /ws (this SAME
+    // browser tab's own connection to its own server also goes through
+    // those, so gating them would break the core web UI, not just remote
+    // apps - see that settings field's own comment in store.tsx).
+    if (!remoteAccessAllowed(lastKnownSettings, req.headers["x-hydra-client"] as string | undefined)) {
       res.status(404).end();
       return;
     }
@@ -473,7 +546,7 @@ async function startServer() {
       return;
     }
 
-    jwt.verify(token, JWT_SECRET, (err: any) => {
+    jwt.verify(token, JWT_SECRET, (err: any, decoded: any) => {
       if (err) {
         ws.send(JSON.stringify({ error: "Access denied: Invalid token" }));
         setTimeout(() => ws.close(1008, "Access denied: Invalid token"), 100);
@@ -491,6 +564,17 @@ async function startServer() {
         try {
           const msg = JSON.parse(raw.toString());
           if (msg && msg.type === "settings" && msg.payload) {
+            // Found 2026-08-19 right after adding requireAdmin to the REST
+            // POST /api/settings: this WS path is a second route to the exact
+            // same full-tree overwrite, and jwt.verify() above only checks
+            // signature validity - not role - so without this check an
+            // "operator" token could just open a WebSocket and send this
+            // message to do the one thing requireAdmin exists to stop it
+            // from doing over REST. Same admin-only rule, enforced here too.
+            if (decoded?.role !== "admin") {
+              ws.send(JSON.stringify({ error: "Access denied: admin privileges required" }));
+              return;
+            }
             await fs.promises.writeFile(getSettingsPath(), JSON.stringify(msg.payload, null, 2), "utf-8");
             broadcastSettings(msg.payload, false, ws); // Skip originator to avoid echo
           }
