@@ -256,7 +256,10 @@
     "rotate": "Rotar",
     "save_filename": "Nombre del archivo (sin .json):",
     "save_trajectory": "Guardar",
-    "xy_table_controls": "Controles de Mesa XY"
+    "xy_table_controls": "Controles de Mesa XY",
+    "joint_controls_overlay": "Controles de Articulaciones",
+    "xyz_jog": "Jog XYZ",
+    "floating_overlay_hint": "Velocidad, aceleración, articulaciones y jog XYZ se movieron al panel flotante sobre la vista 3D de arriba."
   },
   "cameras": {
     "title": "Matriz de Visión Octal",

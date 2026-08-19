@@ -256,7 +256,10 @@
     "rotate": "Drehen",
     "save_filename": "Dateiname (ohne .json):",
     "save_trajectory": "Speichern",
-    "xy_table_controls": "XY-Tisch-Steuerung"
+    "xy_table_controls": "XY-Tisch-Steuerung",
+    "joint_controls_overlay": "Gelenksteuerung",
+    "xyz_jog": "XYZ-Jog",
+    "floating_overlay_hint": "Geschwindigkeit, Beschleunigung, Gelenke und XYZ-Jog wurden in das schwebende Panel über der 3D-Ansicht oben verschoben."
   },
   "cameras": {
     "title": "Oktal Vision Matrix",

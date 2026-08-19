@@ -256,7 +256,10 @@
     "rotate": "Ruota",
     "save_filename": "Nome file (senza .json):",
     "save_trajectory": "Salva",
-    "xy_table_controls": "Controlli Tavola XY"
+    "xy_table_controls": "Controlli Tavola XY",
+    "joint_controls_overlay": "Controlli Articolazioni",
+    "xyz_jog": "Jog XYZ",
+    "floating_overlay_hint": "Velocità, accelerazione, articolazioni e jog XYZ sono stati spostati nel pannello flottante sopra la vista 3D."
   },
   "cameras": {
     "title": "Matrice di Visione Ottale",

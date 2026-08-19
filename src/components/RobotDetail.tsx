@@ -1364,6 +1364,7 @@ console.log("Loading example:", id);
               </div>
 
               <div className="flex flex-wrap items-center gap-4">
+                {!isFloatingLayout && (
                 <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 min-h-[44px]">
                   <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('robot_detail.speed', 'Speed:')}</span>
                   <RotaryKnob
@@ -1385,7 +1386,9 @@ console.log("Loading example:", id);
                   </div>
                   <span className="text-xs font-mono text-sky-400 w-10 text-right">{playbackSpeed}%</span>
                 </div>
+                )}
 
+                {!isFloatingLayout && (
                 <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 min-h-[44px]">
                   <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('robot_detail.acceleration', 'Acceleration:')}</span>
                   <RotaryKnob
@@ -1407,6 +1410,7 @@ console.log("Loading example:", id);
                   </div>
                   <span className="text-xs font-mono text-amber-400 w-10 text-right">{playbackAcceleration}%</span>
                 </div>
+                )}
 
                 <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 min-h-[44px]">
                   <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('robot_detail.step', 'Step:')}</span>
@@ -1425,7 +1429,12 @@ console.log("Loading example:", id);
                 </div>
               </div>
             </div>
-            
+
+            {isFloatingLayout && (
+              <p className="text-[10px] text-slate-600 italic px-1 pb-2">{t('robot_detail.floating_overlay_hint', 'Speed, acceleration, joints and XYZ jog moved to the floating panel on the 3D view above.')}</p>
+            )}
+
+            {!isFloatingLayout && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {(['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const).map(j => {
                   // Parol6/AR4 have real, narrower per-joint limits (from their own URDF/
@@ -1455,6 +1464,7 @@ console.log("Loading example:", id);
                   );
                 })}
               </div>
+            )}
 
             {hasXYTable && (
               <div className="mt-4 pt-4 border-t border-slate-800">

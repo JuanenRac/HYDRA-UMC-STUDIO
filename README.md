@@ -34,7 +34,7 @@ Manage multiple independent 6-DOF robots simultaneously, each with its own real 
 
 Every real model (everything except Generic) loads its actual STL mesh geometry per link and drives it through that manufacturer's own real joint transform chain - not a stylized placeholder. Forward/inverse kinematics are computed against each robot's own real geometry (Newton-Raphson solve for position, real per-joint limits where the robot defines any), so a recorded trajectory or a jogged Cartesian target moves the correct arm the way the physical robot actually would. Universal Robots' 5 models additionally share one common FK/IK engine (`src/examples/urKinematicsShared.ts`) and one common 3D rig renderer (`src/components/3d/URArm.tsx`), since every UR e-Series joint shares the exact same kinematic structure - only the numeric link lengths differ per model.
 
-Per-robot jog controls include a rotary knob + slider for both **speed** and **acceleration** on every axis, and a full endstop/status readout alongside a live "Robot Controller Board" status card once CAN-OTA is wired to real hardware.
+Per-robot jog controls include a rotary knob + slider for both **speed** and **acceleration** on every axis, and a full endstop/status readout alongside a live "Robot Controller Board" status card once CAN-OTA is wired to real hardware. Every knob/slider snaps to the jog **Step** value selected in its own combobox (0.1° up to 100°/mm) rather than moving continuously. Robot **A1** is a running proof of concept for a different layout: its Speed/Acceleration/J1-J6/XYZ jog controls live in a draggable floating panel on top of the 3D viewport itself (`Joystick3D.tsx` for the XYZ pad) instead of the panel below it that every other robot still uses - see `src/components/robots/A1.tsx`.
 
 ---
 
@@ -87,7 +87,13 @@ Up to 8 simultaneous live feeds (USB vision or thermal MLX90640/41/42-family sen
 
 ## 🌐 Multi-Language UI
 
-Full interface translation across **English, Spanish, German, French, and Italian** (`src/locales/`), including the in-app Help menu.
+Full interface translation across **English, Spanish, German, French, and Italian** (`src/locales/`), including the in-app Help menu, the About dialog (version/author/license), and every tab of the System Configuration dialog. Coverage isn't 100% of every screen yet - see `SONNET/HYDRA-UMC-STUDIO/mejoras_futuras.txt` in this ecosystem's own private tracking for what's still hardcoded English (mainly a handful of standalone accessory panels not yet reached by translation work).
+
+---
+
+## ℹ️ About & System Configuration
+
+Two standalone dialogs, both reachable from the header (`Config`/`About` buttons): **About** shows the running app version (read live from `GET /api/hydra-info`), author, and license; **Config** covers server identity, controller/node management, UI theme + language, robot renaming, camera↔robot mapping with conflict detection, the custom URDF library, third-party software integrations (OpenPnP/CNC/Laser backends), remote app discovery, per-robot work directories, CAN-OTA transport, and gamepad mapping - each its own tab. Both are their own components (`src/components/About.tsx`, `src/components/Config.tsx`), not inlined into the main dashboard shell.
 
 ---
 
@@ -96,6 +102,8 @@ Full interface translation across **English, Spanish, German, French, and Italia
 Server-side storage (Express backend, `server.ts`) synchronizes every configuration, path, and active machine/robot state to disk (`data/settings.json`) - state survives a page reload or a server restart. `data/settings.json` itself is deliberately excluded from the server's own static file serving (it holds controller IPs, CAN-OTA configuration, and full per-robot state), even though the rest of `data/` (e.g. `WORKS/`, saved trajectories) is served normally.
 
 The same `GET`/`POST /api/settings` contract, plus a discovery endpoint (`GET /api/hydra-info`) and a `WebSocket /ws` for live push updates, is also how external clients connect - this is what lets [HYDRA-UMC SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE) discover a running HYDRA-UMC STUDIO server on the network, read/modify its state, and see changes made from a browser tab reflected live (and vice versa). Full contract in [`docs/REMOTE_API.md`](docs/REMOTE_API.md).
+
+`GET /api/system/metrics` powers the Overview dashboard footer: CPU load and memory usage are always real (Node's own `os` module); temperature reads real `vcgencmd measure_temp` output when running on an actual Raspberry Pi and falls back to a clearly-flagged mock otherwise (`temp_is_real` in the response); Wi-Fi/Ethernet/Bluetooth status are read from `/sys/class/net`/`/sys/class/bluetooth` (Linux-only, `null`/unknown on any other host rather than a guessed value).
 
 ---
 
@@ -107,10 +115,20 @@ HYDRA-UMC-STUDIO/
 ├── docs/
 │   └── REMOTE_API.md            # HTTP/WebSocket contract for remote clients (HYDRA-UMC SUITE, the mobile control apps)
 ├── src/
-│   ├── Dashboard.tsx            # Top-level app shell - navigation, Config modal, CAN-OTA panels
+│   ├── Dashboard.tsx            # Top-level app shell - navigation, Overview panel, footer system metrics
 │   ├── store.tsx                # Global state: RobotModel/RobotState/HydraController/SystemSettings
 │   ├── components/
-│   │   ├── RobotDetail.tsx      # Per-robot jog/trajectory/config panel (the model picker lives here)
+│   │   ├── About.tsx, Config.tsx  # System Configuration and About dialogs (split out of Dashboard.tsx
+│   │   │                       # 2026-08-19, each a standalone component reading the same global store)
+│   │   ├── RobotDetail.tsx      # Shared per-robot jog/trajectory/config implementation (the model
+│   │   │                       # picker lives here) - every robots/A*.tsx entry point below renders this
+│   │   ├── robots/A1.tsx .. A8.tsx  # Per-robot entry points (2026-08-19 module split) - thin
+│   │   │                       # re-exports of RobotDetail.tsx today, the place to grow any future
+│   │   │                       # robot-specific behavior without touching the other 7. A1 is the one
+│   │   │                       # exception already: RobotDetail.tsx's own `isFloatingLayout` branch
+│   │   │                       # (robot.id === 1) moves Speed/Acceleration/J1-J6/XYZ jog into a
+│   │   │                       # draggable overlay on the 3D viewport instead of the panel below it.
+│   │   ├── Joystick3D.tsx       # XYZ jog D-pad used by that floating overlay
 │   │   ├── VirtualKinematics.tsx  # The React Three Fiber <Canvas> scene host
 │   │   ├── KinematicBrainStage.tsx  # XY gantry / heated bed / ATC revolver / conveyor panel
 │   │   ├── Flasher.tsx, Tester.tsx  # CAN-OTA tools (URTC and HYDRA-UMC tiers)
@@ -118,7 +136,8 @@ HYDRA-UMC-STUDIO/
 │   │   │   VacuumTableConfig.tsx, HeatedBedConfig.tsx, XYTableConfig.tsx
 │   │   │                       # Accessory/machine control panels
 │   │   ├── JuanenPnPConfig.tsx, LumenPnPConfig.tsx, JuanenCNCConfig.tsx, JuanenLaserConfig.tsx
-│   │   │                       # Machine-specific configuration variants
+│   │   │                       # Machine-specific configuration variants - not yet wired into any
+│   │   │                       # navigation path (dead code), see SONNET/HYDRA-UMC-STUDIO/mejoras_futuras.txt
 │   │   ├── CamerasView.tsx, GamepadConfig.tsx, GamepadController.tsx, HelpModal.tsx
 │   │   └── 3d/
 │   │       ├── RobotArm.tsx     # Dispatches to the correct per-model rig by robot.model

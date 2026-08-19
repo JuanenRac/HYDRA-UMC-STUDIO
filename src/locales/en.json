@@ -256,7 +256,10 @@
     "rotate": "Rotate",
     "save_filename": "Filename (without .json):",
     "save_trajectory": "Save",
-    "xy_table_controls": "XY Table Controls"
+    "xy_table_controls": "XY Table Controls",
+    "joint_controls_overlay": "Joint Controls",
+    "xyz_jog": "XYZ Jog",
+    "floating_overlay_hint": "Speed, acceleration, joints and XYZ jog moved to the floating panel on the 3D view above."
   },
   "cameras": {
     "title": "Octal Vision Matrix",

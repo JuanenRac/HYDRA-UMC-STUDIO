@@ -256,7 +256,10 @@
     "rotate": "Pivoter",
     "save_filename": "Nom du fichier (sans .json) :",
     "save_trajectory": "Enregistrer",
-    "xy_table_controls": "Commandes de Table XY"
+    "xy_table_controls": "Commandes de Table XY",
+    "joint_controls_overlay": "Commandes des Articulations",
+    "xyz_jog": "Jog XYZ",
+    "floating_overlay_hint": "Vitesse, accélération, articulations et jog XYZ ont été déplacés vers le panneau flottant sur la vue 3D ci-dessus."
   },
   "cameras": {
     "title": "Matrice de Vision Octale",
