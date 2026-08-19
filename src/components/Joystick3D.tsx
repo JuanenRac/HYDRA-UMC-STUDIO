@@ -3,7 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================
-// A jog-pendant-style directional pad for X/Y/Z, added 2026-08-19 for the
+// A jog-pendant-style directional pad for X/Y/Z, used by the
 // Robot module's floating 3D overlay (robot A1 proof of concept - see
 // SONNET/HYDRA-UMC-STUDIO/chat.TXT). Deliberately a D-pad, not an analog
 // stick: real CNC/robot jog pendants (the UI this is modeled after) almost

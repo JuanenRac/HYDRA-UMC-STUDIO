@@ -97,7 +97,7 @@ Two standalone dialogs, both reachable from the header (`Config`/`About` buttons
 
 ## 🔐 Accounts & Access
 
-Every server seeds one account on its own first-ever start - username `admin`, password `admin` (renamed 2026-08-19 from the earlier shared `demo`/`demo`) - change it from **Config > Users** as soon as the server is reachable beyond a fully trusted LAN. That same tab lets an admin account create additional **operator** accounts: an operator can sign in, watch live state, and drive robots (jog/play/pause/stop/tool/valve/pump/speed), but can't overwrite global settings or manage other accounts. No account is required just to look around - the login screen's own "Continue read-only" skips straight to the dashboard with writes disabled. Full contract (roles, tokens, the `/api/users` routes) documented in [`docs/REMOTE_API.md`](docs/REMOTE_API.md) sections 2a/2b.
+Every server seeds one account on its own first-ever start - username `admin`, password `admin` - change it from **Config > Users** as soon as the server is reachable beyond a fully trusted LAN. That same tab lets an admin account create additional **operator** accounts: an operator can sign in, watch live state, and drive robots (jog/play/pause/stop/tool/valve/pump/speed), but can't overwrite global settings or manage other accounts. No account is required just to look around - the login screen's own "Continue read-only" skips straight to the dashboard with writes disabled. Full contract (roles, tokens, the `/api/users` routes) documented in [`docs/REMOTE_API.md`](docs/REMOTE_API.md) sections 2a/2b.
 
 Each of the 3 remote clients (SUITE, Android, iOS) self-identifies via an `X-Hydra-Client` request header, so **Config > Remote Access** can allow or block each one independently instead of one combined switch for all three.
 
@@ -117,23 +117,28 @@ The same `GET`/`POST /api/settings` contract, plus a discovery endpoint (`GET /a
 
 ```text
 HYDRA-UMC-STUDIO/
-├── server.ts                   # Express backend - static serving, settings persistence, Vite dev middleware, WebSocket live sync
+├── server.ts                   # Express backend - static serving, settings persistence, Vite dev middleware,
+│                                # WebSocket live sync, model-submission endpoints for HYDRA-UMC-EDITOR-URDF
+├── users.ts                    # Multi-user account store - scrypt password hashing, admin/operator roles
+├── kinematics.ts                # Server-side joint math shared with the client-side examples/ engines
 ├── docs/
 │   └── REMOTE_API.md            # HTTP/WebSocket contract for remote clients (HYDRA-UMC SUITE, the mobile control apps)
 ├── src/
 │   ├── Dashboard.tsx            # Top-level app shell - navigation, Overview panel, footer system metrics
 │   ├── store.tsx                # Global state: RobotModel/RobotState/HydraController/SystemSettings
+│   ├── i18n.ts                  # react-i18next setup - loads src/locales/*.json
 │   ├── components/
-│   │   ├── About.tsx, Config.tsx  # System Configuration and About dialogs (split out of Dashboard.tsx
-│   │   │                       # 2026-08-19, each a standalone component reading the same global store)
+│   │   ├── About.tsx, Config.tsx  # System Configuration and About dialogs - standalone components
+│   │   │                       # reading the same global store, not inlined into the dashboard shell
+│   │   ├── AuthGate.tsx, UsersPanel.tsx  # Login screen and the Config > Users admin/operator account manager
 │   │   ├── RobotDetail.tsx      # Shared per-robot jog/trajectory/config implementation (the model
 │   │   │                       # picker lives here) - every robots/A*.tsx entry point below renders this
-│   │   ├── robots/A1.tsx .. A8.tsx  # Per-robot entry points (2026-08-19 module split) - thin
-│   │   │                       # re-exports of RobotDetail.tsx today, the place to grow any future
-│   │   │                       # robot-specific behavior without touching the other 7. A1 is the one
-│   │   │                       # exception already: RobotDetail.tsx's own `isFloatingLayout` branch
-│   │   │                       # (robot.id === 1) moves Speed/Acceleration/J1-J6/XYZ jog into a
-│   │   │                       # draggable overlay on the 3D viewport instead of the panel below it.
+│   │   ├── robots/A1.tsx .. A8.tsx  # Per-robot entry points - thin re-exports of RobotDetail.tsx, the
+│   │   │                       # place to grow any future robot-specific behavior without touching the
+│   │   │                       # other 7. A1 is the one exception already: RobotDetail.tsx's own
+│   │   │                       # `isFloatingLayout` branch (robot.id === 1) moves Speed/Acceleration/
+│   │   │                       # J1-J6/XYZ jog into a draggable overlay on the 3D viewport instead of
+│   │   │                       # the panel below it.
 │   │   ├── Joystick3D.tsx       # XYZ jog D-pad used by that floating overlay
 │   │   ├── VirtualKinematics.tsx  # The React Three Fiber <Canvas> scene host
 │   │   ├── KinematicBrainStage.tsx  # XY gantry / heated bed / ATC revolver / conveyor panel
@@ -145,31 +150,41 @@ HYDRA-UMC-STUDIO/
 │   │   │                       # Machine-specific configuration variants - not yet wired into any
 │   │   │                       # navigation path (dead code), see SONNET/HYDRA-UMC-STUDIO/mejoras_futuras.txt
 │   │   ├── CamerasView.tsx, GamepadConfig.tsx, GamepadController.tsx, HelpModal.tsx
+│   │   ├── FuturisticSlider.tsx, RotaryKnob.tsx  # Shared jog control widgets
 │   │   └── 3d/
 │   │       ├── RobotArm.tsx     # Dispatches to the correct per-model rig by robot.model
-│   │       ├── Parol6Arm.tsx, Faze4Arm.tsx, AR3Arm.tsx, AR4Arm.tsx, GenericRobotArm.tsx
-│   │       │                   # Manufacturer-specific rigs (each hand-transcribed from its own URDF)
-│   │       ├── URArm.tsx        # Shared parametrized rig for every Universal Robots model
-│   │       ├── UR3eArm.tsx, UR5eArm.tsx, UR10eArm.tsx, UR16eArm.tsx, UR20Arm.tsx
-│   │       │                   # Thin per-model wrappers around URArm.tsx
+│   │       ├── Parol6Arm.tsx, Faze4Arm.tsx, AR3Arm.tsx, AR4Arm.tsx, EdoArm.tsx, Gen2Arm.tsx,
+│   │       │   Gen3LiteArm.tsx, Lite6Arm.tsx, M710icArm.tsx, PiperArm.tsx, SoArm100Arm.tsx,
+│   │       │   Vx300sArm.tsx, Wx250sArm.tsx, XArm6Arm.tsx, Z1Arm.tsx, KochArm.tsx,
+│   │       │   LumenPnPRig.tsx, GenericRobotArm.tsx
+│   │       │                   # Manufacturer-specific rigs, each hand-transcribed from its own real URDF
+│   │       ├── URArm.tsx, UrClassicArm.tsx  # Shared parametrized rigs for the e-Series/Classic Universal Robots lines
+│   │       ├── UR3eArm.tsx, UR5eArm.tsx, UR10eArm.tsx, UR16eArm.tsx, UR20Arm.tsx,
+│   │       │   Ur3ClassicArm.tsx, Ur5ClassicArm.tsx, Ur10ClassicArm.tsx
+│   │       │                   # Thin per-model wrappers around URArm.tsx / UrClassicArm.tsx
 │   │       ├── Shared3DEnvironment.tsx, SharedModule3DView.tsx, PathVisualizer.tsx,
 │   │       │   Toolhead.tsx, DraggableGizmo.tsx, ATC3DView.tsx, Rack3DView.tsx
 │   │       │                   # Scene environment, trajectory drawing, tool/gizmo rendering
 │   ├── examples/
 │   │   ├── kinematics.ts, utils.ts, robotKinematicsDispatch.ts
 │   │   │                       # Shared generic 2-link kinematics + per-model dispatch
-│   │   ├── parol6Kinematics.ts, faze4Kinematics.ts, ar3Kinematics.ts, ar4Kinematics.ts
+│   │   ├── parol6Kinematics.ts, faze4Kinematics.ts, ar3Kinematics.ts, ar4Kinematics.ts,
+│   │   │   edoKinematics.ts, gen2Kinematics.ts, gen3LiteKinematics.ts, kochKinematics.ts,
+│   │   │   lite6Kinematics.ts, m710icKinematics.ts, piperKinematics.ts, soArm100Kinematics.ts,
+│   │   │   xarm6Kinematics.ts, z1Kinematics.ts
 │   │   │                       # Manufacturer-specific real FK/IK
-│   │   ├── urKinematicsShared.ts  # Shared FK/IK engine for every Universal Robots model
-│   │   ├── ur3eKinematics.ts, ur5eKinematics.ts, ur10eKinematics.ts, ur16eKinematics.ts, ur20Kinematics.ts
+│   │   ├── urKinematicsShared.ts, urClassicKinematics.ts  # Shared FK/IK engine for the e-Series/Classic UR lines
+│   │   ├── ur3eKinematics.ts, ur5eKinematics.ts, ur10eKinematics.ts, ur16eKinematics.ts, ur20Kinematics.ts,
+│   │   │   ur3ClassicKinematics.ts, ur5ClassicKinematics.ts, ur10ClassicKinematics.ts
 │   │   │                       # Thin per-model UR chain/limits/home-pose data
-│   │   └── list/                # Canned example trajectories
+│   │   └── list/                # 26 canned example trajectories (circles, spirals, XY-table patterns, pick-and-place, ...)
 │   ├── lib/canOta.ts            # CAN-OTA simulation/protocol layer, GitHub firmware download
-│   └── locales/                 # en/es/de/fr/it translation files
+│   └── locales/                 # en/es/de/fr/it translation files (react-i18next)
 ├── public/models/                # Real 3D mesh assets - one folder per robot (24 total),
 │                                  # each with its own ATTRIBUTION.txt - see the license table below
 ├── images/                       # README banner
-└── data/                         # Server-persisted state (settings.json, WORKS/) - created at runtime
+└── data/                         # Server-persisted state (settings.json, users.json, WORKS/, model
+                                   # submissions from HYDRA-UMC-EDITOR-URDF) - created at runtime
 ```
 
 ---

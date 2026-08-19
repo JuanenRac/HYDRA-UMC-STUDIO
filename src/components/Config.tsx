@@ -3,10 +3,10 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================
-// Extracted out of Dashboard.tsx (2026-08-19) so it can evolve on its own
-// without risking the rest of the shell - see SONNET/HYDRA-UMC-STUDIO/chat.TXT.
-// configTab lives here now (was Dashboard-local state) since nothing outside
-// this modal ever reads it.
+// Lives as its own module, separate from Dashboard.tsx, so it can evolve on
+// its own without risking the rest of the shell - see
+// SONNET/HYDRA-UMC-STUDIO/chat.TXT. configTab lives here since nothing
+// outside this modal ever reads it.
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -248,7 +248,7 @@ export function Config({ onClose }: { onClose: () => void }) {
                    <button onClick={() => updateSettings({ customModels: [...(settings.customModels||[]), "new_model_v1.urdf"] })} className="w-full py-3 bg-slate-800 text-sky-400 rounded-xl border border-slate-700 text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-all">{t('config.register_urdf')}</button>
                 </div>
 
-                {/* Model submissions - server side of HYDRA-UMC-EDITOR-URDF (added 2026-08-19), see docs/REMOTE_API.md and that sibling project's own README. */}
+                {/* Model submissions - server side of HYDRA-UMC-EDITOR-URDF, see docs/REMOTE_API.md and that sibling project's own README. */}
                 <div className="pt-6 border-t border-slate-800/50 space-y-4">
                   <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">{t('config.model_submissions')}</h3>
                   <p className="text-[10px] text-slate-600 leading-relaxed">{t('config.model_submissions_desc')}</p>
@@ -307,7 +307,7 @@ export function Config({ onClose }: { onClose: () => void }) {
                   <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><Wifi size={16} /> {t('config.remote_access_tab')}</h3>
                   <p className="text-[10px] text-slate-600 leading-relaxed pt-2">{t('config.remote_access_tab_desc')}</p>
                 </div>
-                {/* Each remote client self-identifies via the X-Hydra-Client request header (server.ts's own remoteAccessAllowed()), so these 3 can be toggled independently - was a single combined switch until 2026-08-19. */}
+                {/* Each remote client self-identifies via the X-Hydra-Client request header (server.ts's own remoteAccessAllowed()), so these 3 can be toggled independently instead of sharing one combined switch. */}
                 <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-2 shadow-inner">
                   <div className="flex items-center justify-between"><span className="font-black text-emerald-400 uppercase text-[10px] tracking-widest flex items-center gap-2"><Cpu size={14} /> {t('config.remote_access_suite')}</span><input type="checkbox" checked={settings.remoteAccess?.suite ?? settings.remoteAccess?.enabled ?? true} onChange={(e) => updateSettings({ remoteAccess: { ...settings.remoteAccess, suite: e.target.checked } })} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500" /></div>
                   <p className="text-[10px] text-slate-600 leading-tight">{t('config.remote_access_suite_desc')}</p>

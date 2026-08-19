@@ -3,8 +3,8 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 //
-// Real multi-user account management, added 2026-08-19 to replace the
-// single hardcoded "demo"/"demo" login - talks to the new /api/users
+// Real multi-user account management, replacing a single hardcoded
+// "demo"/"demo" login - talks to the /api/users
 // routes (server.ts + users.ts), all admin-only. Two roles: "admin"
 // (full access - settings writes, user management, robot commands) and
 // "operator" (robot commands only via the atomic /api/robot/:id/command

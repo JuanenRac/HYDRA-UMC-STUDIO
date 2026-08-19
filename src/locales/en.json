@@ -472,7 +472,7 @@
         "label": "Accounts & Access",
         "heading": "Logging in, user accounts, and remote access",
         "paragraphs": [
-          "Every server seeds one default account on its own first-ever start: username admin, password admin (renamed 2026-08-19 from the old shared demo/demo). Change that password as soon as you can from Config > Users - anyone on the network who knows it can sign in with full access otherwise.",
+          "Every server seeds one default account on its own first-ever start: username admin, password admin. Change that password as soon as you can from Config > Users - anyone on the network who knows it can sign in with full access otherwise.",
           "Config > Users lets an Administrator account create additional accounts with the Operator role: an Operator can sign in, view live state, and send robot commands (jog/play/pause/stop/tool/valve/pump/speed), but can't change global settings or manage other accounts. Use it to hand a coworker robot control without also handing them the keys to the whole configuration.",
           "You don't have to sign in at all to look around - \"Continue read-only\" on the login screen lets you browse every panel and the live 3D view, you just can't save changes or send commands from that session.",
           "Config > Remote Access has one switch per remote client - HYDRA-UMC SUITE, the Android control app, and the iOS control app - so you can allow one and block another independently. Turning one off only stops that app's own \"find my server\" scan from seeing this one; it doesn't password-protect the API by itself, since anyone who already has this server's IP address can still reach it directly."

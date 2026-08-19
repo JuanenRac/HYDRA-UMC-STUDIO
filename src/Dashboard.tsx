@@ -37,7 +37,7 @@ import { slotLabel } from './lib/canOta';
 
 // Lazy-loaded Panels
 const RobotDetail = React.lazy(() => import('./components/RobotDetail').then(m => ({ default: m.RobotDetail })));
-// Per-robot entry points (2026-08-19 module split, see robots/A1.tsx for the
+// Per-robot entry points (see robots/A1.tsx for the
 // rationale) - Dashboard.tsx dispatches to the matching one by robot.id so
 // each robot has its own file to diverge from in the future, falling back
 // to the shared RobotDetail above for any robot id beyond the fixed A1-A8
@@ -315,16 +315,16 @@ function OverviewPanel() {
             // combinedWith is only ever stored on the robot that INITIATED the combine
             // (RobotDetail.tsx's "Combine with Robot" checkbox writes to the LEADER robot
             // whose Config tab is open, never to the follower's own side) - shown only on
-            // the FOLLOWER side here (2026-08-19, per the owner's explicit request: the
-            // leader itself shows nothing, only "Robot A2"/"Robot A3" each show "Combined
-            // With: Robot A1"), by scanning every OTHER robot's combinedWith for this
-            // robot's id - resolved by id at render time, not stored by name, so a rename
-            // never goes stale here. Array.from(new Set()) guards a follower combined into
-            // more than one leader at once from listing the same leader twice, and is also
-            // a display-layer safety net against the duplicate-id bug fixed the same day -
-            // see RobotDetail.tsx's combine-robot checkbox handler and
-            // auditoria_historial.txt (2026-08-19, a robot's own combinedWith was found
-            // with 144 entries, 3 ids repeated 48x) for the real fix (dedupe on write).
+            // the FOLLOWER side here by design (the leader itself shows nothing, only
+            // "Robot A2"/"Robot A3" each show "Combined With: Robot A1"), by scanning every
+            // OTHER robot's combinedWith for this robot's id - resolved by id at render
+            // time, not stored by name, so a rename never goes stale here.
+            // Array.from(new Set()) guards a follower combined into more than one leader
+            // at once from listing the same leader twice, and is also a display-layer
+            // safety net in case combinedWith itself ever picks up duplicate ids - see
+            // RobotDetail.tsx's combine-robot checkbox handler (which dedupes on write)
+            // and auditoria_historial.txt for a documented case (144 entries, 3 ids
+            // repeated 48x).
             const combinedLeaders = robots.filter(other => other.id !== r.id && other.combinedWith?.includes(r.id)).map(other => other.id);
             const combinedNames = Array.from(new Set(combinedLeaders)).map(id => robots.find(o => o.id === id)?.name || `A${id}`);
             const isRunning = r.online && !!r.playbackState?.isPlaying;

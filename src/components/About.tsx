@@ -3,8 +3,9 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================
-// Extracted out of Dashboard.tsx (2026-08-19) so it can evolve on its own
-// without risking the rest of the shell - see SONNET/HYDRA-UMC-STUDIO/chat.TXT.
+// Lives as its own module, separate from Dashboard.tsx, so it can evolve on
+// its own without risking the rest of the shell - see
+// SONNET/HYDRA-UMC-STUDIO/chat.TXT.
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';

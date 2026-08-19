@@ -381,8 +381,8 @@ const CameraPIP = ({ bot, initialX, initialY, label, t }: { bot: RobotState, ini
  * Floating, draggable overlay for the 3D viewport - Speed/Acceleration knobs,
  * the J1-J6 grid, and an XYZ jog Joystick3D, all normally rendered BELOW the
  * viewport (see the classic Joint Controls panel further down this file).
- * Proof of concept requested for robot A1 only (2026-08-19) - see
- * SONNET/HYDRA-UMC-STUDIO/chat.TXT - so it lives as its own component that
+ * Proof of concept scoped to robot A1 only - see
+ * SONNET/HYDRA-UMC-STUDIO/chat.TXT for the full spec - so it lives as its own component that
  * RobotDetail only mounts when `robot.id === 1`, rather than being baked
  * into the shared layout for all 8 robots.
  */
@@ -499,9 +499,21 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     }
   };
 
+  // Depends on the resolved PATH STRING for this one robot, not the whole
+  // settings.worksPaths object - that object is a fresh reference every
+  // time ANY setting anywhere changes (see store.tsx's own applyServerData,
+  // which used to make this worse by reshaping settings on every WebSocket
+  // broadcast), so depending on it directly re-ran this real network fetch
+  // (GET /${folderPath}/index.json) on every single jog tick from ANY
+  // connected client the instant a robot panel was open - the concrete
+  // mechanism behind this panel specifically (not other module panels,
+  // which have no such fetch) being far slower than everything else in
+  // the app. A plain string only changes reference (and re-triggers this
+  // effect) when this robot's OWN folder path value actually changes.
+  const worksFolderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
   useEffect(() => {
     fetchWorks();
-  }, [settings.worksPaths, robot.id, robot.name]);
+  }, [worksFolderPath]);
 
   const handleSaveWorkFile = async () => {
     if (robot.recordedPoints.length === 0) return;
@@ -891,10 +903,10 @@ console.log("Loading example:", id);
   const [controlMode, setControlMode] = useState<'translate' | 'rotate' | 'scale' | 'none'>('none');
   const toggleControl = (mode: 'translate' | 'rotate' | 'scale') => setControlMode(prev => prev === mode ? 'none' : mode);
 
-  // Proof of concept requested for robot A1 only (2026-08-19, see
+  // Proof of concept scoped to robot A1 only (see
   // SONNET/HYDRA-UMC-STUDIO/chat.TXT) - Speed/Acceleration/J1-J6/XYZ jog
   // move into a floating overlay ON the 3D viewport instead of the classic
-  // panel below it. Every other robot keeps today's layout unchanged.
+  // panel below it. Every other robot keeps the classic layout.
   const isFloatingLayout = robot.id === 1;
 
   const hasXYTable = robot.hasXYTable;
@@ -1763,10 +1775,11 @@ console.log("Loading example:", id);
                             onChange={(e) => {
                               // Dedupe defensively on every write, not just here - a stale
                               // `robot` closure (or any future double-fire of this handler)
-                              // must not be able to grow this array unbounded. Found in
-                              // production 2026-08-19: one robot's combinedWith had grown to
-                              // 144 entries (the same 3 ids repeated 48x) - see
-                              // SONNET/HYDRA-UMC-STUDIO/auditoria_historial.txt.
+                              // must not be able to grow this array unbounded: without this
+                              // guard a robot's combinedWith can silently balloon to dozens of
+                              // duplicate entries (the same handful of ids repeated over and
+                              // over) - see SONNET/HYDRA-UMC-STUDIO/auditoria_historial.txt for
+                              // a documented case (144 entries, 3 ids repeated 48x).
                               const current = robot.combinedWith || [];
                               const next = e.target.checked
                                 ? (current.includes(r.id) ? current : [...current, r.id])
@@ -1852,8 +1865,8 @@ console.log("Loading example:", id);
                   </div>
 
                   {/* Robot Controller Board (STM32G474RET6, Tier 1) - real hardware status,
-                      not previously shown outside Flasher/Tester. See HYDRA-UMC's own
-                      docs/CANBUS_STM32G474.TXT and docs/PINOUT_STM32G474_ROBOT_CONTROLLER.TXT. */}
+                      surfaced here so it's visible without switching to Flasher/Tester. See
+                      HYDRA-UMC's own docs/CANBUS_STM32G474.TXT and docs/PINOUT_STM32G474_ROBOT_CONTROLLER.TXT. */}
                   <div className="mt-4 pt-4 border-t border-slate-800">
                     <h4 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
                       {t('robot_detail.controller_board_upper', 'ROBOT CONTROLLER BOARD')}

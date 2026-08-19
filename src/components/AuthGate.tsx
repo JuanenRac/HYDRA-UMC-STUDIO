@@ -3,13 +3,12 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================
-// New 2026-08-19 - see store.tsx's own authToken comment for the full why:
-// server.ts's `authenticate` middleware has unconditionally required a bearer
-// token on every write (POST /api/settings, POST /api/robot/:id/command) and
-// on the /ws upgrade for a while now, but nothing in this app ever called
-// POST /api/login to get one - a plain browser tab could read state but could
-// never save a change or receive a live push. This is the login screen that
-// was missing. A ?token= URL param (the Android app's embedded 3D WebView,
+// See store.tsx's own authToken comment for the full why: server.ts's
+// `authenticate` middleware unconditionally requires a bearer token on every
+// write (POST /api/settings, POST /api/robot/:id/command) and on the /ws
+// upgrade, but nothing else in this app calls POST /api/login to get one -
+// without this screen, a plain browser tab could read state but could
+// never save a change or receive a live push. A ?token= URL param (the Android app's embedded 3D WebView,
 // ThreeDScreen.kt) or a token already in localStorage from a previous login
 // skips this screen entirely - see authToken's lazy initializer in store.tsx.
 

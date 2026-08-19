@@ -365,7 +365,7 @@ export interface SystemSettings {
   // would break the core web UI, not just remote apps; only the
   // discovery endpoint is genuinely remote-client-only.
   remoteAccess?: {
-    /** @deprecated legacy single toggle for all 3 remote clients at once - superseded 2026-08-19 by the 3 per-client flags below, kept only so a settings.json saved before this existed still defaults each of them the same way it always did (true) unless that client's own flag has since been set explicitly. */
+    /** @deprecated legacy single toggle for all 3 remote clients at once - kept as a fallback default for any of the 3 per-client flags below that haven't been explicitly set yet, so a settings.json without them still defaults each client the same way it always did (true). */
     enabled?: boolean;
     /** Whether HYDRA-UMC SUITE (identifies itself via the X-Hydra-Client: suite request header) can discover this server. */
     suite?: boolean;
@@ -376,7 +376,7 @@ export interface SystemSettings {
   };
   serverName?: string;
   // Whether this server accepts a model submission from HYDRA-UMC-EDITOR-URDF
-  // (github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF, added 2026-08-19) - that
+  // (github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF) - that
   // project's own server/client.py POSTs a finished URDF + mesh set to
   // POST /api/models/submit (admin-only), which writes it under
   // data/<destinationFolder>/<category>/<slug>/ and records it in
@@ -583,7 +583,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // very first render already knows whether we're authenticated, avoiding a
   // flash of a login screen for a WebView launched with a real ?token= (the
   // Android app's embedded 3D view, ThreeDScreen.kt) or a browser tab that
-  // already has one saved from a previous login. Found 2026-08-19: this app
+  // already has one saved from a previous login. This app
   // never actually calls POST /api/login anywhere - server.ts's own
   // `authenticate` middleware unconditionally requires a bearer token on
   // POST /api/settings, POST /api/robot/:id/command, and the /ws upgrade
@@ -653,8 +653,33 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
       
       if (data && Object.keys(data).length > 0) {
-        if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
-        else setSettings(prev => ({ ...prev, ...data })); // fallback for old settings.json
+        // Assign data.settings directly rather than merging it onto prev
+        // (`{...prev, ...data.settings}`) - the server always sends the
+        // FULL settings tree (REMOTE_API.md section 2, never a partial
+        // diff), and every field this app reads from settings already
+        // falls back gracefully via ?./?? when absent (see e.g.
+        // remoteAccess/modelSubmissions above), so there's nothing a
+        // merge with the previous value protects against. A merge DOES
+        // actively break the echo guard above: `{...prev, ...x}`
+        // preserves PREV's own key insertion order, which can differ
+        // from data.settings's own order (built server-side, potentially
+        // with fields added to the schema at different points) - so
+        // JSON.stringify()-ing the merged result never exactly equals
+        // the dataJson the guard just recorded, and the debounced save
+        // effect below (which serializes settings/controllers again to
+        // compare against that same recorded string) sees a false
+        // mismatch, POSTs a no-op "change" back, which the server
+        // broadcasts again, which lands right back here - a full
+        // multi-hundred-KB settings.json bouncing over the WebSocket in
+        // a tight loop every time ANYONE's edit (e.g. every single jog
+        // tick, since that's what drives this branch continuously)
+        // comes back around. Assigning data.settings directly keeps the
+        // client's own object graph byte-for-byte identical to what the
+        // guard already fingerprinted, so the round-trip actually
+        // terminates in one hop like the guard's own comment above
+        // assumes it does.
+        if (data.settings) setSettings(data.settings);
+        else setSettings(prev => ({ ...prev, ...data })); // fallback for a pre-nested-envelope settings.json - genuinely incomplete on its own, so a merge onto known-good defaults is correct here, not the bug described above
         let finalControllers: any[] = [];
         if (data.controllers && data.controllers.length > 0) {
           const parsed = data.controllers;
@@ -894,10 +919,10 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const factoryReset = async () => {
-    // POST /api/settings requires auth like every other write - this call was
-    // missing the header entirely before 2026-08-19 (would 401/no-op silently
-    // since the response is never checked), same root cause as the missing
-    // login screen this same session added (see authToken's own comment).
+    // POST /api/settings requires auth like every other write - without this
+    // header it would 401/no-op silently since the response is never
+    // checked, same root cause described in authToken's own comment above
+    // for why the login screen exists.
     const headers: any = { "Content-Type": "application/json" };
     if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
     await fetch("/api/settings", { method: "POST", headers, body: "{}" });
