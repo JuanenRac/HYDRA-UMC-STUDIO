@@ -656,7 +656,7 @@
     "customModels": [],
     "autoConnectRobots": false,
     "theme": "HYDRA-UMC Studio Fasion",
-    "language": "es",
+    "language": "en",
     "worksPaths": {
       "1": "WORKS/RobotA1",
       "2": "WORKS/RobotA2",
@@ -705,7 +705,7 @@
           "isOpen": false
         }
       },
-      "threeDHeight": 426
+      "threeDHeight": 528
     },
     "remoteAccess": {
       "enabled": true
@@ -724,7 +724,7 @@
       "robots": [
         {
           "id": 1,
-          "name": "Robot JUANEN",
+          "name": "Robot A1",
           "online": true,
           "model": "Parol6 (6-DOF)",
           "role": "Pnp",
@@ -49506,8 +49506,7 @@
           },
           "combinedWith": [
             2,
-            3,
-            8
+            3
           ],
           "selectedWorkFile": "soldadura_chasis.json",
           "selectedExample": "example-23-xy-table-flower",
@@ -49835,7 +49834,7 @@
         },
         {
           "id": 2,
-          "name": "Robot BORJA",
+          "name": "Robot A2",
           "online": true,
           "model": "Faze4 (6-DOF)",
           "role": "3D printing",
@@ -79671,7 +79670,7 @@
         },
         {
           "id": 3,
-          "name": "Robot YECLA",
+          "name": "Robot A3",
           "online": true,
           "model": "AR4 (6-DOF)",
           "role": "Inspection",

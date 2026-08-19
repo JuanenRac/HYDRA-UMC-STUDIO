@@ -285,6 +285,18 @@ async function startServer() {
                 robot.playbackState.acceleration = params.acceleration;
               }
               break;
+            // Added 2026-08-19 so a remote client (the Android app's own Camera
+            // screen) can toggle a robot's vision system without a full
+            // POST /api/settings overwrite - mirrors the same 2 fields
+            // src/Dashboard.tsx's OverviewPanel already writes locally
+            // (visionEnabled on the robot, connected on its paired camera entry).
+            case "vision":
+              if (typeof params?.enabled === "boolean") {
+                robot.visionEnabled = params.enabled;
+                const cam = (controller.cameras || []).find((c: any) => c.assignedRobotId === robot.id || c.id === robot.id);
+                if (cam) cam.connected = params.enabled;
+              }
+              break;
           }
         }
       });
