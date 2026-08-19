@@ -41,8 +41,8 @@ subnet for a swarm of controllers.
   to fetch and parse the full state via section 2 for every discovered IP.
 
 A subnet scan is a plain, unauthenticated HTTP GET per candidate IP on the
-known port - no mDNS/Bonjour service is advertised (yet; see "Future work"
-at the end of this document).
+known port - a `_hydra._tcp` mDNS/Bonjour service is also advertised for
+automatic discovery on supported networks.
 
 **Remote-access gate:** if `SystemSettings.remoteAccess.enabled` is
 explicitly `false` (set from the browser UI's own Settings -> Integrations
@@ -91,10 +91,10 @@ already are for two browser tabs open to the same server.
 
 ## 3. Live sync: `WebSocket /ws`
 
-Connect with `ws://<host>:3000/ws` (or `wss://` if the server is proxied
-behind TLS). On connect, the server immediately sends one message with
-the current full state - no separate `GET /api/settings` call is needed
-just to get a first real payload:
+Connect with `ws://<host>:3000/ws?token=<JWT_TOKEN>`. The token is mandatory
+if security is enabled on the server. On connect, the server immediately
+sends one message with the current full state - no separate `GET
+/api/settings` call is needed just to get a first real payload:
 
 ```json
 { "type": "settings", "payload": { "settings": {...}, "controllers": [...], "activeControllerId": "..." } }

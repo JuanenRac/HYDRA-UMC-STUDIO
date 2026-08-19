@@ -12,15 +12,18 @@ interface RotaryKnobProps {
   value: number;
   onChange: (val: number) => void;
   size?: number;
+  /** Snaps dragged values to the nearest multiple of this (relative to min) - e.g. the Robot module's own jogStep combobox. Undefined/0 keeps the old continuous, 1-decimal behavior. */
+  step?: number;
 }
 
-export function RotaryKnob({ min, max, value, onChange, size = 48 }: RotaryKnobProps) {
+export function RotaryKnob({ min, max, value, onChange, size = 48, step }: RotaryKnobProps) {
   const knobRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const onChangeRef = useRef(onChange);
   const minRef = useRef(min);
   const maxRef = useRef(max);
-  useEffect(() => { onChangeRef.current = onChange; minRef.current = min; maxRef.current = max; }, [onChange, min, max]);
+  const stepRef = useRef(step);
+  useEffect(() => { onChangeRef.current = onChange; minRef.current = min; maxRef.current = max; stepRef.current = step; }, [onChange, min, max, step]);
 
   // Clamp value
   const clampedValue = Math.min(max, Math.max(min, value || 0));
@@ -64,9 +67,13 @@ export function RotaryKnob({ min, max, value, onChange, size = 48 }: RotaryKnobP
     if (angle < -135) angle = -135;
 
     const pct = (angle + 135) / 270;
-    const newVal = minRef.current + pct * (maxRef.current - minRef.current);
-    
-    onChangeRef.current(Number(newVal.toFixed(1)));
+    let newVal = minRef.current + pct * (maxRef.current - minRef.current);
+    if (stepRef.current) {
+      newVal = minRef.current + Math.round((newVal - minRef.current) / stepRef.current) * stepRef.current;
+      newVal = Math.min(maxRef.current, Math.max(minRef.current, newVal));
+    }
+
+    onChangeRef.current(Number(newVal.toFixed(2)));
   };
 
   useEffect(() => {

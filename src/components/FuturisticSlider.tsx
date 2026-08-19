@@ -13,15 +13,18 @@ interface FuturisticSliderProps {
   value: number;
   onChange: (val: number) => void;
   className?: string;
+  /** Snaps dragged values to the nearest multiple of this (relative to min) - e.g. the Robot module's own jogStep combobox. Undefined/0 keeps the old continuous, 1-decimal behavior. */
+  step?: number;
 }
 
-export function FuturisticSlider({ min, max, value, onChange, className }: FuturisticSliderProps) {
+export function FuturisticSlider({ min, max, value, onChange, className, step }: FuturisticSliderProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const onChangeRef = useRef(onChange);
   const minRef = useRef(min);
   const maxRef = useRef(max);
-  useEffect(() => { onChangeRef.current = onChange; minRef.current = min; maxRef.current = max; }, [onChange, min, max]);
+  const stepRef = useRef(step);
+  useEffect(() => { onChangeRef.current = onChange; minRef.current = min; maxRef.current = max; stepRef.current = step; }, [onChange, min, max, step]);
 
   const clampedValue = Math.min(max, Math.max(min, value || 0));
   const pct = (clampedValue - min) / (max - min);
@@ -49,8 +52,12 @@ export function FuturisticSlider({ min, max, value, onChange, className }: Futur
     let newPct = (clientX - rect.left) / rect.width;
     newPct = Math.max(0, Math.min(1, newPct));
     
-    const newVal = minRef.current + newPct * (maxRef.current - minRef.current);
-    onChangeRef.current(Number(newVal.toFixed(1)));
+    let newVal = minRef.current + newPct * (maxRef.current - minRef.current);
+    if (stepRef.current) {
+      newVal = minRef.current + Math.round((newVal - minRef.current) / stepRef.current) * stepRef.current;
+      newVal = Math.min(maxRef.current, Math.max(minRef.current, newVal));
+    }
+    onChangeRef.current(Number(newVal.toFixed(2)));
   };
 
   useEffect(() => {

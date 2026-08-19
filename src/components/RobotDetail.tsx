@@ -14,6 +14,7 @@ import { RotateCcw, Home, Video, AlertOctagon,  Power, Droplets, ArrowUp, ArrowD
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { VirtualKinematics } from './VirtualKinematics';
+import { Joystick3D } from './Joystick3D';
 import { examples } from '../examples/kinematics';
 import { parol6CartesianToJoints, parol6JointsToCartesian, PAROL6_JOINT_LIMITS_DEG, PAROL6_HOME_POSE } from '../examples/parol6Kinematics';
 import { faze4CartesianToJoints, FAZE4_HOME_POSE } from '../examples/faze4Kinematics';
@@ -95,6 +96,26 @@ function homePoseFor(model: RobotModel) {
   if (model === 'UR5 (6-DOF)') return { ...UR5CLASSIC_HOME_POSE };
   if (model === 'UR10 (6-DOF)') return { ...UR10CLASSIC_HOME_POSE };
   return { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 };
+}
+
+// Parol6/AR4/the real UR/xArm/Lite6/Gen3Lite/Gen2/PiPER rigs have real, narrower
+// per-joint limits (from their own URDF/config) than the generic +/-180 range every
+// other model uses - shared by the classic Joint Controls grid and the A1 floating
+// overlay so both clamp jogging identically instead of duplicating this ternary chain.
+function jointLimitsFor(model: RobotModel, j: 'j1' | 'j2' | 'j3' | 'j4' | 'j5' | 'j6'): [number, number] {
+  if (model === 'Parol6 (6-DOF)') return PAROL6_JOINT_LIMITS_DEG[j];
+  if (model === 'AR4 (6-DOF)') return AR4_JOINT_LIMITS_DEG[j];
+  if (model === 'UR3e (6-DOF)') return UR3E_JOINT_LIMITS_DEG[j];
+  if (model === 'UR5e (6-DOF)') return UR5E_JOINT_LIMITS_DEG[j];
+  if (model === 'UR10e (6-DOF)') return UR10E_JOINT_LIMITS_DEG[j];
+  if (model === 'UR16e (6-DOF)') return UR16E_JOINT_LIMITS_DEG[j];
+  if (model === 'UR20 (6-DOF)') return UR20_JOINT_LIMITS_DEG[j];
+  if (model === 'xArm6 (6-DOF)') return XARM6_JOINT_LIMITS_DEG[j];
+  if (model === 'Lite 6 (6-DOF)') return LITE6_JOINT_LIMITS_DEG[j];
+  if (model === 'Gen3 Lite (6-DOF)') return GEN3LITE_JOINT_LIMITS_DEG[j];
+  if (model === 'Gen2 (6-DOF)') return GEN2_JOINT_LIMITS_DEG[j];
+  if (model === 'PiPER (6-DOF)') return PIPER_JOINT_LIMITS_DEG[j];
+  return [-180, 180];
 }
 
 // Parol6Arm.tsx/Faze4Arm.tsx/AR3Arm.tsx/AR4Arm.tsx are each driven by their own real
@@ -356,12 +377,98 @@ const CameraPIP = ({ bot, initialX, initialY, label, t }: { bot: RobotState, ini
   );
 };
 
+/**
+ * Floating, draggable overlay for the 3D viewport - Speed/Acceleration knobs,
+ * the J1-J6 grid, and an XYZ jog Joystick3D, all normally rendered BELOW the
+ * viewport (see the classic Joint Controls panel further down this file).
+ * Proof of concept requested for robot A1 only (2026-08-19) - see
+ * SONNET/HYDRA-UMC-STUDIO/chat.TXT - so it lives as its own component that
+ * RobotDetail only mounts when `robot.id === 1`, rather than being baked
+ * into the shared layout for all 8 robots.
+ */
+function JointControlsOverlay({
+  robot, jogStep, playbackSpeed, playbackAcceleration, onSpeedChange, onAccelerationChange, onJointChange, onXYZJog, t,
+}: {
+  robot: RobotState;
+  jogStep: number;
+  playbackSpeed: number;
+  playbackAcceleration: number;
+  onSpeedChange: (v: number) => void;
+  onAccelerationChange: (v: number) => void;
+  onJointChange: (j: 'j1' | 'j2' | 'j3' | 'j4' | 'j5' | 'j6', v: number) => void;
+  onXYZJog: (dx: number, dy: number, dz: number) => void;
+  t: any;
+}) {
+  const controls = useDragControls();
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <motion.div
+      drag
+      dragListener={false}
+      dragControls={controls}
+      dragMomentum={false}
+      initial={{ x: 16, y: 16 }}
+      className="absolute top-0 left-0 z-40 bg-slate-950/85 backdrop-blur border border-slate-700 rounded-xl shadow-2xl pointer-events-auto w-[300px] max-w-[90%]"
+    >
+      <div
+        className="bg-slate-900/90 px-3 py-1.5 flex justify-between items-center border-b border-slate-800 cursor-move rounded-t-xl"
+        onPointerDown={(e) => { e.stopPropagation(); controls.start(e); }}
+      >
+        <span className="text-[10px] font-bold text-sky-400 uppercase tracking-widest">{t('robot_detail.joint_controls_overlay', 'Joint Controls')}</span>
+        <button onClick={() => setCollapsed(c => !c)} className="text-slate-400 hover:text-white transition-colors text-[10px] font-bold px-2">
+          {collapsed ? '▸' : '▾'}
+        </button>
+      </div>
+
+      {!collapsed && (
+        <div className="p-3 space-y-3 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          <div className="flex items-center gap-2 bg-slate-900/80 px-2 py-1.5 rounded-lg border border-slate-800">
+            <span className="text-[9px] text-slate-400 font-bold uppercase w-14 shrink-0">{t('robot_detail.speed', 'Speed:')}</span>
+            <RotaryKnob min={10} max={500} value={playbackSpeed} onChange={onSpeedChange} size={28} step={jogStep} />
+            <div className="flex-1"><FuturisticSlider min={10} max={500} value={playbackSpeed} onChange={onSpeedChange} step={jogStep} /></div>
+            <span className="text-[9px] font-mono text-sky-400 w-8 text-right shrink-0">{playbackSpeed}%</span>
+          </div>
+          <div className="flex items-center gap-2 bg-slate-900/80 px-2 py-1.5 rounded-lg border border-slate-800">
+            <span className="text-[9px] text-slate-400 font-bold uppercase w-14 shrink-0">{t('robot_detail.acceleration', 'Acceleration:')}</span>
+            <RotaryKnob min={10} max={500} value={playbackAcceleration} onChange={onAccelerationChange} size={28} step={jogStep} />
+            <div className="flex-1"><FuturisticSlider min={10} max={500} value={playbackAcceleration} onChange={onAccelerationChange} step={jogStep} /></div>
+            <span className="text-[9px] font-mono text-amber-400 w-8 text-right shrink-0">{playbackAcceleration}%</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            {(['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const).map(j => {
+              const [jMin, jMax] = jointLimitsFor(robot.model, j);
+              return (
+                <div key={j} className="flex flex-col gap-1 bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase">{j}</span>
+                    <span className="text-[9px] font-mono text-sky-400">{robot.joints[j]?.toFixed(1)}°</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RotaryKnob min={jMin} max={jMax} value={robot.joints[j]} onChange={val => onJointChange(j, val)} size={26} step={jogStep} />
+                    <FuturisticSlider min={jMin} max={jMax} value={robot.joints[j]} onChange={val => onJointChange(j, val)} className="flex-1" step={jogStep} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col items-center gap-1.5 pt-1 border-t border-slate-800">
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{t('robot_detail.xyz_jog', 'XYZ Jog')} ({jogStep})</span>
+            <Joystick3D onJog={onXYZJog} />
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+}
 
 /**
- * Executes the  robot detail logic. 
+ * Executes the  robot detail logic.
  * This function handles the necessary computations and state updates.
  */
-export function RobotDetail({ robot, viewportOnly = false }: { robot: RobotState, viewportOnly?: boolean }) {
+export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: { robot: RobotState, viewportOnly?: boolean, onNavigateToRobot?: (robotId: number) => void }) {
   const { t } = useTranslation();
   const { updateRobot, saveKinematics, loadKinematics, settings, robots, updateSettings } = useHydraStore();
   const robotsRef = useRef(robots);
@@ -784,6 +891,12 @@ console.log("Loading example:", id);
   const [controlMode, setControlMode] = useState<'translate' | 'rotate' | 'scale' | 'none'>('none');
   const toggleControl = (mode: 'translate' | 'rotate' | 'scale') => setControlMode(prev => prev === mode ? 'none' : mode);
 
+  // Proof of concept requested for robot A1 only (2026-08-19, see
+  // SONNET/HYDRA-UMC-STUDIO/chat.TXT) - Speed/Acceleration/J1-J6/XYZ jog
+  // move into a floating overlay ON the 3D viewport instead of the classic
+  // panel below it. Every other robot keeps today's layout unchanged.
+  const isFloatingLayout = robot.id === 1;
+
   const hasXYTable = robot.hasXYTable;
   const xyTable = robot.xyTable;
 
@@ -919,6 +1032,23 @@ console.log("Loading example:", id);
     });
   };
 
+  // XYZ jog for the floating Joystick3D overlay (currently robot A1 only, see
+  // JointControlsOverlay above) - nudges the Cartesian target by dx/dy/dz *
+  // jogStep, then re-solves joints through this robot's own real kinematics
+  // (resolveTargetJoints, same helper the trajectory player above uses) so
+  // the 3D pose stays consistent instead of just moving pos.x/y/z blindly.
+  const handleXYZJog = (dx: number, dy: number, dz: number) => {
+    const cart = jointsToCartesianForModel(robot.model, robot.joints);
+    const x = cart.x + dx * jogStep;
+    const y = cart.y + dy * jogStep;
+    const z = cart.z + dz * jogStep;
+    const newJoints = resolveTargetJoints(robot.model, x, y, z, cart.a, cart.b, cart.c, robot.joints);
+    updateRobot(robot.id, {
+      pos: { ...robot.pos, x, y, z, a: cart.a, b: cart.b, c: cart.c },
+      joints: newJoints,
+    });
+  };
+
   const toggleValve = (index: number) => {
     const newValves = [...robot.valves] as [boolean, boolean];
     newValves[index] = !newValves[index];
@@ -955,7 +1085,7 @@ console.log("Loading example:", id);
             className={cn("relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col group shrink-0", viewportOnly ? "flex-1" : "min-h-[200px]")}
             style={!viewportOnly ? { flex: threeDHeight ? `0 0 ${threeDHeight}px` : '1 1 0%' } : {}}
           >
-            <VirtualKinematics key={reset3DKey} robot={robot} controlMode={controlMode} />
+            <VirtualKinematics key={reset3DKey} robot={robot} controlMode={controlMode} onSelectRobot={onNavigateToRobot} />
 
             {!viewportOnly && (
               <>
@@ -1005,6 +1135,20 @@ console.log("Loading example:", id);
                   </button>
                 </div>
               </>
+            )}
+
+            {isFloatingLayout && !viewportOnly && (
+              <JointControlsOverlay
+                robot={robot}
+                jogStep={jogStep}
+                playbackSpeed={playbackSpeed}
+                playbackAcceleration={playbackAcceleration}
+                onSpeedChange={handleSpeedChange}
+                onAccelerationChange={handleAccelerationChange}
+                onJointChange={(j, val) => updateRobot(robot.id, { joints: { ...robot.joints, [j]: val } })}
+                onXYZJog={handleXYZJog}
+                t={t}
+              />
             )}
 
             {/* Closed Camera Icons (Bottom Right) */}
@@ -1222,19 +1366,21 @@ console.log("Loading example:", id);
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 min-h-[44px]">
                   <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('robot_detail.speed', 'Speed:')}</span>
-                  <RotaryKnob 
-                    min={10} 
-                    max={500} 
-                    value={playbackSpeed} 
-                    onChange={handleSpeedChange} 
+                  <RotaryKnob
+                    min={10}
+                    max={500}
+                    value={playbackSpeed}
+                    onChange={handleSpeedChange}
                     size={40}
+                    step={jogStep}
                   />
                   <div className="w-32 ml-2">
-                    <FuturisticSlider 
-                      min={10} 
-                      max={500} 
-                      value={playbackSpeed} 
-                      onChange={handleSpeedChange} 
+                    <FuturisticSlider
+                      min={10}
+                      max={500}
+                      value={playbackSpeed}
+                      onChange={handleSpeedChange}
+                      step={jogStep}
                     />
                   </div>
                   <span className="text-xs font-mono text-sky-400 w-10 text-right">{playbackSpeed}%</span>
@@ -1248,6 +1394,7 @@ console.log("Loading example:", id);
                     value={playbackAcceleration}
                     onChange={handleAccelerationChange}
                     size={40}
+                    step={jogStep}
                   />
                   <div className="w-32 ml-2">
                     <FuturisticSlider
@@ -1255,6 +1402,7 @@ console.log("Loading example:", id);
                       max={500}
                       value={playbackAcceleration}
                       onChange={handleAccelerationChange}
+                      step={jogStep}
                     />
                   </div>
                   <span className="text-xs font-mono text-amber-400 w-10 text-right">{playbackAcceleration}%</span>
@@ -1285,19 +1433,7 @@ console.log("Loading example:", id);
                   // the sliders to them keeps jogging from wandering into unreachable/
                   // self-colliding angles. Faze4/AR3 declare every joint "continuous" in
                   // their own URDFs (genuinely no limit), so they keep the generic range.
-                  const [jMin, jMax] = robot.model === 'Parol6 (6-DOF)' ? PAROL6_JOINT_LIMITS_DEG[j]
-                    : robot.model === 'AR4 (6-DOF)' ? AR4_JOINT_LIMITS_DEG[j]
-                    : robot.model === 'UR3e (6-DOF)' ? UR3E_JOINT_LIMITS_DEG[j]
-                    : robot.model === 'UR5e (6-DOF)' ? UR5E_JOINT_LIMITS_DEG[j]
-                    : robot.model === 'UR10e (6-DOF)' ? UR10E_JOINT_LIMITS_DEG[j]
-                    : robot.model === 'UR16e (6-DOF)' ? UR16E_JOINT_LIMITS_DEG[j]
-                    : robot.model === 'UR20 (6-DOF)' ? UR20_JOINT_LIMITS_DEG[j]
-                    : robot.model === 'xArm6 (6-DOF)' ? XARM6_JOINT_LIMITS_DEG[j]
-                    : robot.model === 'Lite 6 (6-DOF)' ? LITE6_JOINT_LIMITS_DEG[j]
-                    : robot.model === 'Gen3 Lite (6-DOF)' ? GEN3LITE_JOINT_LIMITS_DEG[j]
-                    : robot.model === 'Gen2 (6-DOF)' ? GEN2_JOINT_LIMITS_DEG[j]
-                    : robot.model === 'PiPER (6-DOF)' ? PIPER_JOINT_LIMITS_DEG[j]
-                    : [-180, 180];
+                  const [jMin, jMax] = jointLimitsFor(robot.model, j);
                   return (
                   <div key={j} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
                     <div className="flex justify-between items-center">
@@ -1311,8 +1447,9 @@ console.log("Loading example:", id);
                         value={robot.joints[j as keyof typeof robot.joints]}
                         onChange={val => updateRobot(robot.id, { joints: { ...robot.joints, [j]: val } })}
                         size={44}
+                        step={jogStep}
                       />
-                      <FuturisticSlider min={jMin} max={jMax} value={robot.joints[j as keyof typeof robot.joints]} onChange={val => updateRobot(robot.id, { joints: { ...robot.joints, [j]: val } })} className="flex-1" />
+                      <FuturisticSlider min={jMin} max={jMax} value={robot.joints[j as keyof typeof robot.joints]} onChange={val => updateRobot(robot.id, { joints: { ...robot.joints, [j]: val } })} className="flex-1" step={jogStep} />
                     </div>
                   </div>
                   );
@@ -1332,29 +1469,31 @@ console.log("Loading example:", id);
                         <span className="text-xs font-mono text-sky-400">{robot.pos[axis]?.toFixed(2) || 0}</span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <RotaryKnob 
-                          min={0} 
-                          max={maxVal} 
-                          value={robot.pos[axis] || 0} 
+                        <RotaryKnob
+                          min={0}
+                          max={maxVal}
+                          value={robot.pos[axis] || 0}
                           onChange={val => {
-                            updateRobot(robot.id, { 
+                            updateRobot(robot.id, {
                               pos: { ...robot.pos, [axis]: val },
                               xyTable: robot.xyTable ? { ...robot.xyTable, pos: { ...robot.xyTable.pos, [axis === 'tx' ? 'x' : 'y']: val } } : robot.xyTable
                             });
-                          }} 
-                          size={44} 
+                          }}
+                          size={44}
+                          step={jogStep}
                         />
-                        <FuturisticSlider 
-                          min={0} 
-                          max={maxVal} 
-                          value={robot.pos[axis] || 0} 
+                        <FuturisticSlider
+                          min={0}
+                          max={maxVal}
+                          value={robot.pos[axis] || 0}
                           onChange={val => {
-                            updateRobot(robot.id, { 
+                            updateRobot(robot.id, {
                               pos: { ...robot.pos, [axis]: val },
                               xyTable: robot.xyTable ? { ...robot.xyTable, pos: { ...robot.xyTable.pos, [axis === 'tx' ? 'x' : 'y']: val } } : robot.xyTable
                             });
-                          }} 
-                          className="flex-1" 
+                          }}
+                          className="flex-1"
+                          step={jogStep}
                         />
                       </div>
                     </div>

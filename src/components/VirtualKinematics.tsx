@@ -69,7 +69,7 @@ function CameraAnimator({ targetPosition, targetFocus, trigger, controlsRef, ini
  * Executes the  virtual kinematics logic. 
  * This function handles the necessary computations and state updates.
  */
-export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; controlMode: 'translate' | 'rotate' | 'scale' | 'none' }) {
+export function VirtualKinematics({ robot, controlMode, onSelectRobot }: { robot: RobotState; controlMode: 'translate' | 'rotate' | 'scale' | 'none'; onSelectRobot?: (robotId: number) => void }) {
   const { updateRobot, settings, robots } = useHydraStore();
   const controlsRef = useRef<any>(null);
 
@@ -357,7 +357,11 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
                 }}
               >
                 {cHasTable ? (
-                   <group>
+                   <group
+                     onDoubleClick={(e: any) => { e.stopPropagation(); onSelectRobot?.(combinedRobot.id); }}
+                     onPointerOver={() => onSelectRobot && (document.body.style.cursor = 'pointer')}
+                     onPointerOut={() => onSelectRobot && (document.body.style.cursor = 'auto')}
+                   >
                      <group position={[0, 0.08, 0]} scale={[(combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1), (combinedRobot.renderScale || 1) / (combinedRobot.xyTable!.renderScale || 1)]}>
                        <PathVisualizer points={combinedRobot.recordedPoints} hasXYTable={true} model={combinedRobot.model} />
                      </group>
@@ -367,7 +371,11 @@ export function VirtualKinematics({ robot, controlMode }: { robot: RobotState; c
                      </group>
                    </group>
                 ) : (
-                   <group>
+                   <group
+                     onDoubleClick={(e: any) => { e.stopPropagation(); onSelectRobot?.(combinedRobot.id); }}
+                     onPointerOver={() => onSelectRobot && (document.body.style.cursor = 'pointer')}
+                     onPointerOut={() => onSelectRobot && (document.body.style.cursor = 'auto')}
+                   >
                      <RobotArm robot={combinedRobot} />
                      <PathVisualizer points={combinedRobot.recordedPoints} hasXYTable={false} model={combinedRobot.model} />
                    </group>

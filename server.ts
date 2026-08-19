@@ -10,6 +10,7 @@ import { createServer as createViteServer } from "vite";
 import fs from "fs";
 import http from "http";
 import os from "os";
+import { execSync } from "child_process";
 import { WebSocketServer, WebSocket } from "ws";
 import { calculateJoints } from "./kinematics";
 import Bonjour from 'bonjour-service';
@@ -35,6 +36,42 @@ function industrialLog(msg: string) {
   const entry = `[${new Date().toISOString()}] ${msg}\n`;
   console.log(msg);
   fs.appendFileSync(LOG_FILE, entry);
+}
+
+// wifi/ethernet: read from /sys/class/net/<iface>/operstate, Linux-only (real
+// on a CM5, absent on Windows/macOS dev machines - null there rather than a
+// guess). bluetooth: presence of any /sys/class/bluetooth/hci* controller
+// with an "up" state file is the closest cheap signal without a native BLE
+// dependency. Each check is independently wrapped so one missing interface
+// (e.g. no onboard Wi-Fi) doesn't blank out the other two.
+function readInterfaceUp(iface: string): boolean | null {
+  try {
+    const state = fs.readFileSync(`/sys/class/net/${iface}/operstate`, "utf-8").trim();
+    return state === "up";
+  } catch {
+    return null;
+  }
+}
+
+function readBluetoothUp(): boolean | null {
+  try {
+    const controllers = fs.readdirSync("/sys/class/bluetooth").filter(n => n.startsWith("hci"));
+    if (controllers.length === 0) return null;
+    return controllers.some(c => {
+      try { return fs.readFileSync(`/sys/class/bluetooth/${c}/../../power/runtime_status`, "utf-8").trim() !== "suspended"; }
+      catch { return true; } // controller present but state file layout differs by kernel - assume present means available
+    });
+  } catch {
+    return null;
+  }
+}
+
+function readNetworkStatus() {
+  return {
+    wifi: readInterfaceUp("wlan0"),
+    ethernet: readInterfaceUp("eth0"),
+    bluetooth: readBluetoothUp(),
+  };
 }
 
 // Bumped whenever the /api/hydra-info or /ws message contract changes in a
@@ -103,12 +140,14 @@ async function startServer() {
   // tab's own next 500ms debounced re-fetch (which never happens today -
   // the browser client only fetches /api/settings once, on mount).
   const wsClients = new Set<WebSocket>();
-  function broadcastSettings(payload: any, deltaOnly: boolean = false) {
+  function broadcastSettings(payload: any, deltaOnly: boolean = false, originator?: WebSocket) {
     lastKnownSettings = payload;
     const type = deltaOnly ? "delta" : "settings";
     const msg = JSON.stringify({ type, payload });
     for (const client of wsClients) {
-      if (client.readyState === WebSocket.OPEN) client.send(msg);
+      if (client !== originator && client.readyState === WebSocket.OPEN) {
+        client.send(msg);
+      }
     }
     if (payload.serverName) setupDiscovery(payload.serverName);
   }
@@ -154,11 +193,11 @@ async function startServer() {
     }
   });
 
-  app.post("/api/settings", authenticate, (req, res) => {
+  app.post("/api/settings", authenticate, async (req, res) => {
     const settingsPath = getSettingsPath();
     try {
       const payload = req.body;
-      fs.writeFileSync(settingsPath, JSON.stringify(payload, null, 2), "utf-8");
+      await fs.promises.writeFile(settingsPath, JSON.stringify(payload, null, 2), "utf-8");
       broadcastSettings(payload);
       res.json({ success: true });
     } catch (e) {
@@ -168,7 +207,7 @@ async function startServer() {
   });
 
   // Direct Atomic API for Industrial Control
-  app.post("/api/robot/:id/command", authenticate, (req, res) => {
+  app.post("/api/robot/:id/command", authenticate, async (req, res) => {
     const robotId = parseInt(req.params.id);
     const { command, params } = req.body;
 
@@ -248,7 +287,7 @@ async function startServer() {
 
     industrialLog(`Command: ${command} on Robot ${robotId}`);
 
-    fs.writeFileSync(getSettingsPath(), JSON.stringify(lastKnownSettings, null, 2), "utf-8");
+    await fs.promises.writeFile(getSettingsPath(), JSON.stringify(lastKnownSettings, null, 2), "utf-8");
     broadcastSettings(lastKnownSettings, true); // Use Delta-Sync for commands
     res.json({ success: true, affectedCount: affectedIds.length });
   });
@@ -275,13 +314,28 @@ async function startServer() {
     req.on('close', () => clearInterval(interval));
   });
 
-  // System Metrics API for industrial monitoring
+  // System Metrics API for industrial monitoring - powers the Overview
+  // footer's CPU/memory/temp/network readout (Dashboard.tsx StatusFooter).
   app.get("/api/system/metrics", (req, res) => {
+    // Real read on a CM5/Pi host; throws (command not found) on any other OS,
+    // in which case we fall back to a clearly-mocked value rather than lie.
+    let temp: number | null = null;
+    let tempIsReal = false;
+    try {
+      const out = execSync("vcgencmd measure_temp", { timeout: 500 }).toString();
+      const match = out.match(/temp=([\d.]+)/);
+      if (match) { temp = parseFloat(match[1]); tempIsReal = true; }
+    } catch {
+      temp = 45 + Math.random() * 10; // Mock - vcgencmd isn't available on this host (not a Pi, or dev machine)
+    }
+
     res.json({
       cpu_load: Math.round(os.loadavg()[0] * 10), // simplified load
       memory_usage: Math.round((1 - os.freemem() / os.totalmem()) * 100),
-      temp: 45 + Math.random() * 10, // Mock temperature for now, would read from vcgencmd on CM5
-      uptime: Math.round(process.uptime())
+      temp,
+      temp_is_real: tempIsReal,
+      uptime: Math.round(process.uptime()),
+      network: readNetworkStatus(),
     });
   });
 
@@ -387,28 +441,46 @@ async function startServer() {
   const httpServer = http.createServer(app);
   const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
 
-  wss.on("connection", (ws) => {
-    wsClients.add(ws);
-    // New connection immediately gets the current state, same shape as a
-    // broadcast - a client (e.g. HYDRA-UMC SUITE, freshly connected to one
-    // controller in a swarm) doesn't have to also do a separate REST GET
-    // /api/settings just to get its first real payload.
-    ws.send(JSON.stringify({ type: "settings", payload: lastKnownSettings }));
+  wss.on("connection", (ws, req) => {
+    // Extract token from query string (?token=...)
+    const url = new URL(req.url || "", "http://localhost");
+    const token = url.searchParams.get("token");
 
-    ws.on("message", (raw) => {
-      try {
-        const msg = JSON.parse(raw.toString());
-        if (msg && msg.type === "settings" && msg.payload) {
-          fs.writeFileSync(getSettingsPath(), JSON.stringify(msg.payload, null, 2), "utf-8");
-          broadcastSettings(msg.payload);
-        }
-      } catch (e) {
-        console.error("Malformed WebSocket message", e);
+    if (!token) {
+      ws.send(JSON.stringify({ error: "Access denied: No token provided" }));
+      setTimeout(() => ws.close(1008, "Access denied: No token provided"), 100);
+      return;
+    }
+
+    jwt.verify(token, JWT_SECRET, (err: any) => {
+      if (err) {
+        ws.send(JSON.stringify({ error: "Access denied: Invalid token" }));
+        setTimeout(() => ws.close(1008, "Access denied: Invalid token"), 100);
+        return;
       }
-    });
 
-    ws.on("close", () => wsClients.delete(ws));
-    ws.on("error", () => wsClients.delete(ws));
+      wsClients.add(ws);
+      // New connection immediately gets the current state, same shape as a
+      // broadcast - a client (e.g. HYDRA-UMC SUITE, freshly connected to one
+      // controller in a swarm) doesn't have to also do a separate REST GET
+      // /api/settings just to get its first real payload.
+      ws.send(JSON.stringify({ type: "settings", payload: lastKnownSettings }));
+
+      ws.on("message", async (raw) => {
+        try {
+          const msg = JSON.parse(raw.toString());
+          if (msg && msg.type === "settings" && msg.payload) {
+            await fs.promises.writeFile(getSettingsPath(), JSON.stringify(msg.payload, null, 2), "utf-8");
+            broadcastSettings(msg.payload, false, ws); // Skip originator to avoid echo
+          }
+        } catch (e) {
+          console.error("Malformed WebSocket message", e);
+        }
+      });
+
+      ws.on("close", () => wsClients.delete(ws));
+      ws.on("error", () => wsClients.delete(ws));
+    });
   });
 
   httpServer.listen(PORT, "0.0.0.0", () => {
