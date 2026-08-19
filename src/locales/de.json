@@ -213,7 +213,12 @@
     "users_apply": "Änderungen übernehmen",
     "users_create_title": "Neues Konto erstellen",
     "users_role_hint": "Operator-Konten können Roboterbefehle senden, aber keine globalen Einstellungen überschreiben oder andere Benutzer verwalten.",
-    "users_create_button": "Konto erstellen"
+    "users_create_button": "Konto erstellen",
+    "model_submissions": "Modell-Einreichungen (EDITOR-URDF)",
+    "model_submissions_desc": "Ob dieser Server ein fertiges Roboter/Maschinenmodell (3D-Netze + Kinematik) akzeptiert, das von HYDRA-UMC-EDITOR-URDF hierher gesendet wird. Standardmäßig deaktiviert - Dateien landen nur dann auf der Festplatte, wenn Sie dies aktivieren.",
+    "model_submissions_enable": "Modell-Einreichungen akzeptieren",
+    "model_submissions_folder": "Zielordner",
+    "model_submissions_folder_desc": "Relativ zum eigenen data/-Verzeichnis dieses Servers. Wird automatisch erstellt, sobald die erste Einreichung akzeptiert wird."
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",

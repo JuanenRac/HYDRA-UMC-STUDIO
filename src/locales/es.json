@@ -213,7 +213,12 @@
     "users_apply": "Aplicar cambios",
     "users_create_title": "Crear nueva cuenta",
     "users_role_hint": "Las cuentas de operador pueden enviar comandos de robot, pero no pueden sobrescribir los ajustes globales ni gestionar otros usuarios.",
-    "users_create_button": "Crear cuenta"
+    "users_create_button": "Crear cuenta",
+    "model_submissions": "Envíos de Modelos (EDITOR-URDF)",
+    "model_submissions_desc": "Si este servidor acepta un robot/máquina terminado (mallas 3D + cinemática) enviado desde HYDRA-UMC-EDITOR-URDF. Desactivado por defecto - los archivos solo se guardan en disco si activas esto.",
+    "model_submissions_enable": "Aceptar envíos de modelos",
+    "model_submissions_folder": "Carpeta de destino",
+    "model_submissions_folder_desc": "Relativa a la propia carpeta data/ de este servidor. Se crea automáticamente la primera vez que se acepta un envío."
   },
   "robot_detail": {
     "back": "Volver al Panel",

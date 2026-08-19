@@ -213,7 +213,12 @@
     "users_apply": "Appliquer les modifications",
     "users_create_title": "Créer un nouveau compte",
     "users_role_hint": "Les comptes opérateur peuvent envoyer des commandes de robot, mais ne peuvent pas écraser les paramètres globaux ni gérer d'autres utilisateurs.",
-    "users_create_button": "Créer le compte"
+    "users_create_button": "Créer le compte",
+    "model_submissions": "Soumissions de Modèles (EDITOR-URDF)",
+    "model_submissions_desc": "Indique si ce serveur accepte un robot/machine terminé (maillages 3D + cinématique) envoyé ici depuis HYDRA-UMC-EDITOR-URDF. Désactivé par défaut - les fichiers ne sont enregistrés sur le disque que si vous activez cette option.",
+    "model_submissions_enable": "Accepter les soumissions de modèles",
+    "model_submissions_folder": "Dossier de destination",
+    "model_submissions_folder_desc": "Relatif au propre répertoire data/ de ce serveur. Créé automatiquement lors de la première soumission acceptée."
   },
   "robot_detail": {
     "back": "Retour au Tableau de Bord",

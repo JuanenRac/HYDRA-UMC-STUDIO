@@ -213,7 +213,12 @@
     "users_apply": "Apply changes",
     "users_create_title": "Create new account",
     "users_role_hint": "Operator accounts can send robot commands but can't overwrite global settings or manage other users.",
-    "users_create_button": "Create account"
+    "users_create_button": "Create account",
+    "model_submissions": "Model Submissions (EDITOR-URDF)",
+    "model_submissions_desc": "Whether this server accepts a finished robot/machine (3D meshes + kinematics) pushed here from HYDRA-UMC-EDITOR-URDF. Off by default - files only land on disk if you turn this on.",
+    "model_submissions_enable": "Accept model submissions",
+    "model_submissions_folder": "Destination folder",
+    "model_submissions_folder_desc": "Relative to this server's own data/ directory. Created automatically the first time a submission is accepted."
   },
   "robot_detail": {
     "back": "Back to Dashboard",
