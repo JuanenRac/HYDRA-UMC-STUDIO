@@ -75,6 +75,28 @@ function readNetworkStatus() {
   };
 }
 
+// The real wire shape POST/GET /api/settings and the WS "settings"/"delta"
+// payload all use is { settings: SystemSettings, controllers, activeControllerId }
+// (see docs/REMOTE_API.md section 2c, src/store.tsx's own POST body) - every
+// SystemSettings field (serverName, remoteAccess, modelSubmissions, ...)
+// lives ONE LEVEL DEEPER than `controllers`/`activeControllerId`. Found
+// 2026-08-19 while adding the model-submissions endpoints below: several
+// existing reads of lastKnownSettings (the mDNS name at startup/on every
+// write, and this exact remoteAccessAllowed() call) were reading
+// lastKnownSettings.serverName / lastKnownSettings.remoteAccess directly -
+// always undefined against the real payload shape, since those fields are
+// actually at lastKnownSettings.settings.serverName /
+// lastKnownSettings.settings.remoteAccess. Net effect before this fix: the
+// per-client Remote Access toggles added earlier THE SAME DAY silently did
+// nothing (remoteAccessAllowed() always saw `settings` as undefined and
+// therefore always returned true), and renaming the server from Config >
+// Identity never actually updated its own mDNS advertisement. This helper
+// is the one place that now gets it right, used everywhere below instead
+// of reaching into either shape directly.
+function realSettings(payload: any): any {
+  return payload?.settings ?? payload;
+}
+
 // Per-client remote-access toggles (Config > Remote Access in the browser
 // UI, src/store.tsx's own SystemSettings.remoteAccess) - split 2026-08-19
 // from a single combined switch into 3 independent ones (SUITE/Android/iOS)
@@ -188,7 +210,8 @@ async function startServer() {
         client.send(msg);
       }
     }
-    if (payload.serverName) setupDiscovery(payload.serverName);
+    const newServerName = realSettings(payload)?.serverName;
+    if (newServerName) setupDiscovery(newServerName);
   }
 
   // Serve static data files (like WORKS/) at the root level - but never
@@ -457,13 +480,13 @@ async function startServer() {
     // browser tab's own connection to its own server also goes through
     // those, so gating them would break the core web UI, not just remote
     // apps - see that settings field's own comment in store.tsx).
-    if (!remoteAccessAllowed(lastKnownSettings, req.headers["x-hydra-client"] as string | undefined)) {
+    if (!remoteAccessAllowed(realSettings(lastKnownSettings), req.headers["x-hydra-client"] as string | undefined)) {
       res.status(404).end();
       return;
     }
     const s = lastKnownSettings;
     res.json({
-      product: lastKnownSettings.serverName || "HYDRA-UMC STUDIO",
+      product: realSettings(lastKnownSettings)?.serverName || "HYDRA-UMC STUDIO",
       remoteApiVersion: REMOTE_API_VERSION,
       appVersion: pkgVersion,
       hostname: os.hostname(),
@@ -509,6 +532,131 @@ async function startServer() {
     } catch (e: any) {
       console.error("Error uploading work", e);
       res.status(500).json({ error: e.message || "Error saving file" });
+    }
+  });
+
+  // =========================================================================
+  // Model submissions - the server side of HYDRA-UMC-EDITOR-URDF
+  // (github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF, commissioned 2026-08-19,
+  // added here the same day it started real implementation). That project
+  // is a graphical URDF creator/editor meant to push a finished robot/
+  // machine (3D meshes + kinematics) straight into this server's own
+  // catalog instead of the manual "hand-add files to public/models/" pass
+  // every robot in this ecosystem's own history got so far. Off by default
+  // (settings.modelSubmissions.enabled) - an admin opts in from Config,
+  // same gate philosophy as remoteAccess above: nothing lands on disk
+  // just because a client asked.
+  // =========================================================================
+  const MODEL_SUBMISSIONS_INDEX_PATH = () => path.join(dataPath, "model_submissions.json");
+
+  function readModelSubmissionsIndex(): any[] {
+    try {
+      const raw = fs.readFileSync(MODEL_SUBMISSIONS_INDEX_PATH(), "utf-8");
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function writeModelSubmissionsIndex(entries: any[]): void {
+    fs.writeFileSync(MODEL_SUBMISSIONS_INDEX_PATH(), JSON.stringify(entries, null, 2), "utf-8");
+  }
+
+  function slugify(name: string): string {
+    const slug = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    return slug || "model";
+  }
+
+  // Same path-traversal guard POST /api/upload-work already applies above,
+  // reused here for both the submission folder itself and every individual
+  // mesh filename inside it (a malicious/malformed filename like
+  // "../../../etc/passwd" must not escape the model's own folder either).
+  function resolveWithinDataDir(...segments: string[]): string | null {
+    const sanitized = segments.map(s => String(s).replace(/\.\./g, ""));
+    const resolved = path.resolve(dataPath, ...sanitized);
+    return resolved.startsWith(dataPath) ? resolved : null;
+  }
+
+  app.post("/api/models/submit", authenticate, requireAdmin, (req, res) => {
+    try {
+      const submissions = realSettings(lastKnownSettings)?.modelSubmissions;
+      if (!submissions?.enabled) {
+        return res.status(403).json({ error: "This server isn't accepting model submissions right now - enable it from Config > Models first." });
+      }
+      const { name, category, urdfFilename, urdfXml, meshFiles, overwrite } = req.body || {};
+      if (typeof name !== "string" || !name.trim() || typeof category !== "string" || typeof urdfXml !== "string") {
+        return res.status(400).json({ error: "name, category, and urdfXml are required" });
+      }
+      const slug = slugify(name);
+      const destFolderRel = String(submissions.destinationFolder || "models/submitted");
+      const destFolder = resolveWithinDataDir(destFolderRel, category, slug);
+      if (!destFolder) {
+        return res.status(403).json({ error: "Access denied: path traversal detected" });
+      }
+
+      const index = readModelSubmissionsIndex();
+      const existing = index.find((e: any) => e.slug === slug && e.category === category);
+      if (existing && !overwrite) {
+        return res.status(409).json({ error: `A model named "${slug}" already exists in category "${category}" - resubmit with overwrite:true to replace it, or pick a different name.`, slug });
+      }
+
+      fs.mkdirSync(destFolder, { recursive: true });
+      fs.writeFileSync(path.join(destFolder, urdfFilename || `${slug}.urdf`), urdfXml, "utf-8");
+
+      const meshDir = path.join(destFolder, "meshes");
+      if (Array.isArray(meshFiles) && meshFiles.length > 0) {
+        fs.mkdirSync(meshDir, { recursive: true });
+        for (const mf of meshFiles) {
+          if (!mf || typeof mf.filename !== "string" || typeof mf.base64 !== "string") continue;
+          const meshPath = resolveWithinDataDir(destFolderRel, category, slug, "meshes", mf.filename);
+          if (!meshPath) continue; // silently skip a traversal attempt in one file rather than aborting the whole submission
+          fs.writeFileSync(meshPath, Buffer.from(mf.base64, "base64"));
+        }
+      }
+
+      const entry = { slug, name: name.trim(), category, submittedAt: new Date().toISOString(), folder: path.relative(dataPath, destFolder).split(path.sep).join("/") };
+      const nextIndex = existing ? index.map((e: any) => (e.slug === slug && e.category === category ? entry : e)) : [...index, entry];
+      writeModelSubmissionsIndex(nextIndex);
+
+      res.json({ success: true, slug });
+    } catch (e: any) {
+      console.error("Error accepting model submission", e);
+      res.status(500).json({ error: e.message || "Error saving submitted model" });
+    }
+  });
+
+  app.get("/api/models", (req, res) => {
+    res.json({ models: readModelSubmissionsIndex() });
+  });
+
+  app.get("/api/models/:category/:slug/download", (req, res) => {
+    const submissions = realSettings(lastKnownSettings)?.modelSubmissions;
+    if (!submissions?.enabled) {
+      return res.status(403).json({ error: "This server isn't accepting model submissions right now - enable it from Config > Models first." });
+    }
+    const { category, slug } = req.params;
+    const index = readModelSubmissionsIndex();
+    const entry = index.find((e: any) => e.slug === slug && e.category === category);
+    if (!entry) {
+      return res.status(404).json({ error: "No such submitted model" });
+    }
+    const folder = resolveWithinDataDir(entry.folder);
+    if (!folder || !fs.existsSync(folder)) {
+      return res.status(404).json({ error: "Submitted model is recorded in the index but its files are missing on disk" });
+    }
+    try {
+      const files = fs.readdirSync(folder);
+      const urdfFile = files.find(f => f.endsWith(".urdf"));
+      const urdfXml = urdfFile ? fs.readFileSync(path.join(folder, urdfFile), "utf-8") : "";
+      const meshDir = path.join(folder, "meshes");
+      const meshFiles = fs.existsSync(meshDir)
+        ? fs.readdirSync(meshDir).map(filename => ({ filename, base64: fs.readFileSync(path.join(meshDir, filename)).toString("base64") }))
+        : [];
+      res.json({ slug, name: entry.name, category, urdfFilename: urdfFile || "", urdfXml, meshFiles });
+    } catch (e: any) {
+      console.error("Error reading submitted model", e);
+      res.status(500).json({ error: e.message || "Error reading submitted model" });
     }
   });
 
@@ -589,7 +737,7 @@ async function startServer() {
   });
 
   httpServer.listen(PORT, "0.0.0.0", () => {
-    const serverName = lastKnownSettings.serverName || "HYDRA-UMC STUDIO";
+    const serverName = realSettings(lastKnownSettings)?.serverName || "HYDRA-UMC STUDIO";
     setupDiscovery(serverName);
     industrialLog(`=================================================`);
     industrialLog(` HYDRA-UMC SERVER: ${serverName}`);

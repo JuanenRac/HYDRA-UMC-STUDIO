@@ -654,6 +654,10 @@
       }
     },
     "customModels": [],
+    "modelSubmissions": {
+      "enabled": false,
+      "destinationFolder": "models/submitted"
+    },
     "autoConnectRobots": false,
     "theme": "HYDRA-UMC Studio Fasion",
     "language": "en",

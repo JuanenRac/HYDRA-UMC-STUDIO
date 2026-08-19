@@ -375,6 +375,19 @@ export interface SystemSettings {
     ios?: boolean;
   };
   serverName?: string;
+  // Whether this server accepts a model submission from HYDRA-UMC-EDITOR-URDF
+  // (github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF, added 2026-08-19) - that
+  // project's own server/client.py POSTs a finished URDF + mesh set to
+  // POST /api/models/submit (admin-only), which writes it under
+  // data/<destinationFolder>/<category>/<slug>/ and records it in
+  // data/model_submissions.json. Defaults to disabled - an operator
+  // running EDITOR-URDF against a server that hasn't opted in gets a
+  // clear 403 from that endpoint, not files silently landing on disk.
+  modelSubmissions?: {
+    enabled: boolean;
+    /** Relative to the server's own data/ directory - e.g. "models/submitted". Created on first accepted submission if it doesn't exist yet. */
+    destinationFolder: string;
+  };
   uiLayout?: {
     rightPanelWidth?: number;
     pointsTableHeight?: number;
@@ -539,6 +552,10 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       laser: { software: 'LightBurn', enabled: false, port: 8080 },
     },
     customModels: [],
+    modelSubmissions: {
+      enabled: false,
+      destinationFolder: 'models/submitted',
+    },
     autoConnectRobots: false,
     theme: "HYDRA-UMC Studio Fasion",
     language: "en",
