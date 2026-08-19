@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 .env.example
 HYDRA-UMC-STUDIO.zip
+data/users.json
+data/users.json
