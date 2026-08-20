@@ -183,6 +183,8 @@ HYDRA-UMC-STUDIO/
 ├── public/models/                # Real 3D mesh assets - one folder per robot (24 total),
 │                                  # each with its own ATTRIBUTION.txt - see the license table below
 ├── images/                       # README banner
+├── README.md                     # this file
+├── README_spa.md / README_ita.md / README_fra.md / README_deu.md  # translations
 └── data/                         # Server-persisted state (settings.json, users.json, WORKS/, model
                                    # submissions from HYDRA-UMC-EDITOR-URDF) - created at runtime
 ```
@@ -257,6 +259,8 @@ HYDRA-UMC STUDIO is (c) 2026 JuanenRac (Electro Hobby 3D). This notice must be i
 
 The source code of this application is available under the **GNU General Public License v3.0 (GPL-3.0)**. Full text at https://www.gnu.org/licenses/gpl-3.0.html.
 
+The documentation (this README and its own translations - `README_spa.md`, `README_ita.md`, `README_fra.md`, `README_deu.md`) is available under **Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**. Full text at https://creativecommons.org/licenses/by-sa/4.0/.
+
 **Third-party robot mesh assets:** the real 3D geometry under `public/models/` is NOT covered by the GPL-3.0 above - each robot model's own mesh files are separately-licensed, third-party assets, redistributed here under their own original terms:
 
 | Manufacturer | Models | License |
@@ -282,4 +286,4 @@ Each model's own exact source repository, path, and license text reference lives
 
 This dashboard is the web control panel for the [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) motherboard project - see that repository for its own hardware (CERN-OHL-S v2) and firmware (GPL-3.0) licensing, which this repository's own license doesn't extend to, and vice versa. It also implements CAN-OTA tooling against the [URTC](https://github.com/JuanenRac/URTC) protocol - see that project's own repository for its own separate license.
 
-If you build on this project, keep the licensing split in mind: code changes should stay GPL-3.0, and any redistribution of a specific robot's mesh assets should stay under that model's own original license - each with attribution back to this project and its author.
+If you build on this project, keep the licensing split in mind: code changes should stay GPL-3.0, documentation derivatives should stay CC BY-SA, and any redistribution of a specific robot's mesh assets should stay under that model's own original license - each with attribution back to this project and its author.

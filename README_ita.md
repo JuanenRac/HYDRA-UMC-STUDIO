@@ -1,0 +1,289 @@
+<p align="center">
+  <img src="images/HYDRA_UMC_STUDIO_BANNER.jpg" alt="HYDRA-UMC STUDIO Banner" width="100%">
+</p>
+
+# 🖥️ HYDRA-UMC STUDIO
+
+### 🤖 Dashboard di Controllo Web per la Micro-Fabbrica Multi-Robot HYDRA-UMC
+
+---
+
+## 🎯 Panoramica
+
+**HYDRA-UMC STUDIO** è il dashboard di controllo basato su browser per [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) - la scheda madre della micro-fabbrica multi-robot (host Raspberry Pi CM5 + coprocessore real-time STM32H745 dual-core) che orchestra fino a 8 bracci robotici distribuiti su un unico bus FDCAN. Mentre il repository di HYDRA-UMC copre l'hardware e il firmware, questo repository è il lato rivolto all'utente umano: un'applicazione React a pagina singola che visualizza ogni robot in 3D reale, esegue jog e registra il loro movimento, gestisce le macchine e gli accessori che accompagnano una cella robotica, e flasha/testa l'intera catena di firmware CAN-OTA - tutto da un'unica scheda del browser, senza bisogno di installazione nativa oltre a Node.js.
+
+**Nota di onestà, seguendo la stessa convenzione di documentazione del resto di questo ecosistema:** l'hardware reale di HYDRA-UMC non esiste ancora come silicio testato (i suoi bootloader compilano senza errori ma non sono mai stati eseguiti su schede reali - vedi il `docs/architecture.md` di quel repository). Per questo motivo questo dashboard esegue i propri strumenti Flasher/Tester CAN-OTA contro una simulazione integrata completa che segue lo schema di indirizzamento reale e documentato di ogni livello, invece di fingere di parlare con un hardware che non esiste. La visualizzazione 3D dei robot, la cinematica, la registrazione delle traiettorie, e ogni pannello di controllo degli accessori sono completamente reali e indipendenti da questo - solo il trasporto CAN-OTA in sé è simulato per ora.
+
+Costruito con **React 19**, **Vite**, **Three.js** (via `@react-three/fiber`/`@react-three/drei`), **TypeScript**, e un backend **Express** per lo stato persistente lato server.
+
+---
+
+## 🦾 Controllo 3D Multi-Robot
+
+Gestisci più robot indipendenti a 6 gradi di libertà (6-DOF) simultaneamente, ciascuno con il proprio modello 3D reale, cinematica, e stato di jog/traiettoria. Il selettore di modello (RobotDetail → scheda Config) raggruppa ogni robot disponibile per produttore:
+
+- 🏭 **Source Robotics** - Parol6, Faze4 (mesh con licenza MIT e GPL-3.0 rispettivamente, vedi il proprio `ATTRIBUTION.txt` di ciascun modello)
+- 🏭 **Annin Robotics** - AR3, AR4 (mesh con licenza MIT)
+- 🏭 **Universal Robots** - UR3e, UR5e, UR10e, UR16e, UR20 - geometria ufficiale, limiti di giunto, e cinematica dei link estratti direttamente dal repository [Universal_Robots_ROS2_Description](https://github.com/UniversalRobots/Universal_Robots_ROS2_Description) di Universal Robots (BSD-3-Clause), che copre l'intera gamma di carico utile da leggero a pesante della loro linea e-Series
+- 🏭 **UFACTORY** - xArm6, Lite 6 (mesh BSD-3-Clause, geometria/cinematica ufficiale di [xarm_ros2](https://github.com/xArm-Developer/xarm_ros2))
+- 🏭 **Comau** - e.DO (mesh BSD-3-Clause, geometria/cinematica ufficiale di [eDO_description](https://github.com/ianathompson/eDO_description))
+- 🏭 **Kinova** - Gen3 Lite (mesh BSD-3-Clause, geometria/cinematica ufficiale di [ros2_kortex](https://github.com/Kinovarobotics/ros2_kortex))
+- 🏭 **FANUC** - M-710iC (mesh BSD-3-Clause, geometria/cinematica ufficiale di [fanuc_m710ic_description](https://github.com/robot-descriptions/fanuc_m710ic_description))
+- 🏭 **The Robot Studio** - SO-ARM100, un braccio economico a 5-DOF (non 6) (mesh Apache-2.0, geometria/cinematica ufficiale di [SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100))
+- ⚙️ **Generico** - un braccio semplificato a due link per qualsiasi configurazione senza un modello dedicato
+
+Ogni modello reale (tutti tranne il Generico) carica la geometria mesh STL reale per ogni link e la muove attraverso la catena di trasformazione dei giunti reale propria di quel produttore - non un placeholder stilizzato. La cinematica diretta/inversa viene calcolata rispetto alla geometria reale propria di ciascun robot (risoluzione Newton-Raphson per la posizione, limiti reali per giunto dove il robot li definisce), così una traiettoria registrata o un target cartesiano in jog muove il braccio corretto nel modo in cui lo farebbe realmente il robot fisico. I 5 modelli di Universal Robots condividono inoltre un unico motore FK/IK comune (`src/examples/urKinematicsShared.ts`) e un unico renderer di rig 3D comune (`src/components/3d/URArm.tsx`), poiché ogni giunto della e-Series UR condivide esattamente la stessa struttura cinematica - solo le lunghezze numeriche dei link differiscono per modello.
+
+I controlli di jog per robot includono una manopola rotativa + slider sia per la **velocità** che per l'**accelerazione** su ogni asse, e una lettura completa di endstop/stato accanto a una scheda di stato "Robot Controller Board" dal vivo una volta che CAN-OTA è collegato all'hardware reale. Ogni manopola/slider si aggancia al valore di **Step** del jog selezionato nel proprio combobox (da 0.1° fino a 100°/mm) invece di muoversi in modo continuo. Il robot **A1** è una proof of concept attiva per una disposizione diversa: i suoi controlli di jog Speed/Acceleration/J1-J6/XYZ vivono in un pannello flottante trascinabile sopra il viewport 3D stesso (`Joystick3D.tsx` per il pad XYZ) invece del pannello sottostante ancora usato da tutti gli altri robot - vedi `src/components/robots/A1.tsx`.
+
+---
+
+## 🏭 Kinematic Brain Stage
+
+Un pannello di controllo dedicato al sottosistema di movimento locale proprio della scheda madre HYDRA-UMC - gli assi pilotati direttamente dallo STM32H745, separati dai bracci robotici distribuiti su STACK A:
+
+- 📐 Controllo jog del **portale XY** per gli assi X, Y1, Y2 (portale Y doppio), e Z
+- 🔥 Controllo del **piano riscaldato** (commutato via SSR, 230VAC)
+- 🔄 **Revolver ATC** - controllo dell'indice utensile rotativo per il cambio utensile automatico pilotato da E0
+- 🎢 **Nastro trasportatore** - controllo di installato/in funzione/velocità per il nastro di trasporto pilotato da E1
+- 🛑 Una griglia completa di 12 endstop, 3 canali ventola, e 10 pompe/10 valvole per la fluidica di processo
+
+---
+
+## 🎛️ Pannelli di Controllo Accessori e Macchine
+
+Pannelli dedicati per le macchine e gli accessori che accompagnano una cella robotica: **Tavolo XY**, **Utensili ATC**, **Gestore Rack**, **Pick & Place** (inclusa la configurazione specifica per JuanenPnP/LumenPnP), **CNC** (inclusa la configurazione specifica per JuanenCNC), **Laser** (inclusa la configurazione specifica per JuanenLaser), **Tavolo a Vuoto**, e **Piano Riscaldato**.
+
+---
+
+## 🔄 Lavori e Traiettorie
+
+Carica traiettorie di esempio predefinite, esegui jog e registra i tuoi punti dal vivo, oppure carica/salva/modifica/riproduci traiettorie complesse multi-punto (JSON) per robot. Le traiettorie sono portabili tra modelli di robot - ogni punto registrato viene risolto attraverso la cinematica reale propria di quello specifico robot (`src/examples/robotKinematicsDispatch.ts`) al momento del caricamento/disegno/riproduzione, non calcolato in modo fisso rispetto al robot con cui è stato registrato, così lo stesso file di traiettoria pilota correttamente sia un Parol6 che un UR10e lungo la propria geometria raggiungibile reale.
+
+---
+
+## 🛠️ Strumenti Firmware CAN-OTA
+
+Flasha e auto-testa il firmware lungo l'intera catena CAN-OTA di HYDRA-UMC + URTC da un unico dashboard, con due punti di accesso dedicati:
+
+- **URTC → Flasher / Tester** - per la scheda URTC Tool Head e le proprie schede di espansione (corrisponde alla copertura di protocollo propria degli strumenti desktop standalone [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)/[URTC Tester](https://github.com/JuanenRac/URTC-TESTER))
+- **HYDRA-UMC → Flasher / Tester** - per i livelli Robot Controller Board e Kinematic Brain, inoltrato per tutto il percorso da CM5 → SPI → STM32H745 → FDCAN1 → Robot Controller Board → CAN → URTC Tool Head, senza bisogno di sonda JTAG/SWD né di dongle USB-CAN (vedi il `docs/architecture.md` proprio di [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC/blob/main/docs/architecture.md) per il design completo di indirizzamento/inoltro)
+
+Entrambi possono scaricare release di firmware reali direttamente da GitHub (basato su `firmware_manifest.json`, verificato tramite CRC32) sia per il repository `URTC` che per `HYDRA-UMC`. Come indicato sopra, il trasporto stesso viene eseguito contro una simulazione integrata completa finché non esisterà firmware STM32H745 reale su hardware reale con cui comunicare.
+
+---
+
+## 🎮 Supporto Gamepad
+
+Integrazione di controller USB e Bluetooth con mapping personalizzati per pulsante/per asse, per fare jog di robot e accessori senza mouse/tastiera.
+
+---
+
+## 📹 Integrazione Telecamere
+
+Fino a 8 feed live simultanei (visione USB o sensori termici della famiglia MLX90640/41/42) con stato di registrazione e inferenza - la matrice di telecamere attorno a cui è costruito il sottosistema hub USB 3.0 dual proprio di HYDRA-UMC.
+
+---
+
+## 🌐 Interfaccia Multi-Lingua
+
+Traduzione completa dell'interfaccia in **inglese, spagnolo, tedesco, francese e italiano** (`src/locales/`), incluso il menu Aiuto interno all'app, la finestra Informazioni (versione/autore/licenza), e ogni scheda della finestra di Configurazione di Sistema. La copertura non è ancora al 100% di ogni schermata - vedi `SONNET/HYDRA-UMC-STUDIO/mejoras_futuras.txt` nel tracciamento privato proprio di questo ecosistema per ciò che resta codificato in inglese (principalmente una manciata di pannelli accessori standalone non ancora raggiunti dal lavoro di traduzione).
+
+---
+
+## ℹ️ Informazioni e Configurazione di Sistema
+
+Due finestre di dialogo indipendenti, entrambe raggiungibili dall'intestazione (pulsanti `Config`/`About`): **About** mostra la versione dell'app in esecuzione (letta dal vivo da `GET /api/hydra-info`), l'autore, e la licenza; **Config** copre l'identità del server, la gestione di controller/nodi, il tema UI + lingua, la ridenominazione dei robot, la mappatura telecamera↔robot con rilevamento conflitti, la libreria di URDF personalizzati, le integrazioni software di terze parti (backend OpenPnP/CNC/Laser), l'accesso remoto per client (interruttori indipendenti per SUITE/Android/iOS), gli account utente, le directory di lavoro per robot, il trasporto CAN-OTA, e la mappatura del gamepad - ciascuno nella propria scheda. Entrambi sono componenti a sé stanti (`src/components/About.tsx`, `src/components/Config.tsx`), non incorporati direttamente nella shell principale del dashboard.
+
+## 🔐 Account e Accesso
+
+Ogni server crea un account al proprio primo avvio in assoluto - utente `admin`, password `admin` - cambiala da **Config > Users** non appena il server è raggiungibile oltre una LAN completamente fidata. La stessa scheda permette a un account admin di creare account **operator** aggiuntivi: un operator può accedere, osservare lo stato in tempo reale, e pilotare i robot (jog/riproduci/pausa/stop/utensile/valvola/pompa/velocità), ma non può sovrascrivere le impostazioni globali né gestire altri account. Non è richiesto alcun account solo per guardare - il pulsante "Continue read-only" della schermata di login salta direttamente al dashboard con le scritture disabilitate. Contratto completo (ruoli, token, le rotte `/api/users`) documentato in [`docs/REMOTE_API.md`](docs/REMOTE_API.md), sezioni 2a/2b.
+
+Ciascuno dei 3 client remoti (SUITE, Android, iOS) si auto-identifica tramite un header di richiesta `X-Hydra-Client`, così **Config > Remote Access** può consentire o bloccare ciascuno in modo indipendente invece di un unico interruttore combinato per tutti e tre.
+
+---
+
+## 💾 Stato Persistente
+
+L'archiviazione lato server (backend Express, `server.ts`) sincronizza ogni configurazione, percorso, e stato attivo di macchina/robot su disco (`data/settings.json`) - lo stato sopravvive a un ricaricamento della pagina o a un riavvio del server. `data/settings.json` stesso è deliberatamente escluso dal servizio di file statici proprio del server (contiene IP dei controller, configurazione CAN-OTA, e lo stato completo per robot), sebbene il resto di `data/` (es. `WORKS/`, traiettorie salvate) venga servito normalmente.
+
+Lo stesso contratto `GET`/`POST /api/settings`, più un endpoint di discovery (`GET /api/hydra-info`) e un `WebSocket /ws` per aggiornamenti push dal vivo, è anche il modo in cui si collegano i client esterni - questo è ciò che permette a [HYDRA-UMC SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE) di scoprire un server HYDRA-UMC STUDIO attivo sulla rete, leggere/modificare il suo stato, e vedere i cambiamenti fatti da una scheda del browser riflessi dal vivo (e viceversa). Contratto completo in [`docs/REMOTE_API.md`](docs/REMOTE_API.md).
+
+`GET /api/system/metrics` alimenta il footer del dashboard Overview: il carico CPU e l'uso di memoria sono sempre reali (il modulo `os` proprio di Node); la temperatura legge l'output reale di `vcgencmd measure_temp` quando in esecuzione su una vera Raspberry Pi e ricade su un valore simulato chiaramente contrassegnato altrimenti (`temp_is_real` nella risposta); lo stato di Wi-Fi/Ethernet/Bluetooth viene letto da `/sys/class/net`/`/sys/class/bluetooth` (solo Linux, `null`/sconosciuto su qualsiasi altro host invece di un valore indovinato).
+
+---
+
+## 📂 Struttura del Repository
+
+```text
+HYDRA-UMC-STUDIO/
+├── server.ts                   # Backend Express - servizio statico, persistenza settings, middleware dev di Vite,
+│                                # sincronizzazione live via WebSocket, endpoint di invio modelli per HYDRA-UMC-EDITOR-URDF
+├── users.ts                    # Archivio account multi-utente - hashing password con scrypt, ruoli admin/operator
+├── kinematics.ts                # Matematica dei giunti lato server condivisa con i motori examples/ lato client
+├── docs/
+│   └── REMOTE_API.md            # Contratto HTTP/WebSocket per client remoti (HYDRA-UMC SUITE, le app di controllo mobile)
+├── src/
+│   ├── Dashboard.tsx            # Shell principale dell'app - navigazione, pannello Overview, metriche di sistema nel footer
+│   ├── store.tsx                # Stato globale: RobotModel/RobotState/HydraController/SystemSettings
+│   ├── i18n.ts                  # Configurazione react-i18next - carica src/locales/*.json
+│   ├── components/
+│   │   ├── About.tsx, Config.tsx  # Finestre di Configurazione di Sistema e Informazioni - componenti a sé stanti
+│   │   │                       # che leggono lo stesso store globale, non incorporati direttamente nella shell del dashboard
+│   │   ├── AuthGate.tsx, UsersPanel.tsx  # Schermata di login e il gestore account admin/operator di Config > Users
+│   │   ├── RobotDetail.tsx      # Implementazione condivisa di jog/traiettoria/config per robot (il selettore
+│   │   │                       # di modello vive qui) - ogni punto di ingresso robots/A*.tsx sottostante esegue il render di questo
+│   │   ├── robots/A1.tsx .. A8.tsx  # Punti di ingresso per robot - ri-esportazioni sottili di RobotDetail.tsx, il
+│   │   │                       # luogo dove far crescere qualsiasi comportamento futuro specifico del robot senza toccare gli
+│   │   │                       # altri 7. A1 è già l'unica eccezione: la stessa branch `isFloatingLayout` di
+│   │   │                       # RobotDetail.tsx (robot.id === 1) sposta il jog di Speed/Acceleration/
+│   │   │                       # J1-J6/XYZ in un overlay trascinabile sul viewport 3D invece del
+│   │   │                       # pannello sottostante.
+│   │   ├── Joystick3D.tsx       # D-pad di jog XYZ usato da quell'overlay flottante
+│   │   ├── VirtualKinematics.tsx  # L'host della scena <Canvas> di React Three Fiber
+│   │   ├── KinematicBrainStage.tsx  # Pannello portale XY / piano riscaldato / revolver ATC / nastro trasportatore
+│   │   ├── Flasher.tsx, Tester.tsx  # Strumenti CAN-OTA (livelli URTC e HYDRA-UMC)
+│   │   ├── ATCToolsConfig.tsx, RackConfigView.tsx, PickAndPlace.tsx, CNC.tsx, Laser.tsx,
+│   │   │   VacuumTableConfig.tsx, HeatedBedConfig.tsx, XYTableConfig.tsx
+│   │   │                       # Pannelli di controllo accessori/macchine
+│   │   ├── JuanenPnPConfig.tsx, LumenPnPConfig.tsx, JuanenCNCConfig.tsx, JuanenLaserConfig.tsx
+│   │   │                       # Varianti di configurazione specifiche per macchina - non ancora collegate a nessun
+│   │   │                       # percorso di navigazione (codice morto), vedi SONNET/HYDRA-UMC-STUDIO/mejoras_futuras.txt
+│   │   ├── CamerasView.tsx, GamepadConfig.tsx, GamepadController.tsx, HelpModal.tsx
+│   │   ├── FuturisticSlider.tsx, RotaryKnob.tsx  # Widget di controllo jog condivisi
+│   │   └── 3d/
+│   │       ├── RobotArm.tsx     # Instrada al rig corretto per modello in base a robot.model
+│   │       ├── Parol6Arm.tsx, Faze4Arm.tsx, AR3Arm.tsx, AR4Arm.tsx, EdoArm.tsx, Gen2Arm.tsx,
+│   │       │   Gen3LiteArm.tsx, Lite6Arm.tsx, M710icArm.tsx, PiperArm.tsx, SoArm100Arm.tsx,
+│   │       │   Vx300sArm.tsx, Wx250sArm.tsx, XArm6Arm.tsx, Z1Arm.tsx, KochArm.tsx,
+│   │       │   LumenPnPRig.tsx, GenericRobotArm.tsx
+│   │       │                   # Rig specifici per produttore, ciascuno trascritto a mano dal proprio URDF reale
+│   │       ├── URArm.tsx, UrClassicArm.tsx  # Rig parametrizzati condivisi per le linee e-Series/Classic di Universal Robots
+│   │       ├── UR3eArm.tsx, UR5eArm.tsx, UR10eArm.tsx, UR16eArm.tsx, UR20Arm.tsx,
+│   │       │   Ur3ClassicArm.tsx, Ur5ClassicArm.tsx, Ur10ClassicArm.tsx
+│   │       │                   # Wrapper sottili per modello attorno a URArm.tsx / UrClassicArm.tsx
+│   │       ├── Shared3DEnvironment.tsx, SharedModule3DView.tsx, PathVisualizer.tsx,
+│   │       │   Toolhead.tsx, DraggableGizmo.tsx, ATC3DView.tsx, Rack3DView.tsx
+│   │       │                   # Ambiente della scena, disegno traiettorie, rendering utensile/gizmo
+│   ├── examples/
+│   │   ├── kinematics.ts, utils.ts, robotKinematicsDispatch.ts
+│   │   │                       # Cinematica generica condivisa a 2 link + dispatch per modello
+│   │   ├── parol6Kinematics.ts, faze4Kinematics.ts, ar3Kinematics.ts, ar4Kinematics.ts,
+│   │   │   edoKinematics.ts, gen2Kinematics.ts, gen3LiteKinematics.ts, kochKinematics.ts,
+│   │   │   lite6Kinematics.ts, m710icKinematics.ts, piperKinematics.ts, soArm100Kinematics.ts,
+│   │   │   xarm6Kinematics.ts, z1Kinematics.ts
+│   │   │                       # FK/IK reale specifica per produttore
+│   │   ├── urKinematicsShared.ts, urClassicKinematics.ts  # Motore FK/IK condiviso per le linee e-Series/Classic di UR
+│   │   ├── ur3eKinematics.ts, ur5eKinematics.ts, ur10eKinematics.ts, ur16eKinematics.ts, ur20Kinematics.ts,
+│   │   │   ur3ClassicKinematics.ts, ur5ClassicKinematics.ts, ur10ClassicKinematics.ts
+│   │   │                       # Dati sottili per modello di catena UR/limiti/pose di riposo
+│   │   └── list/                # 26 traiettorie di esempio predefinite (cerchi, spirali, pattern tavolo XY, pick-and-place, ...)
+│   ├── lib/canOta.ts            # Livello di simulazione/protocollo CAN-OTA, download firmware da GitHub
+│   └── locales/                 # File di traduzione en/es/de/fr/it (react-i18next)
+├── public/models/                # Asset mesh 3D reali - una cartella per robot (24 in totale),
+│                                  # ciascuna con il proprio ATTRIBUTION.txt - vedi la tabella delle licenze più sotto
+├── images/                       # Banner del README
+├── README.md                     # questo file (in inglese)
+├── README_spa.md / README_ita.md / README_fra.md / README_deu.md  # traduzioni
+└── data/                         # Stato persistito dal server (settings.json, users.json, WORKS/, invii
+                                   # di modelli da HYDRA-UMC-EDITOR-URDF) - creato a runtime
+```
+
+---
+
+## 🛠️ Ambiente di Sviluppo
+
+### Requisiti
+- [Node.js](https://nodejs.org/) (v18 o superiore consigliato)
+- npm
+
+### Installazione
+
+```bash
+npm install
+```
+
+### Modalità Sviluppo
+
+Esegue l'app con ricaricamento live (middleware dev di Vite dentro lo stesso server Express, `server.ts`):
+- **Windows:** doppio clic su `dev.bat` oppure esegui `npm run dev`
+- **Linux/Mac:** esegui `./dev.sh` oppure `npm run dev`
+
+### Build di Produzione
+
+Compila in un deployment server ottimizzato e a file singolo:
+- **Windows:** doppio clic su `build.bat` oppure esegui `npm run build`
+- **Linux/Mac:** esegui `./build.sh` oppure `npm run build`
+
+Poi avvia il server di produzione con:
+```bash
+npm start
+```
+
+Il server è in esecuzione su `http://localhost:3000` (oppure `http://<tuo-ip-locale>:3000` sulla tua rete locale). Tutto lo stato e i dati persistono nella directory `data/`.
+
+---
+
+## 🔗 Progetti Correlati
+
+Questo progetto fa parte di un ecosistema robotico più ampio dello stesso autore (JuanenRac / Electro Hobby 3D). Vale la pena conoscerlo, poiché una richiesta potrebbe in realtà riguardare uno di questi invece che questo repository:
+
+**Piattaforma HYDRA-UMC** — la cella di micro-fabbrica multi-robot
+- **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** — la scheda madre stessa: host Raspberry Pi CM5 + coprocessore real-time STM32H745 dual-core, che orchestra fino a 8 bracci robotici distribuiti su CAN-OTA/SPI-OTA. Hardware + firmware propri, GPL-3.0/CERN-OHL-S v2/CC BY-SA 4.0.
+- **HYDRA-UMC STUDIO** *(questo repository)* — dashboard di controllo web per HYDRA-UMC: visualizzazione 3D multi-robot, cinematica/registrazione traiettorie, flashing e testing CAN-OTA per l'intera piattaforma. React + Vite + Three.js.
+- **[HYDRA-UMC-ANDROID-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-ANDROID-CONTROL)** — app di controllo Android per HYDRA-UMC via Wi-Fi/Bluetooth. App reale e funzionante - set completo di funzionalità di controllo remoto, autenticazione JWT, storage credenziali cifrato.
+- **[HYDRA-UMC-IOS-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-IOS-CONTROL)** — app di controllo iOS/iPadOS per HYDRA-UMC via Wi-Fi, costruita in Flutter (cross-platform, verificabile su Windows senza un Mac; il packaging finale del `.ipa` richiede comunque Xcode). App reale e funzionante - stesso set di funzionalità dell'app Android.
+- **[HYDRA-UMC-SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE)** — centro di comando swarm desktop (Python/PySide6): discovery di rete multi-controller, sincronizzazione bidirezionale live, viewport 3D robot reale, workspace agganciabile in stile Photoshop. Reale e funzionante, non un placeholder.
+- **[HYDRA-UMC-EDITOR-URDF](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF)** — creatore/editor grafico di URDF desktop (Python/PySide6) per il catalogo di modelli proprio di questo progetto: estrae i file sorgente da GitHub o da una cartella locale, valida la fattibilità dei DOF, modifica colore/scala/cinematica con anteprima 3D live, e invia il risultato finale a un server STUDIO attivo (vedi il `POST /api/models/submit` proprio di questo progetto e Config > Models). Reale e funzionante, non un placeholder.
+- **[HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)** — pianificato: una UI touch nativa per il touchscreen DSI da 7" (1280×800) proprio di HYDRA-UMC sul Compute Module 5, che controlla questo stesso server direttamente dalla scheda. Non ancora iniziato.
+
+**Piattaforma URTC** — il controller del tool head che ogni braccio robotico HYDRA-UMC porta con sé
+- **[URTC](https://github.com/JuanenRac/URTC)** — Universal Robot Tool Controller: controller del tool head su bus CAN basato su STM32F303, 25 profili utensile completamente implementati, aggiornamento firmware CAN-OTA.
+- **[URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)** — strumento desktop di flashing CAN-OTA + chip completo via SWD/JTAG per schede URTC (Windows/Linux).
+- **[URTC Tester](https://github.com/JuanenRac/URTC-TESTER)** — strumento desktop di diagnostica live su bus CAN per schede URTC, un pannello per profilo utensile (Windows/Linux).
+- **[URTC Web Studio](https://github.com/JuanenRac/URTC-WEB-STUDIO)** — alternativa basata su browser ai 2 strumenti desktop sopra (Web Serial API + SLCAN), nessuna installazione locale necessaria.
+
+---
+
+## 👤 Autore
+
+**JuanenRac** (Electro Hobby 3D)
+📧 electrohobby3d@gmail.com
+📺 youtube.com/@electrohobby3d
+
+---
+
+## 📜 Licenza e Note sul Copyright
+
+HYDRA-UMC STUDIO è (c) 2026 JuanenRac (Electro Hobby 3D). Questo avviso deve essere incluso in qualsiasi distribuzione di questo progetto o lavori derivati.
+
+Il codice sorgente di questa applicazione è disponibile sotto la **GNU General Public License v3.0 (GPL-3.0)**. Testo completo su https://www.gnu.org/licenses/gpl-3.0.html.
+
+La documentazione (questo README e le proprie traduzioni - `README_spa.md`, `README_ita.md`, `README_fra.md`, `README_deu.md`) è disponibile sotto **Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**. Testo completo su https://creativecommons.org/licenses/by-sa/4.0/.
+
+**Asset mesh di robot di terze parti:** la geometria 3D reale sotto `public/models/` NON è coperta dalla GPL-3.0 di cui sopra - i file mesh di ciascun modello di robot sono asset di terze parti con licenza separata, ridistribuiti qui secondo i propri termini originali:
+
+| Produttore | Modelli | Licenza |
+|---|---|---|
+| Source Robotics | Parol6 | GPL-3.0 |
+| Source Robotics | Faze4 | MIT |
+| Annin Robotics | AR3, AR4 | MIT |
+| Universal Robots | UR3e, UR5e, UR10e, UR16e, UR20 | BSD-3-Clause |
+| UFACTORY | xArm6, Lite 6 | BSD-3-Clause |
+| Comau | e.DO | BSD-3-Clause |
+| Kinova | Gen3 Lite | BSD-3-Clause |
+| FANUC | M-710iC | BSD-3-Clause |
+| The Robot Studio | SO-ARM100 | Apache-2.0 |
+| Kinova | Gen2 (j2s6s200) | BSD-3-Clause |
+| AgileX | PiPER | Apache-2.0 |
+| Unitree | Z1 | BSD-3-Clause |
+| Trossen Robotics | ViperX 300, WidowX 250 | BSD-3-Clause |
+| Koch / Low-Cost Robot Arm | Koch v1.1 | Apache-2.0 |
+| Universal Robots (classic) | UR3, UR5, UR10 | BSD-3-Clause |
+| Opulo | LumenPnP v4 (usato anche per JuanenPnP) | CERN-OHL-W v2 |
+
+Il riferimento esatto al repository sorgente, al percorso, e al testo di licenza di ciascun modello vive nel proprio `public/models/<slug>/ATTRIBUTION.txt` di quel modello - consulta quel file prima di ridistribuire uno specifico set di mesh, invece di assumere che la tabella sopra lo sostituisca. Vale la pena leggere per intero il proprio `ATTRIBUTION.txt` di LumenPnP - a differenza di ogni braccio robotico sopra (file STL prefabbricati propri del produttore, scaricati verbatim), quei 5 file mesh sono stati generati internamente a partire dalla sorgente FreeCAD reale di Opulo, non ridistribuiti così come sono.
+
+Questo dashboard è il pannello di controllo web per il progetto scheda madre [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) - vedi quel repository per il licenziamento proprio del suo hardware (CERN-OHL-S v2) e firmware (GPL-3.0), a cui la licenza propria di questo repository non si estende, e viceversa. Implementa inoltre strumenti CAN-OTA contro il protocollo [URTC](https://github.com/JuanenRac/URTC) - vedi il repository proprio di quel progetto per la sua licenza separata.
+
+Se costruisci sopra questo progetto, tieni presente la separazione delle licenze: le modifiche al codice dovrebbero rimanere GPL-3.0, i derivati della documentazione dovrebbero rimanere CC BY-SA, e qualsiasi ridistribuzione degli asset mesh di uno specifico robot dovrebbe rimanere sotto la licenza originale propria di quel modello - ciascuno con attribuzione a questo progetto e al suo autore.
