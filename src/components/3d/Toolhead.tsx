@@ -10,12 +10,12 @@ import { Box, Cylinder } from '@react-three/drei';
 
 /**
  * Where to mount the Toolhead group, in the last link's own local frame -
- * previously every *Arm.tsx hard-coded the same `[0, 0.02, 0]` guess
- * regardless of that robot's own last-link mesh size, which worked fine
- * for a small mesh (a few cm) but visually buried the tool INSIDE a
- * bigger one (SO-ARM100's own Fixed_Jaw.stl alone spans ~10.6cm) instead
- * of sitting past its tip - "the tool looks like it's on the wrong
- * piece" is exactly what that looks like. Derives the offset from the
+ * a fixed guess like `[0, 0.02, 0]` regardless of that robot's own
+ * last-link mesh size would work fine for a small mesh (a few cm) but
+ * would visually bury the tool INSIDE a bigger one (SO-ARM100's own
+ * Fixed_Jaw.stl alone spans ~10.6cm) instead of sitting past its tip -
+ * "the tool looks like it's on the wrong piece" is exactly what that
+ * looks like. Derives the offset from the
  * mesh's own real bounding box instead of a blind constant, +1cm margin
  * so the tool sits just clear of the geometry rather than flush against
  * it. Assumes the robot's own "outward"/tool-mount direction is +Y in

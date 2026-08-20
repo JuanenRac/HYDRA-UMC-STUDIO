@@ -8,8 +8,8 @@
 // shared generic 160mm/200mm formula's output), where does its tool tip end
 // up in Cartesian space". Used by both PathVisualizer.tsx (drawing the 3D
 // path/step line) and RobotDetail.tsx (recording a point's Cartesian
-// position at the moment it's captured) - previously duplicated between the
-// two, now centralized like resolveTargetJoints()/homePoseFor() already are.
+// position at the moment it's captured) - kept centralized here rather than
+// duplicated between the two, like resolveTargetJoints()/homePoseFor() already are.
 //
 // IMPORTANT: this only makes sense for joint values in THIS robot's own
 // native semantics. Parol6/Faze4/AR3/AR4 (RobotDetail.tsx's jog sliders

@@ -3,14 +3,15 @@
 Reference for any client that talks to a running HYDRA-UMC STUDIO server
 from *outside* its own browser tab: [HYDRA-UMC SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE)
 (desktop swarm-control app), [HYDRA-UMC ANDROID CONTROL](https://github.com/JuanenRac/HYDRA-UMC-ANDROID-CONTROL),
-and [HYDRA-UMC IOS CONTROL](https://github.com/JuanenRac/HYDRA-UMC-IOS-CONTROL).
-Added 15 August 2026 specifically to support those 3 projects - the web
-UI (`src/store.tsx`) is itself just another client of this same contract,
-not a special case. Real bearer-token auth (section 2a), per-client
-discovery gating via `X-Hydra-Client` (end of section 1), and account
-management (section 2b) were added 19 August 2026, replacing the
-project's original single hardcoded `demo`/`demo` login and single
-combined remote-access toggle.
+[HYDRA-UMC IOS CONTROL](https://github.com/JuanenRac/HYDRA-UMC-IOS-CONTROL),
+and [HYDRA-UMC-EDITOR-URDF](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF)
+(desktop URDF creator/editor, section 2d only - it doesn't otherwise
+connect the way the other three do). The web UI (`src/store.tsx`) is
+itself just another client of this same contract, not a special case.
+Real bearer-token auth (section 2a), per-client discovery gating via
+`X-Hydra-Client` (end of section 1), and account management (section 2b)
+replaced the project's original single hardcoded `demo`/`demo` login and
+single combined remote-access toggle.
 
 Everything here lives on the same host:port the web UI is already served
 from (default `3000`) - one thing to discover, one port to open through a
@@ -48,7 +49,7 @@ A subnet scan is a plain, unauthenticated HTTP GET per candidate IP on the
 known port - a `_hydra._tcp` mDNS/Bonjour service is also advertised for
 automatic discovery on supported networks.
 
-**Remote-access gate, per client since 2026-08-19:** every remote client
+**Remote-access gate, per client:** every remote client
 must send an `X-Hydra-Client` request header identifying itself -
 `suite`, `android`, or `ios`. If `SystemSettings.remoteAccess.<that
 client>` is explicitly `false` (set from the browser UI's own Config ->
@@ -60,8 +61,8 @@ this header) are unaffected. A request with no `X-Hydra-Client` header, or
 an unrecognized value, is never gated here. Each field defaults to enabled
 when absent, and falls back to the older singular `remoteAccess.enabled`
 flag if that client's own field was never explicitly set, so a
-`settings.json` predating this per-client split (before 2026-08-19) or the
-feature entirely (before 15 August 2026) keeps working unchanged. This
+`settings.json` that predates the per-client split, or that predates the
+remote-access feature entirely, keeps working unchanged. This
 gate covers `/api/hydra-info` only - `GET`/`POST /api/settings` and `/ws`
 stay open to anyone who can already reach the port (subject to the auth in
 section 2a below), since the browser UI's own tab depends on that exact
@@ -86,9 +87,8 @@ POST /api/login
 ```
 
 - Every server seeds exactly one account on its own first-ever start:
-  username `admin`, password `admin` (renamed 2026-08-19 from the old
-  hardcoded, shared `demo`/`demo` that predated any real user store -
-  see `users.ts`). Change it from the browser UI's own Config -> Users tab
+  username `admin`, password `admin` (see `users.ts` for the underlying
+  account store). Change it from the browser UI's own Config -> Users tab
   as soon as a server is exposed beyond a fully trusted LAN.
 - Two roles: `admin` (full access - can overwrite global settings, manage
   accounts, and send robot commands) and `operator` (can sign in, read
@@ -98,17 +98,15 @@ POST /api/login
   (admin-only) or via section 2b directly.
 - The returned token is a JWT signed server-side (`JWT_SECRET` in
   `server.ts`) carrying `{ username, role }`, valid 30 days. There is no
-  refresh endpoint - a client whose token expires (or was issued before
-  this role claim existed - see the note below) just calls `POST
+  refresh endpoint - a client whose token expires (or lacks a `role`
+  claim - see the note below) just calls `POST
   /api/login` again.
-- **Upgrading from before 2026-08-19:** a token issued by the previous
-  `demo`/`demo`-only login carries no `role` claim, so `req.user?.role`
-  reads as `undefined` and every `requireAdmin`-gated route (`POST
-  /api/settings` included) starts rejecting it with `403` the moment the
-  server restarts with this version. Every already-open client (this same
-  browser tab, SUITE, the Android/iOS apps) needs to sign out and back in
-  once with the new `admin`/`admin` credentials to get a token with a role
-  claim - there is no way to upgrade an old token in place.
+- **A token with no `role` claim** reads as `req.user?.role === undefined`,
+  so every `requireAdmin`-gated route (`POST /api/settings` included)
+  rejects it with `403`. Every already-open client (this same browser tab,
+  SUITE, the Android/iOS apps) needs to sign out and back in once to get a
+  fresh token with a `role` claim - there is no way to upgrade an old token
+  in place.
 - For the WebSocket upgrade (section 3), pass the token as a query param:
   `ws://<host>:3000/ws?token=<JWT>`.
 
@@ -143,11 +141,11 @@ a separate one.
   doesn't restate every field, since that would drift out of sync with
   the actual source of truth). No auth required.
 - `POST /api/settings` (body: the same shape) overwrites the whole thing.
-  **Requires an `admin` token** (`403` for `operator`) since 2026-08-19 -
+  **Requires an `admin` token** (`403` for `operator`) -
   this is the same full-tree write the web UI's own panels still use for
-  most of their edits, so an `operator` account is currently effectively
-  read-only inside the browser UI itself, aside from whatever has already
-  been migrated to the atomic endpoint below. There is no granular
+  most of their edits, so an `operator` account is effectively
+  read-only inside the browser UI itself, aside from whatever already uses
+  the atomic endpoint below. There is no granular
   per-field PATCH on this endpoint - a client that wants to change one
   robot's one joint angle still has to read the full state, mutate its own
   local copy, and POST the whole object back.
@@ -173,6 +171,41 @@ listen for and apply incoming WebSocket updates (section 3) for as long
 as the user has that value on screen, not just do a one-shot GET at open
 time, to keep the odds of stomping a concurrent edit as low as they
 already are for two browser tabs open to the same server.
+
+## 2d. Model submissions: `/api/models*` (server side of HYDRA-UMC-EDITOR-URDF)
+
+The server-side counterpart to [HYDRA-UMC-EDITOR-URDF](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF)'s
+own `server/client.py` - lets that graphical URDF editor push a finished
+robot/machine (mesh set + kinematics) straight into this server's own
+catalog instead of the manual "hand-add files to `public/models/`" pass
+every robot in this ecosystem's history got before this existed. Off by
+default: `SystemSettings.modelSubmissions.enabled` gates all three routes
+below, set from **Config > Models** in the browser UI alongside the
+destination folder (relative to this server's own `data/` directory,
+created automatically on first accepted submission).
+
+- `POST /api/models/submit` (body: `{ "name", "category", "urdfFilename",
+  "urdfXml", "meshFiles": [{ "filename", "base64" }, ...], "overwrite"?
+  }`) - **requires an `admin` token**. `403` if model submissions aren't
+  enabled server-side. Writes the URDF + every mesh file under
+  `data/<destinationFolder>/<category>/<slug>/` (slug derived from
+  `name`), and records the submission in `data/model_submissions.json`.
+  `409` on a name collision within the same category unless `overwrite:
+  true` is set - the caller decides whether to replace the existing
+  model or pick a different name, this endpoint never guesses. Every
+  folder/filename is resolved and re-checked against a path-traversal
+  guard before any file is written.
+- `GET /api/models` -> `{ "models": [{ "slug", "name", "category",
+  "submittedAt", "folder" }, ...] }` - every submission recorded so far,
+  regardless of which client submitted it. No auth required, matches
+  this API's own GET-is-open convention.
+- `GET /api/models/:category/:slug/download` -> `{ "slug", "name",
+  "category", "urdfFilename", "urdfXml", "meshFiles": [{ "filename",
+  "base64" }, ...] }` - the full submission bundle, base64-encoded
+  inline (no auth required, but still `403` if model submissions are
+  disabled server-side) - this is what lets HYDRA-UMC-EDITOR-URDF pull
+  an already-submitted model back down for further editing before
+  resubmitting it with `overwrite: true`.
 
 ## 3. Live sync: `WebSocket /ws`
 

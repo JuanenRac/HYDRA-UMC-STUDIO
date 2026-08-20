@@ -3,9 +3,9 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 //
-// Real multi-user accounts, added 2026-08-19 to replace the single
-// hardcoded "demo"/"demo" login every server in this ecosystem shipped
-// with. Two roles: "admin" (full access - settings writes, user
+// Real multi-user accounts, replacing a single hardcoded "demo"/"demo"
+// login every server in this ecosystem would otherwise ship with. Two
+// roles: "admin" (full access - settings writes, user
 // management, robot commands) and "operator" (robot commands only, no
 // settings overwrite, no user management) - see server.ts's own
 // requireAdmin() for exactly which routes need which.

@@ -273,8 +273,8 @@ export function startMockBusMonitor(target: CanOtaTarget, onFrame: (f: CanFrame)
 // that actually exists, not a Releases feature this project never uses.
 // HYDRA-UMC now follows the exact same pattern (see this repo's own
 // generate_manifest.py) - both repos use the same `src/` (source) vs.
-// `firmware/` (committed build output) split as of 2026-08-15, so
-// MANIFEST_DIR below is the same value for both today, kept as a
+// `firmware/` (committed build output) split, so
+// MANIFEST_DIR below is the same value for both, kept as a
 // per-repo map rather than one shared constant in case a future repo
 // ever needs a different layout.
 // ---------------------------------------------------------------------------
@@ -333,7 +333,7 @@ export async function fetchGithubFirmwareReleases(repo: string, tier: CanOtaTier
       // intentionally NOT gitignored, but a fresh clone has nothing there
       // until a real build runs) - not a bug, so this returns an empty
       // list rather than throwing, same as "repo has no releases yet"
-      // used to behave for the caller.
+      // behaves for the caller.
       return [];
     }
     throw new Error(`GitHub raw content ${res.status} fetching ${manifestUrl}`);

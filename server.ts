@@ -79,29 +79,26 @@ function readNetworkStatus() {
 // payload all use is { settings: SystemSettings, controllers, activeControllerId }
 // (see docs/REMOTE_API.md section 2c, src/store.tsx's own POST body) - every
 // SystemSettings field (serverName, remoteAccess, modelSubmissions, ...)
-// lives ONE LEVEL DEEPER than `controllers`/`activeControllerId`. Found
-// 2026-08-19 while adding the model-submissions endpoints below: several
-// existing reads of lastKnownSettings (the mDNS name at startup/on every
-// write, and this exact remoteAccessAllowed() call) were reading
-// lastKnownSettings.serverName / lastKnownSettings.remoteAccess directly -
-// always undefined against the real payload shape, since those fields are
-// actually at lastKnownSettings.settings.serverName /
-// lastKnownSettings.settings.remoteAccess. Net effect before this fix: the
-// per-client Remote Access toggles added earlier THE SAME DAY silently did
-// nothing (remoteAccessAllowed() always saw `settings` as undefined and
-// therefore always returned true), and renaming the server from Config >
-// Identity never actually updated its own mDNS advertisement. This helper
-// is the one place that now gets it right, used everywhere below instead
-// of reaching into either shape directly.
+// lives ONE LEVEL DEEPER than `controllers`/`activeControllerId`. Reading
+// lastKnownSettings.serverName / lastKnownSettings.remoteAccess directly
+// (instead of lastKnownSettings.settings.serverName /
+// lastKnownSettings.settings.remoteAccess) is always undefined against the
+// real payload shape - a trap it's easy to fall into at any call site that
+// reads lastKnownSettings (the mDNS name at startup/on every write, and
+// this exact remoteAccessAllowed() call), which would silently make the
+// per-client Remote Access toggles do nothing (remoteAccessAllowed() would
+// always see `settings` as undefined and therefore always return true) and
+// make a server rename from Config > Identity never actually update its
+// own mDNS advertisement. This helper is the one place that gets it right,
+// used everywhere below instead of reaching into either shape directly.
 function realSettings(payload: any): any {
   return payload?.settings ?? payload;
 }
 
 // Per-client remote-access toggles (Config > Remote Access in the browser
-// UI, src/store.tsx's own SystemSettings.remoteAccess) - split 2026-08-19
-// from a single combined switch into 3 independent ones (SUITE/Android/iOS)
-// per the project owner's own request, so e.g. Android access can be
-// revoked without also blocking SUITE. Each of the 3 real clients sends its
+// UI, src/store.tsx's own SystemSettings.remoteAccess) - 3 independent
+// toggles (SUITE/Android/iOS) instead of one combined switch, so e.g.
+// Android access can be revoked without also blocking SUITE. Each of the 3 real clients sends its
 // own `X-Hydra-Client: suite|android|ios` request header (see each
 // project's own network client) - a request with NO such header (a plain
 // browser tab, curl, or any other unidentified caller) is never gated here,
@@ -237,17 +234,17 @@ async function startServer() {
     if (!user || !verifyPassword(password, user.passwordHash)) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
-    // 30 days, not 24h - the project owner explicitly wants this session to
-    // stay signed in "a good while" (2026-08-19) rather than re-prompt daily;
-    // this is a trusted-LAN tool, not a public multi-tenant service, so a
-    // long-lived token doesn't change the real security posture much either way.
+    // 30 days, not 24h - the session should stay signed in for a good while
+    // rather than re-prompt daily; this is a trusted-LAN tool, not a public
+    // multi-tenant service, so a long-lived token doesn't change the real
+    // security posture much either way.
     const token = jwt.sign({ username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ success: true, token, role: user.role });
   });
 
   // Account management - admin-only (requireAdmin, chained after
-  // authenticate). Added 2026-08-19 alongside the users.ts module itself -
-  // lets an admin rename/re-password their own account from Config > Users
+  // authenticate), backed by the users.ts module - lets an admin
+  // rename/re-password their own account from Config > Users
   // instead of the account being permanently stuck as "admin"/"admin", and
   // create additional lower-privilege "operator" accounts for day-to-day
   // robot operation without exposing settings writes or user management.
@@ -383,8 +380,8 @@ async function startServer() {
                 robot.playbackState.acceleration = params.acceleration;
               }
               break;
-            // Added 2026-08-19 so a remote client (the Android app's own Camera
-            // screen) can toggle a robot's vision system without a full
+            // Lets a remote client (the Android app's own Camera
+            // screen) toggle a robot's vision system without a full
             // POST /api/settings overwrite - mirrors the same 2 fields
             // src/Dashboard.tsx's OverviewPanel already writes locally
             // (visionEnabled on the robot, connected on its paired camera entry).
@@ -468,8 +465,8 @@ async function startServer() {
   // per request.
   app.get("/api/hydra-info", (req, res) => {
     // Real enable/disable gate (Config > Remote Access in the browser UI,
-    // src/store.tsx's own SystemSettings.remoteAccess) - per-client since
-    // 2026-08-19 (see remoteAccessAllowed()'s own header comment above for
+    // src/store.tsx's own SystemSettings.remoteAccess) - per-client (see
+    // remoteAccessAllowed()'s own header comment above for
     // the X-Hydra-Client header each real client sends). When disabled for
     // that client, this endpoint responds 404 - the same as a plain "not
     // running HYDRA-UMC STUDIO" host looks like to a scanning client (each
@@ -537,8 +534,7 @@ async function startServer() {
 
   // =========================================================================
   // Model submissions - the server side of HYDRA-UMC-EDITOR-URDF
-  // (github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF, commissioned 2026-08-19,
-  // added here the same day it started real implementation). That project
+  // (github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF). That project
   // is a graphical URDF creator/editor meant to push a finished robot/
   // machine (3D meshes + kinematics) straight into this server's own
   // catalog instead of the manual "hand-add files to public/models/" pass
@@ -712,9 +708,9 @@ async function startServer() {
         try {
           const msg = JSON.parse(raw.toString());
           if (msg && msg.type === "settings" && msg.payload) {
-            // Found 2026-08-19 right after adding requireAdmin to the REST
-            // POST /api/settings: this WS path is a second route to the exact
-            // same full-tree overwrite, and jwt.verify() above only checks
+            // This WS path is a second route to the exact
+            // same full-tree overwrite the REST POST /api/settings performs,
+            // and jwt.verify() above only checks
             // signature validity - not role - so without this check an
             // "operator" token could just open a WebSocket and send this
             // message to do the one thing requireAdmin exists to stop it
