@@ -733,7 +733,12 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // still works even before login, so a fresh/unauthenticated tab shows real
     // state immediately. Writes and the WebSocket below are a different story,
     // see authToken's own comment above.
-    const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+    // Explicit Record<string, string> annotation: without it TS infers the
+    // ternary's two branches as distinct object shapes ({Authorization:
+    // string} vs {}) and the resulting union doesn't structurally satisfy
+    // fetch()'s HeadersInit (which needs a plain Record<string, string> on
+    // this branch), even though both are actually valid header objects.
+    const headers: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
 
     fetch('/api/settings', { headers }).then(r => r.json()).then(data => {
       if (!cancelled) applyServerData(data);

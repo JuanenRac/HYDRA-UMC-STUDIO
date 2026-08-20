@@ -37,13 +37,18 @@ export const UR20_CHAIN: UrChain = [
   { pos: [0, 0.1543, 0], rpy: [1.5707963265897931, 3.1415926535897931, 3.1415926535897931] }, // wrist_3_joint
 ];
 
+// wrist_3_joint has has_position_limits: false (continuous) in this
+// model's own joint_limits.yaml, same as every other UR e-Series model -
+// kept at the app's generic +/-180 fallback for a continuous joint (see
+// ur3eKinematics.ts's own comment, and faze4Kinematics.ts's - the
+// established convention across this app), not an arbitrary +/-360.
 export const UR20_JOINT_LIMITS_DEG: UrJointLimitsDeg = {
   j1: [-360, 360],
   j2: [-360, 360],
   j3: [-180, 180],
   j4: [-360, 360],
   j5: [-360, 360],
-  j6: [-360, 360],
+  j6: [-180, 180],
 };
 
 export const UR20_HOME_POSE: KinematicsPoint = { j1: 0, j2: -90, j3: 0, j4: -90, j5: 0, j6: 0 };

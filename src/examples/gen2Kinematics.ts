@@ -36,14 +36,16 @@ export const GEN2_CHAIN: UrChain = [
 // j2s6s200_standalone.xacro itself) - rather than invent plausible-
 // looking numbers, every joint here uses the app's generic +/-180
 // fallback, same convention Faze4/AR3 already use for their own
-// "continuous, no precisely known limit" joints.
+// "continuous, no precisely known limit" joints (see faze4Kinematics.ts's
+// own comment - +/-180 is the actual established fallback for a
+// continuous joint across this app, not an arbitrary +/-360).
 export const GEN2_JOINT_LIMITS_DEG: UrJointLimitsDeg = {
-  j1: [-360, 360],
+  j1: [-180, 180],
   j2: [-180, 180],
   j3: [-180, 180],
-  j4: [-360, 360],
+  j4: [-180, 180],
   j5: [-180, 180],
-  j6: [-360, 360],
+  j6: [-180, 180],
 };
 
 export const GEN2_HOME_POSE: KinematicsPoint = { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0 };

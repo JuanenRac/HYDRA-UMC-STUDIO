@@ -11,7 +11,7 @@ import { useHydraStore, ROBOT_MANUFACTURERS } from './store';
 import {
   Activity, Crosshair, AlertOctagon, Layers,
   Video, Focus, Settings, Menu, Search, Power
-, Cpu, PenTool, Zap, Wind, Thermometer, RefreshCw, Server, Info, HelpCircle, ChevronDown, ChevronRight, Camera, X, ArrowLeft, Wifi, Bluetooth, Cable } from 'lucide-react';
+, Cpu, PenTool, Zap, Wind, Thermometer, RefreshCw, Server, Info, HelpCircle, ChevronDown, ChevronRight, Camera, X, ArrowLeft, Wifi, Bluetooth, Cable, type LucideIcon } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -50,7 +50,14 @@ const A5RobotDetail = React.lazy(() => import('./components/robots/A5'));
 const A6RobotDetail = React.lazy(() => import('./components/robots/A6'));
 const A7RobotDetail = React.lazy(() => import('./components/robots/A7'));
 const A8RobotDetail = React.lazy(() => import('./components/robots/A8'));
-const ROBOT_DETAIL_BY_ID: Record<number, React.LazyExoticComponent<typeof RobotDetail>> = {
+// `RobotDetail` above is ALREADY a `React.lazy(...)` result, i.e. already
+// `LazyExoticComponent<...>` - `React.LazyExoticComponent<typeof RobotDetail>`
+// therefore double-wraps it (`LazyExoticComponent<LazyExoticComponent<...>>`),
+// which doesn't match the single-wrapped A1RobotDetail..A8RobotDetail values
+// actually stored below. `typeof A1RobotDetail` is the correctly-shaped type
+// (identical across all 8, since every robots/A*.tsx re-exports the same
+// component) without re-wrapping it a second time.
+const ROBOT_DETAIL_BY_ID: Record<number, typeof A1RobotDetail> = {
   1: A1RobotDetail, 2: A2RobotDetail, 3: A3RobotDetail, 4: A4RobotDetail,
   5: A5RobotDetail, 6: A6RobotDetail, 7: A7RobotDetail, 8: A8RobotDetail,
 };
@@ -465,7 +472,14 @@ function SystemMetricsBar() {
 
   if (!metrics) return null;
 
-  const netIcon = (state: boolean | null, Icon: React.ElementType, label: string) => (
+  // Icon typed as the concrete LucideIcon (not React.ElementType) - with the
+  // React 19 types installed here, JSX.LibraryManagedAttributes collapses
+  // props like size/className to `never` for a bare React.ElementType tag
+  // (it has to intersect prop types across every possible element the union
+  // could resolve to), which is exactly what made `<Icon size={12}
+  // className={...} />` below fail to typecheck even though all 3 real
+  // callers (Wifi/Bluetooth/Cable) are plain lucide-react icons.
+  const netIcon = (state: boolean | null, Icon: LucideIcon, label: string) => (
     <div className="flex items-center gap-1" title={label}>
       <Icon size={12} className={state === true ? "text-emerald-400" : state === false ? "text-rose-500" : "text-slate-700"} />
     </div>
