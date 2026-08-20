@@ -4,12 +4,12 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import type { KinematicsExample } from '../utils';
+import type { KinematicsExample, KinematicsPoint } from '../utils';
 import { cartesianToJoints } from '../utils';
 
 // Generate a simple 2D tree shape using cartesian coordinates
 const generateTree = () => {
-    const pts = [];
+    const pts: KinematicsPoint[] = [];
     const addPt = (x: number, y: number) => pts.push(cartesianToJoints(200 + x, y, 10, 0, 0, 0));
     
     // Trunk base right

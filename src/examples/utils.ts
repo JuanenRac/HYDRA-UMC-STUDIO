@@ -152,13 +152,19 @@ export const generateRaster = (width: number, height: number, lines: number, xOf
   const pts = [];
   for (let i = 0; i <= lines; i++) {
     const y = -height / 2 + (height * i) / lines;
-    pts.push(cartesianToJoints(xOff - width / 2, y, 5, 0, 0, 0));
-    pts.push(cartesianToJoints(xOff + width / 2, y, 5, 0, 0, 0));
-    // zig zag connection
-    if (i < lines) {
-      const nextY = -height / 2 + (height * (i + 1)) / lines;
-      pts.push(cartesianToJoints(xOff + width / 2, nextY, 5, 0, 0, 0));
-    }
+    // Alternate which end of the line comes first so consecutive lines
+    // connect edge-to-edge (a real zig zag) instead of both always
+    // starting from the left - without this, every line pushed its
+    // left point then its right point regardless of direction, so the
+    // "transition" point below (this same right edge, one row up) was
+    // identical to the point already visited 2 steps earlier: the arm
+    // would reach the right edge, cross the full width back to the
+    // left, then immediately return to the same right-edge point it
+    // had just left, on every single line.
+    const first = i % 2 === 0 ? xOff - width / 2 : xOff + width / 2;
+    const second = i % 2 === 0 ? xOff + width / 2 : xOff - width / 2;
+    pts.push(cartesianToJoints(first, y, 5, 0, 0, 0));
+    pts.push(cartesianToJoints(second, y, 5, 0, 0, 0));
   }
   return pts;
 };
