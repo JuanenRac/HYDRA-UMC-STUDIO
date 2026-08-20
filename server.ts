@@ -495,9 +495,22 @@ async function startServer() {
     });
   });
 
-  app.post("/api/upload-work", (req, res) => {
+  // authenticate (not requireAdmin): saving/loading a robot's own
+  // trajectory files is an operational action, same tier as POST
+  // /api/robot/:id/command below - it writes to disk so it must not be
+  // reachable by a fully anonymous caller, but an "operator" account
+  // shouldn't need admin rights just to save a work file. This route was
+  // previously missing ANY auth check at all (every other disk-writing
+  // route in this file requires at least authenticate) - see
+  // src/components/AuthGate.tsx's own header comment, which already
+  // enumerated POST /api/settings and POST /api/robot/:id/command as the
+  // writes gated behind login and never mentioned this one.
+  app.post("/api/upload-work", authenticate, (req, res) => {
     try {
-      const { folderPath, fileName, content } = req.body;
+      const { folderPath, fileName, content } = req.body || {};
+      if (typeof folderPath !== "string" || typeof fileName !== "string") {
+        return res.status(400).json({ error: "folderPath and fileName required" });
+      }
 
       // Sanitize folderPath to prevent Path Traversal
       const sanitizedFolderPath = folderPath.replace(/\.\./g, "");
@@ -506,25 +519,39 @@ async function startServer() {
       if (!absoluteFolderPath.startsWith(dataPath)) {
         return res.status(403).json({ error: "Access denied: Path traversal detected" });
       }
-      
+
+      // fileName only ever needed the SAME guard folderPath gets above, but
+      // never got it - it was joined into the write path as-is, so a value
+      // like "../../../../etc/cron.d/evil" would walk the write target back
+      // out of absoluteFolderPath (already validated to sit inside dataPath)
+      // and out of dataPath entirely, the exact path-traversal risk the
+      // folderPath check exists to stop. path.basename() strips any
+      // directory component - "../x", "/etc/passwd", and embedded
+      // separators all collapse to a bare filename that can only land
+      // inside the already-validated folder.
+      const safeFileName = path.basename(fileName);
+      if (!safeFileName || safeFileName === "." || safeFileName === "..") {
+        return res.status(400).json({ error: "Invalid file name" });
+      }
+
       if (!fs.existsSync(absoluteFolderPath)) {
         fs.mkdirSync(absoluteFolderPath, { recursive: true });
       }
-      
-      const filePath = path.join(absoluteFolderPath, fileName);
+
+      const filePath = path.join(absoluteFolderPath, safeFileName);
       fs.writeFileSync(filePath, JSON.stringify(content, null, 2));
-      
+
       // update index.json
       const indexPath = path.join(absoluteFolderPath, "index.json");
       let index: string[] = [];
       if (fs.existsSync(indexPath)) {
         index = JSON.parse(fs.readFileSync(indexPath, "utf-8"));
       }
-      if (!index.includes(fileName)) {
-        index.push(fileName);
+      if (!index.includes(safeFileName)) {
+        index.push(safeFileName);
         fs.writeFileSync(indexPath, JSON.stringify(index, null, 2));
       }
-      
+
       res.json({ success: true });
     } catch (e: any) {
       console.error("Error uploading work", e);

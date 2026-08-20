@@ -470,7 +470,7 @@ function JointControlsOverlay({
  */
 export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: { robot: RobotState, viewportOnly?: boolean, onNavigateToRobot?: (robotId: number) => void }) {
   const { t } = useTranslation();
-  const { updateRobot, saveKinematics, loadKinematics, settings, robots, updateSettings } = useHydraStore();
+  const { updateRobot, saveKinematics, loadKinematics, settings, robots, updateSettings, authToken } = useHydraStore();
   const robotsRef = useRef(robots);
   useEffect(() => { robotsRef.current = robots; }, [robots]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -524,9 +524,12 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     
     try {
       const folderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
+      // Server now requires a bearer token on this route (see server.ts's
+      // own comment on POST /api/upload-work) - without this header every
+      // save silently 401s for a logged-in user.
       const res = await fetch('/api/upload-work', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
         body: JSON.stringify({
           folderPath,
           fileName: fileName,
@@ -554,10 +557,11 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
       try {
         const content = JSON.parse(ev.target?.result as string);
         const folderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
-        
+
+        // Same bearer-token requirement as handleSaveWorkFile above.
         const res = await fetch('/api/upload-work', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
           body: JSON.stringify({
             folderPath,
             fileName: file.name,
