@@ -86,6 +86,13 @@ export function jointsToCartesianForModel(model: RobotModel | undefined, pt: Kin
     x: R2 * Math.cos(j1Rad),
     y: R2 * Math.sin(j1Rad),
     z: Z2 + 195,
-    a: pt.j4 || 0, b: pt.j5 || 0, c: pt.j6 || 0,
+    // Same formula as utils.ts's own convertToCartesian() for this exact
+    // fallback rig - b couples to j2/j3 because the generic 2-link arm's
+    // wrist orientation isn't independent of shoulder/elbow the way a's
+    // and c's are, so a plain `pt.j5` here (without the compensation)
+    // silently disagreed with what a point recorded via jog (which goes
+    // through convertToCartesian) actually shows, by up to a full
+    // quarter-turn depending on the pose.
+    a: pt.j4 || 0, b: (pt.j5 || 0) + (pt.j2 || 0) - (pt.j3 || 0) + 180, c: pt.j6 || 0,
   };
 }

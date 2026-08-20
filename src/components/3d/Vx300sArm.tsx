@@ -148,11 +148,19 @@ export default function Vx300sArm({ robot }: { robot: RobotState }) {
                 </group>
 
                 <group position={VX300S_CHAIN[5].pos} quaternion={q6}>
+                  {/* toolheadMountOffset(gripperGeo) is computed from the RAW gripper mesh's own
+                      local bounding box - it must be applied INSIDE this same off[6] wrapper
+                      (not as a sibling of it) so it goes through off[6]'s own real rotation
+                      (rpy=[0,0,PI/2]) exactly like the mesh's own vertices do. Placing it as an
+                      unrotated sibling (the previous layout) put the tool at a fixed [0,y,0] in
+                      the JOINT frame while the actual rendered mesh sat rotated 90deg away from
+                      that - verified against the real STL: the tool landed exactly on the mesh's
+                      own bounding-box corner instead of just past its tip. */}
                   <group position={off[6].pos} rotation={off[6].rpy}>
                     <mesh geometry={gripperGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
-                  </group>
-                  <group position={toolheadMountOffset(gripperGeo)}>
-                    <Toolhead tool={robot.tool} />
+                    <group position={toolheadMountOffset(gripperGeo)}>
+                      <Toolhead tool={robot.tool} />
+                    </group>
                   </group>
                 </group>
               </group>

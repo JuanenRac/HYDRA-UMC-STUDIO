@@ -484,18 +484,28 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   const [editingPointKey, setEditingPointKey] = useState<number | null>(null);
   const [editingPointData, setEditingPointData] = useState<any>({});
 
+  // Guards against an out-of-order response: fetchWorks() is called both from
+  // the effect below (whenever worksFolderPath changes) and manually after
+  // save/upload - nothing stopped an OLDER in-flight request from resolving
+  // AFTER a newer one and overwriting workFiles with stale data. Bumping this
+  // ref on every call and checking it's still the latest call before each
+  // setState turns a superseded response into a no-op instead of a race.
+  const worksFetchIdRef = useRef(0);
   const fetchWorks = async () => {
+    const fetchId = ++worksFetchIdRef.current;
     try {
       const folderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
       const res = await fetch(`/${folderPath}/index.json`);
+      if (fetchId !== worksFetchIdRef.current) return;
       if (res.ok) {
         const files = await res.json();
+        if (fetchId !== worksFetchIdRef.current) return;
         setWorkFiles(files);
       } else {
         setWorkFiles([]);
       }
     } catch (e) {
-      setWorkFiles([]);
+      if (fetchId === worksFetchIdRef.current) setWorkFiles([]);
     }
   };
 

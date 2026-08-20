@@ -139,11 +139,15 @@ export default function Wx250sArm({ robot }: { robot: RobotState }) {
                 </group>
 
                 <group position={WX250S_CHAIN[5].pos} quaternion={q6}>
+                  {/* Same off[6]-frame fix as Vx300sArm.tsx (shared rig design) - see that
+                      file's own comment here for the full explanation. toolheadMountOffset must
+                      be applied INSIDE the off[6] wrapper so it goes through off[6]'s own real
+                      rotation (rpy=[0,0,PI/2]) exactly like the mesh's own vertices do. */}
                   <group position={off[6].pos} rotation={off[6].rpy}>
                     <mesh geometry={gripperGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
-                  </group>
-                  <group position={toolheadMountOffset(gripperGeo)}>
-                    <Toolhead tool={robot.tool} />
+                    <group position={toolheadMountOffset(gripperGeo)}>
+                      <Toolhead tool={robot.tool} />
+                    </group>
                   </group>
                 </group>
               </group>

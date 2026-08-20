@@ -110,6 +110,24 @@ export function XYTableConfig() {
     updateRobot(selectedRobot.id, { hasXYTable: true });
   };
 
+  // Export the current table config to a downloadable JSON file - the
+  // "Save Config" button below used to render with no onClick at all (a
+  // silent no-op click), unlike the identically-labeled button in
+  // ATCToolsConfig.tsx, which this mirrors.
+  const saveConfig = () => {
+    if (!selectedRobot || !xyTable) return;
+    const data = JSON.stringify(xyTable, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `xytable_config_${selectedRobot.name.replace(/\s+/g, '_')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (!selectedRobot) return null;
 
   return (
@@ -244,7 +262,7 @@ export function XYTableConfig() {
               </div>
               
               <div className="mt-4 flex justify-end">
-                <button className="flex items-center justify-center gap-2 min-h-[44px] bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-200 px-4 py-2 rounded transition-colors text-xs font-medium">
+                <button onClick={saveConfig} className="flex items-center justify-center gap-2 min-h-[44px] bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-200 px-4 py-2 rounded transition-colors text-xs font-medium">
                   <Save size={16} /> {t('modules.save_config', 'Save Config')}
                 </button>
               </div>
