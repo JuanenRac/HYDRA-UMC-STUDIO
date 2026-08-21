@@ -570,7 +570,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
         const folderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
 
         // Same bearer-token requirement as handleSaveWorkFile above.
-        const res = await fetch('/api/upload-work', {
+        const res = await fetch(apiUrl('/api/upload-work'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
           body: JSON.stringify({
@@ -602,7 +602,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     }
     try {
       const folderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
-      const res = await fetch(`/${folderPath}/${fileName}`);
+      const res = await fetch(apiUrl(`/${folderPath}/${fileName}`));
       if (res.ok) {
         const points = await res.json();
         updateRobot(robot.id, { selectedWorkFile: fileName, recordedPoints: points });
