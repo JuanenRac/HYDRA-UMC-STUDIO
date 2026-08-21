@@ -5,6 +5,7 @@
 // =============================================================================
 
 import React, { createContext, useContext, useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { apiUrl, wsUrl } from './lib/apiBase';
 
 /**
  * Renders the Unthrottled delay component.
@@ -605,7 +606,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const login = useCallback(async (username: string, password: string) => {
     setLoginError(null);
     try {
-      const res = await fetch('/api/login', {
+      const res = await fetch(apiUrl('/api/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -740,7 +741,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // this branch), even though both are actually valid header objects.
     const headers: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
 
-    fetch('/api/settings', { headers }).then(r => r.json()).then(data => {
+    fetch(apiUrl('/api/settings'), { headers }).then(r => r.json()).then(data => {
       if (!cancelled) applyServerData(data);
     }).catch(() => {
       if (!cancelled) setIsLoaded(true);
@@ -760,8 +761,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let ws: WebSocket | null = null;
     if (authToken) {
       try {
-        const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        ws = new WebSocket(`${proto}//${window.location.host}/ws?token=${encodeURIComponent(authToken)}`);
+        ws = new WebSocket(wsUrl(`/ws?token=${encodeURIComponent(authToken)}`));
         ws.onmessage = (ev) => {
           try {
             const msg = JSON.parse(ev.data);
@@ -807,7 +807,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const headers: any = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      fetch('/api/settings', {
+      fetch(apiUrl('/api/settings'), {
         method: 'POST',
         headers,
         body: payloadJson
@@ -930,7 +930,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // for why the login screen exists.
     const headers: any = { "Content-Type": "application/json" };
     if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
-    await fetch("/api/settings", { method: "POST", headers, body: "{}" });
+    await fetch(apiUrl("/api/settings"), { method: "POST", headers, body: "{}" });
     window.location.reload();
   };
 

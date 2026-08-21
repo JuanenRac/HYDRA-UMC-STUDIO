@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Info, Mail, LogOut } from 'lucide-react';
 import { useHydraStore } from '../store';
+import { apiUrl } from '../lib/apiBase';
 import HydraIcon from '../assets/HYDRA_UMC_ICON.svg';
 
 const AUTHOR_NAME = 'JuanenRac (Electro Hobby 3D)';
@@ -24,7 +25,7 @@ export function About({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/hydra-info')
+    fetch(apiUrl('/api/hydra-info'))
       .then(r => (r.ok ? r.json() : null))
       .then(data => {
         if (!cancelled && data?.appVersion) setVersion(String(data.appVersion));
