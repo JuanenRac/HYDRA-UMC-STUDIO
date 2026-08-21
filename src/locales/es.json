@@ -1,4 +1,8 @@
 {
+  "common": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar"
+  },
   "dashboard": {
     "title": "ESTUDIO HYDRA",
     "subtitle": "CONTROL MULTI-ROBOT",

@@ -1,4 +1,8 @@
 {
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
   "dashboard": {
     "title": "HYDRA STUDIO",
     "subtitle": "MULTI-ROBOT CONTROL",

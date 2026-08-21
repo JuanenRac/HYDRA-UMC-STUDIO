@@ -1,4 +1,8 @@
 {
+  "common": {
+    "confirm": "Bestätigen",
+    "cancel": "Abbrechen"
+  },
   "dashboard": {
     "title": "HYDRA STUDIO",
     "subtitle": "MULTI-ROBOTER-STEUERUNG",
