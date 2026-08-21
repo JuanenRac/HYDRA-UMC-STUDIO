@@ -10,6 +10,7 @@ import { FuturisticSlider } from "./FuturisticSlider";
 import { motion, useDragControls } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { type RobotState, useHydraStore, type RobotRole, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, unthrottledDelay, globalPlaybacks } from '../store';
+import { apiUrl } from '../lib/apiBase';
 import { RotateCcw, Home, Video, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, ShieldAlert, Save, Plus, Play, Square, Pause, Crosshair, RefreshCw, Upload, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -495,7 +496,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     const fetchId = ++worksFetchIdRef.current;
     try {
       const folderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
-      const res = await fetch(`/${folderPath}/index.json`);
+      const res = await fetch(apiUrl(`/${folderPath}/index.json`));
       if (fetchId !== worksFetchIdRef.current) return;
       if (res.ok) {
         const files = await res.json();
@@ -537,7 +538,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
       // Server now requires a bearer token on this route (see server.ts's
       // own comment on POST /api/upload-work) - without this header every
       // save silently 401s for a logged-in user.
-      const res = await fetch('/api/upload-work', {
+      const res = await fetch(apiUrl('/api/upload-work'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
         body: JSON.stringify({
