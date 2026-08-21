@@ -13,11 +13,30 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     host: '0.0.0.0',
-    port: 3000,
+    port: 5173,
     strictPort: true,
     watch: {
       ignored: ['**/data/**']
-    }
+    },
+    // HYDRA-UMC STUDIO is now a pure client of the separate HYDRA-UMC-SERVER
+    // backend (see src/lib/apiBase.ts's own header comment for the full
+    // dev-vs-prod strategy). In dev, every fetch/WS call in src/ stays a
+    // RELATIVE path ('/api/...', '/ws', '/WORKS/...') and this proxy
+    // transparently forwards it to the real backend on localhost:3000 - no
+    // CORS involved, nothing to configure per-developer. This is the dev-time
+    // half of that strategy; the prod-time half is VITE_API_BASE_URL
+    // (.env.example), used once there's no dev server left to proxy anything.
+    proxy: {
+      '/api': { target: 'http://localhost:3000', changeOrigin: true },
+      '/ws': { target: 'http://localhost:3000', ws: true, changeOrigin: true },
+      // Raw data files (saved trajectories) served by the backend at the
+      // dataPath root, not under /api - see server.ts's own
+      // app.use(express.static(dataPath)). WORKS/ is the default
+      // worksPaths convention (RobotDetail.tsx); a custom worksPaths value
+      // outside WORKS/ isn't covered by this fixed proxy rule in dev, but
+      // works fine in production via VITE_API_BASE_URL.
+      '/WORKS': { target: 'http://localhost:3000', changeOrigin: true },
+    },
   },
   build: {
     rollupOptions: {
