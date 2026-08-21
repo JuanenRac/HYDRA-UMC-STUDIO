@@ -25,14 +25,19 @@ Manage multiple independent 6-DOF robots simultaneously, each with its own real 
 - 🏭 **Source Robotics** - Parol6, Faze4 (MIT-licensed and GPL-3.0-licensed meshes respectively, see each model's own `ATTRIBUTION.txt`)
 - 🏭 **Annin Robotics** - AR3, AR4 (MIT-licensed meshes)
 - 🏭 **Universal Robots** - UR3e, UR5e, UR10e, UR16e, UR20 - official geometry, joint limits, and link kinematics pulled directly from Universal Robots' own [Universal_Robots_ROS2_Description](https://github.com/UniversalRobots/Universal_Robots_ROS2_Description) repository (BSD-3-Clause), covering the small-to-heavy payload range of their e-Series lineup
+- 🏭 **Universal Robots (classic)** - UR3, UR5, UR10 - the pre-e-Series CB lineup, official geometry/DH parameters from Universal Robots' own [universal_robot](https://github.com/ros-industrial/universal_robot) ROS-Industrial repository (BSD-3-Clause)
 - 🏭 **UFACTORY** - xArm6, Lite 6 (BSD-3-Clause meshes, official [xarm_ros2](https://github.com/xArm-Developer/xarm_ros2) geometry/kinematics)
 - 🏭 **Comau** - e.DO (BSD-3-Clause meshes, official [eDO_description](https://github.com/ianathompson/eDO_description) geometry/kinematics)
-- 🏭 **Kinova** - Gen3 Lite (BSD-3-Clause meshes, official [ros2_kortex](https://github.com/Kinovarobotics/ros2_kortex) geometry/kinematics)
+- 🏭 **Kinova** - Gen3 Lite, Gen2 (BSD-3-Clause meshes, official [ros2_kortex](https://github.com/Kinovarobotics/ros2_kortex) geometry/kinematics)
 - 🏭 **FANUC** - M-710iC (BSD-3-Clause meshes, official [fanuc_m710ic_description](https://github.com/robot-descriptions/fanuc_m710ic_description) geometry/kinematics)
 - 🏭 **The Robot Studio** - SO-ARM100, a 5-DOF (not 6) low-cost arm (Apache-2.0 meshes, official [SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100) geometry/kinematics)
+- 🏭 **AgileX** - PiPER (Apache-2.0 meshes, official [agilex_piper_arm_description](https://github.com/renesas-rdk/agilex_piper_arm_description) geometry/kinematics)
+- 🏭 **Unitree** - Z1 (BSD-3-Clause meshes, via Google DeepMind's [mujoco_menagerie](https://github.com/google-deepmind/mujoco_menagerie) - each robot folder there keeps its own original manufacturer license)
+- 🏭 **Trossen Robotics** - ViperX 300, WidowX 250 (BSD-3-Clause meshes, official [interbotix_ros_manipulators](https://github.com/Interbotix/interbotix_ros_manipulators) geometry/kinematics)
+- 🏭 **Koch / Low-Cost Robot Arm** - Koch v1.1, another 5-DOF (not 6) low-cost arm (Apache-2.0 meshes, via [mujoco_menagerie](https://github.com/google-deepmind/mujoco_menagerie))
 - ⚙️ **Generic** - a simplified two-link arm for any rig without a dedicated model
 
-Every real model (everything except Generic) loads its actual STL mesh geometry per link and drives it through that manufacturer's own real joint transform chain - not a stylized placeholder. Forward/inverse kinematics are computed against each robot's own real geometry (Newton-Raphson solve for position, real per-joint limits where the robot defines any), so a recorded trajectory or a jogged Cartesian target moves the correct arm the way the physical robot actually would. Universal Robots' 5 models additionally share one common FK/IK engine (`src/examples/urKinematicsShared.ts`) and one common 3D rig renderer (`src/components/3d/URArm.tsx`), since every UR e-Series joint shares the exact same kinematic structure - only the numeric link lengths differ per model.
+That's 24 real robot models across 13 manufacturers, plus the Generic placeholder - see the license table further down for the exact model↔manufacturer↔license mapping this list summarizes. Every real model (everything except Generic) loads its actual STL mesh geometry per link and drives it through that manufacturer's own real joint transform chain - not a stylized placeholder. Forward/inverse kinematics are computed against each robot's own real geometry (Newton-Raphson solve for position, real per-joint limits where the robot defines any), so a recorded trajectory or a jogged Cartesian target moves the correct arm the way the physical robot actually would. Universal Robots' 5 e-Series models additionally share one common FK/IK engine (`src/examples/urKinematicsShared.ts`) and one common 3D rig renderer (`src/components/3d/URArm.tsx`), since every UR e-Series joint shares the exact same kinematic structure - only the numeric link lengths differ per model. The 3 classic UR models (UR3/UR5/UR10) share their own separate engine and renderer instead (`src/examples/urClassicKinematics.ts`, `src/components/3d/UrClassicArm.tsx`), since that older generation's joints don't all share a common local Z axis the way e-Series does.
 
 Per-robot jog controls include a rotary knob + slider for both **speed** and **acceleration** on every axis, and a full endstop/status readout alongside a live "Robot Controller Board" status card once CAN-OTA is wired to real hardware. Every knob/slider snaps to the jog **Step** value selected in its own combobox (0.1° up to 100°/mm) rather than moving continuously. Robot **A1** is a running proof of concept for a different layout: its Speed/Acceleration/J1-J6/XYZ jog controls live in a draggable floating panel on top of the 3D viewport itself (`Joystick3D.tsx` for the XYZ pad) instead of the panel below it that every other robot still uses - see `src/components/robots/A1.tsx`.
 
@@ -221,6 +226,10 @@ npm start
 ```
 
 The server runs on `http://localhost:3000` (or `http://<your-local-ip>:3000` across your local network). All state and data persist in the `data/` directory.
+
+### Versioning
+
+Every real `npm run build` bumps `package.json`'s own `version` automatically (`scripts/bump-version.mjs`, wired as the first step of the `build` script) - a base-10 "odometer": patch +1 per build, rolling over into minor (and minor into major) past 9 rather than ever reaching a two-digit segment (`1.0.9` -> `1.1.0`, not `1.0.10`). The running version is visible live in the **About** dialog, and the full history is in [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 

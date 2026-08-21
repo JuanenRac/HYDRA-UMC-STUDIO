@@ -35,63 +35,63 @@ export function GamepadConfig() {
   };
 
   const ACTIONS = [
-    { value: '', label: 'None' },
+    { value: '', label: t('gamepad_config.actions.none', 'None') },
     // Robot Selection
-    ...Array.from({length: 8}, (_, i) => ({ value: `select_robot_${i+1}`, label: `Select Robot ${i+1}` })),
+    ...Array.from({length: 8}, (_, i) => ({ value: `select_robot_${i+1}`, label: t('gamepad_config.actions.select_robot', 'Select Robot {{n}}', { n: i + 1 }) })),
     // Joints
     ...['J1', 'J2', 'J3', 'J4', 'J5', 'J6'].flatMap(j => [
-      { value: `${j}+`, label: `${j} +` },
-      { value: `${j}-`, label: `${j} -` }
+      { value: `${j}+`, label: t('gamepad_config.actions.joint_plus', '{{j}} +', { j }) },
+      { value: `${j}-`, label: t('gamepad_config.actions.joint_minus', '{{j}} -', { j }) }
     ]),
     // Table
     ...['TX', 'TY'].flatMap(a => [
-      { value: `${a}+`, label: `Table ${a} +` },
-      { value: `${a}-`, label: `Table ${a} -` }
+      { value: `${a}+`, label: t('gamepad_config.actions.table_plus', 'Table {{a}} +', { a }) },
+      { value: `${a}-`, label: t('gamepad_config.actions.table_minus', 'Table {{a}} -', { a }) }
     ]),
     // Controls
-    { value: 'E-STOP', label: 'E-STOP' },
-    { value: 'E-STOP ALL', label: 'E-STOP ALL' },
-    { value: 'START', label: 'START' },
-    { value: 'START ALL', label: 'START ALL' },
-    { value: 'STOP', label: 'STOP' },
-    { value: 'STOP ALL', label: 'STOP ALL' },
-    { value: 'ADD POINT', label: 'ADD POINT' },
-    { value: 'SPEED+', label: 'Speed +' },
-    { value: 'SPEED-', label: 'Speed -' },
+    { value: 'E-STOP', label: t('gamepad_config.actions.estop', 'E-STOP') },
+    { value: 'E-STOP ALL', label: t('gamepad_config.actions.estop_all', 'E-STOP ALL') },
+    { value: 'START', label: t('gamepad_config.actions.start', 'START') },
+    { value: 'START ALL', label: t('gamepad_config.actions.start_all', 'START ALL') },
+    { value: 'STOP', label: t('gamepad_config.actions.stop', 'STOP') },
+    { value: 'STOP ALL', label: t('gamepad_config.actions.stop_all', 'STOP ALL') },
+    { value: 'ADD POINT', label: t('gamepad_config.actions.add_point', 'ADD POINT') },
+    { value: 'SPEED+', label: t('gamepad_config.actions.speed_plus', 'Speed +') },
+    { value: 'SPEED-', label: t('gamepad_config.actions.speed_minus', 'Speed -') },
   ];
 
   const BUTTONS = [
-    { id: 'B0', name: 'A / Cross' },
-    { id: 'B1', name: 'B / Circle' },
-    { id: 'B2', name: 'X / Square' },
-    { id: 'B3', name: 'Y / Triangle' },
-    { id: 'B4', name: 'LB / L1' },
-    { id: 'B5', name: 'RB / R1' },
-    { id: 'B6', name: 'LT / L2' },
-    { id: 'B7', name: 'RT / R2' },
-    { id: 'B8', name: 'Select / Share' },
-    { id: 'B9', name: 'Start / Options' },
-    { id: 'B10', name: 'L3 (Stick Click)' },
-    { id: 'B11', name: 'R3 (Stick Click)' },
-    { id: 'B12', name: 'D-Pad Up' },
-    { id: 'B13', name: 'D-Pad Down' },
-    { id: 'B14', name: 'D-Pad Left' },
-    { id: 'B15', name: 'D-Pad Right' },
-    { id: 'AXIS_0_NEG', name: 'Left Stick Left' },
-    { id: 'AXIS_0_POS', name: 'Left Stick Right' },
-    { id: 'AXIS_1_NEG', name: 'Left Stick Up' },
-    { id: 'AXIS_1_POS', name: 'Left Stick Down' },
-    { id: 'AXIS_2_NEG', name: 'Right Stick Left' },
-    { id: 'AXIS_2_POS', name: 'Right Stick Right' },
-    { id: 'AXIS_3_NEG', name: 'Right Stick Up' },
-    { id: 'AXIS_3_POS', name: 'Right Stick Down' },
+    { id: 'B0', name: t('gamepad_config.buttons.B0', 'A / Cross') },
+    { id: 'B1', name: t('gamepad_config.buttons.B1', 'B / Circle') },
+    { id: 'B2', name: t('gamepad_config.buttons.B2', 'X / Square') },
+    { id: 'B3', name: t('gamepad_config.buttons.B3', 'Y / Triangle') },
+    { id: 'B4', name: t('gamepad_config.buttons.B4', 'LB / L1') },
+    { id: 'B5', name: t('gamepad_config.buttons.B5', 'RB / R1') },
+    { id: 'B6', name: t('gamepad_config.buttons.B6', 'LT / L2') },
+    { id: 'B7', name: t('gamepad_config.buttons.B7', 'RT / R2') },
+    { id: 'B8', name: t('gamepad_config.buttons.B8', 'Select / Share') },
+    { id: 'B9', name: t('gamepad_config.buttons.B9', 'Start / Options') },
+    { id: 'B10', name: t('gamepad_config.buttons.B10', 'L3 (Stick Click)') },
+    { id: 'B11', name: t('gamepad_config.buttons.B11', 'R3 (Stick Click)') },
+    { id: 'B12', name: t('gamepad_config.buttons.B12', 'D-Pad Up') },
+    { id: 'B13', name: t('gamepad_config.buttons.B13', 'D-Pad Down') },
+    { id: 'B14', name: t('gamepad_config.buttons.B14', 'D-Pad Left') },
+    { id: 'B15', name: t('gamepad_config.buttons.B15', 'D-Pad Right') },
+    { id: 'AXIS_0_NEG', name: t('gamepad_config.buttons.AXIS_0_NEG', 'Left Stick Left') },
+    { id: 'AXIS_0_POS', name: t('gamepad_config.buttons.AXIS_0_POS', 'Left Stick Right') },
+    { id: 'AXIS_1_NEG', name: t('gamepad_config.buttons.AXIS_1_NEG', 'Left Stick Up') },
+    { id: 'AXIS_1_POS', name: t('gamepad_config.buttons.AXIS_1_POS', 'Left Stick Down') },
+    { id: 'AXIS_2_NEG', name: t('gamepad_config.buttons.AXIS_2_NEG', 'Right Stick Left') },
+    { id: 'AXIS_2_POS', name: t('gamepad_config.buttons.AXIS_2_POS', 'Right Stick Right') },
+    { id: 'AXIS_3_NEG', name: t('gamepad_config.buttons.AXIS_3_NEG', 'Right Stick Up') },
+    { id: 'AXIS_3_POS', name: t('gamepad_config.buttons.AXIS_3_POS', 'Right Stick Down') },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-          <Gamepad2 size={16} className="text-sky-400" /> Gamepad Controller
+          <Gamepad2 size={16} className="text-sky-400" /> {t('gamepad_config.title', 'Gamepad Controller')}
         </h3>
         <div className="flex items-center gap-3">
           {gamepadEnabled && (
@@ -100,15 +100,15 @@ export function GamepadConfig() {
               onChange={(e) => updateSettings({ gamepadConnectionType: e.target.value as 'USB' | 'Bluetooth' })}
               className="bg-slate-900 border border-slate-700 rounded p-1 text-xs text-slate-300 outline-none"
             >
-              <option value="USB">USB Connection</option>
-              <option value="Bluetooth">Bluetooth Connection</option>
+              <option value="USB">{t('gamepad_config.usb_connection', 'USB Connection')}</option>
+              <option value="Bluetooth">{t('gamepad_config.bluetooth_connection', 'Bluetooth Connection')}</option>
             </select>
           )}
-          <button 
+          <button
             onClick={toggleGamepad}
             className={`px-3 py-1 rounded text-xs font-bold transition-colors border ${gamepadEnabled ? 'bg-sky-500/20 text-sky-400 border-sky-500/50' : 'bg-slate-800 text-slate-500 border-slate-700'}`}
           >
-            {gamepadEnabled ? 'ENABLED' : 'DISABLED'}
+            {gamepadEnabled ? t('gamepad_config.enabled', 'ENABLED') : t('gamepad_config.disabled', 'DISABLED')}
           </button>
         </div>
       </div>
@@ -146,15 +146,15 @@ export function GamepadConfig() {
               <path d="M 60 70 Q 100 50 120 75 L 80 75 Z" fill="#334155"/>
               <path d="M 340 70 Q 300 50 280 75 L 320 75 Z" fill="#334155"/>
             </svg>
-            <div className="absolute top-2 left-2 text-xs text-slate-500">Visual Reference</div>
+            <div className="absolute top-2 left-2 text-xs text-slate-500">{t('gamepad_config.visual_reference', 'Visual Reference')}</div>
           </div>
 
           <div className="bg-slate-900 border border-slate-800 p-4 rounded-lg overflow-y-auto max-h-[400px]">
             <table className="w-full text-left text-xs">
               <thead className="sticky top-0 bg-slate-900 border-b border-slate-800">
                 <tr>
-                  <th className="pb-2 text-slate-400 font-bold uppercase">Input</th>
-                  <th className="pb-2 text-slate-400 font-bold uppercase">Action</th>
+                  <th className="pb-2 text-slate-400 font-bold uppercase">{t('gamepad_config.input', 'Input')}</th>
+                  <th className="pb-2 text-slate-400 font-bold uppercase">{t('gamepad_config.action', 'Action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/50">

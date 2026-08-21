@@ -8,17 +8,28 @@
 // AR4_CHAIN/AR4_ROOT_QUAT directly from AR4Arm.tsx. Unlike Faze4/AR3
 // (whose URDFs declare every joint "continuous"), AR4's own
 // config/mk3.yaml carries real joint limits - AR4_JOINT_LIMITS_DEG below,
-// used both to clamp the IK solve's own output and to constrain the jog
+// used both to constrain the IK solve itself and to constrain the jog
 // sliders in RobotDetail.tsx, same treatment as PAROL6_JOINT_LIMITS_DEG.
 //
 // AR4 is a genuinely bigger arm than the app's own default example
 // workspace assumes (max horizontal reach near 570mm vs the ~200mm radius
-// examples default to) - clamping the solved j2/j3 to AR4's real limits
-// means some default-sized example trajectories will visibly NOT reach
-// their nominal target for this robot (the arm extends as close as its
-// real limits allow instead) - the physically correct behavior for a
-// robot that genuinely can't reach that close, not a bug. See
-// mejoras_futuras.txt.
+// examples default to) - for a target outside AR4's real reach, the arm
+// should extend as close as its real limits allow instead of reaching the
+// nominal target exactly. That's the physically correct behavior for a
+// robot that genuinely can't reach that close, not a bug - BUT it only
+// holds if the solve actually finds the CLOSEST feasible pose. An earlier
+// version of this solver did an unconstrained 3-parameter Newton-Raphson
+// first and only clamped j1/j2/j3 to AR4_JOINT_LIMITS_DEG on the FINAL
+// answer - clamping each axis independently after the fact does not, in
+// general, land on the closest feasible pose (the unconstrained solve has
+// no reason to end up near the feasible box at all), and was measured
+// producing errors as large as ~350mm on ordinary ~200mm-radius targets
+// that a same-scale synthetic sweep showed a properly constrained solve
+// reaches within a few mm of. Fixed by clamping j1/j2/j3 to their real
+// limits INSIDE every Newton-Raphson iteration (projected Newton) instead
+// of only at the end, so the solve itself stays inside the feasible box
+// and actually converges toward the true closest reachable pose. See
+// auditoria_historial.txt for the before/after numbers.
 // =============================================================================
 
 import { Matrix4, Quaternion, Vector3, Euler } from 'three';
@@ -65,8 +76,19 @@ function fkPosition(j1: number, j2: number, j3: number): Vector3 {
   return out;
 }
 
+// Projected Newton-Raphson: j1/j2/j3 are clamped to AR4's real joint limits after EVERY
+// iteration step, not just on the final answer (see this file's header comment for why the
+// old "solve unconstrained, clamp once at the end" approach produced badly-off poses for
+// out-of-reach targets instead of the closest feasible one). For a target that's genuinely
+// within reach this behaves identically to the old unconstrained solve (the unconstrained
+// optimum already sits inside the box, so clamping never triggers); for an out-of-reach
+// target, staying inside the feasible box on every step lets the solver's own gradient
+// descent find the true closest boundary point instead of overshooting into infeasible
+// territory and then getting an arbitrary post-hoc snap-back.
 function solveOnce(xt: number, yt: number, zt: number, g1: number, g2: number, g3: number) {
-  let j1 = g1, j2 = g2, j3 = g3;
+  let j1 = clamp(g1, AR4_JOINT_LIMITS_DEG.j1[0], AR4_JOINT_LIMITS_DEG.j1[1]);
+  let j2 = clamp(g2, AR4_JOINT_LIMITS_DEG.j2[0], AR4_JOINT_LIMITS_DEG.j2[1]);
+  let j3 = clamp(g3, AR4_JOINT_LIMITS_DEG.j3[0], AR4_JOINT_LIMITS_DEG.j3[1]);
   const h = 0.001;
   for (let iter = 0; iter < 200; iter++) {
     const p = fkPosition(j1, j2, j3);
@@ -98,18 +120,24 @@ function solveOnce(xt: number, yt: number, zt: number, g1: number, g2: number, g
 
     const stepNorm = Math.hypot(dj1, dj2, dj3);
     const damp = stepNorm > 20 ? 20 / stepNorm : 1;
-    j1 -= dj1 * damp;
-    j2 -= dj2 * damp;
-    j3 -= dj3 * damp;
+    j1 = clamp(j1 - dj1 * damp, AR4_JOINT_LIMITS_DEG.j1[0], AR4_JOINT_LIMITS_DEG.j1[1]);
+    j2 = clamp(j2 - dj2 * damp, AR4_JOINT_LIMITS_DEG.j2[0], AR4_JOINT_LIMITS_DEG.j2[1]);
+    j3 = clamp(j3 - dj3 * damp, AR4_JOINT_LIMITS_DEG.j3[0], AR4_JOINT_LIMITS_DEG.j3[1]);
   }
   const p = fkPosition(j1, j2, j3);
   return { j1, j2, j3, err: Math.hypot(p.x - xt, p.y - yt, p.z - zt) };
 }
 
+// Wider (s2,s3) coverage than the original 5-pair table, including seeds near AR4's own real
+// j2/j3 corners (j2 up to 90, j3 down to -89 or up to 52) - needed now that solveOnce clamps
+// into the feasible box on every iteration, so a seed already close to the true boundary
+// solution for an out-of-reach target converges faster/more reliably than one that has to
+// cross the whole box first. s1 now covers the same full -180..180 sweep faze4Kinematics.ts/
+// ar3Kinematics.ts already use (was -150..180 here, a narrower range for no documented reason).
 const SEEDS: [number, number, number][] = (() => {
   const list: [number, number, number][] = [];
-  for (let s1 = -150; s1 < 180; s1 += 30) {
-    for (const [s2, s3] of [[0, 0], [40, -30], [-30, 30], [70, -70], [80, -50]] as [number, number][]) {
+  for (let s1 = -180; s1 < 180; s1 += 30) {
+    for (const [s2, s3] of [[0, 0], [40, -30], [-30, 30], [70, -70], [80, -50], [88, -85], [-40, 50], [60, 40]] as [number, number][]) {
       list.push([s1, s2, s3]);
     }
   }
@@ -123,6 +151,8 @@ function solveJ1J2J3(xt: number, yt: number, zt: number): { j1: number; j2: numb
     if (r.err < best.err) best = r;
     if (best.err < 1e-6) break;
   }
+  // solveOnce() already keeps j1/j2/j3 inside AR4_JOINT_LIMITS_DEG on every iteration (see its
+  // own comment) so this is a no-op in practice - kept as a defense-in-depth safety net only.
   return {
     j1: clamp(best.j1, AR4_JOINT_LIMITS_DEG.j1[0], AR4_JOINT_LIMITS_DEG.j1[1]),
     j2: clamp(best.j2, AR4_JOINT_LIMITS_DEG.j2[0], AR4_JOINT_LIMITS_DEG.j2[1]),

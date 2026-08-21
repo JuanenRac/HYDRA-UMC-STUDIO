@@ -6,7 +6,16 @@ REM GPL-3.0 - see LICENSE
 REM =============================================================================
 
 echo ========================================
-echo  Installing dependencies... 
+echo  HYDRA-UMC STUDIO
+echo  Build and Compile Script - installs dependencies and compiles the app
+echo  Author: JuanenRac (Electro Hobby 3D)
+echo  E-mail: electrohobby3d@gmail.com
+echo  License: GPL-3.0 - see LICENSE
+echo ========================================
+echo.
+
+echo ========================================
+echo  Installing dependencies...
 echo ========================================
 call npm install
 call npm install-scripts approve --all
