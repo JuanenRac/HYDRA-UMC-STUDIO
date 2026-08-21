@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Users as UsersIcon, Trash2, KeyRound, UserPlus, ShieldCheck } from 'lucide-react';
 import { useHydraStore } from '../store';
+import { apiUrl } from '../lib/apiBase';
 
 interface StoredUserSummary {
   username: string;
@@ -44,7 +45,7 @@ export function UsersPanel() {
 
   const loadUsers = async () => {
     try {
-      const res = await fetch('/api/users', { headers: authHeaders() });
+      const res = await fetch(apiUrl('/api/users'), { headers: authHeaders() });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(data.error || `HTTP ${res.status}`);
@@ -64,7 +65,7 @@ export function UsersPanel() {
     e.preventDefault();
     setError(''); setNotice('');
     try {
-      const res = await fetch('/api/users', {
+      const res = await fetch(apiUrl('/api/users'), {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({ username: newUsername, password: newPassword, role: newRole }),
@@ -87,7 +88,7 @@ export function UsersPanel() {
       const body: Record<string, string> = {};
       if (renameNewName.trim()) body.newUsername = renameNewName.trim();
       if (renamePassword) body.password = renamePassword;
-      const res = await fetch(`/api/users/${encodeURIComponent(renameTarget)}`, {
+      const res = await fetch(apiUrl(`/api/users/${encodeURIComponent(renameTarget)}`), {
         method: 'PUT',
         headers: authHeaders(),
         body: JSON.stringify(body),
@@ -106,7 +107,7 @@ export function UsersPanel() {
     if (!confirm(t('config.users_delete_confirm', { username }))) return;
     setError(''); setNotice('');
     try {
-      const res = await fetch(`/api/users/${encodeURIComponent(username)}`, { method: 'DELETE', headers: authHeaders() });
+      const res = await fetch(apiUrl(`/api/users/${encodeURIComponent(username)}`), { method: 'DELETE', headers: authHeaders() });
       const data = await res.json();
       if (!res.ok) { setError(data.error || t('config.users_delete_error')); return; }
       loadUsers();

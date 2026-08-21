@@ -8,6 +8,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { useHydraStore, ROBOT_MANUFACTURERS } from './store';
+import { apiUrl } from './lib/apiBase';
 import {
   Activity, Crosshair, AlertOctagon, Layers,
   Video, Focus, Settings, Menu, Search, Power
@@ -461,7 +462,7 @@ function SystemMetricsBar() {
   useEffect(() => {
     let cancelled = false;
     const poll = () => {
-      fetch('/api/system/metrics').then(r => r.ok ? r.json() : null).then(data => {
+      fetch(apiUrl('/api/system/metrics')).then(r => r.ok ? r.json() : null).then(data => {
         if (!cancelled && data) setMetrics(data);
       }).catch(() => { /* server unreachable - keep showing the last known reading */ });
     };
