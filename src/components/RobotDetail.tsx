@@ -956,8 +956,6 @@ console.log("Loading example:", id);
     setPlaybackAcceleration(newAcceleration);
     updateRobot(robot.id, { playbackState: { ...(robot.playbackState || {}), acceleration: newAcceleration } });
   };
-    const playbackSpeedRef = useRef(100);
-
   const playbackPausedRef = useRef(false);
   useEffect(() => {
     playbackPausedRef.current = robot.playbackState?.isPaused || false;
@@ -973,11 +971,6 @@ console.log("Loading example:", id);
     }
   }, [robot.playbackState?.isPlaying]);
 
-  // Sync ref
-  useEffect(() => {
-    playbackSpeedRef.current = playbackSpeed;
-  }, [playbackSpeed]);
-
   useEffect(() => {
     if (robot.playbackState?.isPlaying && robot.playbackState?.activeStep !== null && robot.playbackState?.activeStep !== -1) {
       const el = document.getElementById(`step-${robot.id}-${robot.playbackState?.activeStep}`);
@@ -986,13 +979,6 @@ console.log("Loading example:", id);
       }
     }
   }, [robot.playbackState?.activeStep, robot.playbackState?.isPlaying, robot.id]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      
-    };
-  }, []);
 
   const [reset3DKey, setReset3DKey] = useState(0);
   const [threeDHeight, setThreeDHeight] = useState<number | undefined>(settings.uiLayout?.threeDHeight);

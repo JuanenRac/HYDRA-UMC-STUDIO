@@ -19,7 +19,7 @@ export const UR5CLASSIC_CHAIN: UrClassicChain = [
   { pos: [0, 0.13585, 0], rpy: [0, Math.PI / 2, 0], axis: [0, 1, 0] },
   { pos: [0, -0.1197, 0.425], rpy: [0, 0, 0], axis: [0, 1, 0] },
   { pos: [0, 0, 0.39225], rpy: [0, Math.PI / 2, 0], axis: [0, 1, 0] },
-  { pos: [0, 0.093, 0], rpy: [0, 0, 0], axis: [0, 0, 1] },
+  { pos: [0, 0.10915, 0], rpy: [0, 0, 0], axis: [0, 0, 1] },
   { pos: [0, 0, 0.09465], rpy: [0, 0, 0], axis: [0, 1, 0] },
 ];
 

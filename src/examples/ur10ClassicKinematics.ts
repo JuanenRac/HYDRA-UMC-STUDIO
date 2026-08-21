@@ -18,7 +18,7 @@ export const UR10CLASSIC_CHAIN: UrClassicChain = [
   { pos: [0, 0.220941, 0], rpy: [0, Math.PI / 2, 0], axis: [0, 1, 0] },
   { pos: [0, -0.1719, 0.612], rpy: [0, 0, 0], axis: [0, 1, 0] },
   { pos: [0, 0, 0.5723], rpy: [0, Math.PI / 2, 0], axis: [0, 1, 0] },
-  { pos: [0, 0.1149, 0], rpy: [0, 0, 0], axis: [0, 0, 1] },
+  { pos: [0, 0.163941, 0], rpy: [0, 0, 0], axis: [0, 0, 1] },
   { pos: [0, 0, 0.1157], rpy: [0, 0, 0], axis: [0, 1, 0] },
 ];
 
