@@ -762,16 +762,31 @@ console.log("Loading example:", id);
         const xyDist = Math.sqrt(Math.pow((targetPos.tx || 0) - (startPos.tx || 0), 2) + Math.pow((targetPos.ty || 0) - (startPos.ty || 0), 2));
         const effectiveDist = Math.max(maxJointDiff * 2, xyDist, 0.1);
 
-        const baseVelocity = 50; 
+        const baseVelocity = 50;
         let t = 0;
-        
+        // Real elapsed time per tick instead of assuming unthrottledDelay()'s
+        // requested 16ms always elapses exactly - setTimeout only guarantees
+        // "at least" that long, and can run well over it under GC pauses, a
+        // busy main thread, or a backgrounded/throttled tab. null on the
+        // first tick of each move (and right after a pause) falls back to
+        // the old fixed 16ms rather than a near-zero measured delta, and a
+        // clamp keeps a single abnormally long tick (e.g. regaining focus
+        // after being backgrounded) from jumping the arm most of the way to
+        // its target in one frame.
+        let lastTickAt: number | null = null;
+
         while (t < 1) {
-          if (!globalPlaybacks[rId]) break; 
-          while(playbackPausedRef.current) { 
-              if (!globalPlaybacks[rId]) break; 
-              await unthrottledDelay(); 
-          } 
           if (!globalPlaybacks[rId]) break;
+          while(playbackPausedRef.current) {
+              if (!globalPlaybacks[rId]) break;
+              lastTickAt = null; // don't let paused time count as movement once resumed
+              await unthrottledDelay();
+          }
+          if (!globalPlaybacks[rId]) break;
+
+          const now = performance.now();
+          const dtMs = lastTickAt === null ? 16 : Math.min(now - lastTickAt, 250);
+          lastTickAt = now;
 
           const rState = robotsRef.current.find(r => r.id === rId);
           // Acceleration control - we'd always had a speed control here but
@@ -792,7 +807,7 @@ console.log("Loading example:", id);
             : t > 1 - rampFraction ? ((1 - t) / rampFraction)
             : 1;
           const currentVelocity = baseVelocity * ((rState?.playbackState?.speed || 100) / 100) * Math.max(0.05, accelEnvelope);
-          const distancePerTick = currentVelocity * (16 / 1000);
+          const distancePerTick = currentVelocity * (dtMs / 1000);
           
           let tStep = distancePerTick / effectiveDist;
           if (effectiveDist < 0.001) tStep = 1;
