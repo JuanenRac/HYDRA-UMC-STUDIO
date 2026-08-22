@@ -6,6 +6,15 @@
 
 ### 🤖 Web-Based Control Dashboard for the HYDRA-UMC Multi-Robot Micro-Factory
 
+<p align="left">
+  <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
+  <img src="https://img.shields.io/badge/Framework-React%2019-61DAFB.svg" alt="React">
+  <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
+  <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="Three.js">
+  <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="TypeScript">
+</p>
+
+
 ---
 
 ## 🎯 Overview
