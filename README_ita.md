@@ -4,6 +4,15 @@
 
 # 🖥️ HYDRA-UMC STUDIO
 
+<p align="center">
+  <a href="README.md">🇺🇸 English</a> |
+  <a href="README_spa.md">🇪🇸 Español</a> |
+  <a href="README_fra.md">🇫🇷 Français</a> |
+  🇮🇹 <b>Italiano</b> |
+  <a href="README_deu.md">🇩🇪 Deutsch</a>
+</p>
+
+
 ### 🤖 Dashboard di Controllo Web per la Micro-Fabbrica Multi-Robot HYDRA-UMC
 
 <p align="left">
