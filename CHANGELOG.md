@@ -24,6 +24,18 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [1.0.6] - Non-blocking confirmations + Flasher/Tester Studio render fix
+
+- Replaced 4 blocking `confirm()` calls (E-STOP, factory reset, delete user,
+  confirm flash) with the existing non-blocking `ConfirmDialog.tsx`
+  component, so none of those actions can freeze the tab on a blocking
+  native dialog anymore.
+- Hoisted the `tiers` arrays in Flasher/Tester Studio to module-level
+  constants instead of recreating them on every render, avoiding
+  unnecessary effect re-runs downstream.
+- Shipped as build 1.0.5; this 1.0.6 build itself is a verification
+  rebuild confirming no regressions, with no further source changes.
+
 ## [1.0.1] - Automatic build versioning
 
 - Added `scripts/bump-version.mjs`: bumps `package.json`'s `version` on every
