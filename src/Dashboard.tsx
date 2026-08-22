@@ -9,6 +9,8 @@ import { useTranslation } from 'react-i18next';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { useHydraStore, ROBOT_MANUFACTURERS } from './store';
 import { apiUrl } from './lib/apiBase';
+import { ConfirmDialog } from './components/ConfirmDialog';
+import type { CanOtaTier } from './lib/canOta';
 import {
   Activity, Crosshair, AlertOctagon, Layers,
   Video, Focus, Settings, Menu, Search, Power
@@ -20,6 +22,15 @@ import { twMerge } from 'tailwind-merge';
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+// Stable module-level references for the `tiers` prop passed to Flasher/Tester below -
+// a literal `tiers={[...]}` inline in JSX would build a brand-new array every single
+// Dashboard render (any state change anywhere in Dashboard, not just navigation),
+// which then trips Flasher.tsx/Tester.tsx's own `useEffect(..., [tiers])` on every one
+// of those renders even though the actual tier list never changes. Cheap effect body,
+// but still unnecessary work on every keystroke/tick while either panel is mounted.
+const URTC_TIERS: CanOtaTier[] = ['urtcHead', 'urtcExpansion'];
+const HYDRA_BRAIN_TIERS: CanOtaTier[] = ['kinematicBrain', 'controllerBoard'];
 
 /** Suspense fallback for the lazy-loaded panels below. */
 function PanelLoadingFallback() {
@@ -85,6 +96,7 @@ export default function Dashboard() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showEstopConfirm, setShowEstopConfirm] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -255,10 +267,10 @@ export default function Dashboard() {
                {activeTab === 'laser' && <Laser />}
                {activeTab === 'vacuumtable' && <VacuumTableConfig />}
                {activeTab === 'heatedbed' && <HeatedBedConfig />}
-               {activeTab === 'flasher' && <Flasher tiers={['urtcHead', 'urtcExpansion']} />}
-               {activeTab === 'tester' && <Tester tiers={['urtcHead', 'urtcExpansion']} />}
-               {activeTab === 'hydraFlasher' && <Flasher tiers={['kinematicBrain', 'controllerBoard']} />}
-               {activeTab === 'hydraTester' && <Tester tiers={['kinematicBrain', 'controllerBoard']} />}
+               {activeTab === 'flasher' && <Flasher tiers={URTC_TIERS} />}
+               {activeTab === 'tester' && <Tester tiers={URTC_TIERS} />}
+               {activeTab === 'hydraFlasher' && <Flasher tiers={HYDRA_BRAIN_TIERS} />}
+               {activeTab === 'hydraTester' && <Tester tiers={HYDRA_BRAIN_TIERS} />}
                {activeTab === 'kinematicBrainStage' && <KinematicBrainStage />}
             </div>
           </React.Suspense>
@@ -279,11 +291,17 @@ export default function Dashboard() {
              <SystemMetricsBar />
           </div>
           <div className="flex items-center gap-8 shrink-0">
-            <button onClick={() => { if(confirm(t('dashboard.global_estop_confirm'))) robots.forEach(r => updateRobot(r.id, { online: false })); }} className="flex items-center gap-3 px-6 py-1 rounded-full bg-rose-600 text-white border border-rose-400 transition-all animate-pulse">{t('config.global_estop')}</button>
+            <button onClick={() => setShowEstopConfirm(true)} className="flex items-center gap-3 px-6 py-1 rounded-full bg-rose-600 text-white border border-rose-400 transition-all animate-pulse">{t('config.global_estop')}</button>
             <div className="font-mono text-sky-400">{currentTime.toLocaleTimeString()}</div>
           </div>
         </footer>
       )}
+      <ConfirmDialog
+        open={showEstopConfirm}
+        message={t('dashboard.global_estop_confirm')}
+        onConfirm={() => { robots.forEach(r => updateRobot(r.id, { online: false })); setShowEstopConfirm(false); }}
+        onCancel={() => setShowEstopConfirm(false)}
+      />
     </div>
   );
 }

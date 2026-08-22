@@ -14,7 +14,7 @@
 
 **Nota di onestà, seguendo la stessa convenzione di documentazione del resto di questo ecosistema:** l'hardware reale di HYDRA-UMC non esiste ancora come silicio testato (i suoi bootloader compilano senza errori ma non sono mai stati eseguiti su schede reali - vedi il `docs/architecture.md` di quel repository). Per questo motivo questo dashboard esegue i propri strumenti Flasher/Tester CAN-OTA contro una simulazione integrata completa che segue lo schema di indirizzamento reale e documentato di ogni livello, invece di fingere di parlare con un hardware che non esiste. La visualizzazione 3D dei robot, la cinematica, la registrazione delle traiettorie, e ogni pannello di controllo degli accessori sono completamente reali e indipendenti da questo - solo il trasporto CAN-OTA in sé è simulato per ora.
 
-Costruito con **React 19**, **Vite**, **Three.js** (via `@react-three/fiber`/`@react-three/drei`), **TypeScript**, e un backend **Express** per lo stato persistente lato server.
+Costruito con **React 19**, **Vite**, **Three.js** (via `@react-three/fiber`/`@react-three/drei`), e **TypeScript** - un client puro senza codice di backend proprio. Lo stato persistente vive nel backend separato **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** con cui questa app comunica in rete.
 
 ---
 
@@ -102,7 +102,7 @@ Due finestre di dialogo indipendenti, entrambe raggiungibili dall'intestazione (
 
 ## 🔐 Account e Accesso
 
-Ogni server crea un account al proprio primo avvio in assoluto - utente `admin`, password `admin` - cambiala da **Config > Users** non appena il server è raggiungibile oltre una LAN completamente fidata. La stessa scheda permette a un account admin di creare account **operator** aggiuntivi: un operator può accedere, osservare lo stato in tempo reale, e pilotare i robot (jog/riproduci/pausa/stop/utensile/valvola/pompa/velocità), ma non può sovrascrivere le impostazioni globali né gestire altri account. Non è richiesto alcun account solo per guardare - il pulsante "Continue read-only" della schermata di login salta direttamente al dashboard con le scritture disabilitate. Contratto completo (ruoli, token, le rotte `/api/users`) documentato in [`docs/REMOTE_API.md`](docs/REMOTE_API.md), sezioni 2a/2b.
+Ogni server crea un account al proprio primo avvio in assoluto - utente `admin`, password `admin` - cambiala da **Config > Users** non appena il server è raggiungibile oltre una LAN completamente fidata. La stessa scheda permette a un account admin di creare account **operator** aggiuntivi: un operator può accedere, osservare lo stato in tempo reale, e pilotare i robot (jog/riproduci/pausa/stop/utensile/valvola/pompa/velocità), ma non può sovrascrivere le impostazioni globali né gestire altri account. Non è richiesto alcun account solo per guardare - il pulsante "Continue read-only" della schermata di login salta direttamente al dashboard con le scritture disabilitate. Contratto completo (ruoli, token, le rotte `/api/users`) documentato nel proprio [`docs/REMOTE_API.md` di HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md), sezioni 2a/2b.
 
 Ciascuno dei 3 client remoti (SUITE, Android, iOS) si auto-identifica tramite un header di richiesta `X-Hydra-Client`, così **Config > Remote Access** può consentire o bloccare ciascuno in modo indipendente invece di un unico interruttore combinato per tutti e tre.
 
@@ -110,9 +110,9 @@ Ciascuno dei 3 client remoti (SUITE, Android, iOS) si auto-identifica tramite un
 
 ## 💾 Stato Persistente
 
-L'archiviazione lato server (backend Express, `server.ts`) sincronizza ogni configurazione, percorso, e stato attivo di macchina/robot su disco (`data/settings.json`) - lo stato sopravvive a un ricaricamento della pagina o a un riavvio del server. `data/settings.json` stesso è deliberatamente escluso dal servizio di file statici proprio del server (contiene IP dei controller, configurazione CAN-OTA, e lo stato completo per robot), sebbene il resto di `data/` (es. `WORKS/`, traiettorie salvate) venga servito normalmente.
+HYDRA-UMC STUDIO in sé è un client puro - non mantiene alcuno stato proprio oltre a ciò che è in memoria per la sessione corrente. Tutta la persistenza (`settings.json`, `users.json`, traiettorie salvate sotto `WORKS/`, modelli inviati) vive nel backend separato **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** con cui questa app comunica in rete (vedi il proprio `data/` e README di quel progetto per il quadro completo) - lo stato sopravvive a un ricaricamento della pagina o a un nuovo deployment di questa app, poiché nessuno dei due tocca il processo del backend in alcun modo. `settings.json` stesso è deliberatamente escluso dal servizio di file statici di quel backend (contiene IP dei controller, configurazione CAN-OTA, e lo stato completo per robot), sebbene la sua cartella `WORKS/` venga servita normalmente.
 
-Lo stesso contratto `GET`/`POST /api/settings`, più un endpoint di discovery (`GET /api/hydra-info`) e un `WebSocket /ws` per aggiornamenti push dal vivo, è anche il modo in cui si collegano i client esterni - questo è ciò che permette a [HYDRA-UMC SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE) di scoprire un server HYDRA-UMC STUDIO attivo sulla rete, leggere/modificare il suo stato, e vedere i cambiamenti fatti da una scheda del browser riflessi dal vivo (e viceversa). Contratto completo in [`docs/REMOTE_API.md`](docs/REMOTE_API.md).
+Lo stesso contratto `GET`/`POST /api/settings`, più un endpoint di discovery (`GET /api/hydra-info`) e un `WebSocket /ws` per aggiornamenti push dal vivo, è anche il modo in cui i client esterni si collegano a quello stesso backend - questo è ciò che permette a [HYDRA-UMC SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE) di scoprire un'istanza di HYDRA-UMC SERVER attiva sulla rete, leggere/modificare il suo stato, e vedere i cambiamenti fatti dalla scheda del browser propria di questa app riflessi dal vivo (e viceversa). Contratto completo nel proprio [`docs/REMOTE_API.md` di HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md).
 
 `GET /api/system/metrics` alimenta il footer del dashboard Overview: il carico CPU e l'uso di memoria sono sempre reali (il modulo `os` proprio di Node); la temperatura legge l'output reale di `vcgencmd measure_temp` quando in esecuzione su una vera Raspberry Pi e ricade su un valore simulato chiaramente contrassegnato altrimenti (`temp_is_real` nella risposta); lo stato di Wi-Fi/Ethernet/Bluetooth viene letto da `/sys/class/net`/`/sys/class/bluetooth` (solo Linux, `null`/sconosciuto su qualsiasi altro host invece di un valore indovinato).
 
@@ -122,15 +122,10 @@ Lo stesso contratto `GET`/`POST /api/settings`, più un endpoint di discovery (`
 
 ```text
 HYDRA-UMC-STUDIO/
-├── server.ts                   # Backend Express - servizio statico, persistenza settings, middleware dev di Vite,
-│                                # sincronizzazione live via WebSocket, endpoint di invio modelli per HYDRA-UMC-EDITOR-URDF
-├── users.ts                    # Archivio account multi-utente - hashing password con scrypt, ruoli admin/operator
-├── kinematics.ts                # Matematica dei giunti lato server condivisa con i motori examples/ lato client
-├── docs/
-│   └── REMOTE_API.md            # Contratto HTTP/WebSocket per client remoti (HYDRA-UMC SUITE, le app di controllo mobile)
 ├── src/
 │   ├── Dashboard.tsx            # Shell principale dell'app - navigazione, pannello Overview, metriche di sistema nel footer
-│   ├── store.tsx                # Stato globale: RobotModel/RobotState/HydraController/SystemSettings
+│   ├── store.tsx                # Stato globale: RobotModel/RobotState/HydraController/SystemSettings -
+│   │                             # comunica con il backend separato HYDRA-UMC-SERVER via REST + WebSocket
 │   ├── i18n.ts                  # Configurazione react-i18next - carica src/locales/*.json
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # Finestre di Configurazione di Sistema e Informazioni - componenti a sé stanti
@@ -184,15 +179,17 @@ HYDRA-UMC-STUDIO/
 │   │   │                       # Dati sottili per modello di catena UR/limiti/pose di riposo
 │   │   └── list/                # 26 traiettorie di esempio predefinite (cerchi, spirali, pattern tavolo XY, pick-and-place, ...)
 │   ├── lib/canOta.ts            # Livello di simulazione/protocollo CAN-OTA, download firmware da GitHub
+│   ├── lib/apiBase.ts           # Risoluzione dell'URL del backend - relativa+proxata in dev, VITE_API_BASE_URL in prod
 │   └── locales/                 # File di traduzione en/es/de/fr/it (react-i18next)
 ├── public/models/                # Asset mesh 3D reali - una cartella per robot (24 in totale),
 │                                  # ciascuna con il proprio ATTRIBUTION.txt - vedi la tabella delle licenze più sotto
 ├── images/                       # Banner del README
+├── .env.example                  # Template di VITE_API_BASE_URL - vedi src/lib/apiBase.ts
 ├── README.md                     # questo file (in inglese)
-├── README_spa.md / README_ita.md / README_fra.md / README_deu.md  # traduzioni
-└── data/                         # Stato persistito dal server (settings.json, users.json, WORKS/, invii
-                                   # di modelli da HYDRA-UMC-EDITOR-URDF) - creato a runtime
+└── README_spa.md / README_ita.md / README_fra.md / README_deu.md  # traduzioni
 ```
+
+Il backend con cui comunica questa app (persistenza dei settings, l'API REST/WebSocket, `docs/REMOTE_API.md`) vive nel repository separato **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)**, non in questo - vedi il proprio README di quel progetto per la sua struttura e come eseguirlo.
 
 ---
 
@@ -201,6 +198,7 @@ HYDRA-UMC-STUDIO/
 ### Requisiti
 - [Node.js](https://nodejs.org/) (v18 o superiore consigliato)
 - npm
+- Un backend **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** in esecuzione (`npm run dev` anche lì, porta `3000` di default) - questa app è un client puro e non ha nulla con cui comunicare senza di esso.
 
 ### Installazione
 
@@ -210,22 +208,22 @@ npm install
 
 ### Modalità Sviluppo
 
-Esegue l'app con ricaricamento live (middleware dev di Vite dentro lo stesso server Express, `server.ts`):
+Esegue il proprio dev server di Vite (`vite` semplice, porta `5173`) con ricaricamento live. Il proprio `server.proxy` di `vite.config.ts` inoltra in modo trasparente `/api`, `/ws`, e `/WORKS` a `http://localhost:3000`, così le chiamate fetch/WebSocket a percorso relativo dell'app raggiungono il backend HYDRA-UMC SERVER senza bisogno di configurazione CORS - basta assicurarsi che quel backend sia in esecuzione per primo:
 - **Windows:** doppio clic su `dev.bat` oppure esegui `npm run dev`
 - **Linux/Mac:** esegui `./dev.sh` oppure `npm run dev`
 
 ### Build di Produzione
 
-Compila in un deployment server ottimizzato e a file singolo:
+Compila in una build statica ottimizzata (`vite build` semplice - nessun bundling del server, questa app non ha più codice di backend):
 - **Windows:** doppio clic su `build.bat` oppure esegui `npm run build`
 - **Linux/Mac:** esegui `./build.sh` oppure `npm run build`
 
-Poi avvia il server di produzione con:
+Visualizza in anteprima la build di produzione localmente con:
 ```bash
-npm start
+npm run preview
 ```
 
-Il server è in esecuzione su `http://localhost:3000` (oppure `http://<tuo-ip-locale>:3000` sulla tua rete locale). Tutto lo stato e i dati persistono nella directory `data/`.
+Distribuisci la cartella `dist/` risultante su qualsiasi host statico. Per default l'app compilata cerca il proprio backend sullo stesso hostname di questa pagina sulla porta `3000` (corrisponde al comune deployment "tutto sulla CM5"); imposta `VITE_API_BASE_URL` in fase di build (vedi `.env.example`) per puntarla a un'istanza di HYDRA-UMC SERVER ospitata altrove. Tutto lo stato e i dati reali persistono nella propria directory `data/` di quel backend, non in questo repository.
 
 ### Versionamento
 
@@ -239,7 +237,8 @@ Questo progetto fa parte di un ecosistema robotico più ampio dello stesso autor
 
 **Piattaforma HYDRA-UMC** — la cella di micro-fabbrica multi-robot
 - **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** — la scheda madre stessa: host Raspberry Pi CM5 + coprocessore real-time STM32H745 dual-core, che orchestra fino a 8 bracci robotici distribuiti su CAN-OTA/SPI-OTA. Hardware + firmware propri, GPL-3.0/CERN-OHL-S v2/CC BY-SA 4.0.
-- **HYDRA-UMC STUDIO** *(questo repository)* — dashboard di controllo web per HYDRA-UMC: visualizzazione 3D multi-robot, cinematica/registrazione traiettorie, flashing e testing CAN-OTA per l'intera piattaforma. React + Vite + Three.js.
+- **HYDRA-UMC STUDIO** *(questo repository)* — dashboard di controllo web per HYDRA-UMC: visualizzazione 3D multi-robot, cinematica/registrazione traiettorie, flashing e testing CAN-OTA per l'intera piattaforma. Client puro Vite/React - React + Vite + Three.js, nessun codice di backend proprio.
+- **[HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** — backend API Express/WebSocket headless per l'intera piattaforma: stato robot/controller, autenticazione, discovery mDNS, invii di modelli. Viene eseguito indipendentemente da questa app - vedi il proprio README di quel progetto per il motivo per cui è un processo separato.
 - **[HYDRA-UMC-ANDROID-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-ANDROID-CONTROL)** — app di controllo Android per HYDRA-UMC via Wi-Fi/Bluetooth. App reale e funzionante - set completo di funzionalità di controllo remoto, autenticazione JWT, storage credenziali cifrato.
 - **[HYDRA-UMC-IOS-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-IOS-CONTROL)** — app di controllo iOS/iPadOS per HYDRA-UMC via Wi-Fi, costruita in Flutter (cross-platform, verificabile su Windows senza un Mac; il packaging finale del `.ipa` richiede comunque Xcode). App reale e funzionante - stesso set di funzionalità dell'app Android.
 - **[HYDRA-UMC-SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE)** — centro di comando swarm desktop (Python/PySide6): discovery di rete multi-controller, sincronizzazione bidirezionale live, viewport 3D robot reale, workspace agganciabile in stile Photoshop. Reale e funzionante, non un placeholder.

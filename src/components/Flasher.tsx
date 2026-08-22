@@ -23,6 +23,7 @@ import { Cpu, Upload, Download, Zap, AlertTriangle, CheckCircle2, XCircle, Refre
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useHydraStore } from '../store';
+import { ConfirmDialog } from './ConfirmDialog';
 import {
   chipNameFor, crc32, downloadGithubFirmware, fetchGithubFirmwareReleases, GITHUB_FIRMWARE_REPO,
   hasAdvancedExpansion, hopDescription, mockFlash, mockQueryVersion, slotLabel,
@@ -64,6 +65,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   const [log, setLog] = useState<LogLine[]>([]);
   const [ghAssets, setGhAssets] = useState<GithubFirmwareAsset[] | null>(null);
   const [ghLoading, setGhLoading] = useState(false);
+  const [showFlashConfirm, setShowFlashConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const robot = robots.find(r => r.id === robotId);
@@ -91,6 +93,8 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
     if (!robot || robotIndex0 < 0) return null;
     return { controllerName: activeController.name, robotId: robot.id, robotName: robot.name, robotIndex0, tier };
   }, [robot, robotIndex0, tier, activeController]);
+
+  const targetLabel = t(`flasher.target_${tier === 'kinematicBrain' ? 'kinematic_brain' : tier === 'controllerBoard' ? 'controller_board' : tier === 'urtcHead' ? 'urtc_head' : 'urtc_expansion'}`);
 
   const boardState = tier === 'kinematicBrain' ? activeController?.kinematicBrain
     : tier === 'controllerBoard' ? robot?.controllerBoard
@@ -167,10 +171,13 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
     applyBoardPatch(patch);
   }
 
-  async function handleFlash() {
+  function handleFlash() {
     if (!target || !file) return;
-    const targetLabel = t(`flasher.target_${tier === 'kinematicBrain' ? 'kinematic_brain' : tier === 'controllerBoard' ? 'controller_board' : tier === 'urtcHead' ? 'urtc_head' : 'urtc_expansion'}`);
-    if (!window.confirm(t('flasher.confirm_flash', { target: targetLabel, robot: robot?.name || activeController?.name }))) return;
+    setShowFlashConfirm(true);
+  }
+
+  async function doFlash() {
+    if (!target || !file) return;
     setFlashing(true);
     let lastPhase: FlashPhase | null = null;
     pushLog(t('flasher.log.flash_start', { name: file.name, hop: hopDescription(target) }));
@@ -336,6 +343,12 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
           </div>
         </div>
       </div>
+      <ConfirmDialog
+        open={showFlashConfirm}
+        message={t('flasher.confirm_flash', { target: targetLabel, robot: robot?.name || activeController?.name })}
+        onConfirm={() => { setShowFlashConfirm(false); doFlash(); }}
+        onCancel={() => setShowFlashConfirm(false)}
+      />
     </div>
   );
 }

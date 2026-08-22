@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { Users as UsersIcon, Trash2, KeyRound, UserPlus, ShieldCheck } from 'lucide-react';
 import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
+import { ConfirmDialog } from './ConfirmDialog';
 
 interface StoredUserSummary {
   username: string;
@@ -40,6 +41,8 @@ export function UsersPanel() {
   const [renameTarget, setRenameTarget] = useState('');
   const [renameNewName, setRenameNewName] = useState('');
   const [renamePassword, setRenamePassword] = useState('');
+
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const authHeaders = () => ({ 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) });
 
@@ -103,8 +106,7 @@ export function UsersPanel() {
     }
   };
 
-  const handleDelete = async (username: string) => {
-    if (!confirm(t('config.users_delete_confirm', { username }))) return;
+  const doDelete = async (username: string) => {
     setError(''); setNotice('');
     try {
       const res = await fetch(apiUrl(`/api/users/${encodeURIComponent(username)}`), { method: 'DELETE', headers: authHeaders() });
@@ -115,6 +117,8 @@ export function UsersPanel() {
       setError(t('config.users_delete_error'));
     }
   };
+
+  const handleDelete = (username: string) => setDeleteTarget(username);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -189,6 +193,12 @@ export function UsersPanel() {
           {t('config.users_create_button')}
         </button>
       </form>
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        message={deleteTarget ? t('config.users_delete_confirm', { username: deleteTarget }) : ''}
+        onConfirm={() => { if (deleteTarget) doDelete(deleteTarget); setDeleteTarget(null); }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

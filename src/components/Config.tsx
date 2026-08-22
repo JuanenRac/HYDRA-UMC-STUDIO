@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useHydraStore, createDefaultRobots, createDefaultCameras } from '../store';
 import { UsersPanel } from './UsersPanel';
+import { ConfirmDialog } from './ConfirmDialog';
 
 const GamepadConfig = React.lazy(() => import('./GamepadConfig').then(m => ({ default: m.GamepadConfig })));
 
@@ -38,6 +39,7 @@ export function Config({ onClose }: { onClose: () => void }) {
   const { t, i18n } = useTranslation();
   const { controllers, activeControllerId, activeController, updateController, robots, settings, updateSettings, updateRobot, addController, removeController, factoryReset, updateCamera } = useHydraStore();
   const [configTab, setConfigTab] = useState<ConfigTab>('identity');
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const tabs: { id: ConfigTab, label: string }[] = [
     { id: 'identity', label: t('config.identity') },
@@ -80,7 +82,7 @@ export function Config({ onClose }: { onClose: () => void }) {
               <button key={tab.id} onClick={() => setConfigTab(tab.id)} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === tab.id ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>{tab.label}</button>
             ))}
             <div className="mt-auto border-t border-slate-800 p-4">
-              <button onClick={() => { if (confirm(t('config.reset_confirm'))) factoryReset(); }} className="w-full px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"><RefreshCw size={14} /> {t('config.factory_reset_upper')}</button>
+              <button onClick={() => setShowResetConfirm(true)} className="w-full px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"><RefreshCw size={14} /> {t('config.factory_reset_upper')}</button>
             </div>
           </div>
 
@@ -365,6 +367,12 @@ export function Config({ onClose }: { onClose: () => void }) {
           <button onClick={onClose} className="px-12 py-3 text-sm bg-sky-500 text-slate-950 font-black rounded-xl shadow-[0_0_30px_rgba(0,229,255,0.4)] border border-sky-400 uppercase hover:bg-sky-400 transition-all tracking-[0.2em]">{t('config.commit_close')}</button>
         </div>
       </div>
+      <ConfirmDialog
+        open={showResetConfirm}
+        message={t('config.reset_confirm')}
+        onConfirm={() => { setShowResetConfirm(false); factoryReset(); }}
+        onCancel={() => setShowResetConfirm(false)}
+      />
     </div>
   );
 }
