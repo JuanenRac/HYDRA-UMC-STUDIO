@@ -333,16 +333,3 @@ HYDRA-UMC STUDIO 版权所有 (c) 2026 JuanenRac（Electro Hobby 3D）。分发�
 本仪表盘是 [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) 主板项目的网页控制面板——其自身的硬件（CERN-OHL-S v2）和固件（GPL-3.0）许可证参见该仓库，本仓库自身的许可证并不延伸至该仓库,反之亦然。它还针对 [URTC](https://github.com/JuanenRac/URTC) 协议实现了 CAN-OTA 工具——其自身独立的许可证参见该项目自身的仓库。
 
 如果你基于本项目进行开发，请留意这种许可证划分：代码更改应保持 GPL-3.0，文档衍生品应保持 CC BY-SA,任何对特定机器人网格资产的重新分发都应保持在该型号自身的原始许可证之下——每一项都需附带指向本项目及其作者的署名。
-
-## 关联项目
-
-> Canonical public ecosystem relationship map.
-
-**Direct integrations:**
-[HYDRA-UMC-OS](https://github.com/JuanenRac/HYDRA-UMC-OS) · [HYDRA-UMC-SDK](https://github.com/JuanenRac/HYDRA-UMC-SDK) · [HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER) · [URTC](https://github.com/JuanenRac/URTC) · [HYDRA-UMC-SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE) · [HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)
-
-**Platform and contracts:**
-[HYDRA-UMC-OS](https://github.com/JuanenRac/HYDRA-UMC-OS) · [HYDRA-UMC-SDK](https://github.com/JuanenRac/HYDRA-UMC-SDK)
-
-**Rest of the ecosystem:**
-All remaining public repositories are grouped by the seven ecosystem layers in the [JuanenRac ecosystem dashboard](https://juanenrac.github.io/JuanenRac/).

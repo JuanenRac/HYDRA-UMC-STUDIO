@@ -334,16 +334,3 @@ HYDRA-UMC STUDIO の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰�
 本ダッシュボードは [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) マザーボードプロジェクトの Web 制御パネルです——その自身のハードウェア（CERN-OHL-S v2）およびファームウェア（GPL-3.0）のライセンスは同リポジトリを参照してください。本リポジトリ自身のライセンスはそちらには及ばず、その逆も同様です。また、[URTC](https://github.com/JuanenRac/URTC) プロトコルに対する CAN-OTA ツールも実装しています——その自身の独立したライセンスは同プロジェクト自身のリポジトリを参照してください。
 
 本プロジェクトを基に開発を行う際は、このライセンス区分を念頭に置いてください：コードの変更は GPL-3.0 を維持し、ドキュメントの派生物は CC BY-SA を維持し、特定のロボットのメッシュアセットの再配布は、そのモデル自身の原本ライセンスを維持してください——いずれも本プロジェクトおよびその作者への帰属表示を伴う必要があります。
-
-## 関連プロジェクト
-
-> Canonical public ecosystem relationship map.
-
-**Direct integrations:**
-[HYDRA-UMC-OS](https://github.com/JuanenRac/HYDRA-UMC-OS) · [HYDRA-UMC-SDK](https://github.com/JuanenRac/HYDRA-UMC-SDK) · [HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER) · [URTC](https://github.com/JuanenRac/URTC) · [HYDRA-UMC-SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE) · [HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)
-
-**Platform and contracts:**
-[HYDRA-UMC-OS](https://github.com/JuanenRac/HYDRA-UMC-OS) · [HYDRA-UMC-SDK](https://github.com/JuanenRac/HYDRA-UMC-SDK)
-
-**Rest of the ecosystem:**
-All remaining public repositories are grouped by the seven ecosystem layers in the [JuanenRac ecosystem dashboard](https://juanenrac.github.io/JuanenRac/).

@@ -334,16 +334,3 @@ La referencia exacta al repositorio de origen, ruta, y texto de licencia de cada
 Este panel es el panel de control web para el proyecto de placa madre [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) - ver ese repositorio para el licenciamiento propio de su hardware (CERN-OHL-S v2) y firmware (GPL-3.0), al que la licencia propia de este repositorio no se extiende, y viceversa. También implementa herramientas CAN-OTA contra el protocolo [URTC](https://github.com/JuanenRac/URTC) - ver el propio repositorio de ese proyecto para su propia licencia separada.
 
 Si construyes sobre este proyecto, ten en cuenta la separación de licencias: los cambios de código deberían mantenerse GPL-3.0, los derivados de documentación deberían mantenerse CC BY-SA, y cualquier redistribución de los assets de malla de un robot específico debería mantenerse bajo la licencia original propia de ese modelo - cada uno con atribución de vuelta a este proyecto y su autor.
-
-## Proyectos relacionados
-
-> Canonical public ecosystem relationship map.
-
-**Direct integrations:**
-[HYDRA-UMC-OS](https://github.com/JuanenRac/HYDRA-UMC-OS) · [HYDRA-UMC-SDK](https://github.com/JuanenRac/HYDRA-UMC-SDK) · [HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER) · [URTC](https://github.com/JuanenRac/URTC) · [HYDRA-UMC-SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE) · [HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)
-
-**Platform and contracts:**
-[HYDRA-UMC-OS](https://github.com/JuanenRac/HYDRA-UMC-OS) · [HYDRA-UMC-SDK](https://github.com/JuanenRac/HYDRA-UMC-SDK)
-
-**Rest of the ecosystem:**
-All remaining public repositories are grouped by the seven ecosystem layers in the [JuanenRac ecosystem dashboard](https://juanenrac.github.io/JuanenRac/).
