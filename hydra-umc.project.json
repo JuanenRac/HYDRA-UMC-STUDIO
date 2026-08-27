@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "ecosystem": "HYDRA-UMC",
+  "name": "HYDRA-UMC-STUDIO",
+  "version": "0.1.9",
+  "role": "ui",
+  "stack": "node",
+  "technologies": [
+    "React 19",
+    "Vite",
+    "Three.js",
+    "Tailwind CSS"
+  ],
+  "deployment_target": "cm5",
+  "maturity": "established",
+  "family": "Core Backend & Clients",
+  "parent": "HYDRA-UMC-SERVER",
+  "build": "npm install && npm run build.",
+  "notes": "Web control dashboard with 3D multi-robot visualization, talking to HYDRA-UMC-SERVER's own API.",
+  "native_version": {
+    "file": "package.json",
+    "pattern": "\"version\":\\s*\"(\\d+)\\.(\\d+)\\.(\\d+)\""
+  }
+}
