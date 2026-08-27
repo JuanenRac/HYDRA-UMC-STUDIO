@@ -4,8 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 // Lives as its own module, separate from Dashboard.tsx, so it can evolve on
-// its own without risking the rest of the shell - see
-// SONNET/HYDRA-UMC-STUDIO/chat.TXT. configTab lives here since nothing
+// its own without risking the rest of the shell. configTab lives here since nothing
 // outside this modal ever reads it.
 
 import React, { useState } from 'react';

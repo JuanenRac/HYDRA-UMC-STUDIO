@@ -4,8 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 // Lives as its own module, separate from Dashboard.tsx, so it can evolve on
-// its own without risking the rest of the shell - see
-// SONNET/HYDRA-UMC-STUDIO/chat.TXT.
+// its own without risking the rest of the shell.
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';

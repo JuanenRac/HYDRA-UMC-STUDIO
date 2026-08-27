@@ -48,8 +48,7 @@
 // this rig correctly and realistically; a RECORDED/PLAYED trajectory
 // (computed by that shared formula) will not drive this specific arm
 // along the Cartesian path it was actually computed for. Fixing that
-// requires parameterizing the shared formula per robot - out of scope
-// here, tracked in SONNET/HYDRA-UMC-STUDIO/mejoras_futuras.txt.
+// requires parameterizing the shared formula per robot and is currently out of scope.
 // =============================================================================
 
 import React, { useMemo } from 'react';

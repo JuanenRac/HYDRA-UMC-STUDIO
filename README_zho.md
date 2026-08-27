@@ -333,3 +333,14 @@ HYDRA-UMC STUDIO 版权所有 (c) 2026 JuanenRac（Electro Hobby 3D）。分发�
 本仪表盘是 [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) 主板项目的网页控制面板——其自身的硬件（CERN-OHL-S v2）和固件（GPL-3.0）许可证参见该仓库，本仓库自身的许可证并不延伸至该仓库,反之亦然。它还针对 [URTC](https://github.com/JuanenRac/URTC) 协议实现了 CAN-OTA 工具——其自身独立的许可证参见该项目自身的仓库。
 
 如果你基于本项目进行开发，请留意这种许可证划分：代码更改应保持 GPL-3.0，文档衍生品应保持 CC BY-SA,任何对特定机器人网格资产的重新分发都应保持在该型号自身的原始许可证之下——每一项都需附带指向本项目及其作者的署名。
+
+## 🛠️ BUILD & RUN
+
+请在发布构建前使用不改动版本的构建检查：
+
+| 操作 | Windows | Linux / macOS |
+|---|---|---|
+| 构建检查（不修改版本或 CHANGELOG） | `build-test.bat` | `./build-test.sh` |
+| 运行 / 开发（如提供） | `run*.bat` 或 `dev*.bat` | `./run*.sh` 或 `./dev*.sh` |
+
+`build-test.bat` 和 `build-test.sh` 会编译或验证项目技术栈，但不会递增 `hydra-umc.project.json`，也不会修改 `CHANGELOG.md`。它们仅可能生成正常的编译器输出。现有的 `build*.bat`、`build*.sh`、`run*` 和 `dev*` 脚本保留各自的版本化或运行时行为；需要该行为时请使用它们。

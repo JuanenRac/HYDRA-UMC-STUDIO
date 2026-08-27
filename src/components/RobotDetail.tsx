@@ -387,8 +387,7 @@ const JOG_STEP_OPTIONS = [0.1, 1, 5, 10, 22.5, 25, 45, 50, 90, 100];
  * viewport (see the classic Joint Controls panel further down this file).
  * The XYZ jog Joystick3D and (when present) the XY table controls live in
  * their OWN separate floating windows (JoystickOverlay/XYTableOverlay,
- * right below) rather than in here - see
- * SONNET/HYDRA-UMC-STUDIO/chat.TXT for the full spec. `isFloatingLayout`
+ * right below) rather than in here. `isFloatingLayout`
  * (this file's own flag, currently `robot.id === 1`) gates all three
  * overlays together - not baked into the shared classic layout for every
  * robot, so extending this to A2-A8 is a one-line change to that flag,
@@ -1124,8 +1123,7 @@ console.log("Loading example:", id);
   const [controlMode, setControlMode] = useState<'translate' | 'rotate' | 'scale' | 'none'>('none');
   const toggleControl = (mode: 'translate' | 'rotate' | 'scale') => setControlMode(prev => prev === mode ? 'none' : mode);
 
-  // Was scoped to robot A1 only as a proof of concept (see
-  // SONNET/HYDRA-UMC-STUDIO/chat.TXT) - now applies to every robot.
+  // Was scoped to robot A1 only as a proof of concept; it now applies to every robot.
   // Speed/Acceleration/Step/J1-J6 live in JointControlsOverlay, XYZ jog in
   // JoystickOverlay, and (when hasXYTable) the XY table controls in
   // XYTableOverlay - all three float ON the 3D viewport instead of the
@@ -2089,8 +2087,7 @@ console.log("Loading example:", id);
                               // must not be able to grow this array unbounded: without this
                               // guard a robot's combinedWith can silently balloon to dozens of
                               // duplicate entries (the same handful of ids repeated over and
-                              // over) - see SONNET/HYDRA-UMC-STUDIO/auditoria_historial.txt for
-                              // a documented case (144 entries, 3 ids repeated 48x).
+                              // over); a prior case had 144 entries and 3 ids repeated 48x.
                               const current = robot.combinedWith || [];
                               const next = e.target.checked
                                 ? (current.includes(r.id) ? current : [...current, r.id])

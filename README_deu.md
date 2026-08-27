@@ -333,3 +333,14 @@ Die exakte Referenz auf das Quell-Repository, den Pfad, und den Lizenztext jedes
 Dieses Dashboard ist das Web-Steuerungspanel für das Hauptplatinen-Projekt [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) - siehe dieses Repository für die eigene Lizenzierung seiner Hardware (CERN-OHL-S v2) und Firmware (GPL-3.0), auf die sich die eigene Lizenz dieses Repositorys nicht erstreckt, und umgekehrt. Es implementiert außerdem CAN-OTA-Tools gegen das [URTC](https://github.com/JuanenRac/URTC)-Protokoll - siehe das eigene Repository dieses Projekts für dessen eigene separate Lizenz.
 
 Wenn Sie auf diesem Projekt aufbauen, behalten Sie die Lizenztrennung im Hinterkopf: Codeänderungen sollten GPL-3.0 bleiben, Dokumentationsableitungen sollten CC BY-SA bleiben, und jede Weiterverbreitung der Mesh-Assets eines bestimmten Roboters sollte unter der eigenen ursprünglichen Lizenz dieses Modells bleiben - jeweils mit Namensnennung zurück zu diesem Projekt und seinem Autor.
+
+## 🛠️ BUILD & RUN
+
+Verwenden Sie den Build-Check ohne Versionierung vor einem Release-Build:
+
+| Aktion | Windows | Linux / macOS |
+|---|---|---|
+| Build-Check (ohne Änderung von Version oder CHANGELOG) | `build-test.bat` | `./build-test.sh` |
+| Ausführung / Entwicklung (falls vorhanden) | `run*.bat` oder `dev*.bat` | `./run*.sh` oder `./dev*.sh` |
+
+`build-test.bat` und `build-test.sh` kompilieren oder validieren den Projekt-Stack, ohne `hydra-umc.project.json` zu erhöhen oder `CHANGELOG.md` zu verändern. Sie dürfen nur normale Compiler-Ausgaben erzeugen. Die vorhandenen Skripte `build*.bat`, `build*.sh`, `run*` und `dev*` behalten ihr projektbezogenes Versions- oder Laufzeitverhalten bei; verwenden Sie sie, wenn dieses Verhalten benötigt wird.

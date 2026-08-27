@@ -4,8 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 // A jog-pendant-style directional pad for X/Y/Z, used by the
-// Robot module's floating 3D overlay (robot A1 proof of concept - see
-// SONNET/HYDRA-UMC-STUDIO/chat.TXT). Deliberately a D-pad, not an analog
+// Robot module's floating 3D overlay (robot A1 proof of concept). Deliberately a D-pad, not an analog
 // stick: real CNC/robot jog pendants (the UI this is modeled after) almost
 // always use discrete directional buttons at a chosen step size, not a
 // continuous analog joystick - matches how jogStep already works elsewhere
