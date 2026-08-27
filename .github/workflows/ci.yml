@@ -47,7 +47,8 @@ jobs:
         if: ${{ hashFiles('package.json') != '' }}
         uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          # camera-controls 3.x declares Node.js 22 or newer.
+          node-version: "22"
           cache: npm
       - name: Validate Node.js or TypeScript project
         if: ${{ hashFiles('package.json') != '' }}
