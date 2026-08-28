@@ -1543,8 +1543,8 @@ console.log("Loading example:", id);
                 sendRobotCommand(
                   robot.id,
                   'pause',
-                  undefined,
-                  (r) => ({ playbackState: { ...(r.playbackState || {}), isPaused: !isPaused, paused: !isPaused } }),
+                  { paused: !isPaused },
+                  (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: true, playing: true, isPaused: !isPaused, paused: !isPaused, requestPause: !isPaused, requestStop: false, isFinished: false, finished: false } }),
                   isStartAll ? [robot.id, ...(robot.combinedWith || [])] : [robot.id]
                 );
               }}
