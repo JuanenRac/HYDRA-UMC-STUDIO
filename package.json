@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/bump-version.mjs && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "oxlint"
   },
