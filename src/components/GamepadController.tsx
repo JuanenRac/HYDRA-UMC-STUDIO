@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useHydraStore } from '../store';
 
 /**
@@ -126,12 +126,10 @@ export function GamepadController() {
               activeControllerRef.current.robots.forEach(r => updateRobotRef.current(r.id, { online: false, playbackState: { ...(r.playbackState || {}), isPlaying: false, activeStep: -1, speed: r.playbackState?.speed || 100 } }));
             } else if (action === 'START') {
                if (currentRobot) {
-                 const pb = currentRobot.playbackState || { speed: 100 };
                  const freshRobot = activeControllerRef.current.robots.find(r => r.id === currentRobot.id); const freshPb = freshRobot?.playbackState || { speed: 100 }; updateRobotRef.current(currentRobot.id, { playbackState: { ...freshPb, isPlaying: true, activeStep: 0, speed: freshPb.speed || 100 } });
                }
             } else if (action === 'START ALL') {
                activeControllerRef.current.robots.forEach(r => {
-                 const pb = r.playbackState || { speed: 100 };
                  const freshR = activeControllerRef.current.robots.find(rob => rob.id === r.id); const freshPb = freshR?.playbackState || { speed: 100 }; updateRobotRef.current(r.id, { playbackState: { ...freshPb, isPlaying: true, activeStep: 0, speed: freshPb.speed || 100 } });
                });
             } else if (action === 'STOP') {

@@ -4,13 +4,11 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import React, { useRef, useMemo, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, TransformControls, Box, Cylinder, Sphere, RoundedBox, Line, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, Box, Cylinder, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { useHydraStore, type RobotState } from '../store';
-import Toolhead from './3d/Toolhead';
 import RobotArm from './3d/RobotArm';
 import PathVisualizer from './3d/PathVisualizer';
 import SharedModule3DView from './3d/SharedModule3DView';

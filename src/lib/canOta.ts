@@ -53,8 +53,10 @@ export function slotBaseId(robotIndex0: number): number {
   return 0x600 + robotIndex0 * 0x20;
 }
 
-/** Robot Controller Board's own bootloader/telemetry block, +0x00 within its slot - architecture.md section 3. */
-export function tierBaseId(robotIndex0: number, tier: CanOtaTier): number {
+/** Robot Controller Board's own bootloader/telemetry block, +0x00 within its slot - architecture.md section 3.
+ *  `tier` is kept in the signature for consistency with the other tier-aware ID helpers even though this
+ *  particular tier's offset is always 0x00. */
+export function tierBaseId(robotIndex0: number, _tier: CanOtaTier): number {
   return slotBaseId(robotIndex0);
 }
 

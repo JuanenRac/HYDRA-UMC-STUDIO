@@ -5,7 +5,7 @@
 // =============================================================================
 
 import type { KinematicsExample } from '../utils';
-import { generateCircle, generateSpiral, generateWave, generateStar, generateRaster } from '../utils';
+import { generateWave } from '../utils';
 
 /** Stores the Example configuration or state data. */
 const example: KinematicsExample = {

@@ -9,15 +9,15 @@ import { RotaryKnob } from "./RotaryKnob";
 import { FuturisticSlider } from "./FuturisticSlider";
 import { motion, useDragControls } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { type RobotState, useHydraStore, type RobotRole, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, unthrottledDelay, globalPlaybacks } from '../store';
+import { type RobotState, useHydraStore, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, unthrottledDelay, globalPlaybacks } from '../store';
 import { apiUrl } from '../lib/apiBase';
-import { RotateCcw, Home, Video, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, ShieldAlert, Save, Plus, Play, Square, Pause, Crosshair, RefreshCw, Upload, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat, Download } from 'lucide-react';
+import { RotateCcw, Home, Video, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, Save, Play, Square, Pause, Crosshair, RefreshCw, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat, Download } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { VirtualKinematics } from './VirtualKinematics';
 import { Joystick3D } from './Joystick3D';
 import { examples } from '../examples/kinematics';
-import { parol6CartesianToJoints, parol6JointsToCartesian, PAROL6_JOINT_LIMITS_DEG, PAROL6_HOME_POSE } from '../examples/parol6Kinematics';
+import { parol6CartesianToJoints, PAROL6_JOINT_LIMITS_DEG, PAROL6_HOME_POSE } from '../examples/parol6Kinematics';
 import { faze4CartesianToJoints, FAZE4_HOME_POSE } from '../examples/faze4Kinematics';
 import { ar3CartesianToJoints, AR3_HOME_POSE } from '../examples/ar3Kinematics';
 import { ar4CartesianToJoints, AR4_HOME_POSE, AR4_JOINT_LIMITS_DEG } from '../examples/ar4Kinematics';
@@ -208,7 +208,7 @@ const URTC_TOOLS: ToolType[] = [
  * Renders the  camera p i p component.
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
-const CameraPIP = ({ bot, initialX, initialY, label, t }: { bot: RobotState, initialX: number, initialY: number, label: string, t: any }) => {
+const CameraPIP = ({ bot, initialX, initialY, label, t: _t }: { bot: RobotState, initialX: number, initialY: number, label: string, t: any }) => {
   const { settings, updateSettings } = useHydraStore();
   const controls = useDragControls();
   const pipConfig = settings.uiLayout?.cameraPips?.[bot.id] || { w: 192, h: 144, x: initialX, y: initialY, isOpen: true };
@@ -584,7 +584,7 @@ function XYTableOverlay({
  */
 export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: { robot: RobotState, viewportOnly?: boolean, onNavigateToRobot?: (robotId: number) => void }) {
   const { t } = useTranslation();
-  const { updateRobot, sendRobotCommand, saveKinematics, loadKinematics, settings, robots, updateSettings, authToken } = useHydraStore();
+  const { updateRobot, sendRobotCommand, loadKinematics, settings, robots, updateSettings, authToken } = useHydraStore();
   const robotsRef = useRef(robots);
   useEffect(() => { robotsRef.current = robots; }, [robots]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -618,7 +618,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
       } else {
         setWorkFiles([]);
       }
-    } catch (e) {
+    } catch {
       if (fetchId === worksFetchIdRef.current) setWorkFiles([]);
     }
   };
@@ -1134,10 +1134,8 @@ console.log("Loading example:", id);
   const isFloatingLayout = true;
 
   const hasXYTable = robot.hasXYTable;
-  const xyTable = robot.xyTable;
 
   const combinedBotsInfo = (robot.combinedWith || []).map(id => robots.find(r => r.id === id)).filter(Boolean) as RobotState[];
-  const hasAnyPoints = robot.recordedPoints.length > 0 || combinedBotsInfo.some(b => b.recordedPoints.length > 0);
   const isStartAll = combinedBotsInfo.length > 0;
 
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(robot.playbackState?.speed || 100);

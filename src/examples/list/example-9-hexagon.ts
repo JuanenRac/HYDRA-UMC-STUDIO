@@ -5,7 +5,7 @@
 // =============================================================================
 
 import type { KinematicsExample } from '../utils';
-import { generateCircle, generateSpiral, generateWave, generateStar, generateRaster } from '../utils';
+import { generateCircle } from '../utils';
 
 // generateCircle(radius, points, z) places `points` vertices at
 // i*360/points degrees for i = 0..points-1 - it never repeats the first

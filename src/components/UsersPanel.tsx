@@ -57,7 +57,7 @@ export function UsersPanel() {
       const data = await res.json();
       setUsers(data.users || []);
       setError('');
-    } catch (e) {
+    } catch {
       setError(t('config.users_load_error'));
     }
   };

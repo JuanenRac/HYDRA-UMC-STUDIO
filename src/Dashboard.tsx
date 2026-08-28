@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { useHydraStore, ROBOT_MANUFACTURERS } from './store';
@@ -12,9 +12,9 @@ import { apiUrl } from './lib/apiBase';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import type { CanOtaTier } from './lib/canOta';
 import {
-  Activity, Crosshair, AlertOctagon, Layers,
-  Video, Focus, Settings, Menu, Search, Power
-, Cpu, PenTool, Zap, Wind, Thermometer, RefreshCw, Server, Info, HelpCircle, ChevronDown, ChevronRight, Camera, X, ArrowLeft, Wifi, Bluetooth, Cable, type LucideIcon } from 'lucide-react';
+  Activity, Layers,
+  Video, Settings, Menu, Power
+, Cpu, Zap, Thermometer, RefreshCw, Server, Info, HelpCircle, ChevronRight, ArrowLeft, Wifi, Bluetooth, Cable, type LucideIcon } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -45,7 +45,6 @@ function PanelLoadingFallback() {
 import { HelpModal } from './components/HelpModal';
 import { About } from './components/About';
 import { Config } from './components/Config';
-import { slotLabel } from './lib/canOta';
 
 // Lazy-loaded Panels
 const RobotDetail = React.lazy(() => import('./components/RobotDetail').then(m => ({ default: m.RobotDetail })));
@@ -82,7 +81,6 @@ const VacuumTableConfig = React.lazy(() => import('./components/VacuumTableConfi
 const HeatedBedConfig = React.lazy(() => import('./components/HeatedBedConfig').then(m => ({ default: m.HeatedBedConfig })));
 const ATCToolsConfig = React.lazy(() => import('./components/ATCToolsConfig').then(m => ({ default: m.ATCToolsConfig })));
 const RackConfigView = React.lazy(() => import('./components/RackConfigView').then(m => ({ default: m.RackConfigView })));
-const GamepadConfig = React.lazy(() => import('./components/GamepadConfig').then(m => ({ default: m.GamepadConfig })));
 const Flasher = React.lazy(() => import('./components/Flasher').then(m => ({ default: m.Flasher })));
 const Tester = React.lazy(() => import('./components/Tester').then(m => ({ default: m.Tester })));
 const KinematicBrainStage = React.lazy(() => import('./components/KinematicBrainStage').then(m => ({ default: m.KinematicBrainStage })));
@@ -336,7 +334,7 @@ function OverviewPanel() {
 
       <div className="flex-1 overflow-y-auto custom-scrollbar pr-4 pb-20 px-4 scroll-smooth">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 pt-10">
-          {robots.map((r, i) => {
+          {robots.map((r) => {
             // assignedRobotId, NOT c.id === r.id - Config.tsx lets the owner
             // reassign which robot a camera actually serves, and matching by
             // the camera's own id only worked by coincidence for whichever
@@ -533,10 +531,3 @@ function SystemMetricsBar() {
   );
 }
 
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg className={cn("w-4 h-4 transition-transform", open ? "rotate-180" : "")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-    </svg>
-  );
-}

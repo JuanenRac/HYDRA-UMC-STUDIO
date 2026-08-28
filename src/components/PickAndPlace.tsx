@@ -9,7 +9,7 @@ import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw, Cpu, Maximize2, Plus } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid, Box } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 import SharedModule3DView from './3d/SharedModule3DView';
 

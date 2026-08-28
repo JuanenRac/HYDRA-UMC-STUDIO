@@ -4,19 +4,18 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
 import { Gamepad2 } from 'lucide-react';
 
 /**
- * Executes the  gamepad config logic. 
+ * Executes the  gamepad config logic.
  * This function handles the necessary computations and state updates.
  */
 export function GamepadConfig() {
   const { t } = useTranslation();
   const { settings, updateSettings } = useHydraStore();
-  const [activeButton, setActiveButton] = useState<string | null>(null);
 
   const gamepadEnabled = settings.gamepadEnabled || false;
   const mapping = settings.gamepadMapping || {};

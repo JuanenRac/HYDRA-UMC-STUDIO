@@ -36,7 +36,7 @@ type ConfigTab = 'identity' | 'controllers' | 'ui' | 'robots' | 'cameras' | 'mod
 
 export function Config({ onClose }: { onClose: () => void }) {
   const { t, i18n } = useTranslation();
-  const { controllers, activeControllerId, activeController, updateController, robots, settings, updateSettings, updateRobot, addController, removeController, factoryReset, updateCamera } = useHydraStore();
+  const { controllers, activeController, updateController, settings, updateSettings, updateRobot, addController, removeController, factoryReset, updateCamera } = useHydraStore();
   const [configTab, setConfigTab] = useState<ConfigTab>('identity');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 

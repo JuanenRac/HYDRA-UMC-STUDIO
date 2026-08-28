@@ -7,7 +7,7 @@
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useHydraStore, type RackConfig } from '../store';
-import { RotateCcw, Layers, MapPin, CheckSquare, Square, Settings2 } from 'lucide-react';
+import { RotateCcw, Layers, MapPin, CheckSquare, Square } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
