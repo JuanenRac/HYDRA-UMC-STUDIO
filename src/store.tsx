@@ -924,10 +924,26 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // like before.
         const socket = new WebSocket(wsUrl(`/ws?token=${encodeURIComponent(authToken)}&remoteApiVersion=2`));
         ws = socket;
+        // Real diagnostic for a live-reported bug still under investigation:
+        // Android's embedded 3D viewport (ThreeDScreen.kt's WebView, this
+        // exact page loaded via ?hideUI=true&robotId=...&token=...) was
+        // reported as not reflecting play/pause/stop triggered from a
+        // separate STUDIO browser tab, and vice versa - console.* here
+        // reaches that WebView's own logcat (ThreeDScreenConsole, see
+        // ThreeDScreen.kt), so the next real repro attempt can confirm
+        // directly whether this embedded session's own WS connection is
+        // even opening/staying open and receiving deltas at all, rather
+        // than guessing blind. Left in permanently, not stripped after -
+        // low-noise (one line per connect + one per delta) and equally
+        // useful for a real desktop STUDIO tab's own devtools console.
+        socket.onopen = () => {
+          console.log(`[WS] connected (robotId param: ${new URLSearchParams(window.location.search).get('robotId') ?? 'none'})`);
+        };
         socket.onmessage = (ev) => {
           try {
             const msg = JSON.parse(ev.data);
             if (msg?.type === 'delta' && msg.schema === 2 && msg.robotId !== undefined) {
+              console.log(`[WS] delta robotId=${msg.robotId} keys=${Object.keys(msg.patch || {}).join(',')}`);
               applyRobotDelta(msg);
             } else if (msg && (msg.type === 'settings' || msg.type === 'delta') && msg.payload) {
               // "delta" without schema 2 (server hasn't heard us declare
@@ -943,7 +959,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             // ignore malformed frames rather than tear down the connection
           }
         };
-        socket.onclose = () => {
+        socket.onclose = (ev) => {
+          console.log(`[WS] closed code=${ev.code} reason=${ev.reason || '(none)'}`);
           if (ws === socket) ws = null;
           if (cancelled) return;
           reconnectTimer = setTimeout(openWs, WS_RECONNECT_MS);

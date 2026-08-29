@@ -24,6 +24,39 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.2.2] - Camera PIP fix, condensed Android action buttons, WS diagnostics
+
+- **Fixes a robot's Camera PIP showing in the 3D viewport with every
+  camera actually disconnected**, reported live. `visionEnabled` (a
+  robot-level flag meant to mirror its assigned camera's real `connected`
+  state) has its own `true` seed default independent of any camera ever
+  connecting, and can drift from the real camera state on reassignment.
+  The Camera PIP gate (and its "reopen" button) now also checks the
+  camera's own `connected` state, looked up the same `assignedRobotId`
+  way `Dashboard.tsx`'s own overview tiles already do - requiring both can
+  only ever hide a PIP that was wrongly showing, never hide one that's
+  genuinely supposed to be there.
+- **Condensed the 3D-viewport action button row (E-STOP/START/PAUSE/HOME/
+  HOME XY/RESET/RESET 3D/REPEAT/Add+Delete Point) to icon-only, on
+  HYDRA-UMC-ANDROID-CONTROL's embedded WebView specifically** - detected
+  via the distinctive token that WebView already appends to its own
+  User-Agent (`ThreeDScreen.kt`), not a URL flag any other embedder would
+  also trip. STUDIO's own desktop/tablet browser UI is completely
+  unaffected - same text+icon buttons as always. Also fixes HOME and HOME
+  XY sharing the exact same icon (HOME XY now uses a distinct grid icon)
+  and RESET 3D's icon (was a camera/record glyph unrelated to what the
+  button does - now a reset/reload icon) - both fixed for every client,
+  not just Android, since neither icon choice was ever correct.
+- Added real, permanent WebSocket connect/close/delta diagnostics
+  (`console.log`, reaches Android's own logcat via `ThreeDScreenConsole`)
+  while investigating a live-reported "Android's 3D view and STUDIO's own
+  browser tab don't sync with each other" bug - not yet root-caused (the
+  architecture read correctly on inspection; next real repro attempt can
+  confirm directly whether the embedded WebView's own WS connection is
+  opening/receiving deltas at all instead of guessing blind).
+- Verified with a real `npm run build` (clean) and `npm run lint`
+  (introduced zero new warnings).
+
 ## [0.2.1] - Skip the 10s branding splash when embedded (?hideUI=true)
 
 - **Fixes ~10 extra seconds added to opening HYDRA-UMC-ANDROID-CONTROL's

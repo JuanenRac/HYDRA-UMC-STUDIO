@@ -11,7 +11,7 @@ import { motion, useDragControls } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { type RobotState, useHydraStore, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, globalPlaybacks } from '../store';
 import { apiUrl } from '../lib/apiBase';
-import { RotateCcw, Home, Video, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, Save, Play, Square, Pause, Crosshair, RefreshCw, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat, Download } from 'lucide-react';
+import { RotateCcw, Home, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, Save, Play, Square, Pause, Crosshair, RefreshCw, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat, Download, Grid3x3, Plus } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { VirtualKinematics } from './VirtualKinematics';
@@ -601,7 +601,34 @@ function XYTableOverlay({
  */
 export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: { robot: RobotState, viewportOnly?: boolean, onNavigateToRobot?: (robotId: number) => void }) {
   const { t } = useTranslation();
-  const { updateRobot, sendRobotCommand, loadKinematics, settings, robots, updateSettings, authToken } = useHydraStore();
+  const { updateRobot, sendRobotCommand, loadKinematics, settings, robots, updateSettings, authToken, cameras } = useHydraStore();
+  // Real bug this fixes, reported live: a robot's Camera PIP still showed
+  // in the 3D viewport with every camera actually disconnected. `visionEnabled`
+  // is a robot-level flag MEANT to mirror its assigned camera's own
+  // `connected` state (CamerasView.tsx's toggleConnection/retryConnection
+  // both write both together) - but it also has its own `true` seed default
+  // (store.tsx) independent of any camera ever really connecting, and can
+  // drift from the real camera state if a camera gets reassigned to a
+  // different robot (see CamerasView.tsx's own assignedRobotId comment) or
+  // toggled through a path that only touches one of the two fields.
+  // `cam?.connected` (looked up the same assignedRobotId way Dashboard.tsx's
+  // own OverviewPanel already does, not a positional id match) is the
+  // actually-authoritative signal - requiring BOTH true is the safe
+  // direction to fix this in: it can only ever hide a PIP that
+  // visionEnabled alone would have wrongly shown, never show one that's
+  // genuinely supposed to be hidden.
+  const isVisionActive = (bot: RobotState) => bot.visionEnabled && (cameras.find(c => c.assignedRobotId === bot.id)?.connected ?? false);
+  // Real request from live device testing: condense the viewportOnly action
+  // row (E-STOP/START/PAUSE/HOME/HOME XY/RESET/RESET 3D/REPEAT/Add-Delete
+  // Point) to icon-only buttons on Android specifically, to free up
+  // vertical space for the 3D view - explicitly NOT for STUDIO's own
+  // desktop/tablet browser UI, where the text labels stay exactly as they
+  // are. ThreeDScreen.kt's WebView appends a real, distinctive token to its
+  // own User-Agent string precisely so this page could tell the two apart
+  // without a URL flag that any other embedder (a future iOS WebView,
+  // say) would also trip - see that file's own comment on why it's
+  // appended rather than replacing the UA outright.
+  const isAndroidApp = typeof navigator !== 'undefined' && navigator.userAgent.includes('HYDRA-UMC-ANDROID-CONTROL');
   const robotsRef = useRef(robots);
   useEffect(() => { robotsRef.current = robots; }, [robots]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1322,7 +1349,7 @@ console.log("Loading example:", id);
                 do nothing, so don't offer a dead "Show Camera" button for
                 it. */}
             <div className="absolute bottom-4 right-4 z-50 flex gap-2 pointer-events-auto">
-              {[robot, ...combinedBotsInfo].filter(bot => bot.visionEnabled).map(bot => {
+              {[robot, ...combinedBotsInfo].filter(isVisionActive).map(bot => {
                 const pipConfig = settings.uiLayout?.cameraPips?.[bot.id];
                 if (pipConfig?.isOpen === false) {
                   return (
@@ -1356,7 +1383,7 @@ console.log("Loading example:", id);
                 (OverviewPanel/CamerasView's own vision toggle, which writes
                 this same field) doesn't get a PIP window anyway just for
                 being online. */}
-            {robot.online && robot.visionEnabled && (
+            {robot.online && isVisionActive(robot) && (
               <CameraPIP
                 bot={robot}
                 initialX={0}
@@ -1365,7 +1392,7 @@ console.log("Loading example:", id);
                 t={t}
               />
             )}
-            {combinedBotsInfo.map((bot, index) => (bot.online && bot.visionEnabled) ? (
+            {combinedBotsInfo.map((bot, index) => (bot.online && isVisionActive(bot)) ? (
               <CameraPIP
                 key={bot.id}
                 bot={bot}
@@ -1396,7 +1423,7 @@ console.log("Loading example:", id);
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-2 pointer-events-auto shrink-0">
             {/* E-STOP Button (First, Glowing, Blinking) */}
-            <button 
+            <button
               onClick={() => {
                 handleStop();
                 updateRobot(robot.id, { online: false });
@@ -1404,26 +1431,29 @@ console.log("Loading example:", id);
                   robot.combinedWith?.forEach(id => updateRobot(id, { online: false }));
                 }
               }}
-              className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-red-600 hover:bg-red-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_20px_rgba(220,38,38,0.8)] border border-red-500 animate-pulse"
+              className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-red-600 hover:bg-red-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_20px_rgba(220,38,38,0.8)] border border-red-500 animate-pulse", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
+              title={isStartAll ? t('robot_detail.estop_all', 'E-STOP ALL') : t('robot_detail.estop', 'E-STOP')}
             >
-              <AlertOctagon size={16} /> {isStartAll ? t('robot_detail.estop_all', 'E-STOP ALL') : t('robot_detail.estop', 'E-STOP')}
+              <AlertOctagon size={16} /> {!isAndroidApp && (isStartAll ? t('robot_detail.estop_all', 'E-STOP ALL') : t('robot_detail.estop', 'E-STOP'))}
             </button>
 
             {/* START/STOP Button */}
             {!robot.playbackState?.isPlaying ? (
-              <button 
+              <button
                 onClick={() => handlePlay(isStartAll)}
                 disabled={robot.recordedPoints.length === 0}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 min-h-[48px] bg-green-500 hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(34,197,94,0.6)] border border-green-400"
+                className={cn("flex-1 flex items-center justify-center gap-2 min-h-[48px] bg-green-500 hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(34,197,94,0.6)] border border-green-400", isAndroidApp ? "px-3 py-2 min-h-[40px] flex-initial" : "px-4 py-3")}
+                title={isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START')}
               >
-                <Play size={16} /> {isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START')}
+                <Play size={16} /> {!isAndroidApp && (isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START'))}
               </button>
             ) : (
-              <button 
+              <button
                 onClick={handleStop}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 min-h-[48px] bg-red-600 hover:bg-red-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(220,38,38,0.6)] border border-red-500"
+                className={cn("flex-1 flex items-center justify-center gap-2 min-h-[48px] bg-red-600 hover:bg-red-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(220,38,38,0.6)] border border-red-500", isAndroidApp ? "px-3 py-2 min-h-[40px] flex-initial" : "px-4 py-3")}
+                title={isStartAll ? t('robot_detail.stop_all', 'STOP ALL') : t('robot_detail.stop', 'STOP')}
               >
-                <Square size={16} /> {isStartAll ? t('robot_detail.stop_all', 'STOP ALL') : t('robot_detail.stop', 'STOP')}
+                <Square size={16} /> {!isAndroidApp && (isStartAll ? t('robot_detail.stop_all', 'STOP ALL') : t('robot_detail.stop', 'STOP'))}
               </button>
             )}
 
@@ -1448,38 +1478,49 @@ console.log("Loading example:", id);
                 );
               }}
               disabled={!robot.playbackState?.isPlaying}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 min-h-[48px] text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border disabled:opacity-50 disabled:cursor-not-allowed ${robot.playbackState?.isPaused ? 'bg-blue-500 hover:bg-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.6)] border-blue-400' : 'bg-amber-500 hover:bg-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.6)] border-amber-400'}`}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-2 min-h-[48px] text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border disabled:opacity-50 disabled:cursor-not-allowed",
+                isAndroidApp ? "px-3 py-2 min-h-[40px] flex-initial" : "px-4 py-3",
+                robot.playbackState?.isPaused ? 'bg-blue-500 hover:bg-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.6)] border-blue-400' : 'bg-amber-500 hover:bg-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.6)] border-amber-400'
+              )}
+              title={robot.playbackState?.isPaused ? t('robot_detail.continue', 'CONTINUE') : (isStartAll ? t('robot_detail.pause_all', 'PAUSE ALL') : t('robot_detail.pause', 'PAUSE'))}
             >
               {robot.playbackState?.isPaused ? (
-                <><Play size={16} /> {t('robot_detail.continue', 'CONTINUE')}</>
+                <><Play size={16} /> {!isAndroidApp && t('robot_detail.continue', 'CONTINUE')}</>
               ) : (
-                <><Pause size={16} /> {isStartAll ? t('robot_detail.pause_all', 'PAUSE ALL') : t('robot_detail.pause', 'PAUSE')}</>
+                <><Pause size={16} /> {!isAndroidApp && (isStartAll ? t('robot_detail.pause_all', 'PAUSE ALL') : t('robot_detail.pause', 'PAUSE'))}</>
               )}
             </button>
 
             {/* HOME Button */}
             <button
               onClick={() => updateRobot(robot.id, { pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }, joints: homePoseFor(robot.model) })}
-              className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]"
+              className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
+              title="HOME"
             >
-              <Home size={16} /> HOME
+              <Home size={16} /> {!isAndroidApp && "HOME"}
             </button>
 
-            {/* HOME XY Button */}
+            {/* HOME XY Button - a distinct Grid3x3 icon from plain HOME
+                (both used the same Home icon before - reported live as
+                confusing on Android's now icon-only layout, but the
+                mismatch existed for STUDIO's own text+icon buttons too;
+                fixed for both). */}
             {robot.hasXYTable && (
-              <button 
-                onClick={() => updateRobot(robot.id, { 
+              <button
+                onClick={() => updateRobot(robot.id, {
     pos: { ...robot.pos, tx: 0, ty: 0 },
     xyTable: robot.xyTable ? { ...robot.xyTable, pos: { x: 0, y: 0 } } : robot.xyTable
   })}
-                className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]"
+                className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
+                title="HOME XY"
               >
-                <Home size={16} /> HOME XY
+                <Grid3x3 size={16} /> {!isAndroidApp && "HOME XY"}
               </button>
             )}
 
             {/* RESET Button */}
-            <button 
+            <button
               onClick={() => {
                 handleStop();
                 updateRobot(robot.id, {
@@ -1487,17 +1528,21 @@ console.log("Loading example:", id);
                                       joints: homePoseFor(robot.model)
                 });
               }}
-              className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-amber-500 shadow-[0_0_15px_rgba(217,119,6,0.3)]"
+              className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-amber-500 shadow-[0_0_15px_rgba(217,119,6,0.3)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
+              title="RESET"
             >
-              <RefreshCw size={16} /> RESET
+              <RefreshCw size={16} /> {!isAndroidApp && "RESET"}
             </button>
 
-            {/* RESET 3D Button */}
-            <button 
+            {/* RESET 3D Button - RotateCcw instead of the old Video icon
+                (a camera/record glyph, which read as unrelated to what
+                this button actually does: remount the 3D viewport). */}
+            <button
               onClick={() => setReset3DKey(k => k + 1)}
-              className="flex items-center gap-2 px-4 py-3 min-h-[48px] bg-teal-600 hover:bg-teal-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-teal-500 shadow-[0_0_15px_rgba(13,148,136,0.3)]"
+              className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-teal-600 hover:bg-teal-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-teal-500 shadow-[0_0_15px_rgba(13,148,136,0.3)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
+              title="RESET 3D"
             >
-              <Video size={16} /> RESET 3D
+              <RotateCcw size={16} /> {!isAndroidApp && "RESET 3D"}
             </button>
 
             {/* LOAD Button only (EXPORT removed) */}
@@ -1508,16 +1553,18 @@ console.log("Loading example:", id);
               ref={fileInputRef} 
               onChange={(e) => loadKinematics(robot.id, e)}
             />
-            <button 
+            <button
               onClick={() => updateRobot(robot.id, { playbackState: { ...(robot.playbackState || { isPlaying: false, activeStep: 0, speed: 100 }), isLooping: !robot.playbackState?.isLooping } })}
               className={cn(
-                "flex items-center justify-center gap-2 px-4 py-3 min-h-[48px] text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border",
+                "flex items-center justify-center gap-2 min-h-[48px] text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border",
+                isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3",
                 robot.playbackState?.isLooping
                   ? "bg-fuchsia-700 border-fuchsia-400 shadow-[inset_0_4px_8px_rgba(0,0,0,0.8),0_0_10px_rgba(217,70,239,0.5)] translate-y-[2px]"
                   : "bg-fuchsia-500 hover:bg-fuchsia-400 border-fuchsia-400 shadow-[0_0_15px_rgba(217,70,239,0.5)] hover:-translate-y-[1px]"
               )}
+              title={t('robot_detail.repeat', 'Repeat')}
             >
-              <Repeat size={16} className={cn(robot.playbackState?.isLooping && "animate-spin-slow")} /> {t('robot_detail.repeat', 'Repeat')}
+              <Repeat size={16} className={cn(robot.playbackState?.isLooping && "animate-spin-slow")} /> {!isAndroidApp && t('robot_detail.repeat', 'Repeat')}
             </button>
 
             {/* Add/Delete Point mini-frame - floating layout only (see
@@ -1529,13 +1576,15 @@ console.log("Loading example:", id);
               <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 rounded-lg px-2 py-1">
                 <button
                   onClick={handleAddPoint}
-                  className="px-4 py-2 min-h-[44px] bg-sky-500/20 hover:bg-sky-500/30 text-sky-400 border border-sky-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors"
+                  className={cn("bg-sky-500/20 hover:bg-sky-500/30 text-sky-400 border border-sky-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors flex items-center justify-center", isAndroidApp ? "p-2 min-h-[40px] min-w-[40px]" : "px-4 py-2 min-h-[44px]")}
+                  title={t('robot_detail.add_point', '+ Add Point')}
                 >
-                  {t('robot_detail.add_point', '+ Add Point')}
+                  {isAndroidApp ? <Plus size={16} /> : t('robot_detail.add_point', '+ Add Point')}
                 </button>
                 <button
                   onClick={() => updateRobot(robot.id, { recordedPoints: [] })}
-                  className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors"
+                  className={cn("flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors", isAndroidApp ? "p-2 min-h-[40px] min-w-[40px]" : "p-2 min-h-[44px] min-w-[44px]")}
+                  title={t('robot_detail.delete_points', 'Delete points')}
                 >
                   <Trash2 size={16} />
                 </button>
