@@ -894,7 +894,7 @@ console.log("Loading example:", id);
     );
     // playRobotTrajectory (the ~215-line local interpolation loop that
     // used to live here, recorded-point by recorded-point with a real
-    // velocity/acceleration curve) is removed as of 2026-08-29:
+    // velocity/acceleration curve) is removed:
     // server.ts's own V0 playback engine (see its own header comment) is
     // now the SOLE driver of playback motion, for every client including
     // this one - it replays this robot's recordedPoints itself and
@@ -1008,7 +1008,7 @@ console.log("Loading example:", id);
   }, [robot.playbackState?.isPaused]);
 
 
-  // Removed (2026-08-29): this effect used to call handlePlay()/
+  // Removed: this effect used to call handlePlay()/
   // handleStop() locally whenever robot.playbackState.isPlaying toggled
   // from an external source (another client's own play/stop command),
   // so that THIS tab's own local playRobotTrajectory loop would start
