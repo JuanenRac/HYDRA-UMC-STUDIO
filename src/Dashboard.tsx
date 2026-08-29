@@ -151,7 +151,7 @@ export default function Dashboard() {
 
   return (
     <div className="w-full h-screen bg-slate-950 bg-electric-grid text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
-      
+
       {isAboutOpen && <About onClose={() => setIsAboutOpen(false)} />}
 
       {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} />}

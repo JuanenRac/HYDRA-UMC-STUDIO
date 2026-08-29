@@ -106,7 +106,28 @@ export function VirtualKinematics({ robot, controlMode, onSelectRobot }: { robot
 
 
   return (
-    <div className="w-full h-full bg-slate-950 relative rounded-xl overflow-hidden">
+    <div
+      className="w-full h-full min-h-0 min-w-0 bg-slate-950 relative rounded-xl overflow-hidden"
+      ref={(el) => {
+        // Real, permanent defensive check: this div's own size is entirely
+        // inherited from its ancestor chain's flex/h-full sizing (see
+        // RobotDetail.tsx's own viewportOnly layout) - a 0x0 result here
+        // means Canvas below has nothing to render into, which looks
+        // identical to a genuine WebGL failure from outside (both just
+        // render nothing) but is actually a layout/sizing bug, not a
+        // renderer one. Warns once per mount rather than failing silently
+        // the way this went unnoticed for a long time in
+        // HYDRA-UMC-ANDROID-CONTROL's own embedded WebView specifically -
+        // the actual cause there ended up being outside this whole CSS
+        // chain entirely (Compose never giving that WebView real
+        // LayoutParams, see ThreeDScreen.kt), which is exactly why this
+        // stays generic ("check what's hosting this component") instead
+        // of pointing at one specific suspect.
+        if (el && (el.clientWidth === 0 || el.clientHeight === 0)) {
+          console.warn(`[VirtualKinematics] 3D viewport container has zero size (${el.clientWidth}x${el.clientHeight}) - the WebGL canvas below has nothing to render into. Check whatever is hosting this component (ancestor flex/height chain, or an embedding WebView's own sizing).`);
+        }
+      }}
+    >
       <Canvas shadows className="w-full h-full outline-none touch-none">
         <PerspectiveCamera makeDefault fov={45} />
         <CameraAnimator 

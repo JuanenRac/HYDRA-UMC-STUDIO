@@ -24,6 +24,34 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.2.0] - Real per-model kinematics restored during server-driven playback
+
+- **Fixes incoherent/nonsensical arm movement while playing a loaded WORKS
+  file or stock example**, on any real-kinematics model (Parol6, Faze4,
+  AR3, AR4, every UR variant, xArm6, Lite6, e.DO, Gen3 Lite, M-710iC,
+  SO-ARM100, Gen2, PiPER, Z1, ViperX 300, WidowX 250, Koch). Root cause:
+  0.1.9's server-side playback engine (HYDRA-UMC-SERVER) broadcasts each
+  recorded point's stored `{j1..j6}` unmodified - correct only for the
+  generic model, since a stock example's `{j1..j6}` is always computed
+  against the shared generic 160mm/200mm formula (see `withCartesian`'s own
+  comment), not that robot's real joint angles. `RobotDetail.tsx` now
+  re-derives the correct joints itself, client-side, from the point's
+  Cartesian `x/y/z/a/b/c` (already a real, robot-agnostic workspace target)
+  via the exact same `resolveTargetJoints()` per-model dispatch jog already
+  used - a `useLayoutEffect` scoped to active playback only, so a direct
+  joint-slider edit is never fought with a stale re-derivation. Restores
+  the same correctness the removed client-side `playRobotTrajectory` loop
+  used to have, without needing HYDRA-UMC-SERVER itself to know anything
+  about per-model kinematics (that stays purely a STUDIO/Android-WebView
+  concern - the same fix applies to both, since Android's own 3D view
+  embeds this exact page).
+- A handful of defensive `min-h-0` additions on the viewportOnly 3D layout
+  chain, found while diagnosing (separately) a blank 3D viewport specific
+  to HYDRA-UMC-ANDROID-CONTROL's embedded WebView - not the actual cause
+  there (see that repo's own changelog), but the correct standard class for
+  a flex-1 child nested this deep regardless.
+- Verified with a real `npm run build` (clean, 0 errors).
+
 ## [0.1.9] - Chinese and Japanese added to the UI language switcher
 
 - New `src/locales/zh.json` (Simplified Chinese) and `src/locales/ja.json`

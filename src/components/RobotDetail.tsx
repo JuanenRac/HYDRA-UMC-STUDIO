@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { useRef, useState, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
 import { RotaryKnob } from "./RotaryKnob";
 import { FuturisticSlider } from "./FuturisticSlider";
 import { motion, useDragControls } from 'motion/react';
@@ -1032,6 +1032,54 @@ console.log("Loading example:", id);
     }
   }, [robot.playbackState?.activeStep, robot.playbackState?.isPlaying, robot.id]);
 
+  // Real regression fix, live-reproduced: server.ts's own V0 playback engine
+  // (startServerPlayback) broadcasts each recordedPoints[] entry's {j1..j6}
+  // AS-IS, unmodified - correct only for the truly generic model, where
+  // those numbers ARE the robot's real joints. For every model with its own
+  // real kinematics (Parol6/Faze4/AR3/AR4/UR*/xArm6/... - resolveTargetJoints's
+  // own long dispatch above), a loaded example's {j1..j6} was computed
+  // against the shared GENERIC 160mm/200mm formula instead (see withCartesian's
+  // own comment) - applying those numbers directly as this robot's real
+  // joints is what made played-back examples/WORKS files move the arm
+  // through incoherent, nonsensical poses instead of the intended path.
+  // STUDIO's OWN removed client-side playback loop used to re-solve this
+  // exact way (see resolveTargetJoints's header comment: "re-solve the
+  // resolved Cartesian target... against that robot's own real kinematics
+  // instead, so recorded/played trajectories move it sensibly") - moving
+  // playback server-side this session dropped that step, since server.ts
+  // has no access to any of these per-model IK solvers (they're pure
+  // three.js-dependent TS, not a quick port - see SONNET's own notes on
+  // this). Re-deriving it here, purely client-side, restores the exact same
+  // correctness for every connected client (STUDIO's browser tab AND
+  // Android's WebView-embedded copy of this same page) without needing
+  // server.ts to know anything about per-model kinematics at all -
+  // `robot.pos`'s x/y/z/a/b/c is already the real, robot-agnostic Cartesian
+  // target this point means to reach, exactly like a live jog. Scoped to
+  // ONLY fire during active playback (not every robot.pos change) so a
+  // direct joint-slider edit (onJointChange, which never touches
+  // robot.pos) is never fought with a stale re-derivation.
+  // useLayoutEffect, not useEffect: fires before the browser paints the
+  // just-arrived (wrong) broadcast joints, so the correction lands in the
+  // very next commit instead of one extra visible frame of the wrong pose.
+  useLayoutEffect(() => {
+    if (!robot.playbackState?.isPlaying) return;
+    if (typeof robot.pos?.x !== 'number') return;
+    const resolved = resolveTargetJoints(
+      robot.model, robot.pos.x, robot.pos.y, robot.pos.z,
+      robot.pos.a ?? 0, robot.pos.b ?? 0, robot.pos.c ?? 0,
+      robot.joints,
+    );
+    const changed = (['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const).some(
+      (k) => Math.abs((resolved[k] ?? 0) - (robot.joints[k] ?? 0)) > 0.01
+    );
+    if (changed) {
+      updateRobot(robot.id, { joints: resolved });
+    }
+  }, [
+    robot.pos?.x, robot.pos?.y, robot.pos?.z, robot.pos?.a, robot.pos?.b, robot.pos?.c,
+    robot.joints, robot.playbackState?.isPlaying, robot.model, robot.id, updateRobot,
+  ]);
+
   const [reset3DKey, setReset3DKey] = useState(0);
   const [threeDHeight, setThreeDHeight] = useState<number | undefined>(settings.uiLayout?.threeDHeight);
   const dragRef = useRef(false);
@@ -1169,11 +1217,22 @@ console.log("Loading example:", id);
         </div>
       )}
 
-      <div className="flex-1 flex overflow-hidden pt-2 px-2 pb-0 gap-2">
+      <div className="flex-1 flex overflow-hidden pt-2 px-2 pb-0 gap-2 min-h-0">
         {/* Left Panel: 3D View */}
-        <div className="flex-1 flex flex-col gap-2 min-w-0">
-          <div 
-            className={cn("relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col group shrink-0", viewportOnly ? "flex-1" : "min-h-[200px]")}
+        <div className="flex-1 flex flex-col gap-2 min-w-0 min-h-0">
+          <div
+            // min-h-0 defensively added on the viewportOnly flex-1 chain
+            // (here and its two ancestors above) while chasing the Android
+            // 3D-viewport bug - turned out NOT to be the actual cause (that
+            // was HYDRA-UMC-ANDROID-CONTROL's own WebView never getting real
+            // LayoutParams from Compose, see ThreeDScreen.kt), confirmed by
+            // this exact chain rendering with real height in a real desktop
+            // browser even without it. Left in anyway: it's the correct,
+            // standard defensive class for a flex-1 child nested this many
+            // levels deep (avoids the well-known min-height:auto-wins-over-
+            // flex-grow gotcha regardless of what content ever ends up
+            // inside), not just dead weight from a wrong guess.
+            className={cn("relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col group shrink-0", viewportOnly ? "flex-1 min-h-0" : "min-h-[200px]")}
             style={!viewportOnly ? { flex: threeDHeight ? `0 0 ${threeDHeight}px` : '1 1 0%' } : {}}
           >
             <VirtualKinematics key={reset3DKey} robot={robot} controlMode={controlMode} onSelectRobot={onNavigateToRobot} />
