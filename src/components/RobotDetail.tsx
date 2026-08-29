@@ -9,7 +9,7 @@ import { RotaryKnob } from "./RotaryKnob";
 import { FuturisticSlider } from "./FuturisticSlider";
 import { motion, useDragControls } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { type RobotState, useHydraStore, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, unthrottledDelay, globalPlaybacks } from '../store';
+import { type RobotState, useHydraStore, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, globalPlaybacks } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { RotateCcw, Home, Video, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, Save, Play, Square, Pause, Crosshair, RefreshCw, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat, Download } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -892,231 +892,23 @@ console.log("Loading example:", id);
       undefined,
       (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: true, activeStep: 0, isPaused: false, paused: false, isFinished: false } })
     );
-    const playRobotTrajectory = async (rId: number, points: any[]) => {
-      let isLooping = true;
-      while (isLooping && globalPlaybacks[rId]) {
-        let currentStep = 0;
-        
-        // Determine initial state
-        const initialRState = rId === robot.id ? robot : combinedBotsInfo.find(b => b.id === rId);
-        let currentPos = { ...(initialRState?.pos || { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }) };
-        let currentJoints = { ...(initialRState?.joints || { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0 }) };
-
-        while (currentStep < points.length) {
-          if (!globalPlaybacks[rId]) break; while(playbackPausedRef.current) { if (!globalPlaybacks[rId]) break; await unthrottledDelay(); } if (!globalPlaybacks[rId]) break;
-          const pt = points[currentStep];
-        
-        let j1 = pt.j1;
-        let j2 = pt.j2;
-        let j3 = pt.j3;
-        let j4 = pt.j4;
-        let j5 = pt.j5;
-        let j6 = pt.j6;
-
-        // Pseudo-IK if joints are not provided
-        if (j1 === undefined) {
-           const L1 = 160;
-           const L2 = 200;
-           const r = Math.sqrt(pt.x*pt.x + pt.y*pt.y) || 0.001;
-           const zOff = pt.z - 195;
-           const d = Math.sqrt(r*r + zOff*zOff);
-           
-           j1 = Math.atan2(pt.y, pt.x) * 180 / Math.PI;
-           
-           let cosJ3 = (r*r + zOff*zOff - L1*L1 - L2*L2) / (2 * L1 * L2);
-           cosJ3 = Math.max(-1, Math.min(1, cosJ3));
-           j3 = Math.acos(cosJ3) * 180 / Math.PI;
-           
-           const phi = Math.atan2(r, zOff);
-           let cosGamma = (L1*L1 + d*d - L2*L2) / (2*L1*d);
-           cosGamma = Math.max(-1, Math.min(1, cosGamma));
-           const gamma = Math.acos(cosGamma);
-           
-           const theta1_rad = phi - gamma;
-           j2 = -theta1_rad * 180 / Math.PI;
-
-           j4 = pt.a || 0;
-           j5 = -j2 + j3 - 180;
-           j6 = pt.c || 0;
-        }
-
-        
-        let x = pt.x;
-        let y = pt.y;
-        let z = pt.z;
-        let a = pt.a;
-        let b = pt.b;
-        let c = pt.c;
-        if (x === undefined && j1 !== undefined) {
-           const j1Rad = j1 * (Math.PI / 180);
-           const j2Rad = j2 * (Math.PI / 180);
-           const j3Rad = j3 * (Math.PI / 180);
-           
-           const theta1_rad = -j2Rad;
-           const R2 = 160 * Math.sin(theta1_rad) + 200 * Math.sin(theta1_rad + j3Rad);
-           const Z2 = 160 * Math.cos(theta1_rad) + 200 * Math.cos(theta1_rad + j3Rad);
-           
-           x = R2 * Math.cos(j1Rad);
-           y = R2 * Math.sin(j1Rad);
-           z = Z2 + 195;
-           a = j4;
-           b = j5 + j2 - j3 + 180;
-           c = j6;
-        }
-
-        const targetPos = { 
-           x: x, y: y, z: z, a: a, b: b, c: c,
-           tx: pt.tx !== undefined ? pt.tx : currentPos.tx,
-           ty: pt.ty !== undefined ? pt.ty : currentPos.ty,
-           trz: pt.trz !== undefined ? pt.trz : currentPos.trz 
-         };
-
-        const targetJoints = resolveTargetJoints(
-          initialRState?.model,
-          x || 0, y || 0, z || 0, a || 0, b || 0, c || 0,
-          { j1: j1||0, j2: j2||0, j3: j3||0, j4: j4||0, j5: j5||0, j6: j6||0 }
-        );
-
-        const startPos = { ...currentPos };
-        const startJoints = { ...currentJoints };
-
-        const maxJointDiff = Math.max(
-          Math.abs(targetJoints.j1 - (startJoints.j1||0)),
-          Math.abs(targetJoints.j2 - (startJoints.j2||0)),
-          Math.abs(targetJoints.j3 - (startJoints.j3||0)),
-          Math.abs(targetJoints.j4 - (startJoints.j4||0)),
-          Math.abs(targetJoints.j5 - (startJoints.j5||0)),
-          Math.abs(targetJoints.j6 - (startJoints.j6||0))
-        );
-        const xyDist = Math.sqrt(Math.pow((targetPos.tx || 0) - (startPos.tx || 0), 2) + Math.pow((targetPos.ty || 0) - (startPos.ty || 0), 2));
-        const effectiveDist = Math.max(maxJointDiff * 2, xyDist, 0.1);
-
-        const baseVelocity = 50;
-        let t = 0;
-        // Real elapsed time per tick instead of assuming unthrottledDelay()'s
-        // requested 16ms always elapses exactly - setTimeout only guarantees
-        // "at least" that long, and can run well over it under GC pauses, a
-        // busy main thread, or a backgrounded/throttled tab. null on the
-        // first tick of each move (and right after a pause) falls back to
-        // the old fixed 16ms rather than a near-zero measured delta, and a
-        // clamp keeps a single abnormally long tick (e.g. regaining focus
-        // after being backgrounded) from jumping the arm most of the way to
-        // its target in one frame.
-        let lastTickAt: number | null = null;
-
-        while (t < 1) {
-          if (!globalPlaybacks[rId]) break;
-          while(playbackPausedRef.current) {
-              if (!globalPlaybacks[rId]) break;
-              lastTickAt = null; // don't let paused time count as movement once resumed
-              await unthrottledDelay();
-          }
-          if (!globalPlaybacks[rId]) break;
-
-          const now = performance.now();
-          const dtMs = lastTickAt === null ? 16 : Math.min(now - lastTickAt, 250);
-          lastTickAt = now;
-
-          const rState = robotsRef.current.find(r => r.id === rId);
-          // Acceleration control - we'd always had a speed control here but
-          // never one for acceleration (project owner). Trapezoidal-ish
-          // velocity envelope over the move's own progress `t`: ramps from 0
-          // up to full velocity over the first rampFraction of the move,
-          // cruises, then ramps back down over the last rampFraction - a
-          // real speed-vs-time shape, not just a label on the same constant-
-          // velocity motion as before. Lower acceleration% -> longer ramp
-          // (gentler, more visible acceleration/deceleration); higher -> a
-          // near-instant ramp (closest to the old constant-velocity feel).
-          // Default (100%) keeps a small, mostly-unnoticeable ramp so
-          // existing recordings/robots that never touch this control still
-          // look close to how they did before this feature existed.
-          const accelPercent = rState?.playbackState?.acceleration || 100;
-          const rampFraction = Math.min(0.45, Math.max(0.02, 0.15 * (100 / accelPercent)));
-          const accelEnvelope = t < rampFraction ? (t / rampFraction)
-            : t > 1 - rampFraction ? ((1 - t) / rampFraction)
-            : 1;
-          const currentVelocity = baseVelocity * ((rState?.playbackState?.speed || 100) / 100) * Math.max(0.05, accelEnvelope);
-          const distancePerTick = currentVelocity * (dtMs / 1000);
-          
-          let tStep = distancePerTick / effectiveDist;
-          if (effectiveDist < 0.001) tStep = 1;
-          
-          t += tStep;
-          if (t > 1) t = 1;
-
-          const lerp = (s: number, e: number, t: number) => s + (e - s) * t;
-          
-          const interpPos = {
-              x: lerp(startPos.x || 0, targetPos.x || 0, t),
-              y: lerp(startPos.y || 0, targetPos.y || 0, t),
-              z: lerp(startPos.z || 0, targetPos.z || 0, t),
-              a: lerp(startPos.a || 0, targetPos.a || 0, t),
-              b: lerp(startPos.b || 0, targetPos.b || 0, t),
-              c: lerp(startPos.c || 0, targetPos.c || 0, t),
-              tx: targetPos.tx !== undefined ? lerp(startPos.tx || 0, targetPos.tx, t) : undefined,
-              ty: targetPos.ty !== undefined ? lerp(startPos.ty || 0, targetPos.ty, t) : undefined,
-              trz: targetPos.trz !== undefined ? lerp(startPos.trz || 0, targetPos.trz, t) : undefined,
-          };
-          
-          const interpJoints = {
-              j1: lerp(startJoints.j1 || 0, targetJoints.j1 || 0, t),
-              j2: lerp(startJoints.j2 || 0, targetJoints.j2 || 0, t),
-              j3: lerp(startJoints.j3 || 0, targetJoints.j3 || 0, t),
-              j4: lerp(startJoints.j4 || 0, targetJoints.j4 || 0, t),
-              j5: lerp(startJoints.j5 || 0, targetJoints.j5 || 0, t),
-              j6: lerp(startJoints.j6 || 0, targetJoints.j6 || 0, t),
-          };
-
-          const xyUpdate = initialRState?.hasXYTable && (interpPos.tx !== undefined || interpPos.ty !== undefined) ? {
-            xyTable: {
-              ...initialRState.xyTable!,
-              // Defensive fallback, same as VirtualKinematics.tsx's own
-              // tableW/tableL/px/py - a partial xyTable (missing .pos)
-              // reached this component for real once, see that file's own
-              // comment for the full root cause.
-              pos: { x: interpPos.tx ?? initialRState.xyTable!.pos?.x ?? 0, y: interpPos.ty ?? initialRState.xyTable!.pos?.y ?? 0 }
-            }
-          } : {};
-
-          updateRobot(rId, { 
-            pos: interpPos as any, 
-            joints: interpJoints, 
-            playbackState: { ...(robotsRef.current.find(r => r.id === rId)?.playbackState || {}), isPlaying: true, activeStep: currentStep, speed: robotsRef.current.find(r => r.id === rId)?.playbackState?.speed || 100, isFinished: false }, 
-            ...xyUpdate 
-          });
-          
-          await unthrottledDelay();
-        }
-        
-        currentPos = { ...targetPos } as any;
-        currentJoints = { ...targetJoints };
-
-        if (!globalPlaybacks[rId]) break; while(playbackPausedRef.current) { if (!globalPlaybacks[rId]) break; await unthrottledDelay(); } if (!globalPlaybacks[rId]) break;
-        currentStep++;
-      }
-      
-      if (!globalPlaybacks[rId]) break;
-      const latestState = robotsRef.current.find((r: any) => r.id === rId);
-      isLooping = latestState?.playbackState?.isLooping ?? false;
-      
-      if (isLooping) {
-        updateRobot(rId, { playbackState: { ...(latestState?.playbackState || {}), isPlaying: true, activeStep: 0, speed: latestState?.playbackState?.speed || 100, isFinished: false, isLooping: true } });
-        await new Promise(r => setTimeout(r, 500));
-      }
-    }
-    
-    const finalState = robotsRef.current.find((r: any) => r.id === rId); updateRobot(rId, { playbackState: { ...(finalState?.playbackState || {}), isPlaying: false, activeStep: -1, speed: finalState?.playbackState?.speed || 100, isFinished: true, isLooping: finalState?.playbackState?.isLooping } });
-  };
-    playRobotTrajectory(robot.id, robot.recordedPoints);
-    if (playAll) {
-      combinedBotsInfo.forEach(bot => {
-        if (bot.recordedPoints.length > 0) {
-          const otherBotState = robotsRef.current.find(r => r.id === bot.id);
-          updateRobot(bot.id, { playbackState: { ...(otherBotState?.playbackState || {}), isPlaying: true, activeStep: 0, speed: otherBotState?.playbackState?.speed || 100, isFinished: false } });
-          playRobotTrajectory(bot.id, bot.recordedPoints);
-        }
-      });
-    }
+    // playRobotTrajectory (the ~215-line local interpolation loop that
+    // used to live here, recorded-point by recorded-point with a real
+    // velocity/acceleration curve) is removed as of 2026-08-29:
+    // server.ts's own V0 playback engine (see its own header comment) is
+    // now the SOLE driver of playback motion, for every client including
+    // this one - it replays this robot's recordedPoints itself and
+    // broadcasts a real delta on every step, which this component
+    // already renders reactively via robot.pos/robot.joints/
+    // robot.playbackState like any other incoming state. Two independent
+    // drivers writing the same robot's position (this loop AND the
+    // server, both real, both timed) would be a real problem on physical
+    // hardware, not just a UI glitch - see the "Started from outside"
+    // effect this same change also removed below, which existed only to
+    // start this loop when another client's own 'play' command arrived.
+    // The server's engine is deliberately a linear point-to-point
+    // replay, not yet this loop's own smooth curve - see server.ts's own
+    // comment on that scope boundary. Full history in git.
   };
 
   
@@ -1216,25 +1008,20 @@ console.log("Loading example:", id);
   }, [robot.playbackState?.isPaused]);
 
 
-  // Genuine "synchronize with an external system" effect: reacts only to
-  // robot.playbackState.isPlaying actually toggling (a value that arrives
-  // from the server/websocket, e.g. another client pressing play/stop),
-  // comparing it against our own local globalPlaybacks flag to tell
-  // "started elsewhere" apart from "we started it ourselves" above.
-  // handlePlay/handleStop are intentionally NOT listed: they're plain
-  // functions redefined every render that already close over the current
-  // robot/robot.id/robot.combinedWith by reading them fresh each call, so
-  // listing them (or robot.id/robot.combinedWith.length) would only
-  // change effect IDENTITY every render, re-running this on every render
-  // instead of only on a real isPlaying transition.
-  useEffect(() => {
-    if (robot.playbackState?.isPlaying && !globalPlaybacks[robot.id]) {
-      // Started from outside
-      handlePlay((robot.combinedWith?.length || 0) > 0);
-    } else if (!robot.playbackState?.isPlaying && globalPlaybacks[robot.id]) {
-      handleStop();
-    }
-  }, [robot.playbackState?.isPlaying]); // eslint-disable-line -- see comment above; deliberately narrow deps
+  // Removed (2026-08-29): this effect used to call handlePlay()/
+  // handleStop() locally whenever robot.playbackState.isPlaying toggled
+  // from an external source (another client's own play/stop command),
+  // so that THIS tab's own local playRobotTrajectory loop would start
+  // driving motion too. Now that server.ts's own V0 playback engine is
+  // the sole driver (see handlePlay's own comment above), that call would
+  // be actively harmful, not just redundant: handlePlay() still sends a
+  // real 'play' command, and server.ts's 'play' case always resets
+  // activeStep to 0 - so this effect reacting to the server's OWN
+  // broadcast by resending 'play' would restart the trajectory from the
+  // beginning in a loop, never actually progressing. No replacement is
+  // needed: this component already renders robot.pos/robot.joints/
+  // robot.playbackState reactively from whatever the server broadcasts,
+  // same as every other client.
 
   useEffect(() => {
     if (robot.playbackState?.isPlaying && robot.playbackState?.activeStep !== null && robot.playbackState?.activeStep !== -1) {

@@ -37,6 +37,23 @@ a change is actually worth summarizing for a human.
   Verified with a real `npm run build` (clean, 0 errors) after the change.
 - New `README_zho.md` / `README_jpn.md` documentation translations, plus the
   5 existing README files' language selectors updated to link them.
+- **Play/pause/stop no longer depend on this tab driving playback
+  locally.** `RobotDetail.tsx`'s own `playRobotTrajectory` (the ~215-line
+  local interpolation loop with a real velocity/acceleration curve) is
+  removed, along with the effect that used to start it whenever another
+  client's own 'play' command arrived. HYDRA-UMC-SERVER's new V0
+  server-side playback engine is now the sole driver of playback motion
+  for every client, including this one - this component already renders
+  `robot.pos`/`robot.joints`/`robot.playbackState` reactively from
+  whatever the server broadcasts, the same way it always displayed a
+  combined sibling's own state. Fixes play/pause/stop physically doing
+  nothing when commanded from Android/iOS/DSI/SUITE while no STUDIO tab
+  had that robot's panel open - the server has no such dependency.
+  Verified with a real `npm run build` (clean) and `npm run lint`
+  (introduced zero new warnings; two now-genuinely-unused things this
+  removal exposed - the `playRobotTrajectory` declaration itself and the
+  `unthrottledDelay` import it was the last user of - were removed too,
+  not suppressed).
 
 ## [0.1.8] - Export a recorded trajectory as G-code
 
