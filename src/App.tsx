@@ -16,7 +16,20 @@ import SplashSvg from './assets/HYDRA_UMC_SPLASHSCREEN.svg';
  * This function handles the necessary computations and state updates.
  */
 function App() {
-  const [showSplash, setShowSplash] = useState(true);
+  // Real complaint this fixes, live-reproduced: this splash used to show
+  // unconditionally for a fixed 10s on every single mount, including
+  // HYDRA-UMC-ANDROID-CONTROL's embedded 3D-viewport WebView (ThreeDScreen.kt
+  // loads this exact page fresh via `?hideUI=true&robotId=...` every time
+  // that tab opens) - reported as "el splashscreen de studio... me hace
+  // esperar un tiempo innecesario". `hideUI=true` already means "embedded,
+  // no chrome" (Dashboard.tsx's own header/sidebar hide on it) - there's no
+  // reason to show 10s of desktop-kiosk branding in that same case, so this
+  // reads the same URL flag once at mount and skips the splash entirely
+  // there. Not memoized via useMemo like Dashboard.tsx's own `hideUI` read -
+  // this only needs to run once, before first paint, to pick the initial
+  // showSplash value.
+  const hideUI = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('hideUI') === 'true';
+  const [showSplash, setShowSplash] = useState(!hideUI);
 
   useEffect(() => {
     const handleInteraction = () => {
@@ -34,11 +47,12 @@ function App() {
 
 
   useEffect(() => {
+    if (hideUI) return;
     const timer = setTimeout(() => {
       setShowSplash(false);
     }, 10000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [hideUI]);
 
   if (showSplash) {
     return (

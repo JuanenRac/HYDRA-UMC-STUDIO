@@ -24,6 +24,20 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.2.1] - Skip the 10s branding splash when embedded (?hideUI=true)
+
+- **Fixes ~10 extra seconds added to opening HYDRA-UMC-ANDROID-CONTROL's
+  embedded 3D-viewport WebView, every time.** `App.tsx` showed a fixed,
+  unconditional 10-second splash (`HYDRA_UMC_SPLASHSCREEN.svg`) on every
+  single mount - correct for a standalone desktop/kiosk session, but
+  `ThreeDScreen.kt` loads this exact page fresh via `?hideUI=true&robotId=...`
+  every time that tab opens, paying the full 10s of branding on top of the
+  WebView's own real cold-start cost every time. `hideUI=true` already
+  means "embedded, no chrome" for Dashboard.tsx's own header/sidebar -
+  the splash now reads the same flag once at mount and skips itself
+  there too.
+- Verified with a real `npm run build` (clean).
+
 ## [0.2.0] - Real per-model kinematics restored during server-driven playback
 
 - **Fixes incoherent/nonsensical arm movement while playing a loaded WORKS
