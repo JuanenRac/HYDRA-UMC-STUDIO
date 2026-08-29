@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw, Crosshair, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Save, Maximize2, Plus } from 'lucide-react';
@@ -68,7 +68,18 @@ export function XYTableConfig() {
   const [selectedRobotId, setSelectedRobotId] = useState<number>(robots[0]?.id || 1);
   const [jogStep, setJogStep] = useState<number>(10);
 
-  const selectedRobot = robots.find(r => r.id === selectedRobotId);
+  let selectedRobot = robots.find(r => r.id === selectedRobotId);
+  // Real "adjust state during render" (React's own recommended replacement
+  // for a reset-only effect): the previously selected robot can vanish out
+  // from under this component (removed, or simply not loaded yet on
+  // mount) - falling back to the first available robot and writing that
+  // back into state right away, during this same render, avoids the extra
+  // render pass a `useEffect` doing the same thing would cost, and never
+  // fires again once `selectedRobotId` actually matches a real robot.
+  if (!selectedRobot && robots.length > 0 && selectedRobotId !== robots[0].id) {
+    setSelectedRobotId(robots[0].id);
+    selectedRobot = robots[0];
+  }
   const xyTable = selectedRobot?.xyTable;
 
   const handleReset = () => {
@@ -77,13 +88,6 @@ export function XYTableConfig() {
       xyTable: { pos: { x: 0, y: 0 }, tableSize: { width: 300, length: 300 }, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
     } as any);
   };
-
-
-  useEffect(() => {
-    if (!selectedRobot && robots.length > 0) {
-      setSelectedRobotId(robots[0].id);
-    }
-  }, [robots, selectedRobot]);
 
   const handleJog = (axis: 'x' | 'y', direction: number) => {
     if (!selectedRobot || !selectedRobot.hasXYTable || !xyTable) return;

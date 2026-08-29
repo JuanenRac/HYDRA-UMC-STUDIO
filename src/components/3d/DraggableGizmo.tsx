@@ -27,10 +27,17 @@ export default function DraggableGizmo({ position, controlMode, onMouseUp, child
   const [targetObj, setTargetObj] = React.useState<THREE.Group | null>(null);
 
   const [localScale, setLocalScale] = React.useState(scale[0]);
-  
-  React.useEffect(() => {
+  // Real "adjust state when a prop changes" pattern (React's own
+  // recommended replacement for a sync-only effect): `localScale` is a
+  // user-editable copy of the `scale` prop (see handleScaleChange below),
+  // so it must only reset when the PROP itself actually changes, not on
+  // every render - tracking the prop value we last synced from is what
+  // tells those two cases apart without an effect.
+  const [syncedScaleProp, setSyncedScaleProp] = React.useState(scale[0]);
+  if (scale[0] !== syncedScaleProp) {
+    setSyncedScaleProp(scale[0]);
     setLocalScale(scale[0]);
-  }, [scale[0]]);
+  }
 
   React.useEffect(() => {
     if (coordRef.current && controlMode !== 'scale') {

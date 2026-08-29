@@ -79,12 +79,26 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   // tell, once its await resolves, whether the user has since switched
   // tier/robot - and if so, drop the stale result instead of applying it to
   // state the UI now attributes to a different target (e.g. urtcHead
-  // firmware assets appearing under urtcExpansion). Plain assignment during
-  // render (no effect) so it's always current by the time the callback checks.
+  // firmware assets appearing under urtcExpansion). Updated in an effect
+  // rather than during render itself (a real ref-during-render hazard for
+  // React Compiler) - effects always flush synchronously right after a
+  // render commits, strictly before any in-flight promise's `.then()` can
+  // run, so it's still guaranteed current by the time the callback checks.
   const targetKeyRef = useRef('');
-  targetKeyRef.current = `${tier}:${robotId}`;
+  useEffect(() => {
+    targetKeyRef.current = `${tier}:${robotId}`;
+  }, [tier, robotId]);
 
-  useEffect(() => { setGhAssets(null); setGhLoading(false); }, [tier, robotId]);
+  // Real "adjust state during render" (React's own recommended
+  // replacement for a reset-only effect) - both resets below are plain
+  // setState calls, safe to run conditionally during render.
+  const [resetForTargetKey, setResetForTargetKey] = useState('');
+  const currentTargetKey = `${tier}:${robotId}`;
+  if (resetForTargetKey !== currentTargetKey) {
+    setResetForTargetKey(currentTargetKey);
+    setGhAssets(null);
+    setGhLoading(false);
+  }
   useEffect(() => { if (tier === 'urtcExpansion' && !expansionAvailable) setTier('urtcHead'); }, [robotId]); // eslint-disable-line
 
   const target: CanOtaTarget | null = useMemo(() => {

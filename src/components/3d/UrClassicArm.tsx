@@ -55,7 +55,8 @@ function jointQuaternion(joint: UrClassicJointStep, angleDeg: number): THREE.Qua
 const bodyMat = { color: '#b8bcc2', roughness: 0.45, metalness: 0.35 };
 
 export default function UrClassicArm({ robot, config }: { robot: RobotState; config: UrClassicArmConfig }) {
-  const joints = [robot.joints.j1, robot.joints.j2, robot.joints.j3, robot.joints.j4, robot.joints.j5, robot.joints.j6];
+  const j1 = robot.joints.j1, j2 = robot.joints.j2, j3 = robot.joints.j3;
+  const j4 = robot.joints.j4, j5 = robot.joints.j5, j6 = robot.joints.j6;
 
   const rootQuat = useMemo(() => {
     const j1 = config.chain[0];
@@ -66,12 +67,12 @@ export default function UrClassicArm({ robot, config }: { robot: RobotState; con
 
   // 6 explicit calls (not a .map loop), same rules-of-hooks reasoning
   // every other *Arm.tsx in this folder already documents.
-  const q1 = useMemo(() => jointQuaternion(config.chain[0], joints[0]), [config.chain, joints[0]]);
-  const q2 = useMemo(() => jointQuaternion(config.chain[1], joints[1]), [config.chain, joints[1]]);
-  const q3 = useMemo(() => jointQuaternion(config.chain[2], joints[2]), [config.chain, joints[2]]);
-  const q4 = useMemo(() => jointQuaternion(config.chain[3], joints[3]), [config.chain, joints[3]]);
-  const q5 = useMemo(() => jointQuaternion(config.chain[4], joints[4]), [config.chain, joints[4]]);
-  const q6 = useMemo(() => jointQuaternion(config.chain[5], joints[5]), [config.chain, joints[5]]);
+  const q1 = useMemo(() => jointQuaternion(config.chain[0], j1), [config.chain, j1]);
+  const q2 = useMemo(() => jointQuaternion(config.chain[1], j2), [config.chain, j2]);
+  const q3 = useMemo(() => jointQuaternion(config.chain[2], j3), [config.chain, j3]);
+  const q4 = useMemo(() => jointQuaternion(config.chain[3], j4), [config.chain, j4]);
+  const q5 = useMemo(() => jointQuaternion(config.chain[4], j5), [config.chain, j5]);
+  const q6 = useMemo(() => jointQuaternion(config.chain[5], j6), [config.chain, j6]);
   const qs = [q1, q2, q3, q4, q5, q6];
 
   const geos = [

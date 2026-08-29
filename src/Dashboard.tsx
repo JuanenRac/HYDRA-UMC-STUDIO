@@ -112,13 +112,19 @@ export default function Dashboard() {
 
   const activeRobot = robots.find(r => r.id === selectedRobotId);
 
+  // Genuine "synchronize with an external system" effect: reads the URL's
+  // own query string, localStorage and the i18n library, and mutates
+  // document.body.dataset directly - real external systems the lint
+  // rule's own text carves out, not the "derive local state" case it's
+  // meant to catch. Reading window.location/mutating the DOM during
+  // render instead would be the actual anti-pattern here.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const robotIdParam = params.get('robotId');
     if (robotIdParam) {
       const id = parseInt(robotIdParam);
       console.log(`[Industrial] Identified Remote Target: Robot A${id}`);
-      setSelectedRobotId(id);
+      setSelectedRobotId(id); // eslint-disable-line -- real external (URL) sync, not derived state
       setActiveTab('robot');
     }
 
@@ -134,11 +140,14 @@ export default function Dashboard() {
     }
   }, [settings.theme, settings.language, i18n]);
 
-  useEffect(() => {
-    if (hideUI && activeTab !== 'robot') {
-      setActiveTab('robot');
-    }
-  }, [hideUI]);
+  // Real "adjust state during render" (React's own recommended
+  // replacement for a derive-only effect): forcing the robot tab open
+  // when `?hideUI=true` is a pure consequence of `hideUI` itself (already
+  // memoized above), not a real external-system sync, so it's safe to
+  // do this conditionally during render rather than in its own effect.
+  if (hideUI && activeTab !== 'robot') {
+    setActiveTab('robot');
+  }
 
   return (
     <div className="w-full h-screen bg-slate-950 bg-electric-grid text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">

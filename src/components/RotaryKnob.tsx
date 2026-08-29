@@ -39,8 +39,15 @@ export function RotaryKnob({ min, max, value, onChange, size = 48, step }: Rotar
     updateValueFromEvent(e);
   };
 
+  // isDragging isn't read here: this function is only ever attached as a
+  // window listener while the effect below sees isDragging true, and that
+  // effect's own cleanup removes this exact listener instance the moment
+  // isDragging changes - by the time any pointermove event reaches this
+  // function, isDragging is guaranteed true from the same render that
+  // registered it, so the extra check was redundant with the effect's own
+  // gating (same reasoning FuturisticSlider.tsx's own handlePointerMove
+  // documents).
   const handlePointerMove = (e: PointerEvent) => {
-    if (!isDragging) return;
     e.preventDefault();
     updateValueFromEvent(e);
   };
@@ -88,7 +95,11 @@ export function RotaryKnob({ min, max, value, onChange, size = 48, step }: Rotar
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [isDragging]);
+    // handlePointerMove/handlePointerUp/updateValueFromEvent read only
+    // refs plus isDragging itself, which is already this effect's sole
+    // real dependency - listing the plain, every-render-fresh functions
+    // too would just re-run the listener add/remove cycle every render.
+  }, [isDragging]); // eslint-disable-line
 
   const currentAngle = valueToAngle(clampedValue);
 

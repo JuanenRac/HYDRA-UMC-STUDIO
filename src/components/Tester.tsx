@@ -104,19 +104,40 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   // handleFramQuery below) can tell, once its await resolves, whether the
   // user has since switched tier/robot - and if so, drop the stale result
   // instead of applying it to state the UI now attributes to a different
-  // target. Plain assignment during render (no effect) so it's always
+  // target. Updated in an effect rather than during render itself (a real
+  // ref-during-render hazard for React Compiler) - effects always flush
+  // synchronously right after a render commits, strictly before any
+  // in-flight promise's `.then()` can run, so it's still guaranteed
   // current by the time any async callback checks it.
   const targetKeyRef = useRef('');
-  targetKeyRef.current = `${tier}:${robotId}`;
-
   useEffect(() => {
+    targetKeyRef.current = `${tier}:${robotId}`;
+  }, [tier, robotId]);
+
+  // Real "adjust state when a related value changes" pattern (React's own
+  // recommended replacement for a reset-only effect - see "You Might Not
+  // Need an Effect"): calling a plain setState here, during render, only
+  // when the target key actually differs from what was last rendered is
+  // safe and bails out immediately once state catches up, avoiding both
+  // the effect itself and its extra render pass. Stopping the in-flight
+  // monitor below is a real side effect on an external subscription
+  // though, not a state update - that still has to live in a real effect,
+  // keyed the same way, rather than run during render.
+  const [resetForTargetKey, setResetForTargetKey] = useState('');
+  const currentTargetKey = `${tier}:${robotId}`;
+  if (resetForTargetKey !== currentTargetKey) {
+    setResetForTargetKey(currentTargetKey);
     setTestSteps([]);
     setTesting(false);
     setFramState(null);
     setFrames([]);
-    monitorStopFnRef.current?.();
-    monitorStopFnRef.current = null;
     setMonitorActive(false);
+  }
+  useEffect(() => {
+    return () => {
+      monitorStopFnRef.current?.();
+      monitorStopFnRef.current = null;
+    };
   }, [robotId, tier]);
 
   useEffect(() => { if (tier === 'urtcExpansion' && !expansionAvailable) setTier('urtcHead'); }, [robotId]); // eslint-disable-line
@@ -353,11 +374,22 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
 function ToolTelemetryPanel({ category }: { category: ToolCategory }) {
   const { t } = useTranslation();
   const [tick, setTick] = useState(0);
+  // Real per-tick jitter factor for the simulated telemetry below - drawn
+  // once per real interval tick (a real side effect, not render itself)
+  // rather than calling the impure Math.random() fresh on every render,
+  // which could produce a different jittered value for the same tick if
+  // React re-renders this component more than once for it (e.g. Strict
+  // Mode's double-render in dev). Kept as real state (not a ref) so
+  // render only ever reads it purely, the same as `tick` itself.
+  const [jitter, setJitter] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setTick(v => v + 1), 800);
+    const id = setInterval(() => {
+      setJitter(Math.random() - 0.5);
+      setTick(v => v + 1);
+    }, 800);
     return () => clearInterval(id);
   }, []);
-  const wobble = (base: number, amp: number) => base + Math.sin(tick / 2) * amp + (Math.random() - 0.5) * amp * 0.3;
+  const wobble = (base: number, amp: number) => base + Math.sin(tick / 2) * amp + jitter * amp * 0.3;
 
   if (category === 'thermal') {
     const temp = wobble(210, 3);

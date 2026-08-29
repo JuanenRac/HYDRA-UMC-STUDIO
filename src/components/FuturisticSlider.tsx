@@ -35,29 +35,35 @@ export function FuturisticSlider({ min, max, value, onChange, className, step }:
     updateValueFromEvent(e.clientX);
   };
 
-  const handlePointerMove = (e: PointerEvent) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    updateValueFromEvent(e.clientX);
-  };
-
-  const handlePointerUp = () => {
-    setIsDragging(false);
-  };
-
   const updateValueFromEvent = (clientX: number) => {
     if (!trackRef.current) return;
     const rect = trackRef.current.getBoundingClientRect();
-    
+
     let newPct = (clientX - rect.left) / rect.width;
     newPct = Math.max(0, Math.min(1, newPct));
-    
+
     let newVal = minRef.current + newPct * (maxRef.current - minRef.current);
     if (stepRef.current) {
       newVal = minRef.current + Math.round((newVal - minRef.current) / stepRef.current) * stepRef.current;
       newVal = Math.min(maxRef.current, Math.max(minRef.current, newVal));
     }
     onChangeRef.current(Number(newVal.toFixed(2)));
+  };
+
+  // isDragging isn't read here (unlike before): this function is only
+  // ever attached as a window listener while the effect below sees
+  // isDragging true, and that effect's own cleanup removes this exact
+  // listener instance the moment isDragging changes - by the time any
+  // pointermove event reaches this function, isDragging is guaranteed
+  // true from the same render that registered it, so the extra check
+  // was redundant with the effect's own gating.
+  const handlePointerMove = (e: PointerEvent) => {
+    e.preventDefault();
+    updateValueFromEvent(e.clientX);
+  };
+
+  const handlePointerUp = () => {
+    setIsDragging(false);
   };
 
   useEffect(() => {
@@ -69,7 +75,13 @@ export function FuturisticSlider({ min, max, value, onChange, className, step }:
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [isDragging]);
+    // handlePointerMove/handlePointerUp/updateValueFromEvent read only
+    // refs (already kept fresh above) plus isDragging itself, which is
+    // already this effect's sole real dependency - listing the plain,
+    // every-render-fresh functions too would just re-run the listener
+    // add/remove cycle on every render instead of only on isDragging
+    // transitions.
+  }, [isDragging]); // eslint-disable-line
 
   return (
     <div 

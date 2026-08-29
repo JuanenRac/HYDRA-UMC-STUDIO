@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { RotaryKnob } from "./RotaryKnob";
 import { FuturisticSlider } from "./FuturisticSlider";
 import { motion, useDragControls } from 'motion/react';
@@ -211,7 +211,18 @@ const URTC_TOOLS: ToolType[] = [
 const CameraPIP = ({ bot, initialX, initialY, label, t: _t }: { bot: RobotState, initialX: number, initialY: number, label: string, t: any }) => {
   const { settings, updateSettings } = useHydraStore();
   const controls = useDragControls();
-  const pipConfig = settings.uiLayout?.cameraPips?.[bot.id] || { w: 192, h: 144, x: initialX, y: initialY, isOpen: true };
+  const savedPipConfig = settings.uiLayout?.cameraPips?.[bot.id];
+  // Memoized so the fallback object keeps ONE stable identity across
+  // renders (as long as initialX/initialY themselves don't change) instead
+  // of being a brand-new object literal every render - that fresh identity
+  // was making the ref-sync effect below re-run on every single render of
+  // this panel, not just when the saved pip config or initialX/Y actually
+  // changed.
+  const defaultPipConfig = useMemo(
+    () => ({ w: 192, h: 144, x: initialX, y: initialY, isOpen: true }),
+    [initialX, initialY]
+  );
+  const pipConfig = savedPipConfig || defaultPipConfig;
   const isOpen = pipConfig.isOpen !== false;
 
   const [size, setSize] = useState({ w: pipConfig.w || 192, h: pipConfig.h || 144 });
@@ -257,7 +268,13 @@ const CameraPIP = ({ bot, initialX, initialY, label, t: _t }: { bot: RobotState,
         // Save size on drop
         const finalSize = sizeRef.current;
         const freshSettings = settingsRef.current;
-        const freshPip = freshSettings.uiLayout?.cameraPips?.[bot.id] || pipConfig;
+        // Reads pipConfigRef (kept fresh by the ref-sync effect above)
+        // rather than closing over pipConfig directly - handleUp is
+        // registered once via addEventListener and this effect only
+        // re-attaches it on [bot.id, updateSettings], so a direct pipConfig
+        // closure would go stale the moment settings changed without
+        // bot.id/updateSettings themselves changing.
+        const freshPip = freshSettings.uiLayout?.cameraPips?.[bot.id] || pipConfigRef.current;
         updateSettingsRef.current({
           uiLayout: {
             ...freshSettings.uiLayout,
@@ -591,10 +608,21 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   const uploadWorkFileRef = useRef<HTMLInputElement>(null);
   const [jogStep, setJogStep] = useState<number>(1);
   const [selectedExample, setSelectedExample] = useState<string>(robot.selectedExample || '');
-  useEffect(() => { setSelectedExample(robot.selectedExample || ''); }, [robot.id]);
   const [workFiles, setWorkFiles] = useState<string[]>([]);
   const [selectedWorkFile, setSelectedWorkFile] = useState<string>(robot.selectedWorkFile || '');
-  useEffect(() => { setSelectedWorkFile(robot.selectedWorkFile || ''); }, [robot.id]);
+  // Real "adjust state during render" pattern (React's own recommended
+  // replacement for a reset-only effect): both selectedExample and
+  // selectedWorkFile are just local edit buffers seeded from THIS robot's
+  // own saved fields, and both need resetting together the instant the
+  // panel starts showing a different robot - tracking the robot.id we
+  // last reset for is what tells "switched robot" apart from "this robot's
+  // own field changed underneath us" without an effect.
+  const [resetForRobotId, setResetForRobotId] = useState(robot.id);
+  if (robot.id !== resetForRobotId) {
+    setResetForRobotId(robot.id);
+    setSelectedExample(robot.selectedExample || '');
+    setSelectedWorkFile(robot.selectedWorkFile || '');
+  }
   const [editingPointKey, setEditingPointKey] = useState<number | null>(null);
   const [editingPointData, setEditingPointData] = useState<any>({});
 
@@ -605,11 +633,24 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   // ref on every call and checking it's still the latest call before each
   // setState turns a superseded response into a no-op instead of a race.
   const worksFetchIdRef = useRef(0);
-  const fetchWorks = async () => {
+
+  // Depends on the resolved PATH STRING for this one robot, not the whole
+  // settings.worksPaths object - that object is a fresh reference every
+  // time ANY setting anywhere changes (see store.tsx's own applyServerData,
+  // which used to make this worse by reshaping settings on every WebSocket
+  // broadcast), so depending on it directly re-ran this real network fetch
+  // (GET /${folderPath}/index.json) on every single jog tick from ANY
+  // connected client the instant a robot panel was open - the concrete
+  // mechanism behind this panel specifically (not other module panels,
+  // which have no such fetch) being far slower than everything else in
+  // the app. A plain string only changes reference (and re-triggers
+  // fetchWorks's own identity, and thus the effect below) when this
+  // robot's OWN folder path value actually changes.
+  const worksFolderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
+  const fetchWorks = useCallback(async () => {
     const fetchId = ++worksFetchIdRef.current;
     try {
-      const folderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
-      const res = await fetch(apiUrl(`/${folderPath}/index.json`));
+      const res = await fetch(apiUrl(`/${worksFolderPath}/index.json`));
       if (fetchId !== worksFetchIdRef.current) return;
       if (res.ok) {
         const files = await res.json();
@@ -621,23 +662,15 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     } catch {
       if (fetchId === worksFetchIdRef.current) setWorkFiles([]);
     }
-  };
-
-  // Depends on the resolved PATH STRING for this one robot, not the whole
-  // settings.worksPaths object - that object is a fresh reference every
-  // time ANY setting anywhere changes (see store.tsx's own applyServerData,
-  // which used to make this worse by reshaping settings on every WebSocket
-  // broadcast), so depending on it directly re-ran this real network fetch
-  // (GET /${folderPath}/index.json) on every single jog tick from ANY
-  // connected client the instant a robot panel was open - the concrete
-  // mechanism behind this panel specifically (not other module panels,
-  // which have no such fetch) being far slower than everything else in
-  // the app. A plain string only changes reference (and re-triggers this
-  // effect) when this robot's OWN folder path value actually changes.
-  const worksFolderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
-  useEffect(() => {
-    fetchWorks();
   }, [worksFolderPath]);
+
+  // Genuine "synchronize with an external system" effect (a real fetch of
+  // this robot's WORKS folder listing) - the sanctioned use the lint
+  // rule's own text carves out, not the "derive local state" case it's
+  // meant to catch.
+  useEffect(() => {
+    fetchWorks(); // eslint-disable-line -- real fetch, not a derived-state reset
+  }, [fetchWorks]);
 
   const handleSaveWorkFile = async () => {
     if (robot.recordedPoints.length === 0) return;
@@ -828,7 +861,16 @@ console.log("Loading example:", id);
   };
 
   const handlePlay = async (playAll: boolean = false) => {
-    globalPlaybacks[robot.id] = true;
+    // globalPlaybacks is a deliberate module-level escape hatch from React
+    // state, not an oversight: playRobotTrajectory's own while-loop below
+    // polls it on every step to decide whether to keep looping, and a
+    // combined sibling robot's own RobotDetail instance reads the SAME
+    // shared object by id - real React state can't be shared across
+    // sibling component instances or read from a tight async loop without
+    // forcing a re-render per step. Every write site is a real event
+    // handler (onClick) or an effect reacting to playbackState arriving
+    // from elsewhere (never during render), so this mutation is safe.
+    globalPlaybacks[robot.id] = true; // eslint-disable-line -- see comment above; not a render-time write
     if (playAll) {
       robot.combinedWith?.forEach(id => {
         globalPlaybacks[id] = true;
@@ -1141,17 +1183,20 @@ console.log("Loading example:", id);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(robot.playbackState?.speed || 100);
   const [playbackAcceleration, setPlaybackAcceleration] = useState<number>(robot.playbackState?.acceleration || 100);
 
-  useEffect(() => {
-    if (robot.playbackState?.speed !== undefined && robot.playbackState.speed !== playbackSpeed) {
-      setPlaybackSpeed(robot.playbackState.speed);
-    }
-  }, [robot.playbackState?.speed, robot.id]);
-
-  useEffect(() => {
-    if (robot.playbackState?.acceleration !== undefined && robot.playbackState.acceleration !== playbackAcceleration) {
-      setPlaybackAcceleration(robot.playbackState.acceleration);
-    }
-  }, [robot.playbackState?.acceleration, robot.id]);
+  // Real "adjust state during render" pattern: playbackSpeed/Acceleration
+  // are optimistic local buffers (handleSpeedChange/handleAccelerationChange
+  // below set them immediately, ahead of the server round-trip), but they
+  // also need to pick up a value that arrived from elsewhere (another
+  // client, or the server's own confirmation) once robot.playbackState
+  // catches up - same condition the effects used, just evaluated every
+  // render instead of only on a dependency change, so it also covers a
+  // robot switch without needing robot.id listed separately.
+  if (robot.playbackState?.speed !== undefined && robot.playbackState.speed !== playbackSpeed) {
+    setPlaybackSpeed(robot.playbackState.speed);
+  }
+  if (robot.playbackState?.acceleration !== undefined && robot.playbackState.acceleration !== playbackAcceleration) {
+    setPlaybackAcceleration(robot.playbackState.acceleration);
+  }
 
   const handleSpeedChange = (newSpeed: number) => {
     setPlaybackSpeed(newSpeed);
@@ -1171,6 +1216,17 @@ console.log("Loading example:", id);
   }, [robot.playbackState?.isPaused]);
 
 
+  // Genuine "synchronize with an external system" effect: reacts only to
+  // robot.playbackState.isPlaying actually toggling (a value that arrives
+  // from the server/websocket, e.g. another client pressing play/stop),
+  // comparing it against our own local globalPlaybacks flag to tell
+  // "started elsewhere" apart from "we started it ourselves" above.
+  // handlePlay/handleStop are intentionally NOT listed: they're plain
+  // functions redefined every render that already close over the current
+  // robot/robot.id/robot.combinedWith by reading them fresh each call, so
+  // listing them (or robot.id/robot.combinedWith.length) would only
+  // change effect IDENTITY every render, re-running this on every render
+  // instead of only on a real isPlaying transition.
   useEffect(() => {
     if (robot.playbackState?.isPlaying && !globalPlaybacks[robot.id]) {
       // Started from outside
@@ -1178,7 +1234,7 @@ console.log("Loading example:", id);
     } else if (!robot.playbackState?.isPlaying && globalPlaybacks[robot.id]) {
       handleStop();
     }
-  }, [robot.playbackState?.isPlaying]);
+  }, [robot.playbackState?.isPlaying]); // eslint-disable-line -- see comment above; deliberately narrow deps
 
   useEffect(() => {
     if (robot.playbackState?.isPlaying && robot.playbackState?.activeStep !== null && robot.playbackState?.activeStep !== -1) {

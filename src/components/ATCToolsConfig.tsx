@@ -5,7 +5,7 @@
 // =============================================================================
 
 import { useTranslation } from 'react-i18next';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useHydraStore, type ATCGrid, type ToolType, type ATCConfig } from '../store';
 import { RotateCcw, Settings, Grid3X3, CircleDashed, MapPin, ChevronDown, ChevronUp, Save, Upload, Server } from 'lucide-react';
 
@@ -69,13 +69,14 @@ export function ATCToolsConfig() {
   const [editingSlot, setEditingSlot] = useState<number | 'revolver' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedRobot = robots.find(r => r.id === selectedRobotId);
-  
-  useEffect(() => {
-    if (!selectedRobot && robots.length > 0) {
-      setSelectedRobotId(robots[0].id);
-    }
-  }, [robots, selectedRobot]);
+  let selectedRobot = robots.find(r => r.id === selectedRobotId);
+  // Real "adjust state during render" (React's own recommended
+  // replacement for a reset-only effect) - see XYTableConfig.tsx's own
+  // identical pattern for the full rationale.
+  if (!selectedRobot && robots.length > 0 && selectedRobotId !== robots[0].id) {
+    setSelectedRobotId(robots[0].id);
+    selectedRobot = robots[0];
+  }
 
   if (!selectedRobot) return null;
 

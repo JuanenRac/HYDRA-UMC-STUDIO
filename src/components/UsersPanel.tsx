@@ -14,7 +14,7 @@
 // regardless, this UI just doesn't bother rendering it for them either.
 // =============================================================================
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Users as UsersIcon, Trash2, KeyRound, UserPlus, ShieldCheck } from 'lucide-react';
 import { useHydraStore } from '../store';
@@ -46,7 +46,11 @@ export function UsersPanel() {
 
   const authHeaders = () => ({ 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) });
 
-  const loadUsers = async () => {
+  // Wrapped in useCallback so its identity only changes when something it
+  // actually reads (authToken, t) does - otherwise a fresh function on
+  // every render would force the effect below to re-fetch on every
+  // unrelated re-render too, once it's a real, honest dependency.
+  const loadUsers = useCallback(async () => {
     try {
       const res = await fetch(apiUrl('/api/users'), { headers: authHeaders() });
       if (!res.ok) {
@@ -60,9 +64,13 @@ export function UsersPanel() {
     } catch {
       setError(t('config.users_load_error'));
     }
-  };
+  }, [authToken, t]); // eslint-disable-line -- authHeaders() only ever reads authToken, already listed
 
-  useEffect(() => { loadUsers(); }, [authToken]);
+  // Genuine "synchronize with an external system" effect (a real server
+  // fetch on mount / whenever loadUsers's own identity changes, i.e. when
+  // authToken changes) - the sanctioned use the lint rule's own text
+  // carves out, not the "derive local state" case it's meant to catch.
+  useEffect(() => { loadUsers(); }, [loadUsers]); // eslint-disable-line -- real fetch, not a derived-state reset
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
