@@ -1046,10 +1046,9 @@ console.log("Loading example:", id);
   // exact way (see resolveTargetJoints's header comment: "re-solve the
   // resolved Cartesian target... against that robot's own real kinematics
   // instead, so recorded/played trajectories move it sensibly") - moving
-  // playback server-side this session dropped that step, since server.ts
-  // has no access to any of these per-model IK solvers (they're pure
-  // three.js-dependent TS, not a quick port - see SONNET's own notes on
-  // this). Re-deriving it here, purely client-side, restores the exact same
+  // playback server-side dropped that step, since server.ts has no access
+  // to any of these per-model IK solvers (they're pure three.js-dependent
+  // TS, not a quick port). Re-deriving it here, purely client-side, restores the exact same
   // correctness for every connected client (STUDIO's browser tab AND
   // Android's WebView-embedded copy of this same page) without needing
   // server.ts to know anything about per-model kinematics at all -
