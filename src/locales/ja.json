@@ -521,7 +521,7 @@
   "flasher": {
     "title": "Flasher",
     "subtitle": "CAN-OTA ファームウェア書き込み（JTAG/SWD 不要、USB-CAN 不要）",
-    "hardware_not_implemented": "ハードウェアトランスポートは未実装——シミュレーションモードを表示中",
+    "hardware_target_unreachable": "実ハードウェア経由ではまだ到達不可 - H745ファームウェアが未実装のリレートンネルが必要",
     "target": "対象",
     "robot_slot": "ロボットスロット",
     "urtc_unreachable": "URTC に到達できません",
@@ -551,7 +551,9 @@
       "flash_done": "書き込み完了",
       "github_found": "{{repo}} のリリースで {{count}} 個の .bin アセットを発見",
       "github_error": "GitHub エラー：{{error}}",
-      "github_downloading": "GitHub から {{name}} をダウンロード中…"
+      "github_downloading": "GitHub から {{name}} をダウンロード中…",
+      "hardware_target_unreachable": "このターゲットは実ハードウェア経由ではまだ到達できません",
+      "flash_hardware_failed": "ハードウェアへの書き込みに失敗しました: {{reason}}"
     },
     "progress": {
       "connecting": "接続中…",
@@ -572,6 +574,7 @@
   "tester": {
     "title": "Tester",
     "subtitle": "CAN-OTA 診断とリアルタイムテレメトリ",
+    "simulated_below_note": "バージョン照会は実物です - 以下のセルフテスト、F-RAM、LED、バスモニターはシミュレーションのままです（通信相手となる実際のH745アプリケーションファームウェアがまだありません）",
     "global_controls": "グローバル制御",
     "status_led": "ステータス LED",
     "ring_led": "リング LED",

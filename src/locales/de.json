@@ -521,7 +521,7 @@
   "flasher": {
     "title": "Flasher",
     "subtitle": "CAN-OTA-Firmware-Flashing (kein JTAG/SWD, kein USB-CAN)",
-    "hardware_not_implemented": "Hardware-Transport noch nicht implementiert - simulierter Modus wird angezeigt",
+    "hardware_target_unreachable": "Über echte Hardware noch nicht erreichbar - benötigt einen Relay-Tunnel, den die H745-Firmware noch nicht implementiert",
     "target": "Ziel",
     "robot_slot": "Roboter-Slot",
     "urtc_unreachable": "URTC nicht erreichbar",
@@ -551,7 +551,9 @@
       "flash_done": "Flashen abgeschlossen",
       "github_found": "{{count}} .bin-Datei(en) in den Releases von {{repo}} gefunden",
       "github_error": "GitHub-Fehler: {{error}}",
-      "github_downloading": "Lade {{name}} von GitHub herunter..."
+      "github_downloading": "Lade {{name}} von GitHub herunter...",
+      "hardware_target_unreachable": "Dieses Ziel ist über echte Hardware noch nicht erreichbar",
+      "flash_hardware_failed": "Hardware-Flash fehlgeschlagen: {{reason}}"
     },
     "progress": {
       "connecting": "Verbinde...",
@@ -572,6 +574,7 @@
   "tester": {
     "title": "Tester",
     "subtitle": "CAN-OTA-Diagnose & Live-Telemetrie",
+    "simulated_below_note": "Versionsabfrage ist real - Selbsttest, F-RAM, LEDs und Busmonitor unten bleiben simuliert (noch keine echte H745-Anwendungsfirmware zum Sprechen)",
     "global_controls": "Globale Steuerung",
     "status_led": "Status-LED",
     "ring_led": "Ring-LED",

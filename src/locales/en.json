@@ -521,7 +521,7 @@
   "flasher": {
     "title": "Flasher",
     "subtitle": "CAN-OTA Firmware Flashing (no JTAG/SWD, no USB-CAN)",
-    "hardware_not_implemented": "Hardware transport not implemented yet - showing simulated mode",
+    "hardware_target_unreachable": "Not reachable over real hardware yet - needs a relay tunnel the H745 firmware doesn't implement yet",
     "target": "Target",
     "robot_slot": "Robot Slot",
     "urtc_unreachable": "URTC unreachable",
@@ -551,7 +551,9 @@
       "flash_done": "Flash complete",
       "github_found": "Found {{count}} .bin asset(s) in {{repo}} releases",
       "github_error": "GitHub error: {{error}}",
-      "github_downloading": "Downloading {{name}} from GitHub..."
+      "github_downloading": "Downloading {{name}} from GitHub...",
+      "hardware_target_unreachable": "This target is not reachable over real hardware yet",
+      "flash_hardware_failed": "Hardware flash failed: {{reason}}"
     },
     "progress": {
       "connecting": "Connecting...",
@@ -572,6 +574,7 @@
   "tester": {
     "title": "Tester",
     "subtitle": "CAN-OTA Diagnostics & Live Telemetry",
+    "simulated_below_note": "Query Version is real - self-test, F-RAM, LEDs and bus monitor below stay simulated (no real H745 application firmware to talk to yet)",
     "global_controls": "Global Controls",
     "status_led": "Status LED",
     "ring_led": "Ring LED",

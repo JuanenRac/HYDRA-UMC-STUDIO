@@ -27,6 +27,48 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.3.0] - Real hardware transport for Flasher/Tester (Kinematic Brain + Robot Controller Board)
+
+- **`lib/canOta.ts`** - `settings.canOta.transport === 'hardware'` now
+  reaches a real path for Tier 0 (Kinematic Brain) and Tier 1 (Robot
+  Controller Board): `hardwareQueryVersion()`/`hardwareStartFlash()` call
+  HYDRA-UMC-SERVER's new `/api/hardware/canota/{version,flash}` relay,
+  which itself relays to HYDRA-UMC's new `src/cm5_host/spi_bridge/` local
+  service (the real SPI1 + `HYDRA_DATA_READY` GPIO link to the STM32H745).
+  `resolveHardwareTarget()` is a new, explicit, honest boundary:
+  urtcHead/urtcExpansion (Tier 2-3) return `null` - they need a real
+  application-level relay tunnel the H745 firmware doesn't implement yet
+  (still a FreeRTOS smoke-test stub), so they deliberately stay on the
+  simulated transport rather than pretending to reach hardware that isn't
+  actually connectable yet.
+- **`Flasher.tsx`** - the "Flash Now" button is no longer disabled just
+  because `transport === 'hardware'` (a real bug this fixes: it used to
+  disable the button unconditionally in hardware mode, even for Tier 0/1,
+  which are now genuinely reachable); it's disabled only when the
+  resolved target truly isn't reachable yet (Tier 2-3), with an honest,
+  specific message instead of the old generic "not implemented" banner.
+  Real per-page flash progress is now watched live from the store's new
+  `canotaProgress` (fed by a new `canota_progress` WebSocket message -
+  see store.tsx below), not just the final HTTP response.
+- **`Tester.tsx`** - a real bug this fixes: `transport` was never read
+  at all, so Query Version silently ran the mock simulation even when
+  `'hardware'` was selected. Query Version now reaches the same real path
+  as Flasher.tsx; self-test/F-RAM/LEDs/bus monitor stay simulated (no
+  real H745 *application* firmware to talk to yet - only the bootloader
+  spi_bridge speaks is real), now said explicitly in the UI instead of
+  silently implied.
+- **`store.tsx`** - new `canotaProgress` state, fed by a new `type:
+  "canota_progress"` WebSocket message handler (server.ts's own live
+  per-page flash progress broadcast).
+- All 7 language files (`en`/`es`/`de`/`fr`/`it`/`zh`/`ja`) gained the new
+  `flasher.hardware_target_unreachable`, `flasher.log.
+  hardware_target_unreachable`, `flasher.log.flash_hardware_failed` and
+  `tester.simulated_below_note` keys; the old, now-inaccurate
+  `flasher.hardware_not_implemented` key was replaced, not just added to.
+- Verified: `tsc --noEmit`, `npm run build`, `npm run lint` (no new
+  errors), and a real cross-language key-parity check (all 7 locale files
+  valid JSON, 718 keys each, 0 missing/orphaned).
+
 ## [0.2.9] - Ecosystem panels: real charts, card layouts, cross-referenced data
 
 Direct user feedback after `0.2.6`-`0.2.8`: the 5 Ecosystem panels were

@@ -22,14 +22,22 @@
 // relay). See architecture.md sections 2-4 for the full reasoning; this is
 // a PROPOSED scheme, not yet implemented in any real firmware.
 //
-// TRANSPORT: only a 'mock' implementation exists here - it simulates realistic
-// timing/behavior (page-by-page transfer, heartbeat, verify, occasional
-// induced failures) entirely client-side, since no STM32H745<->CM5 firmware
-// exists yet to actually talk to (settings.canOta.transport === 'hardware' is
-// reserved for that once it does - see Flasher.tsx/Tester.tsx for where that
-// switch is read). CRC32 itself is computed for real (not mocked) since it's
-// cheap and correct regardless of which transport ends up sending it.
+// TRANSPORT: 'mock' simulates realistic timing/behavior (page-by-page
+// transfer, heartbeat, verify, occasional induced failures) entirely
+// client-side - still the default, and still the only path for
+// urtcHead/urtcExpansion (Tier 2-3), which have no real relay tunnel yet.
+// 'hardware' (settings.canOta.transport) now reaches a REAL path for
+// kinematicBrain/controllerBoard (Tier 0-1) - see hardwareQueryVersion()/
+// hardwareStartFlash() below, which relay through HYDRA-UMC-SERVER to
+// HYDRA-UMC's own new src/cm5_host/spi_bridge/ local service. No populated
+// STM32H745 board exists yet to actually verify this against (see that
+// repo's own hardware/PCB/kinematic_brain_stm32h745/README.md) - the
+// software path is real and tested, the hardware on the other end isn't
+// yet. CRC32 itself is computed for real (not mocked) since it's cheap
+// and correct regardless of which transport ends up sending it.
 // =============================================================================
+
+import { apiUrl } from './apiBase';
 
 export type CanOtaTier = 'kinematicBrain' | 'controllerBoard' | 'urtcHead' | 'urtcExpansion';
 
@@ -314,6 +322,8 @@ export interface GithubFirmwareAsset {
   crc32?: string;
   displayName?: string;
   chip?: string;
+  /** Present when sourced from a manifest (every real case today) - the real hardware_id (e.g. "0x48374334") the bootloader validates START_UPDATE against; hardwareStartFlash() forwards this so a real device rejects a mismatched image instead of STUDIO guessing one. */
+  hardwareId?: string;
 }
 
 /**
@@ -342,7 +352,7 @@ export async function fetchGithubFirmwareReleases(repo: string, tier: CanOtaTier
   }
   const manifest = await res.json() as {
     components: Record<string, {
-      display_name: string; chip: string; version_string: string;
+      display_name: string; chip: string; version_string: string; hardware_id?: string;
       files: { bin: { filename: string; size_bytes: number; crc32: string } };
     }>
   };
@@ -360,9 +370,124 @@ export async function fetchGithubFirmwareReleases(repo: string, tier: CanOtaTier
       crc32: comp.files.bin.crc32,
       displayName: comp.display_name,
       chip: comp.chip,
+      hardwareId: comp.hardware_id,
     });
   }
   return assets;
+}
+
+// ---------------------------------------------------------------------------
+// REAL hardware transport - HYDRA-UMC-SERVER's own
+// /api/hardware/canota/{version,flash} relay to HYDRA-UMC's new
+// src/cm5_host/spi_bridge/ local service, itself the real SPI1 +
+// HYDRA_DATA_READY GPIO link to the STM32H745. `settings.canOta.transport
+// === 'hardware'` now reaches this real path instead of always falling
+// through to mock* below - see Flasher.tsx/Tester.tsx for where the
+// switch is read.
+// ---------------------------------------------------------------------------
+
+/** The real spi_bridge SPI_TARGET_* values (protocol.py) - only 3, not 4:
+ * urtcHead/urtcExpansion are reached only through a real application-level
+ * relay tunnel (RELAY_SEND/RELAY_RECV, architecture.md section 5) that
+ * doesn't exist in the H745 firmware yet (still FreeRTOS-stub, see that
+ * repo's own CHANGELOG). */
+export const SPI_TARGET_SELF = 0;
+export const SPI_TARGET_CM7 = 1;
+export const SPI_TARGET_STACKA = 2;
+
+export interface HardwareTargetResolution {
+  targetTier: number;
+  targetSlot: number;
+}
+
+/** Maps STUDIO's own 4-tier logical CanOtaTier onto the real 3-value
+ * SPI_TARGET_* the spi_bridge/H745 bootloader actually speaks. Returns
+ * null for urtcHead/urtcExpansion - not a bug, a real, honest boundary:
+ * there is no relay tunnel to reach them yet. */
+export function resolveHardwareTarget(target: CanOtaTarget): HardwareTargetResolution | null {
+  if (target.tier === 'kinematicBrain') return { targetTier: SPI_TARGET_SELF, targetSlot: 0 };
+  if (target.tier === 'controllerBoard') return { targetTier: SPI_TARGET_STACKA, targetSlot: target.robotIndex0 ?? 0 };
+  return null;
+}
+
+function authHeaders(authToken: string | null): Record<string, string> {
+  return authToken ? { Authorization: `Bearer ${authToken}` } : {};
+}
+
+/** Real GET /api/hardware/canota/version - same VersionQueryResult shape
+ * mockQueryVersion returns, so Flasher.tsx/Tester.tsx don't need a
+ * separate result type for the hardware path. */
+export async function hardwareQueryVersion(target: CanOtaTarget, authToken: string | null): Promise<VersionQueryResult> {
+  const resolved = resolveHardwareTarget(target);
+  if (!resolved) return { online: false };
+  try {
+    const res = await fetch(
+      apiUrl(`/api/hardware/canota/version?tier=${resolved.targetTier}&slot=${resolved.targetSlot}`),
+      { headers: authHeaders(authToken) },
+    );
+    if (!res.ok) return { online: false };
+    const body = await res.json();
+    if (!body.online) return { online: false };
+    return {
+      online: true,
+      firmwareVersion: `${body.firmware_major}.${body.firmware_minor}.0`,
+      hardwareId: `0x${Number(body.hardware_id || 0).toString(16).toUpperCase().padStart(8, '0')}`,
+    };
+  } catch {
+    return { online: false };
+  }
+}
+
+export interface HardwareFlashResult {
+  reachable: boolean;
+  success: boolean;
+  reason: string;
+}
+
+/** Real POST /api/hardware/canota/flash. Unlike mockFlash(), this is NOT
+ * an async generator - the real per-page progress arrives over the
+ * WebSocket (`type: "canota_progress"`, store.tsx's own `canotaProgress`
+ * state), not this HTTP response, which only ever reports the final
+ * outcome once the whole cycle ends. Flasher.tsx watches the store's
+ * `canotaProgress` for live phase/percent while this promise is pending.
+ *
+ * `hardwareId` should come from the real firmware_manifest.json entry for
+ * the file being flashed (GithubFirmwareAsset.hardwareId below) when
+ * known - a locally browsed .bin with no manifest metadata has no real
+ * hardware_id to send, so this defaults to 0 and lets the real bootloader
+ * reject it (VERIFY_FAIL_REASON_HARDWARE_ID) rather than STUDIO guessing
+ * one. */
+export async function hardwareStartFlash(
+  target: CanOtaTarget,
+  firmware: Uint8Array,
+  versionMajor: number,
+  versionMinor: number,
+  authToken: string | null,
+  hardwareId = 0,
+): Promise<HardwareFlashResult> {
+  const resolved = resolveHardwareTarget(target);
+  if (!resolved) {
+    return { reachable: false, success: false, reason: 'not reachable over hardware yet - needs the real application-level relay tunnel (architecture.md section 5)' };
+  }
+  const qs = new URLSearchParams({
+    tier: String(resolved.targetTier),
+    slot: String(resolved.targetSlot),
+    hardware_id: String(hardwareId),
+    version_major: String(versionMajor),
+    version_minor: String(versionMinor),
+  });
+  try {
+    const res = await fetch(apiUrl(`/api/hardware/canota/flash?${qs.toString()}`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream', ...authHeaders(authToken) },
+      body: firmware,
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) return { reachable: true, success: false, reason: body.error || `HTTP ${res.status}` };
+    return { reachable: true, success: !!body.success, reason: body.finalPhase || 'unknown' };
+  } catch (err) {
+    return { reachable: true, success: false, reason: String(err) };
+  }
 }
 
 export async function downloadGithubFirmware(asset: GithubFirmwareAsset): Promise<Uint8Array> {

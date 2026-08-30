@@ -615,6 +615,8 @@ interface HydraStoreContextType {
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   loginError: string | null;
+  /** Real, live per-page progress from a real POST /api/hardware/canota/flash cycle, pushed over WS as `{type: "canota_progress", payload}` (server.ts's own comment). Null until the first real message arrives; Flasher.tsx owns interpreting/clearing it, same as it already owns phase/percent for the mock transport. */
+  canotaProgress: Record<string, unknown> | null;
 }
 
 /** Stores the  hydra context configuration or state data. */
@@ -696,6 +698,16 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [loginError, setLoginError] = useState<string | null>(null);
   const role = useMemo(() => decodeJwtRole(authToken), [authToken]);
   const isAdmin = role === 'admin';
+
+  // Real, live per-page flash progress from a real POST /api/hardware/
+  // canota/flash cycle (server.ts's own comment on its `canota_progress`
+  // WS broadcast) - the HTTP response for that request only reports the
+  // final outcome, so Flasher.tsx watches this instead of the fetch's own
+  // response for live percent/phase. Cleared back to null whenever a
+  // `phase: 'done'`/`'error'` message arrives isn't done here - Flasher.tsx
+  // owns when to stop showing it, same as it already owns `phase`/`percent`
+  // state for the mock transport.
+  const [canotaProgress, setCanotaProgress] = useState<Record<string, unknown> | null>(null);
 
   const login = useCallback(async (username: string, password: string) => {
     setLoginError(null);
@@ -1019,6 +1031,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               // differs, see server.ts's own broadcastSettings() - so both
               // apply identically here.
               applyServerData(msg.payload);
+            } else if (msg?.type === 'canota_progress' && msg.payload) {
+              setCanotaProgress(msg.payload);
             } else if (msg?.error) {
               console.warn('[WS] ' + msg.error);
             }
@@ -1291,7 +1305,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updateController, updateRobot, sendRobotCommand, updateCamera, updateSettings,
       saveKinematics, loadKinematics, addController, removeController,
       exportScene, importScene, factoryReset,
-      authToken, role, isAdmin, login, logout, loginError
+      authToken, role, isAdmin, login, logout, loginError,
+      canotaProgress
     }}>
       {children}
     </HydraContext.Provider>

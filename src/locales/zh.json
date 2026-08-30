@@ -521,7 +521,7 @@
   "flasher": {
     "title": "Flasher 刷写工具",
     "subtitle": "CAN-OTA 固件刷写（无需 JTAG/SWD，无需 USB-CAN）",
-    "hardware_not_implemented": "硬件传输尚未实现——显示为模拟模式",
+    "hardware_target_unreachable": "尚无法通过真实硬件访问 - 需要 H745 固件尚未实现的中继隧道",
     "target": "目标",
     "robot_slot": "机器人插槽",
     "urtc_unreachable": "URTC 无法访问",
@@ -551,7 +551,9 @@
       "flash_done": "刷写完成",
       "github_found": "在 {{repo}} 的发布版本中找到 {{count}} 个 .bin 资产",
       "github_error": "GitHub 错误：{{error}}",
-      "github_downloading": "正在从 GitHub 下载 {{name}}…"
+      "github_downloading": "正在从 GitHub 下载 {{name}}…",
+      "hardware_target_unreachable": "该目标尚无法通过真实硬件访问",
+      "flash_hardware_failed": "硬件烧录失败：{{reason}}"
     },
     "progress": {
       "connecting": "连接中…",
@@ -572,6 +574,7 @@
   "tester": {
     "title": "Tester 测试工具",
     "subtitle": "CAN-OTA 诊断与实时遥测",
+    "simulated_below_note": "查询版本是真实的——下方的自检、F-RAM、LED 和总线监视器仍为模拟（尚无真实的 H745 应用固件可通信）",
     "global_controls": "全局控制",
     "status_led": "状态指示灯",
     "ring_led": "环形指示灯",

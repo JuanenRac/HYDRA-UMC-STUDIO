@@ -8,8 +8,16 @@
 // feature set (global LED/OLED controls, F-RAM query/erase, per-tool
 // telemetry, safe self-test, raw CAN bus monitor) onto the same multi-hop
 // chain Flasher.tsx uses. See HYDRA-UMC's docs/architecture.md and
-// canOta.ts's header comment for the addressing scheme and simulated
-// transport this runs against until real hardware exists.
+// canOta.ts's header comment for the addressing scheme.
+//
+// Unlike Flasher.tsx, only Query Version reaches a real path when
+// `settings.canOta.transport === 'hardware'` - self-test/F-RAM/LED/bus
+// monitor all need real STM32H745 APPLICATION-level commands (not just
+// the bootloader spi_bridge speaks today) that don't exist in the H745
+// firmware yet (still a FreeRTOS smoke-test stub - see that repo's own
+// CHANGELOG). Those stay simulated regardless of the transport setting,
+// with an explicit note in the UI rather than silently pretending
+// otherwise.
 //
 // Like URTC-TESTER itself, self-test only ever performs SAFE at-rest checks
 // (comms, zero-setpoint round trips) - it never actuates anything at
@@ -22,7 +30,7 @@ import { Activity, Beaker, Radio, RefreshCw, Trash2, CheckCircle2, XCircle, Circ
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useHydraStore, type ToolType } from '../store';
-import { chipNameFor, hasAdvancedExpansion, hopDescription, mockQueryVersion, mockSelfTest, slotLabel, startMockBusMonitor, type CanFrame, type CanOtaTarget, type CanOtaTier, type SelfTestStep } from '../lib/canOta';
+import { chipNameFor, hardwareQueryVersion, hasAdvancedExpansion, hopDescription, mockQueryVersion, mockSelfTest, slotLabel, startMockBusMonitor, type CanFrame, type CanOtaTarget, type CanOtaTier, type SelfTestStep } from '../lib/canOta';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -59,8 +67,9 @@ const ALL_TIERS: CanOtaTier[] = ['kinematicBrain', 'controllerBoard', 'urtcHead'
  */
 export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   const { t } = useTranslation();
-  const { activeController, updateRobot, updateController } = useHydraStore();
+  const { activeController, updateRobot, updateController, settings, authToken } = useHydraStore();
   const robots = activeController?.robots || [];
+  const isHardwareTransport = settings.canOta?.transport === 'hardware';
 
   const [tier, setTier] = useState<CanOtaTier>(tiers[0]);
   useEffect(() => { if (!tiers.includes(tier)) setTier(tiers[0]); }, [tiers]); // eslint-disable-line
@@ -157,7 +166,7 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   async function handleQueryVersion() {
     if (!target) return;
     setQuerying(true);
-    const res = await mockQueryVersion(target);
+    const res = isHardwareTransport ? await hardwareQueryVersion(target, authToken) : await mockQueryVersion(target);
     setQuerying(false);
     if (!res.online) return;
     const patch: Record<string, any> = { firmwareVersion: res.firmwareVersion, bootloaderVersion: res.bootloaderVersion, hardwareId: res.hardwareId, lastSeen: Date.now() };
@@ -206,6 +215,11 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
             <p className="text-xs text-slate-400">{t('tester.subtitle', 'CAN-OTA Diagnostics & Live Telemetry')}</p>
           </div>
         </div>
+        {isHardwareTransport && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-400 text-xs font-semibold">
+            {t('tester.simulated_below_note')}
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar p-6 relative z-10 space-y-6">

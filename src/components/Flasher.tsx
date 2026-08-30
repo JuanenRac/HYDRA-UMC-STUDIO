@@ -12,9 +12,9 @@
 //      only offered when that robot's URTC head reports expansion_board_type 3 or 4
 // Deliberately CAN-OTA/SPI-OTA only - no JTAG/SWD, no USB-CAN dongle (see
 // URTC-FLASHER, this project's own desktop sibling tool, for that style of
-// flashing instead). Runs against a simulated transport (settings.canOta.
-// transport) until real STM32H745 firmware exists to talk to over SPI - see
-// canOta.ts's own header comment.
+// flashing instead). `settings.canOta.transport` picks 'mock' (simulated,
+// every tier) or 'hardware' (real, Tier 0-1 only - urtcHead/urtcExpansion
+// have no real relay tunnel yet) - see canOta.ts's own header comment.
 // =============================================================================
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -26,7 +26,8 @@ import { useHydraStore } from '../store';
 import { ConfirmDialog } from './ConfirmDialog';
 import {
   chipNameFor, crc32, downloadGithubFirmware, fetchGithubFirmwareReleases, GITHUB_FIRMWARE_REPO,
-  hasAdvancedExpansion, hopDescription, mockFlash, mockQueryVersion, slotLabel,
+  hardwareQueryVersion, hardwareStartFlash, hasAdvancedExpansion, hopDescription, mockFlash, mockQueryVersion,
+  resolveHardwareTarget, slotLabel,
   type CanOtaTarget, type CanOtaTier, type FlashPhase, type GithubFirmwareAsset,
 } from '../lib/canOta';
 
@@ -48,13 +49,13 @@ const ALL_TIERS: CanOtaTier[] = ['kinematicBrain', 'controllerBoard', 'urtcHead'
  */
 export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   const { t } = useTranslation();
-  const { activeController, updateRobot, updateController, settings } = useHydraStore();
+  const { activeController, updateRobot, updateController, settings, authToken, canotaProgress } = useHydraStore();
   const robots = activeController?.robots || [];
 
   const [tier, setTier] = useState<CanOtaTier>(tiers[0]);
   useEffect(() => { if (!tiers.includes(tier)) setTier(tiers[0]); }, [tiers]); // eslint-disable-line
   const [robotId, setRobotId] = useState<number>(robots[0]?.id ?? 0);
-  const [file, setFile] = useState<{ name: string; size: number; bytes: Uint8Array; crc: number } | null>(null);
+  const [file, setFile] = useState<{ name: string; size: number; bytes: Uint8Array; crc: number; hardwareId?: string; versionTag?: string } | null>(null);
   const [allowDowngrade, setAllowDowngrade] = useState(false);
   const [eraseFram, setEraseFram] = useState(false);
   const [querying, setQuerying] = useState(false);
@@ -110,6 +111,12 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
 
   const targetLabel = t(`flasher.target_${tier === 'kinematicBrain' ? 'kinematic_brain' : tier === 'controllerBoard' ? 'controller_board' : tier === 'urtcHead' ? 'urtc_head' : 'urtc_expansion'}`);
 
+  // Real, honest boundary: urtcHead/urtcExpansion have no real relay
+  // tunnel yet (resolveHardwareTarget()'s own comment) - only meaningful
+  // once isHardwareTransport is on, since the mock transport reaches all
+  // 4 tiers fine.
+  const hardwareTargetUnreachable = isHardwareTransport && !!target && resolveHardwareTarget(target) === null;
+
   const boardState = tier === 'kinematicBrain' ? activeController?.kinematicBrain
     : tier === 'controllerBoard' ? robot?.controllerBoard
     : tier === 'urtcHead' ? robot?.urtcHead
@@ -162,7 +169,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
     pushLog(t('flasher.log.github_downloading', { name: asset.name }));
     try {
       const bytes = await downloadGithubFirmware(asset);
-      setFile({ name: asset.name, size: bytes.length, bytes, crc: crc32(bytes) });
+      setFile({ name: asset.name, size: bytes.length, bytes, crc: crc32(bytes), hardwareId: asset.hardwareId, versionTag: asset.releaseTag });
       pushLog(t('flasher.log.file_loaded', { name: asset.name, size: bytes.length }), 'ok');
     } catch (err) {
       pushLog(t('flasher.log.github_error', { error: String(err) }), 'error');
@@ -173,7 +180,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
     if (!target) return;
     setQuerying(true);
     pushLog(t('flasher.log.querying', { hop: hopDescription(target) }));
-    const res = await mockQueryVersion(target);
+    const res = isHardwareTransport ? await hardwareQueryVersion(target, authToken) : await mockQueryVersion(target);
     setQuerying(false);
     if (!res.online) {
       pushLog(t('flasher.log.no_response'), 'error');
@@ -192,6 +199,37 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
 
   async function doFlash() {
     if (!target || !file) return;
+    if (isHardwareTransport) {
+      const resolved = resolveHardwareTarget(target);
+      if (!resolved) {
+        pushLog(t('flasher.log.hardware_target_unreachable'), 'error');
+        return;
+      }
+      setFlashing(true);
+      setPhase('connecting');
+      setPercent(0);
+      pushLog(t('flasher.log.flash_start', { name: file.name, hop: hopDescription(target) }));
+      const [versionMajorStr, versionMinorStr] = (file.versionTag || '0.0').split('.');
+      const hardwareIdNumber = file.hardwareId ? Number(file.hardwareId) : 0;
+      try {
+        const result = await hardwareStartFlash(
+          target, file.bytes, Number(versionMajorStr) || 0, Number(versionMinorStr) || 0, authToken, hardwareIdNumber,
+        );
+        if (result.success) {
+          setPhase('done');
+          setPercent(100);
+          pushLog(t('flasher.log.flash_done'), 'ok');
+          applyBoardPatch({ firmwareVersion: file.name.replace(/\.bin$/i, ''), bootloaderVersion: boardState?.bootloaderVersion || '0.0.0', hardwareId: boardState?.hardwareId, lastSeen: Date.now() });
+        } else {
+          setPhase('error');
+          pushLog(t('flasher.log.flash_hardware_failed', { reason: result.reason }), 'error');
+        }
+      } finally {
+        setFlashing(false);
+      }
+      return;
+    }
+
     setFlashing(true);
     let lastPhase: FlashPhase | null = null;
     pushLog(t('flasher.log.flash_start', { name: file.name, hop: hopDescription(target) }));
@@ -213,6 +251,25 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
     }
   }
 
+  // Real, live per-page progress from a real hardware flash cycle arrives
+  // over the store's own WS-fed `canotaProgress`, not this component's
+  // hardwareStartFlash() promise (which only resolves once, at the end) -
+  // see canOta.ts's own hardwareStartFlash() header comment for why. Only
+  // applied while this component's own hardware flash is actually running,
+  // so an unrelated canota_progress broadcast (e.g. another browser tab
+  // flashing a different target) never bleeds into this instance's UI.
+  useEffect(() => {
+    if (!flashing || !isHardwareTransport || !canotaProgress) return;
+    const progress = canotaProgress as { phase?: FlashPhase; pages_sent?: number; pages_total?: number; percent?: number; error?: string | null };
+    if (progress.phase) setPhase(progress.phase);
+    if (typeof progress.percent === 'number') setPercent(progress.percent);
+    if (typeof progress.pages_sent === 'number' && typeof progress.pages_total === 'number') {
+      setPages({ sent: progress.pages_sent, total: progress.pages_total });
+    }
+    if (progress.phase === 'transferring' && progress.pages_sent && progress.pages_total && progress.pages_sent % 5 !== 0 && progress.pages_sent !== progress.pages_total) return;
+    pushLog(t(`flasher.progress.${progress.phase}`, { page: progress.pages_sent, total: progress.pages_total }), progress.phase === 'error' ? 'error' : 'info');
+  }, [canotaProgress]); // eslint-disable-line
+
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-slate-900/50 rounded-2xl border border-slate-800/50 overflow-hidden relative">
       <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-position-[bottom_1px_center] pointer-events-none" />
@@ -227,9 +284,9 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
             <p className="text-xs text-slate-400">{t('flasher.subtitle', 'CAN-OTA Firmware Flashing (no JTAG/SWD, no USB-CAN)')}</p>
           </div>
         </div>
-        {isHardwareTransport && (
+        {hardwareTargetUnreachable && (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-400 text-xs font-semibold">
-            <AlertTriangle size={14} /> {t('flasher.hardware_not_implemented')}
+            <AlertTriangle size={14} /> {t('flasher.hardware_target_unreachable')}
           </div>
         )}
       </div>
@@ -325,7 +382,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
         <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
           <button
             onClick={handleFlash}
-            disabled={!file || flashing || isHardwareTransport}
+            disabled={!file || flashing || hardwareTargetUnreachable}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-sky-500 hover:bg-sky-400 disabled:opacity-30 disabled:cursor-not-allowed text-slate-950 font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(0,229,255,0.4)]"
           >
             <Zap size={16} /> {flashing ? t('flasher.flashing', 'Flashing...') : t('flasher.flash_now', 'Flash Now')}
