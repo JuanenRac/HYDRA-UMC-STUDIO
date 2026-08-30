@@ -301,6 +301,9 @@
     "xy_table_controls": "Commandes de Table XY",
     "joint_controls_overlay": "Commandes des Articulations",
     "xyz_jog": "Jog XYZ",
+    "base_rotate_ccw": "Faire pivoter la base dans le sens antihoraire",
+    "base_rotate_cw": "Faire pivoter la base dans le sens horaire",
+    "base_rotation": "Base (J1)",
     "floating_overlay_hint": "Vitesse, accélération, articulations et jog XYZ ont été déplacés vers le panneau flottant sur la vue 3D ci-dessus."
   },
   "cameras": {

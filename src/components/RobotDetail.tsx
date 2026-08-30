@@ -11,7 +11,7 @@ import { motion, useDragControls } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { type RobotState, useHydraStore, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, globalPlaybacks } from '../store';
 import { apiUrl } from '../lib/apiBase';
-import { RotateCcw, Home, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, Save, Play, Square, Pause, Crosshair, RefreshCw, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat, Download, Grid3x3, Plus } from 'lucide-react';
+import { RotateCcw, RotateCw, Home, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, Save, Play, Square, Pause, Crosshair, RefreshCw, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat, Download, Grid3x3, Plus } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { VirtualKinematics } from './VirtualKinematics';
@@ -494,19 +494,28 @@ function JointControlsOverlay({
 }
 
 /**
- * Floating, draggable overlay holding just the XYZ jog Joystick3D - split
- * out of JointControlsOverlay into its own window (see that component's
- * own header comment for the full context/spec pointer).
+ * Floating, draggable overlay holding the XYZ jog Joystick3D, plus 2
+ * dedicated base-rotation (J1) buttons underneath it - requested directly:
+ * jogging the tool point (XYZ, via Joystick3D) and rotating the base are
+ * the two things an operator actually wants side by side in one window,
+ * rather than opening the separate J1-J6 grid (JointControlsOverlay) just
+ * to nudge J1. Split out of JointControlsOverlay into its own window
+ * originally (see that component's own header comment for the full
+ * context/spec pointer).
  */
 function JoystickOverlay({
-  jogStep, onXYZJog, t,
+  jogStep, onXYZJog, onJ1Jog, j1Value, j1Limits, t,
 }: {
   jogStep: number;
   onXYZJog: (dx: number, dy: number, dz: number) => void;
+  onJ1Jog: (direction: 1 | -1) => void;
+  j1Value: number;
+  j1Limits: [number, number];
   t: any;
 }) {
   const controls = useDragControls();
   const [collapsed, setCollapsed] = useState(false);
+  const [j1Min, j1Max] = j1Limits;
 
   return (
     <motion.div
@@ -527,8 +536,29 @@ function JoystickOverlay({
         </button>
       </div>
       {!collapsed && (
-        <div className="p-3 flex justify-center">
+        <div className="p-3 flex flex-col items-center gap-2">
           <Joystick3D onJog={onXYZJog} />
+          <div className="flex items-center gap-2 w-full pt-2 border-t border-slate-800">
+            <button
+              onClick={() => onJ1Jog(-1)}
+              disabled={j1Value <= j1Min}
+              title={t('robot_detail.base_rotate_ccw', 'Rotate base counter-clockwise')}
+              className="flex-1 flex items-center justify-center gap-1.5 bg-slate-900/80 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed border border-slate-800 rounded-lg py-1.5 text-slate-300 transition-colors"
+            >
+              <RotateCcw size={14} />
+            </button>
+            <span className="text-[9px] font-mono text-sky-400 shrink-0 w-14 text-center" title={t('robot_detail.base_rotation', 'Base (J1)')}>
+              J1 {j1Value.toFixed(1)}°
+            </span>
+            <button
+              onClick={() => onJ1Jog(1)}
+              disabled={j1Value >= j1Max}
+              title={t('robot_detail.base_rotate_cw', 'Rotate base clockwise')}
+              className="flex-1 flex items-center justify-center gap-1.5 bg-slate-900/80 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed border border-slate-800 rounded-lg py-1.5 text-slate-300 transition-colors"
+            >
+              <RotateCw size={14} />
+            </button>
+          </div>
         </div>
       )}
     </motion.div>
@@ -1208,6 +1238,37 @@ console.log("Loading example:", id);
     }
   };
 
+  // Dedicated base-rotation (J1) jog, alongside the Cartesian XYZ jog above -
+  // requested directly: 2 dedicated base-rotation buttons rather than
+  // needing to open the separate J1-J6 grid (JointControlsOverlay) just to
+  // nudge the base. Deliberately pure joint-space, NOT round-tripped
+  // through Cartesian pos+resolveTargetJoints the way handleXYZJog is:
+  // rotating J1 alone doesn't need inverse kinematics at all (unlike
+  // dx/dy/dz, which do), so going straight to the joint value is both
+  // simpler and can't introduce a wrong-solution IK ambiguity. Still keeps
+  // `robot.pos` consistent afterward via forward kinematics (same
+  // jointsToCartesianForModel used above) rather than leaving it stale,
+  // and clamps to this model's own real J1 limits (jointLimitsFor, same
+  // helper the J1-J6 grid's own knob/slider already use) so a jog can't
+  // walk the joint value outside what a real robot could ever reach.
+  const handleJ1Jog = (direction: 1 | -1) => {
+    const [j1Min, j1Max] = jointLimitsFor(robot.model, 'j1');
+    const newJ1 = Math.min(j1Max, Math.max(j1Min, robot.joints.j1 + direction * jogStep));
+    if (newJ1 === robot.joints.j1) return; // already at a real limit - no-op, not a clamped-but-sent command
+    const newJoints = { ...robot.joints, j1: newJ1 };
+    const newCart = jointsToCartesianForModel(robot.model, newJoints);
+    sendRobotCommand(
+      robot.id,
+      'jog',
+      // axis:'x'/amount:0 is a real no-op on the server's own robot.pos.x -
+      // the actual desired state is the `joints` override right below,
+      // same sanctioned mechanism handleXYZJog already uses (see
+      // server.ts's own jog case comment on that override).
+      { axis: 'x', amount: 0, target: 'robot', joints: newJoints },
+      () => ({ pos: { ...robot.pos, x: newCart.x, y: newCart.y, z: newCart.z, a: newCart.a, b: newCart.b, c: newCart.c }, joints: newJoints })
+    );
+  };
+
   const toggleValve = (index: number) => {
     // Atomic /api/robot/:id/command instead of updateRobot + the 500ms
     // debounced full-tree POST /api/settings - see DISEÑO_SYNC_DELTAS.txt
@@ -1328,7 +1389,14 @@ console.log("Loading example:", id);
             )}
 
             {isFloatingLayout && !viewportOnly && (
-              <JoystickOverlay jogStep={jogStep} onXYZJog={handleXYZJog} t={t} />
+              <JoystickOverlay
+                jogStep={jogStep}
+                onXYZJog={handleXYZJog}
+                onJ1Jog={handleJ1Jog}
+                j1Value={robot.joints.j1}
+                j1Limits={jointLimitsFor(robot.model, 'j1')}
+                t={t}
+              />
             )}
 
             {isFloatingLayout && !viewportOnly && hasXYTable && (

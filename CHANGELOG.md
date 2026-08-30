@@ -24,6 +24,32 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.2.3] - Dedicated base-rotation buttons on the XYZ Jog overlay
+
+- **`RobotDetail.tsx`'s floating `JoystickOverlay`** now has 2 dedicated
+  base-rotation (J1) buttons right under the XYZ jog `Joystick3D` -
+  requested directly, so rotating the base and jogging the tool point are
+  both reachable from the one window an operator actually keeps open,
+  instead of needing the separate J1-J6 grid (`JointControlsOverlay`)
+  just to nudge J1.
+- New `handleJ1Jog(direction)`, mirroring `handleXYZJog`'s own real
+  atomic-command pattern (`sendRobotCommand('jog', ...)`, not the passive
+  `updateRobot`/debounced-POST path a plain joint-value change would
+  otherwise take) - deliberately pure joint-space (no Cartesian
+  round-trip through IK, unlike XYZ jog: rotating J1 alone doesn't need
+  it), clamped to this model's own real J1 limits (`jointLimitsFor`, the
+  same helper the J1-J6 grid's own slider already uses), and keeps
+  `robot.pos` consistent afterward via forward kinematics
+  (`jointsToCartesianForModel`) rather than leaving it stale.
+- New `base_rotate_ccw`/`base_rotate_cw`/`base_rotation` translation
+  keys added to all 7 locale files (`src/locales/*.json`).
+- Verified: `tsc --noEmit` clean, `npm run build` succeeds, `npm run
+  lint` shows no new warnings on the touched files. Not yet live-verified
+  against a real robot - the button-level plumbing reuses the same
+  `sendRobotCommand`/`jog` path `handleXYZJog` already sends real
+  movement through, but a live device check is still the way to confirm
+  ergonomics/feel before calling this fully done.
+
 ## [0.2.2] - Camera PIP fix, condensed Android action buttons, WS diagnostics
 
 - **Fixes a robot's Camera PIP showing in the 3D viewport with every

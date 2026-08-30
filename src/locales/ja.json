@@ -301,6 +301,9 @@
     "xy_table_controls": "XY テーブル制御",
     "joint_controls_overlay": "関節制御",
     "xyz_jog": "XYZ ジョグ",
+    "base_rotate_ccw": "ベースを反時計回りに回転",
+    "base_rotate_cw": "ベースを時計回りに回転",
+    "base_rotation": "ベース (J1)",
     "floating_overlay_hint": "速度、加速度、関節、XYZ ジョグは上部の 3D ビュー上のフローティングパネルに移動しました。"
   },
   "cameras": {

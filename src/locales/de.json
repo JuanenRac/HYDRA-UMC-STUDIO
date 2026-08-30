@@ -301,6 +301,9 @@
     "xy_table_controls": "XY-Tisch-Steuerung",
     "joint_controls_overlay": "Gelenksteuerung",
     "xyz_jog": "XYZ-Jog",
+    "base_rotate_ccw": "Basis gegen den Uhrzeigersinn drehen",
+    "base_rotate_cw": "Basis im Uhrzeigersinn drehen",
+    "base_rotation": "Basis (J1)",
     "floating_overlay_hint": "Geschwindigkeit, Beschleunigung, Gelenke und XYZ-Jog wurden in das schwebende Panel über der 3D-Ansicht oben verschoben."
   },
   "cameras": {

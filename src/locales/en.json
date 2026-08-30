@@ -301,6 +301,9 @@
     "xy_table_controls": "XY Table Controls",
     "joint_controls_overlay": "Joint Controls",
     "xyz_jog": "XYZ Jog",
+    "base_rotate_ccw": "Rotate base counter-clockwise",
+    "base_rotate_cw": "Rotate base clockwise",
+    "base_rotation": "Base (J1)",
     "floating_overlay_hint": "Speed, acceleration, joints and XYZ jog moved to the floating panel on the 3D view above."
   },
   "cameras": {

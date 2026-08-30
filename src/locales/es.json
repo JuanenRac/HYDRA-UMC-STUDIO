@@ -301,6 +301,9 @@
     "xy_table_controls": "Controles de Mesa XY",
     "joint_controls_overlay": "Controles de Articulaciones",
     "xyz_jog": "Jog XYZ",
+    "base_rotate_ccw": "Girar base en sentido antihorario",
+    "base_rotate_cw": "Girar base en sentido horario",
+    "base_rotation": "Base (J1)",
     "floating_overlay_hint": "Velocidad, aceleración, articulaciones y jog XYZ se movieron al panel flotante sobre la vista 3D de arriba."
   },
   "cameras": {

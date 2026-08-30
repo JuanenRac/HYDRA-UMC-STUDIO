@@ -301,6 +301,9 @@
     "xy_table_controls": "Controlli Tavola XY",
     "joint_controls_overlay": "Controlli Articolazioni",
     "xyz_jog": "Jog XYZ",
+    "base_rotate_ccw": "Ruota base in senso antiorario",
+    "base_rotate_cw": "Ruota base in senso orario",
+    "base_rotation": "Base (J1)",
     "floating_overlay_hint": "Velocità, accelerazione, articolazioni e jog XYZ sono stati spostati nel pannello flottante sopra la vista 3D."
   },
   "cameras": {

@@ -301,6 +301,9 @@
     "xy_table_controls": "XY 工作台控制",
     "joint_controls_overlay": "关节控制",
     "xyz_jog": "XYZ 点动",
+    "base_rotate_ccw": "底座逆时针旋转",
+    "base_rotate_cw": "底座顺时针旋转",
+    "base_rotation": "底座 (J1)",
     "floating_overlay_hint": "速度、加速度、关节及 XYZ 点动已移动到上方 3D 视图中的浮动面板。"
   },
   "cameras": {
