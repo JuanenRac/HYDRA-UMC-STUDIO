@@ -233,7 +233,16 @@
     "model_submissions_desc": "Whether this server accepts a finished robot/machine (3D meshes + kinematics) pushed here from HYDRA-UMC-EDITOR-URDF. Off by default - files only land on disk if you turn this on.",
     "model_submissions_enable": "Accept model submissions",
     "model_submissions_folder": "Destination folder",
-    "model_submissions_folder_desc": "Relative to this server's own data/ directory. Created automatically the first time a submission is accepted."
+    "model_submissions_folder_desc": "Relative to this server's own data/ directory. Created automatically the first time a submission is accepted.",
+    "ai_hailo": "AI / Hailo",
+    "ai_hailo_desc": "Records which Hailo AI accelerator is actually installed on this deployment - a real hardware fact, not a live device query (neither node below exposes an HTTP API of its own yet).",
+    "ai_hailo_vision_device": "Vision AI device",
+    "ai_hailo_vision_desc": "Drives the real detection/vision pipeline today (HYDRA-UMC-VISION-NODE, DETECTION-HEF, VISION-STREAMER).",
+    "ai_hailo_cognitive_device": "Cognitive AI device",
+    "ai_hailo_cognitive_desc": "A separate, planned accelerator for LLM/VLA/voice work (HYDRA-UMC-COGNITIVE-NODE, VLA-ENGINE, SEMANTIC-PLANNER, VOICE-UI) - defaults to None since this hardware doesn't exist on any real deployment yet.",
+    "ai_hailo_registry_path": "Model registry path",
+    "ai_hailo_registry_desc": "Where compiled .hef models live - mirrors HYDRA-UMC-DETECTION-HEF's own models_dir (its real registry with sha256 checksum verification).",
+    "ai_hailo_none": "None (not installed)"
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -496,6 +505,16 @@
           "You don't have to sign in at all to look around - \"Continue read-only\" on the login screen lets you browse every panel and the live 3D view, you just can't save changes or send commands from that session.",
           "Config > Remote Access has one switch per remote client - HYDRA-UMC SUITE, the Android control app, and the iOS control app - so you can allow one and block another independently. Turning one off only stops that app's own \"find my server\" scan from seeing this one; it doesn't password-protect the API by itself, since anyone who already has this server's IP address can still reach it directly."
         ]
+      },
+      "ecosystem": {
+        "label": "Ecosystem",
+        "heading": "STUDIO as the whole ecosystem's frontend",
+        "paragraphs": [
+          "The HYDRA-UMC menu (left sidebar) is not only about this deployment's own robots - it also surfaces the whole HYDRA-UMC-* ecosystem this Server can see: which sibling projects exist, whether their own service is actually reachable, who's connected, and what the Server itself is doing.",
+          "HYDRA-UMC > Services lists every sibling HYDRA-UMC-* project checked out next to this Server, with a real live probe (TCP/HTTP) for whichever ones declare their own port - a green or red dot, not just a maturity label. There's no start/stop here yet: no process supervisor exists anywhere in the ecosystem today.",
+          "HYDRA-UMC > Telemetry runs real raw or aggregated queries against HYDRA-UMC-DATALAKE's own stored readings. HYDRA-UMC > AI Family narrows that same Services scan to the Vision AI (Hailo-8, today's camera/detection pipeline) and Cognitive AI (Hailo-10 8GB, planned) nodes - see Config > AI/Hailo to record which chip is actually installed on this deployment and where compiled models live.",
+          "Connected Apps, Server Logs and Server Admin (HYDRA-UMC menu, admin accounts only) mirror the same admin API this Server's own reference admin panel uses: every live connection right now, a tail of the Server's own log file, and its listen port plus a graceful restart."
+        ]
       }
     }
   },
@@ -710,7 +729,13 @@
     "admin_server_port_invalid": "Port must be a number between 1 and 65535.",
     "admin_server_port_saved": "Port saved - restart this server for it to take effect.",
     "admin_server_restart_requested": "Restart requested.",
-    "admin_server_load_error": "Could not reach the server admin API."
+    "admin_server_load_error": "Could not reach the server admin API.",
+    "menu_ai_family": "AI Family",
+    "ai_family_title": "AI Family",
+    "ai_family_desc": "The same real ecosystem scan as Services, narrowed to the two families the ecosystem's own manifests self-report as AI. No live telemetry here either - see Config > AI/Hailo to record what's actually installed on this deployment.",
+    "ai_family_vision": "Vision AI Node ({{device}} today)",
+    "ai_family_cognitive": "Cognitive AI Node ({{device}} planned)",
+    "ai_family_note": "None of these nodes expose an HTTP API of their own yet - every one is a CLI tool/library today. This panel shows manifest/liveness data only, the same as Services, not a richer live AI dashboard that doesn't exist server-side."
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Access",

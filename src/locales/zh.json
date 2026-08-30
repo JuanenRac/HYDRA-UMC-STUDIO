@@ -233,7 +233,16 @@
     "model_submissions_desc": "本服务器是否接受从 HYDRA-UMC-EDITOR-URDF 推送来的已完成机器人/机器（3D 网格 + 运动学）。默认关闭——只有开启此选项后文件才会写入磁盘。",
     "model_submissions_enable": "接受模型提交",
     "model_submissions_folder": "目标文件夹",
-    "model_submissions_folder_desc": "相对于本服务器自身 data/ 目录的路径。首次接受提交时会自动创建。"
+    "model_submissions_folder_desc": "相对于本服务器自身 data/ 目录的路径。首次接受提交时会自动创建。",
+    "ai_hailo": "AI / Hailo",
+    "ai_hailo_desc": "记录此部署上实际安装的 Hailo AI 加速器 - 真实的硬件信息,而非实时设备查询(下面两个节点目前都还没有自己的 HTTP API)。",
+    "ai_hailo_vision_device": "视觉 AI 设备",
+    "ai_hailo_vision_desc": "目前驱动真实的检测/视觉流水线(HYDRA-UMC-VISION-NODE、DETECTION-HEF、VISION-STREAMER)。",
+    "ai_hailo_cognitive_device": "认知 AI 设备",
+    "ai_hailo_cognitive_desc": "用于 LLM/VLA/语音工作的独立、规划中的加速器(HYDRA-UMC-COGNITIVE-NODE、VLA-ENGINE、SEMANTIC-PLANNER、VOICE-UI)- 默认设为“无”,因为该硬件目前尚未在任何真实部署中存在。",
+    "ai_hailo_registry_path": "模型注册表路径",
+    "ai_hailo_registry_desc": "编译后的 .hef 模型存放位置 - 对应 HYDRA-UMC-DETECTION-HEF 自身的 models_dir(其带 sha256 校验和验证的真实注册表)。",
+    "ai_hailo_none": "无(未安装)"
   },
   "robot_detail": {
     "back": "返回仪表盘",
@@ -496,6 +505,16 @@
           "你完全不需要登录就可以四处浏览——登录界面上的“以只读方式继续”可让你浏览每一个面板及实时 3D 视图，只是无法从该会话中保存更改或发送指令。",
           "“设置 > 远程访问”为每个远程客户端——HYDRA-UMC SUITE、安卓控制应用与 iOS 控制应用——各提供一个开关，因此你可以独立允许一个、阻止另一个。关闭其中一个，只会阻止该应用自身的“查找我的服务器”扫描发现本服务器；这本身并不能为 API 加上密码保护，因为任何已经拥有本服务器 IP 地址的人依然可以直接访问它。"
         ]
+      },
+      "ecosystem": {
+        "label": "生态系统",
+        "heading": "STUDIO 作为整个生态系统的前端",
+        "paragraphs": [
+          "HYDRA-UMC 菜单(左侧边栏)不仅涉及此部署自身的机器人 - 它还展示了此服务器能看到的整个 HYDRA-UMC-* 生态系统:存在哪些同级项目、它们自身的服务是否真的可以访问、谁已连接,以及服务器本身正在做什么。",
+          "HYDRA-UMC > Services 列出了此服务器旁边检出的每一个同级 HYDRA-UMC-* 项目,并对声明了自己端口的项目进行真实的实时探测(TCP/HTTP)- 一个绿点或红点,而不仅仅是成熟度标签。目前这里还没有启动/停止功能:整个生态系统目前都没有进程监督程序。",
+          "HYDRA-UMC > Telemetry 对 HYDRA-UMC-DATALAKE 自身存储的读数执行真实的原始或聚合查询。HYDRA-UMC > AI Family 将同一个 Services 扫描结果缩小到 Vision AI(Hailo-8,当前的摄像头/检测流水线)和 Cognitive AI(Hailo-10 8GB,规划中)节点 - 请前往“配置 > AI/Hailo”记录此部署上实际安装的芯片以及编译模型的存放位置。",
+          "已连接的应用、服务器日志和服务器管理(HYDRA-UMC 菜单,仅限管理员账户)反映了此服务器自身参考管理面板已经使用的同一套管理 API:当前每一个活动连接、服务器自身日志文件的尾部内容,以及其监听端口加上一次平滑重启。"
+        ]
       }
     }
   },
@@ -710,7 +729,13 @@
     "admin_server_port_invalid": "端口必须是 1 到 65535 之间的数字。",
     "admin_server_port_saved": "端口已保存 - 重启此服务器以使其生效。",
     "admin_server_restart_requested": "已请求重启。",
-    "admin_server_load_error": "无法连接服务器管理 API。"
+    "admin_server_load_error": "无法连接服务器管理 API。",
+    "menu_ai_family": "AI 系列",
+    "ai_family_title": "AI 系列",
+    "ai_family_desc": "与“服务”相同的真实生态系统扫描,只是筛选出生态系统自身清单中标记为 AI 的两个系列。这里同样没有实时遥测 - 请前往“配置 > AI/Hailo”记录此部署上实际安装的内容。",
+    "ai_family_vision": "视觉 AI 节点(目前使用 {{device}}",
+    "ai_family_cognitive": "认知 AI 节点(计划使用 {{device}}",
+    "ai_family_note": "这些节点目前都还没有自己的 HTTP API - 如今都只是命令行工具/库。此面板仅显示清单/在线状态数据,与“服务”面板相同,并非服务器端尚不存在的更丰富的实时 AI 仪表盘。"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO 访问",

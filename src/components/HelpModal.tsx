@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { HelpCircle, Rocket, Bot, Route, LayoutGrid, Video, Cpu, ShieldCheck } from 'lucide-react';
+import { HelpCircle, Rocket, Bot, Route, LayoutGrid, Video, Cpu, ShieldCheck, Boxes } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -22,6 +22,7 @@ const TABS = [
   { key: 'cameras_gamepad', icon: Video },
   { key: 'firmware_settings', icon: Cpu },
   { key: 'accounts_access', icon: ShieldCheck },
+  { key: 'ecosystem', icon: Boxes },
 ] as const;
 
 type TabKey = typeof TABS[number]['key'];

@@ -233,7 +233,16 @@
     "model_submissions_desc": "HYDRA-UMC-EDITOR-URDF からここへプッシュされた、完成したロボット／機械（3D メッシュ＋運動学）を本サーバーが受け入れるかどうか。デフォルトでは無効——これを有効にした場合のみ、ファイルがディスクに保存されます。",
     "model_submissions_enable": "モデル提出を受け入れる",
     "model_submissions_folder": "保存先フォルダ",
-    "model_submissions_folder_desc": "本サーバー自身の data/ ディレクトリからの相対パス。最初の提出が受け入れられた際に自動作成されます。"
+    "model_submissions_folder_desc": "本サーバー自身の data/ ディレクトリからの相対パス。最初の提出が受け入れられた際に自動作成されます。",
+    "ai_hailo": "AI / Hailo",
+    "ai_hailo_desc": "この展開に実際にインストールされている Hailo AI アクセラレータを記録します - 実際のハードウェア情報であり、ライブなデバイス問い合わせではありません(下記のどちらのノードもまだ独自の HTTP API を公開していません)。",
+    "ai_hailo_vision_device": "ビジョン AI デバイス",
+    "ai_hailo_vision_desc": "現在、実際の検出/ビジョンパイプラインを駆動しています(HYDRA-UMC-VISION-NODE、DETECTION-HEF、VISION-STREAMER)。",
+    "ai_hailo_cognitive_device": "認知 AI デバイス",
+    "ai_hailo_cognitive_desc": "LLM/VLA/音声処理用の別途計画中のアクセラレータです(HYDRA-UMC-COGNITIVE-NODE、VLA-ENGINE、SEMANTIC-PLANNER、VOICE-UI)- このハードウェアはまだどの実際のデプロイにも存在しないため、デフォルトは「なし」です。",
+    "ai_hailo_registry_path": "モデルレジストリのパス",
+    "ai_hailo_registry_desc": "コンパイル済みの .hef モデルの保存場所 - HYDRA-UMC-DETECTION-HEF 自身の models_dir(sha256 チェックサム検証付きの実際のレジストリ)に対応します。",
+    "ai_hailo_none": "なし(未インストール)"
   },
   "robot_detail": {
     "back": "ダッシュボードに戻る",
@@ -496,6 +505,16 @@
           "見て回るだけならサインインは一切不要です——ログイン画面の「読み取り専用で続行」を選べば、すべてのパネルとライブ 3D ビューを閲覧できますが、そのセッションからは変更の保存も指令の送信もできません。",
           "「設定 > リモートアクセス」には、リモートクライアントごと——HYDRA-UMC SUITE、Android 制御アプリ、iOS 制御アプリ——に 1 つずつスイッチがあり、それぞれを独立して許可・ブロックできます。いずれかをオフにしても、そのアプリ自身の「自分のサーバーを探す」スキャンから見えなくなるだけです——それ自体で API がパスワード保護されるわけではありません。本サーバーの IP アドレスをすでに持っている人は引き続き直接アクセスできます。"
         ]
+      },
+      "ecosystem": {
+        "label": "エコシステム",
+        "heading": "エコシステム全体のフロントエンドとしての STUDIO",
+        "paragraphs": [
+          "HYDRA-UMC メニュー(左サイドバー)はこの展開自身のロボットだけを扱うものではありません - このサーバーが認識できる HYDRA-UMC-* エコシステム全体、つまりどの兄弟プロジェクトが存在するか、それぞれのサービスが実際に到達可能かどうか、誰が接続しているか、そしてサーバー自身が何をしているかも表示します。",
+          "HYDRA-UMC > Services は、このサーバーの隣にチェックアウトされているすべての兄弟 HYDRA-UMC-* プロジェクトを一覧表示し、自身のポートを宣言しているものには実際のライブプローブ(TCP/HTTP)を行います - 単なる成熟度ラベルではなく、緑または赤のドットです。ここでの起動/停止機能はまだありません - 現時点でエコシステム全体にプロセス監視の仕組みは存在しません。",
+          "HYDRA-UMC > Telemetry は、HYDRA-UMC-DATALAKE 自身が保存している読み取り値に対して、実際の生データまたは集計クエリを実行します。HYDRA-UMC > AI Family は、同じ Services のスキャン結果を Vision AI(Hailo-8、現在のカメラ/検出パイプライン)ノードと Cognitive AI(Hailo-10 8GB、計画中)ノードに絞り込みます - この展開に実際にどのチップがインストールされ、コンパイル済みモデルがどこにあるかを記録するには「設定 > AI/Hailo」を参照してください。",
+          "接続中のアプリ、サーバーログ、サーバー管理(HYDRA-UMC メニュー、管理者アカウントのみ)は、このサーバー自身のリファレンス管理パネルがすでに使用しているのと同じ管理 API を反映します:現在のすべてのライブ接続、サーバー自身のログファイルの末尾、そのリッスンポート、および安全な再起動です。"
+        ]
       }
     }
   },
@@ -710,7 +729,13 @@
     "admin_server_port_invalid": "ポートは 1〜65535 の範囲の数値である必要があります。",
     "admin_server_port_saved": "ポートを保存しました - 反映するにはこのサーバーを再起動してください。",
     "admin_server_restart_requested": "再起動をリクエストしました。",
-    "admin_server_load_error": "サーバー管理 API に接続できませんでした。"
+    "admin_server_load_error": "サーバー管理 API に接続できませんでした。",
+    "menu_ai_family": "AIファミリー",
+    "ai_family_title": "AIファミリー",
+    "ai_family_desc": "Services と同じ実際のエコシステムスキャンを、エコシステム自身のマニフェストが AI として自己申告している2つのファミリーに絞り込んだものです。ここでもライブテレメトリはありません - この展開に実際に何がインストールされているかを記録するには「設定 > AI/Hailo」を参照してください。",
+    "ai_family_vision": "Vision AI Node(現在 {{device}}",
+    "ai_family_cognitive": "Cognitive AI Node(計画中 {{device}}",
+    "ai_family_note": "これらのノードはどれもまだ独自の HTTP API を公開していません - 現時点ではすべて CLI ツール/ライブラリです。このパネルは Services と同様にマニフェスト/稼働状況データのみを表示し、サーバー側に存在しないより充実したライブ AI ダッシュボードではありません。"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO アクセス",

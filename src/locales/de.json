@@ -233,7 +233,16 @@
     "model_submissions_desc": "Ob dieser Server ein fertiges Roboter/Maschinenmodell (3D-Netze + Kinematik) akzeptiert, das von HYDRA-UMC-EDITOR-URDF hierher gesendet wird. Standardmäßig deaktiviert - Dateien landen nur dann auf der Festplatte, wenn Sie dies aktivieren.",
     "model_submissions_enable": "Modell-Einreichungen akzeptieren",
     "model_submissions_folder": "Zielordner",
-    "model_submissions_folder_desc": "Relativ zum eigenen data/-Verzeichnis dieses Servers. Wird automatisch erstellt, sobald die erste Einreichung akzeptiert wird."
+    "model_submissions_folder_desc": "Relativ zum eigenen data/-Verzeichnis dieses Servers. Wird automatisch erstellt, sobald die erste Einreichung akzeptiert wird.",
+    "ai_hailo": "KI / Hailo",
+    "ai_hailo_desc": "Erfasst, welcher Hailo-KI-Beschleuniger tatsächlich in diesem Deployment installiert ist - eine echte Hardware-Tatsache, keine Live-Geräteabfrage (keiner der Knoten unten stellt bisher eine eigene HTTP-API bereit).",
+    "ai_hailo_vision_device": "Vision-KI-Gerät",
+    "ai_hailo_vision_desc": "Treibt heute die reale Erkennungs-/Vision-Pipeline an (HYDRA-UMC-VISION-NODE, DETECTION-HEF, VISION-STREAMER).",
+    "ai_hailo_cognitive_device": "Kognitives KI-Gerät",
+    "ai_hailo_cognitive_desc": "Ein separater, geplanter Beschleuniger für LLM/VLA/Sprach-Arbeit (HYDRA-UMC-COGNITIVE-NODE, VLA-ENGINE, SEMANTIC-PLANNER, VOICE-UI) - Standard ist Keins, da diese Hardware auf keinem realen Deployment bisher existiert.",
+    "ai_hailo_registry_path": "Modellregister-Pfad",
+    "ai_hailo_registry_desc": "Wo kompilierte .hef-Modelle liegen - spiegelt HYDRA-UMC-DETECTION-HEFs eigenes models_dir (dessen echtes Register mit sha256-Prüfsummenverifikation).",
+    "ai_hailo_none": "Keins (nicht installiert)"
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",
@@ -496,6 +505,16 @@
           "Sie müssen sich nicht anmelden, um sich umzusehen - \"Nur lesend fortfahren\" auf dem Anmeldebildschirm lässt Sie alle Panels und die Live-3D-Ansicht durchsuchen, Sie können aus dieser Sitzung nur keine Änderungen speichern oder Befehle senden.",
           "Config > Fernzugriff hat einen eigenen Schalter pro Remote-Client - HYDRA-UMC SUITE, die Android-Steuerungs-App und die iOS-Steuerungs-App - sodass Sie einen erlauben und einen anderen unabhängig blockieren können. Das Deaktivieren eines Clients verhindert nur, dass dessen eigener Suchlauf \"meinen Server finden\" diesen Server sieht; es schützt die API allein nicht mit einem Passwort, da wer die IP-Adresse dieses Servers bereits kennt, ihn weiterhin direkt erreichen kann."
         ]
+      },
+      "ecosystem": {
+        "label": "Ökosystem",
+        "heading": "STUDIO als Frontend des gesamten Ökosystems",
+        "paragraphs": [
+          "Das HYDRA-UMC-Menü (linke Seitenleiste) betrifft nicht nur die eigenen Roboter dieses Deployments - es zeigt auch das gesamte HYDRA-UMC-*-Ökosystem, das dieser Server sehen kann: welche Nachbarprojekte existieren, ob ihr eigener Dienst tatsächlich erreichbar ist, wer verbunden ist und was der Server selbst tut.",
+          "HYDRA-UMC > Services listet jedes benachbarte HYDRA-UMC-*-Projekt neben diesem Server, mit einer echten Live-Prüfung (TCP/HTTP) für alle, die einen eigenen Port deklarieren - ein grüner oder roter Punkt, nicht nur ein Reifegrad-Label. Start/Stopp gibt es hier noch nicht: derzeit existiert im gesamten Ökosystem kein Prozess-Supervisor.",
+          "HYDRA-UMC > Telemetry führt echte Roh- oder Aggregatabfragen gegen die eigenen gespeicherten Messwerte von HYDRA-UMC-DATALAKE aus. HYDRA-UMC > AI Family grenzt denselben Services-Scan auf die Knoten Vision AI (Hailo-8, heutige Kamera-/Erkennungspipeline) und Cognitive AI (Hailo-10 8GB, geplant) ein - siehe Konfiguration > KI/Hailo, um festzuhalten, welcher Chip tatsächlich auf diesem Deployment installiert ist und wo kompilierte Modelle liegen.",
+          "Verbundene Apps, Server-Logs und Server-Admin (HYDRA-UMC-Menü, nur Admin-Konten) spiegeln dieselbe Admin-API wider, die das eigene Referenz-Admin-Panel dieses Servers bereits nutzt: jede aktuell offene Verbindung, ein Tail der eigenen Log-Datei des Servers sowie dessen Listen-Port plus ein grazöser Neustart."
+        ]
       }
     }
   },
@@ -710,7 +729,13 @@
     "admin_server_port_invalid": "Der Port muss eine Zahl zwischen 1 und 65535 sein.",
     "admin_server_port_saved": "Port gespeichert - diesen Server neu starten, damit es wirksam wird.",
     "admin_server_restart_requested": "Neustart angefordert.",
-    "admin_server_load_error": "Server-Admin-API nicht erreichbar."
+    "admin_server_load_error": "Server-Admin-API nicht erreichbar.",
+    "menu_ai_family": "KI-Familie",
+    "ai_family_title": "KI-Familie",
+    "ai_family_desc": "Derselbe echte Ökosystem-Scan wie bei Dienste, eingegrenzt auf die beiden Familien, die die eigenen Manifeste des Ökosystems selbst als KI melden. Auch hier keine Live-Telemetrie - siehe Konfiguration > KI/Hailo, um festzuhalten, was auf diesem Deployment tatsächlich installiert ist.",
+    "ai_family_vision": "Vision AI Node (heute {{device}})",
+    "ai_family_cognitive": "Cognitive AI Node (geplant {{device}})",
+    "ai_family_note": "Keiner dieser Knoten stellt bisher eine eigene HTTP-API bereit - heute sind alle CLI-Tools/Bibliotheken. Dieses Panel zeigt nur Manifest-/Aktivitätsdaten, genau wie Dienste, kein umfangreicheres Live-KI-Dashboard, das serverseitig nicht existiert."
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Zugang",

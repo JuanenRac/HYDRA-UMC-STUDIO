@@ -27,6 +27,37 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.2.7] - Config > AI/Hailo, HYDRA-UMC > AI Family, and a new Help tab
+
+- **Config > AI/Hailo** (new tab, same visual pattern as Config > CAN-OTA):
+  records which Hailo AI accelerator is actually installed on this
+  deployment - a real hardware fact, not a live query (neither AI node
+  exposes an HTTP API of its own yet). Two SEPARATE devices tracked:
+  vision (Hailo-8, already driving the real detection pipeline today)
+  and cognitive (Hailo-10 8GB, a planned separate accelerator - defaults
+  to "None", not silently claiming hardware that doesn't exist on any
+  real deployment yet), plus a model registry path mirroring
+  HYDRA-UMC-DETECTION-HEF's own real `models_dir` concept.
+  `SystemSettings.aiHailo` added to `store.tsx`.
+- **HYDRA-UMC > AI Family** (`AiFamilyStatus.tsx`, new panel) - the same
+  real `GET /api/ecosystem/status` scan `EcosystemServices.tsx` uses,
+  filtered to the two families the ecosystem's own manifests self-report
+  as AI: "Vision AI Node" and "Cognitive AI Node" (10 real projects
+  today: VISION-NODE, DETECTION-HEF, VISION-STREAMER, VISUAL-SERVOING-API,
+  SAFETY-ZONES, DOCS-QA, COGNITIVE-NODE, VLA-ENGINE, SEMANTIC-PLANNER,
+  VOICE-UI). Deliberately not a richer live AI dashboard - none of these
+  nodes have their own API yet, so this stays honest about showing the
+  same manifest/liveness data as Services, just pre-filtered.
+- **Help > Ecosystem** (new tab) explains the whole HYDRA-UMC menu
+  addition from `0.2.6`/this release - Services, Telemetry, AI Family,
+  and the 3 admin-only panels - in the same descriptive style as the
+  existing Help tabs.
+- i18n: 9 new `config.ai_hailo*` keys, 6 new `ecosystem.*` keys, and a
+  full `help.tabs.ecosystem` entry (label/heading/4 paragraphs) across
+  all 7 locales.
+- Verified: `tsc --noEmit`, `npm run build`, `tools/ci_validate.py`, and
+  every new key cross-checked 1:1 against its actual `t()` call site.
+
 ## [0.2.6] - HYDRA-UMC menu becomes a real ecosystem control/visibility surface
 
 - **Config > HYDRA-UMC menu** grew 5 new panels alongside the existing

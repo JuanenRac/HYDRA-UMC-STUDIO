@@ -384,6 +384,25 @@ export interface SystemSettings {
   gamepadEnabled?: boolean;
   gamepadConnectionType?: 'USB' | 'Bluetooth';
   gamepadMapping?: Record<string, string>;
+  // Deployment-level Hailo AI accelerator config - same "describes what's
+  // physically installed on this deployment" role canOta plays for the
+  // CAN-OTA chain above. Two SEPARATE devices, not one: Hailo-8 already
+  // drives the real vision/detection pipeline (HYDRA-UMC-VISION-NODE/
+  // DETECTION-HEF - see their own hardware.py real device probes), and a
+  // Hailo-10 (8GB) is the planned SEPARATE accelerator for cognitive/LLM
+  // work (HYDRA-UMC-COGNITIVE-NODE) - defaults to 'none' since that
+  // hardware doesn't exist on any real deployment yet, not "hailo10"
+  // silently claiming otherwise. modelRegistryPath mirrors
+  // DETECTION-HEF's own models_dir concept (its real compiled-HEF
+  // registry with sha256 checksum verification) - not a live device
+  // query, since neither node exposes an HTTP API of its own yet (see
+  // the Ecosystem > AI Family panel for what IS live: the same real
+  // /api/ecosystem/status manifest scan every other Ecosystem panel uses).
+  aiHailo?: {
+    visionDevice?: 'hailo8' | 'none';
+    cognitiveDevice?: 'hailo10' | 'none';
+    modelRegistryPath?: string;
+  };
   // Whether this server responds to GET /api/hydra-info (docs/REMOTE_API.md
   // section 1) - the discovery/identity endpoint HYDRA-UMC SUITE's own
   // subnet scan and the mobile control apps' own discovery flow use to
@@ -632,6 +651,11 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       transport: 'mock',
       robotControllerBoardMcu: 'STM32G474RET6',
       firmwarePaths: {},
+    },
+    aiHailo: {
+      visionDevice: 'hailo8',
+      cognitiveDevice: 'none',
+      modelRegistryPath: 'models/hailo',
     },
     uiLayout: {
       rightPanelWidth: 320,
