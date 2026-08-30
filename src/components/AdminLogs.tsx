@@ -10,15 +10,28 @@
 // own header comment for why that's the right call for a low-traffic admin
 // screen rather than a second real-time protocol on top of the robot
 // control one.
+//
+// Adds a real search box and a tag filter (extracted client-side from each
+// line's own leading `[TAG]` - industrialLog()'s own convention: [ADMIN],
+// [WS], [VOICE], [job-dispatcher], ... - server.ts never sends a
+// structured level, so this is the honest, real filterable dimension that
+// actually exists in these lines, not an invented severity the server
+// doesn't provide).
 // =============================================================================
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FileText, Pause, Play } from 'lucide-react';
+import { FileText, Pause, Play, Search } from 'lucide-react';
 import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 
 const POLL_MS = 3000;
 const LINES = 300;
+const TAG_RE = /\[([A-Za-z0-9_-]+)]/;
+
+function extractTag(line: string): string | null {
+  const m = line.match(TAG_RE);
+  return m ? m[1] : null;
+}
 
 export function AdminLogs() {
   const { t } = useTranslation();
@@ -26,6 +39,8 @@ export function AdminLogs() {
   const [lines, setLines] = useState<string[]>([]);
   const [live, setLive] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
   const wasAtBottomRef = useRef(true);
 
@@ -51,13 +66,28 @@ export function AdminLogs() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [live, isAdmin]);
 
+  const tags = useMemo(() => {
+    const set = new Set<string>();
+    lines.forEach(l => { const tag = extractTag(l); if (tag) set.add(tag); });
+    return Array.from(set).sort();
+  }, [lines]);
+
+  const filteredLines = useMemo(() => {
+    const needle = search.trim().toLowerCase();
+    return lines.filter(l => {
+      if (tagFilter && extractTag(l) !== tagFilter) return false;
+      if (needle && !l.toLowerCase().includes(needle)) return false;
+      return true;
+    });
+  }, [lines, search, tagFilter]);
+
   // Auto-scroll to the newest line only if the viewer was already at (or
   // near) the bottom - see LogsTab.tsx's own comment on why scrolling
   // someone out from under a line they scrolled up to read would be hostile.
   useEffect(() => {
     const el = boxRef.current;
     if (el && wasAtBottomRef.current) el.scrollTop = el.scrollHeight;
-  }, [lines]);
+  }, [filteredLines]);
 
   const handleScroll = () => {
     const el = boxRef.current;
@@ -83,15 +113,44 @@ export function AdminLogs() {
 
       {error && <p className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2 shrink-0">{error}</p>}
 
+      <div className="flex items-center gap-3 flex-wrap shrink-0">
+        <div className="relative flex-1 min-w-[180px]">
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={t('ecosystem.logs_search_placeholder')}
+            className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 outline-none focus:border-sky-500"
+          />
+        </div>
+        <div className="flex gap-1.5 flex-wrap">
+          <button
+            onClick={() => setTagFilter(null)}
+            className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-colors ${tagFilter === null ? 'bg-sky-500/20 border border-sky-500/50 text-sky-400' : 'bg-slate-900 border border-slate-800 text-slate-500 hover:text-slate-300'}`}
+          >
+            {t('ecosystem.logs_all_tags')}
+          </button>
+          {tags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => setTagFilter(tag)}
+              className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest font-mono transition-colors ${tagFilter === tag ? 'bg-sky-500/20 border border-sky-500/50 text-sky-400' : 'bg-slate-900 border border-slate-800 text-slate-500 hover:text-slate-300'}`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div
         ref={boxRef}
         onScroll={handleScroll}
         className="flex-1 min-h-[400px] max-h-[70vh] overflow-y-auto bg-black/60 border border-slate-800 rounded-lg p-3 font-mono text-[11px] text-slate-400 leading-relaxed"
       >
-        {lines.length === 0 ? (
-          <p className="text-slate-600">{t('ecosystem.logs_none')}</p>
+        {filteredLines.length === 0 ? (
+          <p className="text-slate-600">{lines.length === 0 ? t('ecosystem.logs_none') : t('ecosystem.logs_no_match')}</p>
         ) : (
-          lines.map((line, i) => <div key={i} className="whitespace-pre-wrap break-all">{line}</div>)
+          filteredLines.map((line, i) => <div key={i} className="whitespace-pre-wrap break-all">{line}</div>)
         )}
       </div>
 

@@ -27,6 +27,56 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.2.9] - Ecosystem panels: real charts, card layouts, cross-referenced data
+
+Direct user feedback after `0.2.6`-`0.2.8`: the 5 Ecosystem panels were
+functionally real (genuine live data, no fake state) but visually and
+functionally thin - flat tables, no charts, no way to search/filter a
+~48-project scan, panels that didn't talk to each other. This release
+raises all of them, still on the exact same real data sources - no new
+invented capability, just doing more with what was already real:
+
+- **`EcosystemTelemetry.tsx`** - real charts via `recharts` (already an
+  installed dependency, unused anywhere in this app until now): an
+  `AreaChart` for raw points, a `BarChart` for aggregated buckets, both
+  themed to STUDIO's own sky/slate palette. A Chart/Table toggle keeps
+  exact values reachable when they matter, not just the shape. Added a
+  real min/max/avg/count stat strip computed from the actual fetched
+  series, and quick time-range presets (5m/1h/6h/24h) that compute real
+  start/end epoch ms - hand-typing them is still available, just no
+  longer the only way in.
+- **`EcosystemServices.tsx`** - grouped by family (the same grouping the
+  manifests themselves already carry) into a real card grid instead of
+  one long flat table, with a search box, per-family filter chips, and a
+  summary stat strip (total / live / families) that answers "is the
+  ecosystem healthy" before scanning a single card.
+- **`AiFamilyStatus.tsx`** - now cross-references Config > AI/Hailo's own
+  `settings.aiHailo` (added in `0.2.7`): a family with real live nodes
+  but its configured Hailo device set to "None" surfaces a real,
+  actionable warning banner - genuine integration between two features
+  from this same session, not two panels that happen to share a menu.
+  Card layout per node (stack/version/live badge) instead of a bare
+  table row.
+- **`AdminClients.tsx`** - admin-first sort, a live "Xm ago" connection
+  duration (ticking every second, independent of the 5s data poll) in
+  place of a raw ISO timestamp, role-colored avatar icons, and a
+  connected/admin-count stat strip.
+- **`AdminLogs.tsx`** - a real search box plus tag filter chips extracted
+  client-side from each line's own `[TAG]` prefix (`industrialLog()`'s
+  real existing convention - `[ADMIN]`, `[WS]`, `[VOICE]`, ... - not an
+  invented severity the server never sends).
+- **`AdminServer.tsx`** - now also shows a real live snapshot from `GET
+  /api/hydra-info` (product, uptime, controller/robot counts, hostname)
+  above the port-config form, reusing the same endpoint `About.tsx`
+  already calls elsewhere in this app.
+- i18n: 24 new `ecosystem.*` keys across all 7 locales; 8 keys orphaned
+  by `EcosystemServices.tsx`'s old flat-table layout removed from all 7
+  rather than left as dead entries.
+- Verified: `tsc --noEmit`, `npm run build` (recharts' real weight lands
+  only in `EcosystemTelemetry`'s own lazy chunk, not the main bundle),
+  `tools/ci_validate.py`, and every `ecosystem.*` key cross-checked 1:1
+  against its actual `t()` call site across all 7 redesigned components.
+
 ## [0.2.8] - Real fixes while investigating the reported Android 3D-viewport desync
 
 - **`apiBase.ts`'s `defaultProdBase()` hardcoded `:3000`** regardless of the
