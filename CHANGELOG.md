@@ -4,10 +4,13 @@ All notable work on **HYDRA-UMC STUDIO** is summarized here, newest first.
 
 ## Versioning scheme
 
-`package.json`'s `version` field bumps automatically on every real production
-build (`npm run build` - see `scripts/bump-version.mjs`, wired as the first
-step of the `build` script). It follows a simple base-10 "odometer" rule
-rather than semantic-versioning judgment calls:
+`bump_manifest_version.py` (root of the workspace) is the single owner of
+both `hydra-umc.project.json` and `package.json`'s `version` field -
+`npm run build` (`vite build`) is deliberately compilation-only so it can
+never create drift between them. `scripts/bump-version.mjs` is a legacy
+native-only helper kept for reference; nothing in this repo calls it. It
+follows a simple base-10 "odometer" rule rather than semantic-versioning
+judgment calls:
 
 - `patch` +1 on every build
 - when `patch` would exceed 9, it resets to 0 and `minor` +1 instead (e.g. `0.0.9` -> `0.1.0`, never `0.0.10`)
@@ -23,6 +26,22 @@ verification runs with nothing changelog-worthy); it's updated by hand when
 a change is actually worth summarizing for a human.
 
 ---
+
+## [0.2.5] - 4th Remote Access toggle: HYDRA-UMC-WATCH
+
+- **Config > Remote Access** gained a 4th independent toggle, HYDRA-UMC
+  Watch, alongside the existing SUITE/Android/iOS ones - `SystemSettings.
+  remoteAccess.watch`, gated server-side on the paired phone's own
+  `X-Hydra-Client: watch` header (sent only for the 2 real Watch-relay
+  calls, never for that phone's own direct traffic - see
+  HYDRA-UMC-SERVER's own changelog for the server-side half).
+- Also fixed this CHANGELOG's own stale "Versioning scheme" section,
+  which claimed `scripts/bump-version.mjs` is wired into `npm run build`
+  - it never has (confirmed against both the script's own header comment
+  and `package.json`'s real scripts block); `bump_manifest_version.py`
+  alone owns the version.
+
+Verified: full `build-test.bat` suite passes (typecheck/tests/lint).
 
 ## [0.2.4] - Real, working Integrations panel (Config > Integrations)
 

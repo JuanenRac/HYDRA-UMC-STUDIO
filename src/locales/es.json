@@ -205,6 +205,8 @@
     "remote_access_android_desc": "Controla si el descubrimiento de la app de control Android puede encontrar e identificar este servidor.",
     "remote_access_ios": "App de Control iOS",
     "remote_access_ios_desc": "Controla si el descubrimiento de la app de control iOS/Flutter puede encontrar e identificar este servidor.",
+    "remote_access_watch": "HYDRA-UMC Watch",
+    "remote_access_watch_desc": "Controla si HYDRA-UMC WATCH, retransmitido a través de la propia conexión del teléfono emparejado, puede usar este servidor, independientemente del acceso directo de ese mismo teléfono.",
     "users": "Usuarios",
     "users_desc": "Gestiona las cuentas con permiso para iniciar sesión en este servidor. Las cuentas \"Administrador\" tienen acceso completo (ajustes, usuarios, comandos de robot); las cuentas \"Operador\" pueden iniciar sesión y enviar comandos de robot, pero no pueden cambiar ajustes ni gestionar usuarios.",
     "users_load_error": "No se pudo cargar la lista de usuarios.",
