@@ -84,10 +84,19 @@ const RackConfigView = React.lazy(() => import('./components/RackConfigView').th
 const Flasher = React.lazy(() => import('./components/Flasher').then(m => ({ default: m.Flasher })));
 const Tester = React.lazy(() => import('./components/Tester').then(m => ({ default: m.Tester })));
 const KinematicBrainStage = React.lazy(() => import('./components/KinematicBrainStage').then(m => ({ default: m.KinematicBrainStage })));
+// Ecosystem-wide panels (HYDRA-UMC menu) - visual surface for the whole
+// HYDRA-UMC-* ecosystem, not just this controller's own hardware. See
+// each component's own header comment for exactly which real
+// HYDRA-UMC-SERVER route it talks to.
+const EcosystemServices = React.lazy(() => import('./components/EcosystemServices').then(m => ({ default: m.EcosystemServices })));
+const EcosystemTelemetry = React.lazy(() => import('./components/EcosystemTelemetry').then(m => ({ default: m.EcosystemTelemetry })));
+const AdminClients = React.lazy(() => import('./components/AdminClients').then(m => ({ default: m.AdminClients })));
+const AdminLogs = React.lazy(() => import('./components/AdminLogs').then(m => ({ default: m.AdminLogs })));
+const AdminServer = React.lazy(() => import('./components/AdminServer').then(m => ({ default: m.AdminServer })));
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
-  const { controllers, activeControllerId, setActiveControllerId, activeController, robots, settings, updateRobot } = useHydraStore();
+  const { controllers, activeControllerId, setActiveControllerId, activeController, robots, settings, updateRobot, isAdmin } = useHydraStore();
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -247,6 +256,15 @@ export default function Dashboard() {
                   <button onClick={() => setActiveTab('hydraFlasher')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'hydraFlasher' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Firmware Update</button>
                   <button onClick={() => setActiveTab('hydraTester')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'hydraTester' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Hardware Tester</button>
                   <button onClick={() => setActiveTab('kinematicBrainStage')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'kinematicBrainStage' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Kinematic Brain</button>
+
+                  <div className="mt-6 mb-2 px-4 text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1">{t('ecosystem.menu_section')}</div>
+                  <button onClick={() => setActiveTab('ecosystemServices')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemServices' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_services')}</button>
+                  <button onClick={() => setActiveTab('ecosystemTelemetry')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemTelemetry' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_telemetry')}</button>
+                  {isAdmin && <>
+                    <button onClick={() => setActiveTab('adminClients')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'adminClients' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_clients')}</button>
+                    <button onClick={() => setActiveTab('adminLogs')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'adminLogs' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_logs')}</button>
+                    <button onClick={() => setActiveTab('adminServer')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'adminServer' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_admin')}</button>
+                  </>}
                </div>
              )}
 
@@ -279,6 +297,11 @@ export default function Dashboard() {
                {activeTab === 'hydraFlasher' && <Flasher tiers={HYDRA_BRAIN_TIERS} />}
                {activeTab === 'hydraTester' && <Tester tiers={HYDRA_BRAIN_TIERS} />}
                {activeTab === 'kinematicBrainStage' && <KinematicBrainStage />}
+               {activeTab === 'ecosystemServices' && <EcosystemServices />}
+               {activeTab === 'ecosystemTelemetry' && <EcosystemTelemetry />}
+               {activeTab === 'adminClients' && <AdminClients />}
+               {activeTab === 'adminLogs' && <AdminLogs />}
+               {activeTab === 'adminServer' && <AdminServer />}
             </div>
           </React.Suspense>
         </main>

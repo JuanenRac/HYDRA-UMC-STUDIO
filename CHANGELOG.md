@@ -27,6 +27,34 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.2.6] - HYDRA-UMC menu becomes a real ecosystem control/visibility surface
+
+- **Config > HYDRA-UMC menu** grew 5 new panels alongside the existing
+  Firmware Update / Hardware Tester / Kinematic Brain: **Services**
+  (`EcosystemServices.tsx`, `GET /api/ecosystem/status` - real manifest
+  scan + live TCP/HTTP probe of every sibling HYDRA-UMC-* checkout that
+  declares a port; view + manual refresh only - no start/stop yet, see
+  the note in the panel itself), **Telemetry** (`EcosystemTelemetry.tsx`,
+  raw points or bucketed aggregates against HYDRA-UMC-DATALAKE through
+  Server's new proxy), and 3 admin-only panels ported from
+  HYDRA-UMC-SERVER's own `admin-ui/` reference app rather than
+  reinventing them: **Connected Apps** (`AdminClients.tsx`, `GET
+  /api/admin/clients`), **Server Logs** (`AdminLogs.tsx`, `GET
+  /api/admin/logs`, poll+pause+autoscroll-if-at-bottom), **Server Admin**
+  (`AdminServer.tsx`, listen port + graceful restart).
+- **`store.tsx`** now decodes `role` out of the session JWT's own payload
+  (`decodeJwtRole()` - UI-only read, server still re-checks `requireAdmin`
+  on every real request) and exposes `isAdmin`, so the 3 admin-only
+  panels above are hidden from the menu entirely for a non-admin session
+  instead of just 403ing when opened.
+- i18n: new `ecosystem.*` namespace (73 keys) across all 7 locales.
+- Verified: `tsc --noEmit`, `npm run build` (all 5 new panels code-split
+  as their own lazy chunks), `tools/ci_validate.py`, and every
+  `ecosystem.*` translation key cross-checked 1:1 against actual `t()`
+  call sites (no unused or missing keys).
+- Companion change in HYDRA-UMC-SERVER `0.2.6`: the new `/api/telemetry/*`
+  proxy this panel depends on.
+
 ## [0.2.5] - 4th Remote Access toggle: HYDRA-UMC-WATCH
 
 - **Config > Remote Access** gained a 4th independent toggle, HYDRA-UMC

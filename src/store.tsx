@@ -16,6 +16,31 @@ export const unthrottledDelay = () => new Promise<void>(resolve => setTimeout(re
 /** Stores the Global playbacks configuration or state data. */
 export const globalPlaybacks: Record<number, boolean> = {};
 
+/**
+ * Reads `role` out of a Server JWT's own payload (server.ts's own
+ * `jwt.sign({ username, role }, ...)`) without verifying the signature -
+ * this is a UI-only read (which admin-only panels to even show), never a
+ * security boundary. The server re-checks `requireAdmin` on every real
+ * admin request regardless of what this returns, the same way it already
+ * does for every other client (STUDIO, admin-ui, Android). Returns null for
+ * a malformed/missing token rather than throwing - a token that arrived via
+ * a ?token= URL param (see authToken's own comment below) or a stale/
+ * corrupted localStorage value must degrade to "unknown role", never crash
+ * the app.
+ */
+function decodeJwtRole(token: string | null): string | null {
+  if (!token) return null;
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    const decoded = JSON.parse(json);
+    return typeof decoded.role === 'string' ? decoded.role : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Type definition representing  robot model configurations or states. */
 export type RobotModel =
   | 'Parol6 (6-DOF)' | 'Faze4 (6-DOF)' | 'AR3 (6-DOF)' | 'AR4 (6-DOF)' | 'Generic (6-DOF)'
@@ -564,6 +589,10 @@ interface HydraStoreContextType {
   factoryReset: () => void;
   /** Null until a valid session token exists (from a ?token= URL param - e.g. the Android app's embedded 3D WebView - a prior login persisted to localStorage, or a fresh login() call). server.ts requires this for POST /api/settings, POST /api/robot/:id/command, and the /ws upgrade itself - see login()'s own comment for why this exists at all. */
   authToken: string | null;
+  /** This session's role ('admin' | 'operator'), read from authToken's own JWT payload - see decodeJwtRole()'s own comment for why this is a UI-only read, not a security boundary. Null before authToken exists or if it can't be decoded. */
+  role: string | null;
+  /** `role === 'admin'` - gates the Ecosystem > Connected Apps / Server Logs / Server Admin panels the same way server.ts's own requireAdmin already gates their backing routes (GET /api/admin/*), so a logged-in non-admin session never sees a menu entry that would just 403. */
+  isAdmin: boolean;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   loginError: string | null;
@@ -641,6 +670,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return localStorage.getItem('hydra_token');
   });
   const [loginError, setLoginError] = useState<string | null>(null);
+  const role = useMemo(() => decodeJwtRole(authToken), [authToken]);
+  const isAdmin = role === 'admin';
 
   const login = useCallback(async (username: string, password: string) => {
     setLoginError(null);
@@ -1236,7 +1267,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updateController, updateRobot, sendRobotCommand, updateCamera, updateSettings,
       saveKinematics, loadKinematics, addController, removeController,
       exportScene, importScene, factoryReset,
-      authToken, login, logout, loginError
+      authToken, role, isAdmin, login, logout, loginError
     }}>
       {children}
     </HydraContext.Provider>
