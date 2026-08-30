@@ -27,6 +27,22 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.3.1] - Real hardware transport now also reaches Tier 2 (URTC Tool Head)
+
+- **`lib/canOta.ts`** - `resolveHardwareTarget()` now resolves `urtcHead`
+  too (`{ targetTier: SPI_TARGET_STACKA, targetSlot, relay: true }`),
+  since HYDRA-UMC-SERVER/spi_bridge's own new relay tunnel
+  (RELAY_SEND/RELAY_RECV through the Robot Controller Board) now really
+  reaches it - only `urtcExpansion` (Tier 3) still returns `null`, an
+  honest boundary since that needs one further real tunnel hop (URTC's
+  own I2C bridge) that doesn't exist yet. `hardwareQueryVersion()`/
+  `hardwareStartFlash()` now send the new `relay` query parameter.
+  `Flasher.tsx`'s `hardwareTargetUnreachable` check (and its UI/log
+  messages) needed no code change - it was already derived from
+  `resolveHardwareTarget()` returning `null`, so it now correctly stops
+  flagging urtcHead as unreachable on its own.
+- Verified: `tsc --noEmit`, `npm run build`.
+
 ## [0.3.0] - Real hardware transport for Flasher/Tester (Kinematic Brain + Robot Controller Board)
 
 - **`lib/canOta.ts`** - `settings.canOta.transport === 'hardware'` now

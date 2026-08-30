@@ -386,11 +386,13 @@ export async function fetchGithubFirmwareReleases(repo: string, tier: CanOtaTier
 // switch is read.
 // ---------------------------------------------------------------------------
 
-/** The real spi_bridge SPI_TARGET_* values (protocol.py) - only 3, not 4:
- * urtcHead/urtcExpansion are reached only through a real application-level
- * relay tunnel (RELAY_SEND/RELAY_RECV, architecture.md section 5) that
- * doesn't exist in the H745 firmware yet (still FreeRTOS-stub, see that
- * repo's own CHANGELOG). */
+/** The real spi_bridge SPI_TARGET_* values (protocol.py) - Tier 2
+ * (urtcHead) is reached THROUGH Tier 1 (SPI_TARGET_STACKA) via the real
+ * RELAY_SEND/RELAY_RECV tunnel (architecture.md section 5,
+ * spi_bridge/relay_tunnel.py) - `relay: true` below is what tells
+ * hardwareQueryVersion()/hardwareStartFlash() to ask for that tunnel.
+ * urtcExpansion (Tier 3) needs one further real tunnel hop (URTC's own
+ * I2C bridge) that isn't implemented yet - still not reachable. */
 export const SPI_TARGET_SELF = 0;
 export const SPI_TARGET_CM7 = 1;
 export const SPI_TARGET_STACKA = 2;
@@ -398,15 +400,18 @@ export const SPI_TARGET_STACKA = 2;
 export interface HardwareTargetResolution {
   targetTier: number;
   targetSlot: number;
+  /** true for urtcHead - tells the relay to tunnel through the resolved Tier 1 target instead of talking to it directly. */
+  relay: boolean;
 }
 
-/** Maps STUDIO's own 4-tier logical CanOtaTier onto the real 3-value
- * SPI_TARGET_* the spi_bridge/H745 bootloader actually speaks. Returns
- * null for urtcHead/urtcExpansion - not a bug, a real, honest boundary:
- * there is no relay tunnel to reach them yet. */
+/** Maps STUDIO's own 4-tier logical CanOtaTier onto the real spi_bridge
+ * target it's actually reached through. Returns null only for
+ * urtcExpansion - not a bug, a real, honest boundary: Tier 3 needs one
+ * further real tunnel hop (URTC's own I2C bridge) that doesn't exist yet. */
 export function resolveHardwareTarget(target: CanOtaTarget): HardwareTargetResolution | null {
-  if (target.tier === 'kinematicBrain') return { targetTier: SPI_TARGET_SELF, targetSlot: 0 };
-  if (target.tier === 'controllerBoard') return { targetTier: SPI_TARGET_STACKA, targetSlot: target.robotIndex0 ?? 0 };
+  if (target.tier === 'kinematicBrain') return { targetTier: SPI_TARGET_SELF, targetSlot: 0, relay: false };
+  if (target.tier === 'controllerBoard') return { targetTier: SPI_TARGET_STACKA, targetSlot: target.robotIndex0 ?? 0, relay: false };
+  if (target.tier === 'urtcHead') return { targetTier: SPI_TARGET_STACKA, targetSlot: target.robotIndex0 ?? 0, relay: true };
   return null;
 }
 
@@ -422,7 +427,7 @@ export async function hardwareQueryVersion(target: CanOtaTarget, authToken: stri
   if (!resolved) return { online: false };
   try {
     const res = await fetch(
-      apiUrl(`/api/hardware/canota/version?tier=${resolved.targetTier}&slot=${resolved.targetSlot}`),
+      apiUrl(`/api/hardware/canota/version?tier=${resolved.targetTier}&slot=${resolved.targetSlot}&relay=${resolved.relay ? '1' : '0'}`),
       { headers: authHeaders(authToken) },
     );
     if (!res.ok) return { online: false };
@@ -467,11 +472,12 @@ export async function hardwareStartFlash(
 ): Promise<HardwareFlashResult> {
   const resolved = resolveHardwareTarget(target);
   if (!resolved) {
-    return { reachable: false, success: false, reason: 'not reachable over hardware yet - needs the real application-level relay tunnel (architecture.md section 5)' };
+    return { reachable: false, success: false, reason: 'not reachable over hardware yet - Tier 3 needs a real I2C-bridge tunnel hop that does not exist yet' };
   }
   const qs = new URLSearchParams({
     tier: String(resolved.targetTier),
     slot: String(resolved.targetSlot),
+    relay: resolved.relay ? '1' : '0',
     hardware_id: String(hardwareId),
     version_major: String(versionMajor),
     version_minor: String(versionMinor),
