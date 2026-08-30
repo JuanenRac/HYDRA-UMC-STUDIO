@@ -27,6 +27,29 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.2.8] - Real fixes while investigating the reported Android 3D-viewport desync
+
+- **`apiBase.ts`'s `defaultProdBase()` hardcoded `:3000`** regardless of the
+  port the page was actually loaded on. Invisible in the common case
+  (Server almost always runs on 3000) - but ThreeDScreen.kt's own WebView
+  (HYDRA-UMC-ANDROID-CONTROL) loads this page via `http://$ip:$port/...`
+  using whatever port that app was configured with, so a deployment on a
+  non-default port had every `fetch()`/WebSocket call from inside that
+  WebView silently misdirected back to `:3000` instead of the port that
+  actually served the page. Now prefers `window.location.port` (the
+  page's own real port); `:3000` is only a fallback for a reverse-proxy
+  case where the port isn't in the URL at all (80/443).
+- **Found live while investigating**: the Server instance this session had
+  been testing against was serving a STUDIO frontend build from ~03:16 -
+  hours behind every fix landed today, including `0.2.2`'s own real
+  Camera-PIP-vs-disabled-camera fix. Redeployed a fresh build (this
+  version) into `HYDRA-UMC-SERVER/public/` - confirmed live via the
+  running instance's own served `index.html` referencing the new build's
+  real asset hashes. Not a code change in this repo, but recorded here
+  since it directly explains why several already-fixed bugs could still
+  have been visible against that specific running instance.
+- Verified: `tsc --noEmit`, `npm run build`.
+
 ## [0.2.7] - Config > AI/Hailo, HYDRA-UMC > AI Family, and a new Help tab
 
 - **Config > AI/Hailo** (new tab, same visual pattern as Config > CAN-OTA):

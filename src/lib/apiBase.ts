@@ -41,7 +41,19 @@ function defaultProdBase(): string {
   const hostname = typeof window !== 'undefined' && window.location.hostname
     ? window.location.hostname
     : 'localhost';
-  return `http://${hostname}:3000`;
+  // Real bug found while investigating the reported Android 3D-viewport
+  // desync: this used to hardcode :3000 regardless of the port this exact
+  // page was actually loaded on. Server almost always runs on 3000, so
+  // that stayed invisible in the common case - but ThreeDScreen.kt's own
+  // WebView loads this page via `http://$ip:$port/...` using whatever port
+  // the user configured in the app, and a page served from a non-default
+  // port would have every fetch()/WebSocket call silently misdirected to
+  // :3000 instead of back to the server that actually served it. Prefer
+  // this page's own real port (window.location.port); :3000 is now only a
+  // fallback for the case a real reverse proxy strips it (port 80/443,
+  // window.location.port === "").
+  const port = typeof window !== 'undefined' && window.location.port ? window.location.port : '3000';
+  return `http://${hostname}:${port}`;
 }
 
 /** '' in dev (relative paths, proxied by vite.config.ts's own server.proxy)
