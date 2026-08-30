@@ -24,6 +24,29 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.2.4] - Real, working Integrations panel (Config > Integrations)
+
+- **Config > Integrations cards are now real, not just saved text.** Each
+  of OpenPnP/CNC/Laser (existing) plus 2 new cards - ROS 2 Bridge and 3D
+  Printer Bridge (OrcaSlicer/Cura/PrusaSlicer/LycheeSlicer/Bambu Studio)
+  - now has a real **Test Connection** button: a genuine TCP reachability
+  probe run server-side (`POST /api/integrations/test-connection` - see
+  HYDRA-UMC-SERVER's own changelog), not a client-side ping that CORS
+  would block anyway. Green/red result shown per card, independent of
+  the others, matching this same real green/red-dot language the
+  Android app's own Ecosystem tab already uses. CNC/Laser also gained
+  the `ip` field they were missing (port-only before - a real reachability
+  check needs a real host).
+- `SystemSettings.integrations` gains `ros2`/`printer3d`, and `ip` on
+  `cnc`/`laser`. Handled defensively (optional chaining, matching the
+  existing pattern) everywhere `settings.integrations` is read, since an
+  older persisted `settings.json` won't have these fields yet.
+- New translation keys in all 7 locale files.
+- Verified: `tsc --noEmit` clean, `npm run build` succeeds, `npm run
+  lint` introduces zero new warnings (the `TestConnectionButton` is a
+  real module-level component, not one declared during render). The
+  built bundle confirmed to actually reference the new endpoint path.
+
 ## [0.2.3] - Dedicated base-rotation buttons on the XYZ Jog overlay
 
 - **`RobotDetail.tsx`'s floating `JoystickOverlay`** now has 2 dedicated

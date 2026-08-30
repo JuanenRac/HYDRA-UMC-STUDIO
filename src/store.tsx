@@ -333,8 +333,13 @@ export interface SystemSettings {
     openPnP: { enabled: boolean; ip: string; port: number };
     slic3r: { enabled: boolean; ip: string; port: number };
     prusaSlicer: { enabled: boolean; ip: string; port: number };
-    cnc: { software: string; enabled: boolean; port: number };
-    laser: { software: string; enabled: boolean; port: number };
+    // ip is new on cnc/laser - port-only was fine when these were pure
+    // form state; the real "Test Connection" below needs an actual host
+    // to probe, same as openPnP already had.
+    cnc: { software: string; enabled: boolean; ip: string; port: number };
+    laser: { software: string; enabled: boolean; ip: string; port: number };
+    ros2: { enabled: boolean; ip: string; port: number };
+    printer3d: { enabled: boolean; software: string; ip: string; port: number };
   };
   customModels: string[];
   autoConnectRobots: boolean;
@@ -578,8 +583,10 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       openPnP: { enabled: false, ip: '192.168.1.100', port: 8080 },
       slic3r: { enabled: false, ip: '192.168.1.100', port: 8080 },
       prusaSlicer: { enabled: false, ip: '192.168.1.100', port: 8080 },
-      cnc: { software: 'LinuxCNC', enabled: false, port: 8080 },
-      laser: { software: 'LightBurn', enabled: false, port: 8080 },
+      cnc: { software: 'LinuxCNC', enabled: false, ip: '192.168.1.100', port: 8080 },
+      laser: { software: 'LightBurn', enabled: false, ip: '192.168.1.100', port: 8080 },
+      ros2: { enabled: false, ip: '192.168.1.100', port: 8000 },
+      printer3d: { enabled: false, software: 'OrcaSlicer', ip: '192.168.1.100', port: 8080 },
     },
     customModels: [],
     modelSubmissions: {
@@ -805,8 +812,10 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
              openPnP: { enabled: false, ip: host, port: 8080 },
              slic3r: { enabled: false, ip: host, port: 8080 },
              prusaSlicer: { enabled: false, ip: host, port: 8080 },
-             cnc: { software: 'LinuxCNC', enabled: false, port: 8080 },
-             laser: { software: 'LightBurn', enabled: false, port: 8080 },
+             cnc: { software: 'LinuxCNC', enabled: false, ip: host, port: 8080 },
+             laser: { software: 'LightBurn', enabled: false, ip: host, port: 8080 },
+             ros2: { enabled: false, ip: host, port: 8000 },
+             printer3d: { enabled: false, software: 'OrcaSlicer', ip: host, port: 8080 },
            }
         }));
         // Same fix, same reason as the empty-data.controllers branch above:
