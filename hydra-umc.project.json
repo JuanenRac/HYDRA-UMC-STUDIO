@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "ecosystem": "HYDRA-UMC",
   "name": "HYDRA-UMC-STUDIO",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "role": "ui",
   "stack": "node",
   "technologies": [
@@ -16,7 +16,7 @@
   "family": "Core Backend & Clients",
   "parent": "HYDRA-UMC-SERVER",
   "build": "npm install && npm run build.",
-  "notes": "Web control dashboard with 3D multi-robot visualization, talking to HYDRA-UMC-SERVER's own API.",
+  "notes": "Web control dashboard with 3D multi-robot visualization, talking to HYDRA-UMC-SERVER's own API. GamepadController.tsx's real-time actions (joint/table jog, E-STOP, START/STOP, speed) now fire the atomic sendRobotCommand()/POST /api/robot/:id/command path instead of the 500ms-debounced settings save, matching every other real-time control surface in RobotDetail.tsx; jointLimitsFor() moved to the shared examples/robotKinematicsDispatch.ts so both reuse the same per-model joint-limit clamping.",
   "native_version": {
     "file": "package.json",
     "pattern": "\"version\":\\s*\"(\\d+)\\.(\\d+)\\.(\\d+)\""

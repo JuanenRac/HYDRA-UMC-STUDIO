@@ -27,6 +27,39 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.3.2] - Gamepad real-time actions now use the atomic command path
+
+- **`GamepadController.tsx`** - real-time actions (joint jog, XY-table
+  jog, E-STOP/E-STOP ALL, START/STOP, playback speed) now fire
+  `sendRobotCommand()`/`POST /api/robot/:id/command` - the same atomic
+  path `RobotDetail.tsx`'s own jog buttons, E-STOP and play/pause already
+  use - instead of `updateRobot()`'s 500ms-debounced full-tree
+  `POST /api/settings`. A held gamepad stick is inherently low-latency
+  input; routing it through the debounced save meant every connected
+  client (this one's own optimistic UI included) lagged a held stick by
+  up to 500ms, while also paying that save's full-tree serialization cost
+  on every animation frame the stick stayed held (see `store.tsx`'s own
+  `sendRobotCommand` comment - this is the exact "3D view at turtle
+  speed" root cause class that comment already documents for jog/valve/
+  pump/speed, just not yet fixed for gamepad input specifically).
+  `ADD POINT` deliberately stays on `updateRobot()` - it is not a
+  real-time action and has no atomic command of its own server-side.
+- Joint jog now respects each model's real per-joint limits
+  (`jointLimitsFor()`) instead of applying an unclamped +/-1.5° step -
+  the gamepad path previously had no clamping at all, unlike every other
+  jog surface in this app.
+- XY-table jog now sends the real `target: 'xytable'` jog command
+  (`server.ts`'s own dedicated branch) instead of writing `robot.pos`
+  directly with an axis name (`tx`/`ty`) the server's `jog` case doesn't
+  actually recognize for `target: 'robot'` - previously a silent no-op
+  server-side beyond the optimistic local mutation.
+- **`examples/robotKinematicsDispatch.ts`** - `jointLimitsFor()` moved
+  here from `RobotDetail.tsx` (which now imports it), the same "single
+  source of truth" move already applied to `jointsToCartesianForModel()`
+  in this file, so `GamepadController.tsx` can reuse the exact same
+  per-model joint-limit clamping instead of duplicating the ternary
+  chain a second time.
+
 ## [0.3.1] - Real hardware transport now also reaches Tier 2 (URTC Tool Head)
 
 - **`lib/canOta.ts`** - `resolveHardwareTarget()` now resolves `urtcHead`

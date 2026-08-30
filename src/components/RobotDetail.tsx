@@ -17,23 +17,23 @@ import { twMerge } from 'tailwind-merge';
 import { VirtualKinematics } from './VirtualKinematics';
 import { Joystick3D } from './Joystick3D';
 import { examples } from '../examples/kinematics';
-import { parol6CartesianToJoints, PAROL6_JOINT_LIMITS_DEG, PAROL6_HOME_POSE } from '../examples/parol6Kinematics';
+import { parol6CartesianToJoints, PAROL6_HOME_POSE } from '../examples/parol6Kinematics';
 import { faze4CartesianToJoints, FAZE4_HOME_POSE } from '../examples/faze4Kinematics';
 import { ar3CartesianToJoints, AR3_HOME_POSE } from '../examples/ar3Kinematics';
-import { ar4CartesianToJoints, AR4_HOME_POSE, AR4_JOINT_LIMITS_DEG } from '../examples/ar4Kinematics';
-import { ur3eCartesianToJoints, UR3E_HOME_POSE, UR3E_JOINT_LIMITS_DEG } from '../examples/ur3eKinematics';
-import { ur5eCartesianToJoints, UR5E_HOME_POSE, UR5E_JOINT_LIMITS_DEG } from '../examples/ur5eKinematics';
-import { ur10eCartesianToJoints, UR10E_HOME_POSE, UR10E_JOINT_LIMITS_DEG } from '../examples/ur10eKinematics';
-import { ur16eCartesianToJoints, UR16E_HOME_POSE, UR16E_JOINT_LIMITS_DEG } from '../examples/ur16eKinematics';
-import { ur20CartesianToJoints, UR20_HOME_POSE, UR20_JOINT_LIMITS_DEG } from '../examples/ur20Kinematics';
-import { xarm6CartesianToJoints, XARM6_HOME_POSE, XARM6_JOINT_LIMITS_DEG } from '../examples/xarm6Kinematics';
-import { lite6CartesianToJoints, LITE6_HOME_POSE, LITE6_JOINT_LIMITS_DEG } from '../examples/lite6Kinematics';
+import { ar4CartesianToJoints, AR4_HOME_POSE } from '../examples/ar4Kinematics';
+import { ur3eCartesianToJoints, UR3E_HOME_POSE } from '../examples/ur3eKinematics';
+import { ur5eCartesianToJoints, UR5E_HOME_POSE } from '../examples/ur5eKinematics';
+import { ur10eCartesianToJoints, UR10E_HOME_POSE } from '../examples/ur10eKinematics';
+import { ur16eCartesianToJoints, UR16E_HOME_POSE } from '../examples/ur16eKinematics';
+import { ur20CartesianToJoints, UR20_HOME_POSE } from '../examples/ur20Kinematics';
+import { xarm6CartesianToJoints, XARM6_HOME_POSE } from '../examples/xarm6Kinematics';
+import { lite6CartesianToJoints, LITE6_HOME_POSE } from '../examples/lite6Kinematics';
 import { edoCartesianToJoints, EDO_HOME_POSE } from '../examples/edoKinematics';
-import { gen3LiteCartesianToJoints, GEN3LITE_HOME_POSE, GEN3LITE_JOINT_LIMITS_DEG } from '../examples/gen3LiteKinematics';
+import { gen3LiteCartesianToJoints, GEN3LITE_HOME_POSE } from '../examples/gen3LiteKinematics';
 import { m710icCartesianToJoints, M710IC_HOME_POSE } from '../examples/m710icKinematics';
 import { soArm100CartesianToJoints, SOARM100_HOME_POSE } from '../examples/soArm100Kinematics';
-import { gen2CartesianToJoints, GEN2_HOME_POSE, GEN2_JOINT_LIMITS_DEG } from '../examples/gen2Kinematics';
-import { piperCartesianToJoints, PIPER_HOME_POSE, PIPER_JOINT_LIMITS_DEG } from '../examples/piperKinematics';
+import { gen2CartesianToJoints, GEN2_HOME_POSE } from '../examples/gen2Kinematics';
+import { piperCartesianToJoints, PIPER_HOME_POSE } from '../examples/piperKinematics';
 import { z1CartesianToJoints, Z1_HOME_POSE } from '../examples/z1Kinematics';
 import { vx300sCartesianToJoints, VX300S_HOME_POSE } from '../examples/vx300sKinematics';
 import { wx250sCartesianToJoints, WX250S_HOME_POSE } from '../examples/wx250sKinematics';
@@ -42,7 +42,7 @@ import { ur3ClassicCartesianToJoints, UR3CLASSIC_HOME_POSE } from '../examples/u
 import { ur5ClassicCartesianToJoints, UR5CLASSIC_HOME_POSE } from '../examples/ur5ClassicKinematics';
 import { ur10ClassicCartesianToJoints, UR10CLASSIC_HOME_POSE } from '../examples/ur10ClassicKinematics';
 import { convertToCartesian } from '../examples/utils';
-import { jointsToCartesianForModel } from '../examples/robotKinematicsDispatch';
+import { jointsToCartesianForModel, jointLimitsFor } from '../examples/robotKinematicsDispatch';
 
 /**
  * Executes the Cn logic. 
@@ -99,25 +99,9 @@ function homePoseFor(model: RobotModel) {
   return { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 };
 }
 
-// Parol6/AR4/the real UR/xArm/Lite6/Gen3Lite/Gen2/PiPER rigs have real, narrower
-// per-joint limits (from their own URDF/config) than the generic +/-180 range every
-// other model uses - shared by the classic Joint Controls grid and the A1 floating
-// overlay so both clamp jogging identically instead of duplicating this ternary chain.
-function jointLimitsFor(model: RobotModel, j: 'j1' | 'j2' | 'j3' | 'j4' | 'j5' | 'j6'): [number, number] {
-  if (model === 'Parol6 (6-DOF)') return PAROL6_JOINT_LIMITS_DEG[j];
-  if (model === 'AR4 (6-DOF)') return AR4_JOINT_LIMITS_DEG[j];
-  if (model === 'UR3e (6-DOF)') return UR3E_JOINT_LIMITS_DEG[j];
-  if (model === 'UR5e (6-DOF)') return UR5E_JOINT_LIMITS_DEG[j];
-  if (model === 'UR10e (6-DOF)') return UR10E_JOINT_LIMITS_DEG[j];
-  if (model === 'UR16e (6-DOF)') return UR16E_JOINT_LIMITS_DEG[j];
-  if (model === 'UR20 (6-DOF)') return UR20_JOINT_LIMITS_DEG[j];
-  if (model === 'xArm6 (6-DOF)') return XARM6_JOINT_LIMITS_DEG[j];
-  if (model === 'Lite 6 (6-DOF)') return LITE6_JOINT_LIMITS_DEG[j];
-  if (model === 'Gen3 Lite (6-DOF)') return GEN3LITE_JOINT_LIMITS_DEG[j];
-  if (model === 'Gen2 (6-DOF)') return GEN2_JOINT_LIMITS_DEG[j];
-  if (model === 'PiPER (6-DOF)') return PIPER_JOINT_LIMITS_DEG[j];
-  return [-180, 180];
-}
+// jointLimitsFor moved to robotKinematicsDispatch.ts (imported above) so
+// GamepadController.tsx's own per-joint jog can reuse the exact same
+// clamping instead of duplicating this ternary chain a second time.
 
 // Parol6Arm.tsx/Faze4Arm.tsx/AR3Arm.tsx/AR4Arm.tsx are each driven by their own real
 // URDF joint chain, not the shared 160mm/200mm planar convention the generic joints
@@ -858,7 +842,20 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
       const folderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
       const res = await fetch(apiUrl(`/${folderPath}/${fileName}`));
       if (res.ok) {
-        const points = await res.json();
+        const rawPoints = await res.json();
+        // Compact model-specific Works store [j1, j2, j3]. Normalize them
+        // before they enter React state: the points table, path viewer and
+        // Server then receive named joints plus this model's genuine FK pose.
+        const points = Array.isArray(rawPoints)
+          ? rawPoints.map((raw) => {
+              if (!Array.isArray(raw) || raw.length < 3) return raw;
+              const joints = {
+                motionType: 'model-joints', j1: raw[0], j2: raw[1], j3: raw[2],
+                j4: robot.joints.j4 ?? 0, j5: robot.joints.j5 ?? 0, j6: robot.joints.j6 ?? 0,
+              };
+              return { ...joints, ...jointsToCartesianForModel(robot.model, joints) };
+            })
+          : rawPoints;
         updateRobot(robot.id, { selectedWorkFile: fileName, recordedPoints: points });
       } else {
         updateRobot(robot.id, { selectedWorkFile: fileName });
@@ -1119,10 +1116,14 @@ console.log("Loading example:", id);
   // very next commit instead of one extra visible frame of the wrong pose.
   useLayoutEffect(() => {
     if (!robot.playbackState?.isPlaying) return;
-    if (typeof robot.pos?.x !== 'number') return;
+    if ((robot.playbackState as any).trajectoryMode === 'model-joints') return;
+    const target = (robot.playbackState as any).trajectoryMode === 'legacy-generic'
+      ? withCartesian(robot.joints)
+      : robot.pos;
+    if (typeof target?.x !== 'number') return;
     const resolved = resolveTargetJoints(
-      robot.model, robot.pos.x, robot.pos.y, robot.pos.z,
-      robot.pos.a ?? 0, robot.pos.b ?? 0, robot.pos.c ?? 0,
+      robot.model, target.x, target.y, target.z,
+      target.a ?? 0, target.b ?? 0, target.c ?? 0,
       robot.joints,
     );
     const changed = (['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const).some(

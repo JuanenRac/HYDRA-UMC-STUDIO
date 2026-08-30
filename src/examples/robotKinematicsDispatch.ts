@@ -24,23 +24,23 @@
 // =============================================================================
 
 import type { RobotModel } from '../store';
-import { parol6JointsToCartesian } from './parol6Kinematics';
+import { parol6JointsToCartesian, PAROL6_JOINT_LIMITS_DEG } from './parol6Kinematics';
 import { faze4JointsToCartesian } from './faze4Kinematics';
 import { ar3JointsToCartesian } from './ar3Kinematics';
-import { ar4JointsToCartesian } from './ar4Kinematics';
-import { ur3eJointsToCartesian } from './ur3eKinematics';
-import { ur5eJointsToCartesian } from './ur5eKinematics';
-import { ur10eJointsToCartesian } from './ur10eKinematics';
-import { ur16eJointsToCartesian } from './ur16eKinematics';
-import { ur20JointsToCartesian } from './ur20Kinematics';
-import { xarm6JointsToCartesian } from './xarm6Kinematics';
-import { lite6JointsToCartesian } from './lite6Kinematics';
+import { ar4JointsToCartesian, AR4_JOINT_LIMITS_DEG } from './ar4Kinematics';
+import { ur3eJointsToCartesian, UR3E_JOINT_LIMITS_DEG } from './ur3eKinematics';
+import { ur5eJointsToCartesian, UR5E_JOINT_LIMITS_DEG } from './ur5eKinematics';
+import { ur10eJointsToCartesian, UR10E_JOINT_LIMITS_DEG } from './ur10eKinematics';
+import { ur16eJointsToCartesian, UR16E_JOINT_LIMITS_DEG } from './ur16eKinematics';
+import { ur20JointsToCartesian, UR20_JOINT_LIMITS_DEG } from './ur20Kinematics';
+import { xarm6JointsToCartesian, XARM6_JOINT_LIMITS_DEG } from './xarm6Kinematics';
+import { lite6JointsToCartesian, LITE6_JOINT_LIMITS_DEG } from './lite6Kinematics';
 import { edoJointsToCartesian } from './edoKinematics';
-import { gen3LiteJointsToCartesian } from './gen3LiteKinematics';
+import { gen3LiteJointsToCartesian, GEN3LITE_JOINT_LIMITS_DEG } from './gen3LiteKinematics';
 import { m710icJointsToCartesian } from './m710icKinematics';
 import { soArm100JointsToCartesian } from './soArm100Kinematics';
-import { gen2JointsToCartesian } from './gen2Kinematics';
-import { piperJointsToCartesian } from './piperKinematics';
+import { gen2JointsToCartesian, GEN2_JOINT_LIMITS_DEG } from './gen2Kinematics';
+import { piperJointsToCartesian, PIPER_JOINT_LIMITS_DEG } from './piperKinematics';
 import { z1JointsToCartesian } from './z1Kinematics';
 import { vx300sJointsToCartesian } from './vx300sKinematics';
 import { wx250sJointsToCartesian } from './wx250sKinematics';
@@ -95,4 +95,27 @@ export function jointsToCartesianForModel(model: RobotModel | undefined, pt: Kin
     // quarter-turn depending on the pose.
     a: pt.j4 || 0, b: (pt.j5 || 0) + (pt.j2 || 0) - (pt.j3 || 0) + 180, c: pt.j6 || 0,
   };
+}
+
+// Parol6/AR4/the real UR/xArm/Lite6/Gen3Lite/Gen2/PiPER rigs have real,
+// narrower per-joint limits (from their own URDF/config) than the generic
+// +/-180 range every other model uses. Moved here (was originally local
+// to RobotDetail.tsx) so GamepadController.tsx's own per-joint jog can
+// clamp identically without either duplicating this ternary chain or
+// re-importing all 12 *_JOINT_LIMITS_DEG constants a second time - same
+// "single source of truth" reasoning as jointsToCartesianForModel above.
+export function jointLimitsFor(model: RobotModel, j: 'j1' | 'j2' | 'j3' | 'j4' | 'j5' | 'j6'): [number, number] {
+  if (model === 'Parol6 (6-DOF)') return PAROL6_JOINT_LIMITS_DEG[j];
+  if (model === 'AR4 (6-DOF)') return AR4_JOINT_LIMITS_DEG[j];
+  if (model === 'UR3e (6-DOF)') return UR3E_JOINT_LIMITS_DEG[j];
+  if (model === 'UR5e (6-DOF)') return UR5E_JOINT_LIMITS_DEG[j];
+  if (model === 'UR10e (6-DOF)') return UR10E_JOINT_LIMITS_DEG[j];
+  if (model === 'UR16e (6-DOF)') return UR16E_JOINT_LIMITS_DEG[j];
+  if (model === 'UR20 (6-DOF)') return UR20_JOINT_LIMITS_DEG[j];
+  if (model === 'xArm6 (6-DOF)') return XARM6_JOINT_LIMITS_DEG[j];
+  if (model === 'Lite 6 (6-DOF)') return LITE6_JOINT_LIMITS_DEG[j];
+  if (model === 'Gen3 Lite (6-DOF)') return GEN3LITE_JOINT_LIMITS_DEG[j];
+  if (model === 'Gen2 (6-DOF)') return GEN2_JOINT_LIMITS_DEG[j];
+  if (model === 'PiPER (6-DOF)') return PIPER_JOINT_LIMITS_DEG[j];
+  return [-180, 180];
 }

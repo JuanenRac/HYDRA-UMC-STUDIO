@@ -6,25 +6,46 @@
 
 import { useEffect, useRef } from 'react';
 import { useHydraStore } from '../store';
+import { jointsToCartesianForModel, jointLimitsFor } from '../examples/robotKinematicsDispatch';
+
+const JOINT_KEYS = ['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const;
+type JointKey = (typeof JOINT_KEYS)[number];
 
 /**
- * Executes the  gamepad controller logic. 
- * This function handles the necessary computations and state updates.
+ * Reads a physical gamepad (navigator.getGamepads(), polled once per
+ * animation frame) and maps its buttons/axes to real robot actions via
+ * settings.gamepadMapping.
+ *
+ * Real-time actions (joint/table jog, E-STOP, START/STOP, speed) fire the
+ * atomic sendRobotCommand()/POST /api/robot/:id/command path - the SAME
+ * one RobotDetail.tsx's own jog buttons/E-STOP/play/pause use - instead
+ * of updateRobot()'s 500ms-debounced full-tree POST /api/settings. A held
+ * gamepad joystick is inherently low-latency input; routing it through a
+ * half-second-delayed save made every other connected client (and this
+ * one's own optimistic UI) lag a held stick by up to 500ms, on top of
+ * paying that debounce's full-tree serialization cost on every single
+ * frame the stick was held (see store.tsx's own sendRobotCommand comment
+ * for why that full-tree cost is real, not theoretical). ADD POINT stays
+ * on updateRobot() below - recording a point is not a real-time action,
+ * and its shape (a full RecordedPoint object) has no atomic command of
+ * its own on the server.
  */
 export function GamepadController() {
-  const { settings, activeController, updateRobot } = useHydraStore();
+  const { settings, activeController, updateRobot, sendRobotCommand } = useHydraStore();
   const requestRef = useRef<number>(0);
   const lastState = useRef<Record<string, boolean>>({});
   const selectedRobotIdRef = useRef<number>(1);
   const settingsRef = useRef(settings);
   const activeControllerRef = useRef(activeController);
   const updateRobotRef = useRef(updateRobot);
+  const sendRobotCommandRef = useRef(sendRobotCommand);
 
   useEffect(() => {
     settingsRef.current = settings;
     activeControllerRef.current = activeController;
     updateRobotRef.current = updateRobot;
-  }, [settings, activeController, updateRobot]);
+    sendRobotCommandRef.current = sendRobotCommand;
+  }, [settings, activeController, updateRobot, sendRobotCommand]);
 
   useEffect(() => {
     if (!settings.gamepadEnabled) {
@@ -59,56 +80,80 @@ export function GamepadController() {
             if (!currentRobot) continue;
 
             if (action.startsWith('J')) {
-              // Action format: J1+, J1-
-              const jointStr = action.substring(0, 2).toLowerCase(); // "j1"
+              // Action format: J1+, J1- ... J6+, J6-. Fires the atomic
+              // 'jog' command with a client-resolved `joints` override -
+              // exactly the mechanism RobotDetail.tsx's own handleJ1Jog
+              // uses (see that function's own comment on why: the server's
+              // generic calculateJoints() doesn't know this model's real
+              // per-model kinematics chain). Clamped to this model's real
+              // joint limits via the shared jointLimitsFor(), same as
+              // every other jog surface - a held gamepad button can't walk
+              // a joint past what the real robot could ever reach.
+              const jointKey = action.substring(0, 2).toLowerCase() as JointKey;
+              if (!JOINT_KEYS.includes(jointKey)) continue;
               const isPos = action.endsWith('+');
               const step = isPos ? 1.5 : -1.5;
-              const currentVal = (currentRobot.joints as any)[jointStr] || 0;
-              
-              updateRobotRef.current(currentRobot.id, {
-                joints: {
-                  ...currentRobot.joints,
-                  [jointStr]: currentVal + step
-                }
-              });
+              const [jMin, jMax] = jointLimitsFor(currentRobot.model, jointKey);
+              const currentVal = (currentRobot.joints as any)[jointKey] || 0;
+              const newVal = Math.min(jMax, Math.max(jMin, currentVal + step));
+              if (newVal === currentVal) continue; // already at a real limit - no-op, not a clamped-but-sent command
+
+              const newJoints = { ...currentRobot.joints, [jointKey]: newVal };
+              const newCart = jointsToCartesianForModel(currentRobot.model, newJoints);
+              sendRobotCommandRef.current(
+                currentRobot.id,
+                'jog',
+                { axis: 'x', amount: 0, target: 'robot', joints: newJoints },
+                () => ({
+                  pos: { ...currentRobot.pos, x: newCart.x, y: newCart.y, z: newCart.z, a: newCart.a, b: newCart.b, c: newCart.c },
+                  joints: newJoints,
+                })
+              );
             } else if (action.startsWith('T')) {
-              // Action format: TX+, TY-
+              // Action format: TX+, TY-. Fires the atomic 'jog' command
+              // with target:'xytable' - the real server-side branch
+              // (server.ts's own jog case) that updates robot.xyTable.pos,
+              // rather than robot.pos directly (target:'robot' only
+              // accepts the real ROBOT_AXES set - x/y/z/a/b/c - 'tx'/'ty'
+              // are this project's own pos-mirror keys, not real server
+              // axis names). pos.tx/ty is still mutated locally alongside
+              // xyTable.pos so ADD POINT's own pos.tx/ty snapshot (below)
+              // stays consistent, same dual-field shape
+              // RobotDetail.tsx's XYTableOverlay onAxisChange already uses.
+              if (!currentRobot.hasXYTable || !currentRobot.xyTable) continue;
               const axisStr = action.substring(0, 2).toLowerCase(); // "tx" or "ty"
               const tableAxis = axisStr === 'tx' ? 'x' : 'y';
               const isPos = action.endsWith('+');
               const step = isPos ? 2 : -2;
-              const currentPos = currentRobot.pos || { x: 0, y: 0, z: 0 };
-              const newTablePosVal = ((currentPos as any)[axisStr] || 0) + step;
-              
-              const xyUpdate = currentRobot.hasXYTable && currentRobot.xyTable ? {
-                xyTable: {
-                  ...currentRobot.xyTable,
-                  pos: {
-                    ...currentRobot.xyTable.pos,
-                    [tableAxis]: newTablePosVal
-                  }
-                }
-              } : {};
+              const xyTable = currentRobot.xyTable;
+              const newTableVal = ((xyTable.pos as any)[tableAxis] || 0) + step;
 
-              updateRobotRef.current(currentRobot.id, {
-                pos: {
-                  ...currentPos,
-                  [axisStr]: newTablePosVal
-                },
-                ...xyUpdate
-              });
+              sendRobotCommandRef.current(
+                currentRobot.id,
+                'jog',
+                { axis: tableAxis, amount: step, target: 'xytable' },
+                () => ({
+                  pos: { ...currentRobot.pos, [axisStr]: newTableVal },
+                  xyTable: { ...xyTable, pos: { ...xyTable.pos, [tableAxis]: newTableVal } },
+                })
+              );
             } else if (action.startsWith('SPEED')) {
-              // SPEED+, SPEED-
-              // Depends if we update playback speed or jog speed. Probably playback state speed.
+              // SPEED+, SPEED- - mirrors RobotDetail.tsx's own speed
+              // slider (sendRobotCommand(id, 'speed', ...)), not the
+              // playback-loop-local speed the removed local player used.
               const isPos = action.endsWith('+');
               const pb = currentRobot.playbackState || { isPlaying: false, activeStep: -1, speed: 100 };
               const currentSpeed = pb.speed || 100;
               let newSpeed = isPos ? currentSpeed + 1 : currentSpeed - 1;
               if (newSpeed < 1) newSpeed = 1;
               if (newSpeed > 200) newSpeed = 200;
-              updateRobotRef.current(currentRobot.id, {
-                playbackState: { ...pb, speed: newSpeed }
-              });
+              if (newSpeed === currentSpeed) continue;
+              sendRobotCommandRef.current(
+                currentRobot.id,
+                'speed',
+                { speed: newSpeed },
+                (r) => ({ playbackState: { ...(r.playbackState || {}), speed: newSpeed } })
+              );
             }
           }
 
@@ -119,56 +164,104 @@ export function GamepadController() {
               const id = parseInt(action.replace('select_robot_', ''));
               selectedRobotIdRef.current = id;
             } else if (action === 'E-STOP') {
+              // Mirrors RobotDetail.tsx's own E-STOP button: the atomic
+              // 'stop' command (server-side fans out to combinedWith on
+              // its own via affectedIds) plus updateRobot({online:false})
+              // for this robot - see store.tsx's own sendRobotCommand
+              // comment for why 'stop' needs the atomic path (instant,
+              // no 500ms debounce) while online:false, a rarer/non-
+              // real-time flag, stays on the plain settings path.
               if (currentRobot) {
-                updateRobotRef.current(currentRobot.id, { online: false, playbackState: { ...(currentRobot.playbackState || {}), isPlaying: false, activeStep: -1, speed: currentRobot.playbackState?.speed || 100 } });
+                sendRobotCommandRef.current(
+                  currentRobot.id,
+                  'stop',
+                  undefined,
+                  (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: false, activeStep: -1, isPaused: false, paused: false, isFinished: false } }),
+                  [currentRobot.id, ...(currentRobot.combinedWith || [])]
+                );
+                updateRobotRef.current(currentRobot.id, { online: false });
               }
             } else if (action === 'E-STOP ALL') {
-              activeControllerRef.current.robots.forEach(r => updateRobotRef.current(r.id, { online: false, playbackState: { ...(r.playbackState || {}), isPlaying: false, activeStep: -1, speed: r.playbackState?.speed || 100 } }));
+              activeControllerRef.current.robots.forEach(r => {
+                sendRobotCommandRef.current(
+                  r.id,
+                  'stop',
+                  undefined,
+                  (robot) => ({ playbackState: { ...(robot.playbackState || {}), isPlaying: false, activeStep: -1, isPaused: false, paused: false, isFinished: false } }),
+                  [r.id, ...(r.combinedWith || [])]
+                );
+                updateRobotRef.current(r.id, { online: false });
+              });
             } else if (action === 'START') {
-               if (currentRobot) {
-                 const freshRobot = activeControllerRef.current.robots.find(r => r.id === currentRobot.id); const freshPb = freshRobot?.playbackState || { speed: 100 }; updateRobotRef.current(currentRobot.id, { playbackState: { ...freshPb, isPlaying: true, activeStep: 0, speed: freshPb.speed || 100 } });
-               }
+              if (currentRobot && currentRobot.recordedPoints.length > 0) {
+                sendRobotCommandRef.current(
+                  currentRobot.id,
+                  'play',
+                  undefined,
+                  (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: true, activeStep: 0, isPaused: false, paused: false, isFinished: false } })
+                );
+              }
             } else if (action === 'START ALL') {
-               activeControllerRef.current.robots.forEach(r => {
-                 const freshR = activeControllerRef.current.robots.find(rob => rob.id === r.id); const freshPb = freshR?.playbackState || { speed: 100 }; updateRobotRef.current(r.id, { playbackState: { ...freshPb, isPlaying: true, activeStep: 0, speed: freshPb.speed || 100 } });
-               });
+              activeControllerRef.current.robots.forEach(r => {
+                if (r.recordedPoints.length === 0) return;
+                sendRobotCommandRef.current(
+                  r.id,
+                  'play',
+                  undefined,
+                  (robot) => ({ playbackState: { ...(robot.playbackState || {}), isPlaying: true, activeStep: 0, isPaused: false, paused: false, isFinished: false } })
+                );
+              });
             } else if (action === 'STOP') {
-               if (currentRobot) {
-                 const pb = currentRobot.playbackState || { speed: 100 };
-                 updateRobotRef.current(currentRobot.id, { playbackState: { ...pb, isPlaying: false, activeStep: -1, speed: pb.speed || 100 } });
-               }
+              if (currentRobot) {
+                sendRobotCommandRef.current(
+                  currentRobot.id,
+                  'stop',
+                  undefined,
+                  (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: false, activeStep: -1, isPaused: false, paused: false, isFinished: false } }),
+                  [currentRobot.id, ...(currentRobot.combinedWith || [])]
+                );
+              }
             } else if (action === 'STOP ALL') {
-               activeControllerRef.current.robots.forEach(r => {
-                 const pb = r.playbackState || { speed: 100 };
-                 updateRobotRef.current(r.id, { playbackState: { ...pb, isPlaying: false, activeStep: -1, speed: pb.speed || 100 } });
-               });
+              activeControllerRef.current.robots.forEach(r => {
+                sendRobotCommandRef.current(
+                  r.id,
+                  'stop',
+                  undefined,
+                  (robot) => ({ playbackState: { ...(robot.playbackState || {}), isPlaying: false, activeStep: -1, isPaused: false, paused: false, isFinished: false } }),
+                  [r.id, ...(r.combinedWith || [])]
+                );
+              });
             } else if (action === 'ADD POINT') {
-               if (currentRobot) {
-                 const newPoint = {
-                   id: Date.now().toString(),
-                   name: `P${currentRobot.recordedPoints.length + 1}`,
-                   x: currentRobot.pos.x,
-                   y: currentRobot.pos.y,
-                   z: currentRobot.pos.z,
-                   a: currentRobot.pos.a,
-                   b: currentRobot.pos.b,
-                   c: currentRobot.pos.c,
-                   tx: currentRobot.pos.tx,
-                   ty: currentRobot.pos.ty,
-                   trz: currentRobot.pos.trz,
-                   j1: currentRobot.joints.j1,
-                   j2: currentRobot.joints.j2,
-                   j3: currentRobot.joints.j3,
-                   j4: currentRobot.joints.j4,
-                   j5: currentRobot.joints.j5,
-                   j6: currentRobot.joints.j6,
-                   speed: (currentRobot.playbackState?.speed || 100)
-                 };
-                 updateRobotRef.current(currentRobot.id, {
-                   // @ts-ignore
-                   recordedPoints: [...currentRobot.recordedPoints, newPoint]
-                 });
-               }
+              // Not a real-time action - a recorded point is a full
+              // object with no atomic command of its own on the server,
+              // so this stays on the plain debounced settings path like
+              // every other point-list edit (delete/rename/reorder).
+              if (currentRobot) {
+                const newPoint = {
+                  id: Date.now().toString(),
+                  name: `P${currentRobot.recordedPoints.length + 1}`,
+                  x: currentRobot.pos.x,
+                  y: currentRobot.pos.y,
+                  z: currentRobot.pos.z,
+                  a: currentRobot.pos.a,
+                  b: currentRobot.pos.b,
+                  c: currentRobot.pos.c,
+                  tx: currentRobot.pos.tx,
+                  ty: currentRobot.pos.ty,
+                  trz: currentRobot.pos.trz,
+                  j1: currentRobot.joints.j1,
+                  j2: currentRobot.joints.j2,
+                  j3: currentRobot.joints.j3,
+                  j4: currentRobot.joints.j4,
+                  j5: currentRobot.joints.j5,
+                  j6: currentRobot.joints.j6,
+                  speed: (currentRobot.playbackState?.speed || 100)
+                };
+                updateRobotRef.current(currentRobot.id, {
+                  // @ts-ignore
+                  recordedPoints: [...currentRobot.recordedPoints, newPoint]
+                });
+              }
             }
           }
         }
