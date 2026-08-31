@@ -28,8 +28,19 @@ function App() {
   // there. Not memoized via useMemo like Dashboard.tsx's own `hideUI` read -
   // this only needs to run once, before first paint, to pick the initial
   // showSplash value.
-  const hideUI = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('hideUI') === 'true';
-  const [showSplash, setShowSplash] = useState(!hideUI);
+  //
+  // `skipSplash=true` is a second, independent flag for the same "skip the
+  // 10s splash" need but WITHOUT hideUI's other effect of hiding the
+  // header/sidebar/tab navigation - HYDRA-UMC-OS's own HDMI kiosk
+  // (provisioning/kiosk/splash.html) already shows this project's real,
+  // animated HYDRA_UMC_SPLASHSCREEN.svg once itself before handing off to
+  // this page, so showing it again here (a second time, and only a static
+  // <img> render of it, never animated) was a real, reported duplicate.
+  // hideUI still implies it, matching the pre-existing Android behaviour.
+  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const hideUI = params?.get('hideUI') === 'true';
+  const skipSplash = hideUI || params?.get('skipSplash') === 'true';
+  const [showSplash, setShowSplash] = useState(!skipSplash);
 
   useEffect(() => {
     const handleInteraction = () => {
@@ -47,12 +58,12 @@ function App() {
 
 
   useEffect(() => {
-    if (hideUI) return;
+    if (skipSplash) return;
     const timer = setTimeout(() => {
       setShowSplash(false);
     }, 10000);
     return () => clearTimeout(timer);
-  }, [hideUI]);
+  }, [skipSplash]);
 
   if (showSplash) {
     return (
