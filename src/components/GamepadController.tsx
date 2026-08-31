@@ -6,7 +6,16 @@
 
 import { useEffect, useRef } from 'react';
 import { useHydraStore } from '../store';
-import { jointsToCartesianForModel, jointLimitsFor } from '../examples/robotKinematicsDispatch';
+import { jointsToCartesianForModel, jointLimitsFor, resolveTargetJoints } from '../examples/robotKinematicsDispatch';
+
+// Cartesian step per held frame, mm - same magnitude as this file's own
+// table jog step just below (TX+/TX-/TY+/TY-, also 2mm/frame). Unlike
+// RobotDetail.tsx's floating Joystick3D overlay (which reads a
+// user-selectable jogStep), a gamepad button has no per-session step
+// selector of its own here, so a single fixed real-world value is the
+// honest choice rather than inventing a second step control nothing else
+// surfaces.
+const CARTESIAN_JOG_STEP_MM = 2;
 
 const JOINT_KEYS = ['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const;
 type JointKey = (typeof JOINT_KEYS)[number];
@@ -79,7 +88,28 @@ export function GamepadController() {
             const currentRobot = activeControllerRef.current.robots.find(r => r.id === selectedRobotIdRef.current);
             if (!currentRobot) continue;
 
-            if (action.startsWith('J')) {
+            if (action === 'X+' || action === 'X-' || action === 'Y+' || action === 'Y-' || action === 'Z+' || action === 'Z-') {
+              // Cartesian XYZ jog - mirrors RobotDetail.tsx's own
+              // handleXYZJog exactly (forward kinematics to find the
+              // current tool point, apply the delta on one axis, then
+              // resolveTargetJoints for this model's own real inverse
+              // kinematics) so a gamepad-driven XYZ nudge lands on the
+              // identical per-model IK solution the floating Joystick3D
+              // overlay would produce for the same move, not a second,
+              // possibly-diverging formula.
+              const axisKey = action[0].toLowerCase() as 'x' | 'y' | 'z';
+              const isPos = action.endsWith('+');
+              const step = isPos ? CARTESIAN_JOG_STEP_MM : -CARTESIAN_JOG_STEP_MM;
+              const cart = jointsToCartesianForModel(currentRobot.model, currentRobot.joints);
+              const newCart = { ...cart, [axisKey]: cart[axisKey] + step };
+              const newJoints = resolveTargetJoints(currentRobot.model, newCart.x, newCart.y, newCart.z, cart.a, cart.b, cart.c, currentRobot.joints);
+              sendRobotCommandRef.current(
+                currentRobot.id,
+                'jog',
+                { axis: axisKey, amount: step, target: 'robot', joints: newJoints },
+                (r) => ({ pos: { ...r.pos, [axisKey]: newCart[axisKey], a: cart.a, b: cart.b, c: cart.c }, joints: newJoints })
+              );
+            } else if (action.startsWith('J')) {
               // Action format: J1+, J1- ... J6+, J6-. Fires the atomic
               // 'jog' command with a client-resolved `joints` override -
               // exactly the mechanism RobotDetail.tsx's own handleJ1Jog

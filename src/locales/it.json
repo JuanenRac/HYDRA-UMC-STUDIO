@@ -791,6 +791,8 @@
     "actions": {
       "none": "Nessuna",
       "select_robot": "Seleziona Robot {{n}}",
+      "cartesian_plus": "{{axis}} +",
+      "cartesian_minus": "{{axis}} -",
       "joint_plus": "{{j}} +",
       "joint_minus": "{{j}} -",
       "table_plus": "Tavola {{a}} +",

@@ -24,30 +24,30 @@
 // =============================================================================
 
 import type { RobotModel } from '../store';
-import { parol6JointsToCartesian, PAROL6_JOINT_LIMITS_DEG } from './parol6Kinematics';
-import { faze4JointsToCartesian } from './faze4Kinematics';
-import { ar3JointsToCartesian } from './ar3Kinematics';
-import { ar4JointsToCartesian, AR4_JOINT_LIMITS_DEG } from './ar4Kinematics';
-import { ur3eJointsToCartesian, UR3E_JOINT_LIMITS_DEG } from './ur3eKinematics';
-import { ur5eJointsToCartesian, UR5E_JOINT_LIMITS_DEG } from './ur5eKinematics';
-import { ur10eJointsToCartesian, UR10E_JOINT_LIMITS_DEG } from './ur10eKinematics';
-import { ur16eJointsToCartesian, UR16E_JOINT_LIMITS_DEG } from './ur16eKinematics';
-import { ur20JointsToCartesian, UR20_JOINT_LIMITS_DEG } from './ur20Kinematics';
-import { xarm6JointsToCartesian, XARM6_JOINT_LIMITS_DEG } from './xarm6Kinematics';
-import { lite6JointsToCartesian, LITE6_JOINT_LIMITS_DEG } from './lite6Kinematics';
-import { edoJointsToCartesian } from './edoKinematics';
-import { gen3LiteJointsToCartesian, GEN3LITE_JOINT_LIMITS_DEG } from './gen3LiteKinematics';
-import { m710icJointsToCartesian } from './m710icKinematics';
-import { soArm100JointsToCartesian } from './soArm100Kinematics';
-import { gen2JointsToCartesian, GEN2_JOINT_LIMITS_DEG } from './gen2Kinematics';
-import { piperJointsToCartesian, PIPER_JOINT_LIMITS_DEG } from './piperKinematics';
-import { z1JointsToCartesian } from './z1Kinematics';
-import { vx300sJointsToCartesian } from './vx300sKinematics';
-import { wx250sJointsToCartesian } from './wx250sKinematics';
-import { kochJointsToCartesian } from './kochKinematics';
-import { ur3ClassicJointsToCartesian } from './ur3ClassicKinematics';
-import { ur5ClassicJointsToCartesian } from './ur5ClassicKinematics';
-import { ur10ClassicJointsToCartesian } from './ur10ClassicKinematics';
+import { parol6JointsToCartesian, parol6CartesianToJoints, PAROL6_JOINT_LIMITS_DEG } from './parol6Kinematics';
+import { faze4JointsToCartesian, faze4CartesianToJoints } from './faze4Kinematics';
+import { ar3JointsToCartesian, ar3CartesianToJoints } from './ar3Kinematics';
+import { ar4JointsToCartesian, ar4CartesianToJoints, AR4_JOINT_LIMITS_DEG } from './ar4Kinematics';
+import { ur3eJointsToCartesian, ur3eCartesianToJoints, UR3E_JOINT_LIMITS_DEG } from './ur3eKinematics';
+import { ur5eJointsToCartesian, ur5eCartesianToJoints, UR5E_JOINT_LIMITS_DEG } from './ur5eKinematics';
+import { ur10eJointsToCartesian, ur10eCartesianToJoints, UR10E_JOINT_LIMITS_DEG } from './ur10eKinematics';
+import { ur16eJointsToCartesian, ur16eCartesianToJoints, UR16E_JOINT_LIMITS_DEG } from './ur16eKinematics';
+import { ur20JointsToCartesian, ur20CartesianToJoints, UR20_JOINT_LIMITS_DEG } from './ur20Kinematics';
+import { xarm6JointsToCartesian, xarm6CartesianToJoints, XARM6_JOINT_LIMITS_DEG } from './xarm6Kinematics';
+import { lite6JointsToCartesian, lite6CartesianToJoints, LITE6_JOINT_LIMITS_DEG } from './lite6Kinematics';
+import { edoJointsToCartesian, edoCartesianToJoints } from './edoKinematics';
+import { gen3LiteJointsToCartesian, gen3LiteCartesianToJoints, GEN3LITE_JOINT_LIMITS_DEG } from './gen3LiteKinematics';
+import { m710icJointsToCartesian, m710icCartesianToJoints } from './m710icKinematics';
+import { soArm100JointsToCartesian, soArm100CartesianToJoints } from './soArm100Kinematics';
+import { gen2JointsToCartesian, gen2CartesianToJoints, GEN2_JOINT_LIMITS_DEG } from './gen2Kinematics';
+import { piperJointsToCartesian, piperCartesianToJoints, PIPER_JOINT_LIMITS_DEG } from './piperKinematics';
+import { z1JointsToCartesian, z1CartesianToJoints } from './z1Kinematics';
+import { vx300sJointsToCartesian, vx300sCartesianToJoints } from './vx300sKinematics';
+import { wx250sJointsToCartesian, wx250sCartesianToJoints } from './wx250sKinematics';
+import { kochJointsToCartesian, kochCartesianToJoints } from './kochKinematics';
+import { ur3ClassicJointsToCartesian, ur3ClassicCartesianToJoints } from './ur3ClassicKinematics';
+import { ur5ClassicJointsToCartesian, ur5ClassicCartesianToJoints } from './ur5ClassicKinematics';
+import { ur10ClassicJointsToCartesian, ur10ClassicCartesianToJoints } from './ur10ClassicKinematics';
 import type { KinematicsPoint } from './utils';
 
 export function jointsToCartesianForModel(model: RobotModel | undefined, pt: KinematicsPoint): { x: number; y: number; z: number; a: number; b: number; c: number } {
@@ -118,4 +118,48 @@ export function jointLimitsFor(model: RobotModel, j: 'j1' | 'j2' | 'j3' | 'j4' |
   if (model === 'Gen2 (6-DOF)') return GEN2_JOINT_LIMITS_DEG[j];
   if (model === 'PiPER (6-DOF)') return PIPER_JOINT_LIMITS_DEG[j];
   return [-180, 180];
+}
+
+// Parol6Arm.tsx/Faze4Arm.tsx/AR3Arm.tsx/AR4Arm.tsx/... are each driven by
+// their own real URDF joint chain, not the shared 160mm/200mm planar
+// convention `genericJoints` was computed against - re-solve the resolved
+// Cartesian target (x,y,z,a,b,c, itself a robot-agnostic workspace point
+// regardless of which formula produced it) against that robot's own real
+// kinematics instead, so a jog/recorded/played trajectory moves it
+// sensibly. Moved here (was originally local to RobotDetail.tsx) so
+// GamepadController.tsx's own Cartesian XYZ jog can reuse the exact same
+// per-model inverse-kinematics dispatch instead of either duplicating
+// this 23-branch chain a second time or re-importing all 23
+// `*CartesianToJoints` functions again - same "single source of truth"
+// reasoning as jointsToCartesianForModel/jointLimitsFor above.
+export function resolveTargetJoints(
+  model: RobotModel | undefined,
+  x: number, y: number, z: number, a: number, b: number, c: number,
+  genericJoints: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number }
+) {
+  if (model === 'Parol6 (6-DOF)') return parol6CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'AR4 (6-DOF)') return ar4CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'Faze4 (6-DOF)') return faze4CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'AR3 (6-DOF)') return ar3CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR3e (6-DOF)') return ur3eCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR5e (6-DOF)') return ur5eCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR10e (6-DOF)') return ur10eCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR16e (6-DOF)') return ur16eCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR20 (6-DOF)') return ur20CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'xArm6 (6-DOF)') return xarm6CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'Lite 6 (6-DOF)') return lite6CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'e.DO (6-DOF)') return edoCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'Gen3 Lite (6-DOF)') return gen3LiteCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'M-710iC (6-DOF)') return m710icCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'SO-ARM100 (5-DOF)') return soArm100CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'Gen2 (6-DOF)') return gen2CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'PiPER (6-DOF)') return piperCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'Z1 (6-DOF)') return z1CartesianToJoints(x, y, z, a, b, c);
+  if (model === 'ViperX 300 (6-DOF)') return vx300sCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'WidowX 250 (6-DOF)') return wx250sCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'Koch v1.1 (5-DOF)') return kochCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR3 (6-DOF)') return ur3ClassicCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR5 (6-DOF)') return ur5ClassicCartesianToJoints(x, y, z, a, b, c);
+  if (model === 'UR10 (6-DOF)') return ur10ClassicCartesianToJoints(x, y, z, a, b, c);
+  return genericJoints;
 }

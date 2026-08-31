@@ -791,6 +791,8 @@
     "actions": {
       "none": "なし",
       "select_robot": "ロボット {{n}} を選択",
+      "cartesian_plus": "{{axis}} +",
+      "cartesian_minus": "{{axis}} -",
       "joint_plus": "{{j}} +",
       "joint_minus": "{{j}} -",
       "table_plus": "テーブル {{a}} +",

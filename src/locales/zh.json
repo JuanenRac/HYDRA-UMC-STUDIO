@@ -791,6 +791,8 @@
     "actions": {
       "none": "无",
       "select_robot": "选择机器人 {{n}}",
+      "cartesian_plus": "{{axis}} +",
+      "cartesian_minus": "{{axis}} -",
       "joint_plus": "{{j}} +",
       "joint_minus": "{{j}} -",
       "table_plus": "工作台 {{a}} +",

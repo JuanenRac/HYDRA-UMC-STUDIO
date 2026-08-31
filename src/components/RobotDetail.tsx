@@ -17,32 +17,32 @@ import { twMerge } from 'tailwind-merge';
 import { VirtualKinematics } from './VirtualKinematics';
 import { Joystick3D } from './Joystick3D';
 import { examples } from '../examples/kinematics';
-import { parol6CartesianToJoints, PAROL6_HOME_POSE } from '../examples/parol6Kinematics';
-import { faze4CartesianToJoints, FAZE4_HOME_POSE } from '../examples/faze4Kinematics';
-import { ar3CartesianToJoints, AR3_HOME_POSE } from '../examples/ar3Kinematics';
-import { ar4CartesianToJoints, AR4_HOME_POSE } from '../examples/ar4Kinematics';
-import { ur3eCartesianToJoints, UR3E_HOME_POSE } from '../examples/ur3eKinematics';
-import { ur5eCartesianToJoints, UR5E_HOME_POSE } from '../examples/ur5eKinematics';
-import { ur10eCartesianToJoints, UR10E_HOME_POSE } from '../examples/ur10eKinematics';
-import { ur16eCartesianToJoints, UR16E_HOME_POSE } from '../examples/ur16eKinematics';
-import { ur20CartesianToJoints, UR20_HOME_POSE } from '../examples/ur20Kinematics';
-import { xarm6CartesianToJoints, XARM6_HOME_POSE } from '../examples/xarm6Kinematics';
-import { lite6CartesianToJoints, LITE6_HOME_POSE } from '../examples/lite6Kinematics';
-import { edoCartesianToJoints, EDO_HOME_POSE } from '../examples/edoKinematics';
-import { gen3LiteCartesianToJoints, GEN3LITE_HOME_POSE } from '../examples/gen3LiteKinematics';
-import { m710icCartesianToJoints, M710IC_HOME_POSE } from '../examples/m710icKinematics';
-import { soArm100CartesianToJoints, SOARM100_HOME_POSE } from '../examples/soArm100Kinematics';
-import { gen2CartesianToJoints, GEN2_HOME_POSE } from '../examples/gen2Kinematics';
-import { piperCartesianToJoints, PIPER_HOME_POSE } from '../examples/piperKinematics';
-import { z1CartesianToJoints, Z1_HOME_POSE } from '../examples/z1Kinematics';
-import { vx300sCartesianToJoints, VX300S_HOME_POSE } from '../examples/vx300sKinematics';
-import { wx250sCartesianToJoints, WX250S_HOME_POSE } from '../examples/wx250sKinematics';
-import { kochCartesianToJoints, KOCH_HOME_POSE } from '../examples/kochKinematics';
-import { ur3ClassicCartesianToJoints, UR3CLASSIC_HOME_POSE } from '../examples/ur3ClassicKinematics';
-import { ur5ClassicCartesianToJoints, UR5CLASSIC_HOME_POSE } from '../examples/ur5ClassicKinematics';
-import { ur10ClassicCartesianToJoints, UR10CLASSIC_HOME_POSE } from '../examples/ur10ClassicKinematics';
+import { PAROL6_HOME_POSE } from '../examples/parol6Kinematics';
+import { FAZE4_HOME_POSE } from '../examples/faze4Kinematics';
+import { AR3_HOME_POSE } from '../examples/ar3Kinematics';
+import { AR4_HOME_POSE } from '../examples/ar4Kinematics';
+import { UR3E_HOME_POSE } from '../examples/ur3eKinematics';
+import { UR5E_HOME_POSE } from '../examples/ur5eKinematics';
+import { UR10E_HOME_POSE } from '../examples/ur10eKinematics';
+import { UR16E_HOME_POSE } from '../examples/ur16eKinematics';
+import { UR20_HOME_POSE } from '../examples/ur20Kinematics';
+import { XARM6_HOME_POSE } from '../examples/xarm6Kinematics';
+import { LITE6_HOME_POSE } from '../examples/lite6Kinematics';
+import { EDO_HOME_POSE } from '../examples/edoKinematics';
+import { GEN3LITE_HOME_POSE } from '../examples/gen3LiteKinematics';
+import { M710IC_HOME_POSE } from '../examples/m710icKinematics';
+import { SOARM100_HOME_POSE } from '../examples/soArm100Kinematics';
+import { GEN2_HOME_POSE } from '../examples/gen2Kinematics';
+import { PIPER_HOME_POSE } from '../examples/piperKinematics';
+import { Z1_HOME_POSE } from '../examples/z1Kinematics';
+import { VX300S_HOME_POSE } from '../examples/vx300sKinematics';
+import { WX250S_HOME_POSE } from '../examples/wx250sKinematics';
+import { KOCH_HOME_POSE } from '../examples/kochKinematics';
+import { UR3CLASSIC_HOME_POSE } from '../examples/ur3ClassicKinematics';
+import { UR5CLASSIC_HOME_POSE } from '../examples/ur5ClassicKinematics';
+import { UR10CLASSIC_HOME_POSE } from '../examples/ur10ClassicKinematics';
 import { convertToCartesian } from '../examples/utils';
-import { jointsToCartesianForModel, jointLimitsFor } from '../examples/robotKinematicsDispatch';
+import { jointsToCartesianForModel, jointLimitsFor, resolveTargetJoints } from '../examples/robotKinematicsDispatch';
 
 /**
  * Executes the Cn logic. 
@@ -103,43 +103,11 @@ function homePoseFor(model: RobotModel) {
 // GamepadController.tsx's own per-joint jog can reuse the exact same
 // clamping instead of duplicating this ternary chain a second time.
 
-// Parol6Arm.tsx/Faze4Arm.tsx/AR3Arm.tsx/AR4Arm.tsx are each driven by their own real
-// URDF joint chain, not the shared 160mm/200mm planar convention the generic joints
-// above were computed against - re-solve the resolved Cartesian target (x,y,z,a,b,c,
-// itself a robot-agnostic workspace point regardless of which formula produced it)
-// against that robot's own real kinematics instead, so recorded/played trajectories
-// move it sensibly.
-function resolveTargetJoints(
-  model: RobotModel | undefined,
-  x: number, y: number, z: number, a: number, b: number, c: number,
-  genericJoints: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number }
-) {
-  if (model === 'Parol6 (6-DOF)') return parol6CartesianToJoints(x, y, z, a, b, c);
-  if (model === 'AR4 (6-DOF)') return ar4CartesianToJoints(x, y, z, a, b, c);
-  if (model === 'Faze4 (6-DOF)') return faze4CartesianToJoints(x, y, z, a, b, c);
-  if (model === 'AR3 (6-DOF)') return ar3CartesianToJoints(x, y, z, a, b, c);
-  if (model === 'UR3e (6-DOF)') return ur3eCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'UR5e (6-DOF)') return ur5eCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'UR10e (6-DOF)') return ur10eCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'UR16e (6-DOF)') return ur16eCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'UR20 (6-DOF)') return ur20CartesianToJoints(x, y, z, a, b, c);
-  if (model === 'xArm6 (6-DOF)') return xarm6CartesianToJoints(x, y, z, a, b, c);
-  if (model === 'Lite 6 (6-DOF)') return lite6CartesianToJoints(x, y, z, a, b, c);
-  if (model === 'e.DO (6-DOF)') return edoCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'Gen3 Lite (6-DOF)') return gen3LiteCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'M-710iC (6-DOF)') return m710icCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'SO-ARM100 (5-DOF)') return soArm100CartesianToJoints(x, y, z, a, b, c);
-  if (model === 'Gen2 (6-DOF)') return gen2CartesianToJoints(x, y, z, a, b, c);
-  if (model === 'PiPER (6-DOF)') return piperCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'Z1 (6-DOF)') return z1CartesianToJoints(x, y, z, a, b, c);
-  if (model === 'ViperX 300 (6-DOF)') return vx300sCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'WidowX 250 (6-DOF)') return wx250sCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'Koch v1.1 (5-DOF)') return kochCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'UR3 (6-DOF)') return ur3ClassicCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'UR5 (6-DOF)') return ur5ClassicCartesianToJoints(x, y, z, a, b, c);
-  if (model === 'UR10 (6-DOF)') return ur10ClassicCartesianToJoints(x, y, z, a, b, c);
-  return genericJoints;
-}
+// resolveTargetJoints moved to robotKinematicsDispatch.ts (imported above) so
+// GamepadController.tsx's own Cartesian XYZ jog can reuse the exact same
+// per-model inverse-kinematics dispatch instead of duplicating this
+// 23-branch chain a second time - same reasoning as jointLimitsFor's own
+// move there (see that function's comment in robotKinematicsDispatch.ts).
 
 // Stock examples (examples/list/*.ts) always store {j1..j6} computed against the SHARED
 // generic 160mm/200mm formula (examples/utils.ts's cartesianToJoints), regardless of which
@@ -155,6 +123,89 @@ function withCartesian(pt: any) {
   if (pt.x !== undefined) return pt;
   const c = convertToCartesian(pt);
   return { ...pt, x: c.x, y: c.y, z: c.z, a: c.a, b: c.b, c: c.c };
+}
+
+// A Work library is intentionally portable: legacy files contain generic
+// {j1..j6} values generated by examples/utils.ts, while compact arrays are
+// already native joints from a specific robot. Before either reaches Server,
+// resolve it into one explicit, model-native trajectory. This is the boundary
+// that prevents the same Work from making Faze4 and Parol6 follow unrelated
+// joint paths merely because their folders contain files with the same name.
+function normalizeTrajectoryForRobot(rawPoints: unknown, targetRobot: Pick<RobotState, 'model' | 'joints'>) {
+  if (!Array.isArray(rawPoints) || rawPoints.length === 0) {
+    throw new Error('A trajectory must contain at least one point');
+  }
+
+  return rawPoints.map((rawPoint, index) => {
+    if (Array.isArray(rawPoint)) {
+      if (rawPoint.length < 3 || !rawPoint.slice(0, 3).every((value) => typeof value === 'number' && Number.isFinite(value))) {
+        throw new Error(`Compact trajectory point ${index + 1} requires finite j1, j2 and j3 values`);
+      }
+      const joints = {
+        j1: rawPoint[0], j2: rawPoint[1], j3: rawPoint[2],
+        j4: targetRobot.joints.j4 ?? 0, j5: targetRobot.joints.j5 ?? 0, j6: targetRobot.joints.j6 ?? 0,
+      };
+      return {
+        motionType: 'model-joints',
+        ...joints,
+        ...jointsToCartesianForModel(targetRobot.model, joints),
+      };
+    }
+
+    if (!rawPoint || typeof rawPoint !== 'object') {
+      throw new Error(`Trajectory point ${index + 1} must be an object or a compact joint triplet`);
+    }
+
+    const source = rawPoint as Record<string, unknown>;
+    if (source.motionType === 'model-joints') {
+      const nativeFields = ['j1', 'j2', 'j3', 'j4', 'j5', 'j6'];
+      if (!nativeFields.every((field) => typeof source[field] === 'number' && Number.isFinite(source[field] as number))) {
+        throw new Error(`Native trajectory point ${index + 1} requires finite j1 through j6 values`);
+      }
+      const joints = {
+        j1: source.j1 as number, j2: source.j2 as number, j3: source.j3 as number,
+        j4: source.j4 as number, j5: source.j5 as number, j6: source.j6 as number,
+      };
+      const { motionType: _motionType, ...metadata } = source;
+      return {
+        ...metadata,
+        motionType: 'model-joints',
+        ...joints,
+        ...jointsToCartesianForModel(targetRobot.model, joints),
+      };
+    }
+
+    // No `motionType` means portable/generic authoring data. Its stored
+    // joints must first be read through the generic FK before resolving the
+    // resulting Cartesian pose for the selected robot model.
+    const cartesian = withCartesian(source);
+    if (![cartesian.x, cartesian.y, cartesian.z].every((value) => typeof value === 'number' && Number.isFinite(value))) {
+      throw new Error(`Trajectory point ${index + 1} has no valid Cartesian position`);
+    }
+    const fallback = {
+      j1: typeof source.j1 === 'number' ? source.j1 : targetRobot.joints.j1,
+      j2: typeof source.j2 === 'number' ? source.j2 : targetRobot.joints.j2,
+      j3: typeof source.j3 === 'number' ? source.j3 : targetRobot.joints.j3,
+      j4: typeof source.j4 === 'number' ? source.j4 : targetRobot.joints.j4,
+      j5: typeof source.j5 === 'number' ? source.j5 : targetRobot.joints.j5,
+      j6: typeof source.j6 === 'number' ? source.j6 : targetRobot.joints.j6,
+    };
+    const joints = resolveTargetJoints(
+      targetRobot.model,
+      cartesian.x, cartesian.y, cartesian.z,
+      cartesian.a ?? 0, cartesian.b ?? 0, cartesian.c ?? 0,
+      fallback,
+    );
+    const { j1: _j1, j2: _j2, j3: _j3, j4: _j4, j5: _j5, j6: _j6,
+      x: _x, y: _y, z: _z, a: _a, b: _b, c: _c, motionType: _motionType, ...metadata } = source;
+    return {
+      ...metadata,
+      motionType: 'model-joints',
+      ...joints,
+      x: cartesian.x, y: cartesian.y, z: cartesian.z,
+      a: cartesian.a ?? 0, b: cartesian.b ?? 0, c: cartesian.c ?? 0,
+    };
+  });
 }
 
 /** Stores the  u r t c_ t o o l s configuration or state data. */
@@ -863,20 +914,35 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
       const res = await fetch(apiUrl(`/${folderPath}/${fileName}`));
       if (res.ok) {
         const rawPoints = await res.json();
-        // Compact model-specific Works store [j1, j2, j3]. Normalize them
-        // before they enter React state: the points table, path viewer and
-        // Server then receive named joints plus this model's genuine FK pose.
-        const points = Array.isArray(rawPoints)
-          ? rawPoints.map((raw) => {
-              if (!Array.isArray(raw) || raw.length < 3) return raw;
-              const joints = {
-                motionType: 'model-joints', j1: raw[0], j2: raw[1], j3: raw[2],
-                j4: robot.joints.j4 ?? 0, j5: robot.joints.j5 ?? 0, j6: robot.joints.j6 ?? 0,
-              };
-              return { ...joints, ...jointsToCartesianForModel(robot.model, joints) };
-            })
-          : rawPoints;
-        updateRobot(robot.id, { selectedWorkFile: fileName, recordedPoints: points });
+        // Resolve every portable Work into this robot's actual joints before
+        // it enters state or Server. Legacy generic files and compact native
+        // joint files therefore share one explicit, testable loading path.
+        const points = normalizeTrajectoryForRobot(rawPoints, robot);
+        // A Work must reach Server before the operator can press Play. The
+        // former updateRobot() path waited for the general 500 ms settings
+        // debounce, so Server often replayed the previous Work even though
+        // this panel already displayed the newly loaded points. The atomic
+        // trajectory command persists, resets the cursor and broadcasts the
+        // same points as one operation.
+        await sendRobotCommand(
+          robot.id,
+          'trajectory',
+          { points, selectedWorkFile: fileName },
+          () => ({
+            selectedWorkFile: fileName,
+            recordedPoints: points,
+            playbackState: {
+              ...(robot.playbackState || {}),
+              isPlaying: false,
+              playing: false,
+              isPaused: false,
+              paused: false,
+              activeStep: -1,
+              isFinished: false,
+              finished: false,
+            },
+          }),
+        );
       } else {
         updateRobot(robot.id, { selectedWorkFile: fileName });
       }
@@ -886,27 +952,58 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     }
   };
 
-  const loadExample = (id: string) => {
-console.log("Loading example:", id);
+  const loadExample = async (id: string) => {
+    console.log("Loading example:", id);
     setSelectedExample(id);
     const ex = examples.find(e => e.id === id);
-    if (ex) {
-      console.log("Updating robot with example points", ex.points.length);
-      if (ex && ex.points) {
-        updateRobot(robot.id, { selectedExample: id, recordedPoints: ex.points.map(withCartesian) });
-      } else {
-        updateRobot(robot.id, { selectedExample: id });
-      }
-    } else {
+    if (!ex) {
+      updateRobot(robot.id, { selectedExample: id });
+      return;
+    }
+    try {
+      const points = normalizeTrajectoryForRobot(ex.points.map(withCartesian), robot);
+      await sendRobotCommand(
+        robot.id,
+        'trajectory',
+        { points, selectedExample: id },
+        () => ({
+          selectedExample: id,
+          recordedPoints: points,
+          playbackState: {
+            ...(robot.playbackState || {}),
+            isPlaying: false, playing: false, isPaused: false, paused: false,
+            activeStep: -1, isFinished: false, finished: false,
+          },
+        }),
+      );
+    } catch (error) {
+      console.error('Unable to prepare example trajectory', error);
       updateRobot(robot.id, { selectedExample: id });
     }
-
   };
 
-  const loadExampleForRobot = (botId: number, exId: string) => {
+  const loadExampleForRobot = async (botId: number, exId: string) => {
     const ex = examples.find(e => e.id === exId);
-    if (ex) {
-      updateRobot(botId, { recordedPoints: ex.points.map(withCartesian) });
+    const targetRobot = robots.find((candidate) => candidate.id === botId);
+    if (!ex || !targetRobot) return;
+    try {
+      const points = normalizeTrajectoryForRobot(ex.points.map(withCartesian), targetRobot);
+      await sendRobotCommand(
+        botId,
+        'trajectory',
+        { points, selectedExample: exId },
+        () => ({
+          selectedExample: exId,
+          recordedPoints: points,
+          playbackState: {
+            ...(targetRobot.playbackState || {}),
+            isPlaying: false, playing: false, isPaused: false, paused: false,
+            activeStep: -1, isFinished: false, finished: false,
+          },
+        }),
+      );
+    } catch (error) {
+      console.error('Unable to prepare combined robot example trajectory', error);
     }
   };
 
@@ -1134,10 +1231,11 @@ console.log("Loading example:", id);
   // useLayoutEffect, not useEffect: fires before the browser paints the
   // just-arrived (wrong) broadcast joints, so the correction lands in the
   // very next commit instead of one extra visible frame of the wrong pose.
+  const playbackTrajectoryMode = (robot.playbackState as any)?.trajectoryMode;
   useLayoutEffect(() => {
     if (!robot.playbackState?.isPlaying) return;
-    if ((robot.playbackState as any).trajectoryMode === 'model-joints') return;
-    const target = (robot.playbackState as any).trajectoryMode === 'legacy-generic'
+    if (playbackTrajectoryMode === 'model-joints') return;
+    const target = playbackTrajectoryMode === 'legacy-generic'
       ? withCartesian(robot.joints)
       : robot.pos;
     if (typeof target?.x !== 'number') return;
@@ -1153,8 +1251,9 @@ console.log("Loading example:", id);
       updateRobot(robot.id, { joints: resolved });
     }
   }, [
-    robot.pos?.x, robot.pos?.y, robot.pos?.z, robot.pos?.a, robot.pos?.b, robot.pos?.c,
+    robot.pos, robot.pos?.x, robot.pos?.y, robot.pos?.z, robot.pos?.a, robot.pos?.b, robot.pos?.c,
     robot.joints, robot.playbackState?.isPlaying, robot.model, robot.id, updateRobot,
+    playbackTrajectoryMode,
   ]);
 
   const [reset3DKey, setReset3DKey] = useState(0);

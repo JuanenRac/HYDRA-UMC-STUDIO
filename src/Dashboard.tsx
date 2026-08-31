@@ -371,8 +371,10 @@ export default function Dashboard() {
               </button>
             </div>
             {/* Doubled per request (was inheriting the footer's own
-                text-[9px]) */}
-            <div className="font-mono text-sky-400 text-[18px]">{currentTime.toLocaleTimeString()}</div>
+                text-[9px]). hour12:false per request too - this CM5 runs
+                on European time, 24h clock (00:20, not 12:20:02 AM),
+                independent of whatever locale the browser itself reports. */}
+            <div className="font-mono text-sky-400 text-[18px]">{currentTime.toLocaleTimeString([], { hour12: false })}</div>
           </div>
         </footer>
       )}

@@ -91,6 +91,15 @@ export function GamepadConfig() {
     { value: '', label: t('gamepad_config.actions.none', 'None') },
     // Robot Selection
     ...Array.from({length: 8}, (_, i) => ({ value: `select_robot_${i+1}`, label: t('gamepad_config.actions.select_robot', 'Select Robot {{n}}', { n: i + 1 }) })),
+    // Cartesian XYZ - same tool-point jog as the floating Joystick3D
+    // overlay in the 3D viewport (RobotDetail.tsx), just reachable from a
+    // gamepad button instead of a click. Listed before Joints: this is
+    // the primary, model-agnostic way to move the tool point; J1-J6 stays
+    // available right below for direct per-joint control.
+    ...['X', 'Y', 'Z'].flatMap(axis => [
+      { value: `${axis}+`, label: t('gamepad_config.actions.cartesian_plus', '{{axis}} +', { axis }) },
+      { value: `${axis}-`, label: t('gamepad_config.actions.cartesian_minus', '{{axis}} -', { axis }) }
+    ]),
     // Joints
     ...['J1', 'J2', 'J3', 'J4', 'J5', 'J6'].flatMap(j => [
       { value: `${j}+`, label: t('gamepad_config.actions.joint_plus', '{{j}} +', { j }) },
