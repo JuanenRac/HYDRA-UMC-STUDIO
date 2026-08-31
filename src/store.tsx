@@ -731,9 +731,21 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
+  // Real bug reported live from the footer's own new Sign Out button
+  // (Dashboard.tsx): clearing just authToken did nothing VISIBLE when the
+  // session had actually gone through AuthGate's "Continue read-only"
+  // path - that flag is separate local state inside AuthGate.tsx, which
+  // this function has no reference to and can't reset directly, and
+  // AuthGate's own gate is `if (authToken || readOnly)`, so readOnly
+  // alone kept the app open regardless of authToken clearing. A full
+  // reload resets every component's local state unconditionally (this
+  // one included, and any other one on the same class of bug this or a
+  // future screen might introduce) rather than trying to track down and
+  // individually clear every local flag anything could ever gate on.
   const logout = useCallback(() => {
     localStorage.removeItem('hydra_token');
     setAuthToken(null);
+    window.location.reload();
   }, []);
 
   // Guards against a feedback loop: the server broadcasts every write to

@@ -193,7 +193,17 @@ const URTC_TOOLS: ToolType[] = [
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
 const CameraPIP = ({ bot, initialX, initialY, label, t: _t }: { bot: RobotState, initialX: number, initialY: number, label: string, t: any }) => {
-  const { settings, updateSettings } = useHydraStore();
+  const { settings, updateSettings, cameras } = useHydraStore();
+  // Real gap closed: this panel used to always show a decorative
+  // CameraIcon regardless of connection state - HYDRA-UMC-SERVER's own
+  // GET /api/camera/:id/stream is a real proxy now (see that repo's own
+  // CHANGELOG), so this renders the real MJPEG stream via a plain <img>
+  // (a browser natively understands multipart/x-mixed-replace on an
+  // <img> src - no <video>/MSE plumbing needed for MJPEG specifically)
+  // once a camera is actually assigned and connected, same isVisionActive
+  // gating this file's own top-level component already uses elsewhere.
+  const camera = cameras.find(c => c.assignedRobotId === bot.id);
+  const isStreaming = bot.visionEnabled && (camera?.connected ?? false);
   const controls = useDragControls();
   const savedPipConfig = settings.uiLayout?.cameraPips?.[bot.id];
   // Memoized so the fallback object keeps ONE stable identity across
@@ -353,8 +363,18 @@ const CameraPIP = ({ bot, initialX, initialY, label, t: _t }: { bot: RobotState,
         </div>
       </div>
       <div className="flex-1 bg-black relative flex items-center justify-center pointer-events-none">
-         <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'linear-gradient(transparent 50%, rgba(0,0,0,0.5) 50%)', backgroundSize: '100% 4px' }} />
-         <CameraIcon size={24} className="text-slate-800 pointer-events-none" />
+         {isStreaming && camera ? (
+           <img
+             src={apiUrl(`/api/camera/${camera.id}/stream`)}
+             alt={`${label} camera`}
+             className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+           />
+         ) : (
+           <>
+             <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'linear-gradient(transparent 50%, rgba(0,0,0,0.5) 50%)', backgroundSize: '100% 4px' }} />
+             <CameraIcon size={24} className="text-slate-800 pointer-events-none" />
+           </>
+         )}
          {bot.playbackState?.isPlaying && (
            <div className="absolute inset-0 border-2 border-emerald-500/30 animate-pulse pointer-events-none" />
          )}
@@ -1323,7 +1343,7 @@ console.log("Loading example:", id);
             className={cn("relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col group shrink-0", viewportOnly ? "flex-1 min-h-0" : "min-h-[200px]")}
             style={!viewportOnly ? { flex: threeDHeight ? `0 0 ${threeDHeight}px` : '1 1 0%' } : {}}
           >
-            <VirtualKinematics key={reset3DKey} robot={robot} controlMode={controlMode} onSelectRobot={onNavigateToRobot} />
+            <VirtualKinematics key={reset3DKey} robot={robot} controlMode={controlMode} onSelectRobot={onNavigateToRobot} lowPower={viewportOnly} />
 
             {!viewportOnly && (
               <>
@@ -1486,8 +1506,124 @@ console.log("Loading example:", id);
             >
               <div className="w-12 h-1 rounded-full bg-slate-500/50" />
             </div>
+
+            {/* Real per-orientation redesign requested live for the
+                Android embedded viewport (viewportOnly): a translucent
+                overlay INSIDE the 3D viewport itself (not a second flex
+                sibling below it, see this file's own comment on the now-
+                removed classic panel above) so the 3D view genuinely
+                fills the screen in both orientations. Portrait shows only
+                E-STOP/START-STOP/PAUSE-CONTINUE - the same 3 controls the
+                classic row always led with; landscape (more width, less
+                height to spare) folds every other control back in at a
+                smaller size instead of hiding them, replacing their old
+                solid colored backgrounds with the same uniform translucent
+                style already used for the move/rotate/resize/center
+                buttons above - real per the operator's own request. */}
+            {viewportOnly && (
+              <div className="absolute z-50 pointer-events-auto bottom-2 left-1/2 -translate-x-1/2 flex flex-wrap items-center justify-center landscape:gap-1 portrait:gap-1.5 bg-slate-950/70 backdrop-blur-md border border-slate-800 rounded-xl landscape:p-1 portrait:p-1.5 max-w-[calc(100%-1rem)]">
+                <button
+                  onClick={() => {
+                    handleStop();
+                    updateRobot(robot.id, { online: false });
+                    if (isStartAll) {
+                      robot.combinedWith?.forEach(id => updateRobot(id, { online: false }));
+                    }
+                  }}
+                  className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 hover:bg-red-950 border border-slate-800 hover:border-red-800 text-red-400 rounded-lg transition-colors animate-pulse"
+                  title={isStartAll ? t('robot_detail.estop_all', 'E-STOP ALL') : t('robot_detail.estop', 'E-STOP')}
+                >
+                  <AlertOctagon size={18} />
+                </button>
+
+                {!robot.playbackState?.isPlaying ? (
+                  <button
+                    onClick={() => handlePlay(isStartAll)}
+                    disabled={robot.recordedPoints.length === 0}
+                    className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 hover:bg-emerald-950 disabled:opacity-40 border border-slate-800 hover:border-emerald-800 text-emerald-400 rounded-lg transition-colors"
+                    title={isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START')}
+                  >
+                    <Play size={18} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleStop}
+                    className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 hover:bg-red-950 border border-slate-800 hover:border-red-800 text-red-400 rounded-lg transition-colors"
+                    title={isStartAll ? t('robot_detail.stop_all', 'STOP ALL') : t('robot_detail.stop', 'STOP')}
+                  >
+                    <Square size={18} />
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    const isPaused = robot.playbackState?.isPaused || false;
+                    sendRobotCommand(
+                      robot.id,
+                      'pause',
+                      { paused: !isPaused },
+                      (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: true, playing: true, isPaused: !isPaused, paused: !isPaused, requestPause: !isPaused, requestStop: false, isFinished: false, finished: false } }),
+                      isStartAll ? [robot.id, ...(robot.combinedWith || [])] : [robot.id]
+                    );
+                  }}
+                  disabled={!robot.playbackState?.isPlaying}
+                  className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 disabled:opacity-40 border border-slate-800 hover:border-amber-800 text-amber-400 rounded-lg transition-colors"
+                  title={robot.playbackState?.isPaused ? t('robot_detail.continue', 'CONTINUE') : (isStartAll ? t('robot_detail.pause_all', 'PAUSE ALL') : t('robot_detail.pause', 'PAUSE'))}
+                >
+                  {robot.playbackState?.isPaused ? <Play size={18} /> : <Pause size={18} />}
+                </button>
+
+                {/* Landscape-only: every other control, folded into this
+                    same translucent panel instead of hidden entirely -
+                    real per the operator's own request (more width to
+                    spare once the phone is held sideways). */}
+                <div className="hidden landscape:flex items-center gap-1">
+                  <div className="w-px h-5 bg-slate-700 mx-0.5" />
+
+                  <button onClick={() => updateRobot(robot.id, { pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }, joints: homePoseFor(robot.model) })} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="HOME">
+                    <Home size={16} />
+                  </button>
+
+                  {robot.hasXYTable && (
+                    <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, tx: 0, ty: 0 }, xyTable: robot.xyTable ? { ...robot.xyTable, pos: { x: 0, y: 0 } } : robot.xyTable })} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="HOME XY">
+                      <Grid3x3 size={16} />
+                    </button>
+                  )}
+
+                  <button onClick={() => { handleStop(); updateRobot(robot.id, { pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }, joints: homePoseFor(robot.model) }); }} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="RESET">
+                    <RefreshCw size={16} />
+                  </button>
+
+                  <button onClick={() => setReset3DKey(k => k + 1)} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="RESET 3D">
+                    <RotateCcw size={16} />
+                  </button>
+
+                  <button onClick={() => updateRobot(robot.id, { playbackState: { ...(robot.playbackState || { isPlaying: false, activeStep: 0, speed: 100 }), isLooping: !robot.playbackState?.isLooping } })} className={cn("flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] border rounded-lg transition-colors", robot.playbackState?.isLooping ? "bg-fuchsia-950 border-fuchsia-800 text-fuchsia-400" : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200")} title={t('robot_detail.repeat', 'Repeat')}>
+                    <Repeat size={16} className={cn(robot.playbackState?.isLooping && "animate-spin-slow")} />
+                  </button>
+
+                  <button onClick={handleAddPoint} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-sky-400 rounded-lg transition-colors" title={t('robot_detail.add_point', '+ Add Point')}>
+                    <Plus size={16} />
+                  </button>
+                  <button onClick={() => updateRobot(robot.id, { recordedPoints: [] })} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-rose-400 rounded-lg transition-colors" title={t('robot_detail.delete_points', 'Delete points')}>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
+          {/* This whole action-row/joint-controls panel used to be a
+              second flex-1 sibling of the 3D viewport above, splitting
+              the available height roughly in half regardless of
+              orientation - the real cause of "the 3D view doesn't fill
+              the screen" reported live on the Android embedded viewport
+              (viewportOnly). Gone entirely there now; its own real
+              replacement (RobotDetail-*.tsx has none rendered outside of
+              it - see the overlay panel inside the 3D viewport div
+              above, gated on viewportOnly the other way around) covers
+              the same controls without taking a share of the layout. */}
+          {!viewportOnly && (
           <div className="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-2 pb-2">
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-2 pointer-events-auto shrink-0">
@@ -1843,6 +1979,7 @@ console.log("Loading example:", id);
           </div>
           )}
           </div>
+          )}
         </div>
 
         {!isFullscreen && !viewportOnly && (

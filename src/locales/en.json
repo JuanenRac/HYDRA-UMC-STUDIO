@@ -765,7 +765,14 @@
     "signing_in": "Signing in…",
     "continue_read_only": "Continue read-only",
     "read_only_hint": "You can browse without signing in, but changes won't be saved and live updates won't arrive.",
-    "sign_out": "Sign Out"
+    "sign_out": "Sign Out",
+    "shutdown": "Shut Down",
+    "restart": "Restart",
+    "shutting_down": "Shutting down…",
+    "restarting": "Restarting…",
+    "confirm_shutdown": "Shut down this device now?",
+    "confirm_restart": "Restart this device now?",
+    "server_admin": "Server Admin"
   },
   "gamepad_config": {
     "title": "Gamepad Controller",

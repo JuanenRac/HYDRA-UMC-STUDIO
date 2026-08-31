@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { useHydraStore } from '../store';
+import { apiUrl } from '../lib/apiBase';
 import { useTranslation } from 'react-i18next';
 import { Video, Maximize2, Minimize2, Camera as CameraIcon, Power, ScanLine, CircleDot, RefreshCw } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -169,6 +170,25 @@ export function CamerasView() {
                   <>
                     <div className="w-full h-full border border-slate-800 rounded bg-black/40 flex items-center justify-center relative overflow-hidden">
                       <CameraIcon size={32} className="text-slate-800" />
+                      {/* Real gap closed: this whole matrix used to always
+                          show that decorative icon regardless of
+                          connection state - HYDRA-UMC-SERVER's own GET
+                          /api/camera/:id/stream is a real proxy now (see
+                          that repo's own CHANGELOG). A plain <img> renders
+                          multipart/x-mixed-replace MJPEG natively (no
+                          <video>/MSE plumbing needed for this format) -
+                          stacked after the icon above so a real, opaque
+                          frame naturally covers it once one arrives;
+                          hides itself on error (503, no local
+                          mjpeg_server.py running yet for this camera)
+                          so the icon underneath shows through instead of
+                          a broken-image glyph. */}
+                      <img
+                        src={apiUrl(`/api/camera/${c.id}/stream`)}
+                        alt={`${c.type} camera feed`}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                      />
                       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-900/10 via-transparent to-transparent opacity-50" />
                       
                       {/* Grid overlay */}

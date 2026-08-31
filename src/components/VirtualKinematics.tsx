@@ -67,7 +67,7 @@ function CameraAnimator({ targetPosition, targetFocus, trigger, controlsRef, ini
  * Executes the  virtual kinematics logic. 
  * This function handles the necessary computations and state updates.
  */
-export function VirtualKinematics({ robot, controlMode, onSelectRobot }: { robot: RobotState; controlMode: 'translate' | 'rotate' | 'scale' | 'none'; onSelectRobot?: (robotId: number) => void }) {
+export function VirtualKinematics({ robot, controlMode, onSelectRobot, lowPower }: { robot: RobotState; controlMode: 'translate' | 'rotate' | 'scale' | 'none'; onSelectRobot?: (robotId: number) => void; lowPower?: boolean }) {
   const { updateRobot, settings, robots } = useHydraStore();
   const controlsRef = useRef<any>(null);
 
@@ -128,27 +128,39 @@ export function VirtualKinematics({ robot, controlMode, onSelectRobot }: { robot
         }
       }}
     >
-      <Canvas shadows className="w-full h-full outline-none touch-none">
+      {/* Real fix for a live-reported bug: the exact same robot/frontend
+          behaved noticeably worse ("like Android") on the CM5's own kiosk
+          Chromium than on a desktop browser, despite both talking to the
+          same Server over the same LAN (so not a network-latency
+          difference) - shadow mapping (a real-time shadow map render
+          pass every frame) plus an uncapped device pixel ratio are
+          genuinely expensive on a weak embedded GPU (this CM5's own
+          VideoCore/V3D, and a phone's mobile GPU) in a way a real desktop
+          GPU never notices. lowPower (viewportOnly - the Android WebView
+          and this device's own kiosk) drops both: no shadows at all, and
+          dpr capped at 1 instead of following a possibly-higher real
+          display pixel ratio. */}
+      <Canvas shadows={!lowPower} dpr={lowPower ? 1 : undefined} className="w-full h-full outline-none touch-none">
         <PerspectiveCamera makeDefault fov={45} />
-        <CameraAnimator 
-          targetPosition={[targetX + 0.5, 0.4, targetZ + 0.6]} 
-          targetFocus={[targetX, 0.2, targetZ]} 
-          trigger={robot.centerCameraTrigger} 
-          controlsRef={controlsRef} 
+        <CameraAnimator
+          targetPosition={[targetX + 0.5, 0.4, targetZ + 0.6]}
+          targetFocus={[targetX, 0.2, targetZ]}
+          trigger={robot.centerCameraTrigger}
+          controlsRef={controlsRef}
           initialView={robot.cameraView}
         />
-        
+
         <color attach="background" args={[settings.theme.includes('Light') ? '#e2e8f0' : '#07090C']} />
-        
+
         {/* Global Floor / Table Area */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow={!lowPower}>
           <planeGeometry args={[5, 5]} />
           <meshStandardMaterial color="#e2e8f0" />
         </mesh>
         <gridHelper args={[5, 50, '#cbd5e1', '#cbd5e1']} position={[0, -0.005, 0]} />
 
         <ambientLight intensity={0.4} />
-        <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow shadow-mapSize={[1024, 1024]} />
+        <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow={!lowPower} shadow-mapSize={[1024, 1024]} />
         <pointLight position={[-5, 5, -5]} intensity={0.5} color="#00E5FF" />
 
         {/* ATC Visualization */}

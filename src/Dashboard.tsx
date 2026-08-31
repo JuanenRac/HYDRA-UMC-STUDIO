@@ -14,7 +14,7 @@ import type { CanOtaTier } from './lib/canOta';
 import {
   Activity, Layers,
   Video, Settings, Menu, Power
-, Cpu, Zap, Thermometer, RefreshCw, Server, Info, HelpCircle, ChevronRight, ArrowLeft, Wifi, Bluetooth, Cable, type LucideIcon } from 'lucide-react';
+, Cpu, Zap, Thermometer, RefreshCw, Server, Info, HelpCircle, ChevronRight, ArrowLeft, Wifi, Bluetooth, Cable, LogOut, type LucideIcon } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -97,7 +97,7 @@ const AdminServer = React.lazy(() => import('./components/AdminServer').then(m =
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
-  const { controllers, activeControllerId, setActiveControllerId, activeController, robots, settings, updateRobot, isAdmin } = useHydraStore();
+  const { controllers, activeControllerId, setActiveControllerId, activeController, robots, settings, updateRobot, isAdmin, logout } = useHydraStore();
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -105,6 +105,26 @@ export default function Dashboard() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showEstopConfirm, setShowEstopConfirm] = useState(false);
+  // Real per-corner request: shutdown/restart for this CM5's own kiosk
+  // node, next to the existing global E-STOP. Same loopback-only Server
+  // endpoints AuthGate.tsx's pre-login power buttons already call (see
+  // that file's own comment on why they're safe unauthenticated) - here
+  // they're reached from inside an already-authenticated session instead,
+  // so no extra gate is needed on this side either way.
+  const [showShutdownConfirm, setShowShutdownConfirm] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [powerAction, setPowerAction] = useState<'shutdown' | 'restart' | null>(null);
+  const handlePower = async (action: 'shutdown' | 'restart') => {
+    setPowerAction(action);
+    try {
+      await fetch(apiUrl(action === 'shutdown' ? '/api/system/shutdown' : '/api/system/reboot'), { method: 'POST' });
+      // No finally-reset here: a successful call means this device is
+      // actually going down - staying disabled/labelled until the page
+      // itself loses its connection is the correct, honest state.
+    } catch {
+      setPowerAction(null);
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -325,7 +345,34 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-8 shrink-0">
             <button onClick={() => setShowEstopConfirm(true)} className="flex items-center gap-3 px-6 py-1 rounded-full bg-rose-600 text-white border border-rose-400 transition-all animate-pulse">{t('config.global_estop')}</button>
-            <div className="font-mono text-sky-400">{currentTime.toLocaleTimeString()}</div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowShutdownConfirm(true)}
+                disabled={powerAction !== null}
+                title={powerAction === 'shutdown' ? t('auth.shutting_down') : t('auth.shutdown')}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 hover:bg-rose-950 disabled:opacity-50 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-800 transition-colors"
+              >
+                <Power size={14} /> {powerAction === 'shutdown' ? t('auth.shutting_down') : t('auth.shutdown')}
+              </button>
+              <button
+                onClick={() => setShowResetConfirm(true)}
+                disabled={powerAction !== null}
+                title={powerAction === 'restart' ? t('auth.restarting') : t('auth.restart')}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 hover:bg-amber-950 disabled:opacity-50 text-slate-400 hover:text-amber-300 border border-slate-700 hover:border-amber-800 transition-colors"
+              >
+                <RefreshCw size={14} /> {powerAction === 'restart' ? t('auth.restarting') : t('auth.restart')}
+              </button>
+              <button
+                onClick={logout}
+                title={t('auth.sign_out')}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700 transition-colors"
+              >
+                <LogOut size={14} /> {t('auth.sign_out')}
+              </button>
+            </div>
+            {/* Doubled per request (was inheriting the footer's own
+                text-[9px]) */}
+            <div className="font-mono text-sky-400 text-[18px]">{currentTime.toLocaleTimeString()}</div>
           </div>
         </footer>
       )}
@@ -334,6 +381,18 @@ export default function Dashboard() {
         message={t('dashboard.global_estop_confirm')}
         onConfirm={() => { robots.forEach(r => updateRobot(r.id, { online: false })); setShowEstopConfirm(false); }}
         onCancel={() => setShowEstopConfirm(false)}
+      />
+      <ConfirmDialog
+        open={showShutdownConfirm}
+        message={t('auth.confirm_shutdown')}
+        onConfirm={() => { setShowShutdownConfirm(false); handlePower('shutdown'); }}
+        onCancel={() => setShowShutdownConfirm(false)}
+      />
+      <ConfirmDialog
+        open={showResetConfirm}
+        message={t('auth.confirm_restart')}
+        onConfirm={() => { setShowResetConfirm(false); handlePower('restart'); }}
+        onCancel={() => setShowResetConfirm(false)}
       />
     </div>
   );
