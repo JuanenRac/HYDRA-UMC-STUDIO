@@ -17,6 +17,18 @@ import { jointsToCartesianForModel, jointLimitsFor, resolveTargetJoints } from '
 // surfaces.
 const CARTESIAN_JOG_STEP_MM = 2;
 
+// One real (dx, dy, dz) direction per cartesian action - the 6 single-axis
+// moves plus the 4 diagonal XY moves Joystick3D's own corner D-pad buttons
+// already make (ArrowUpLeft/UpRight/DownLeft/DownRight - one real jog with
+// both dx and dy non-zero at once), added because a gamepad button should
+// be able to match that same widget's own layout.
+const CARTESIAN_JOG_DELTAS: Record<string, [dx: number, dy: number, dz: number]> = {
+  'X+': [1, 0, 0], 'X-': [-1, 0, 0],
+  'Y+': [0, 1, 0], 'Y-': [0, -1, 0],
+  'Z+': [0, 0, 1], 'Z-': [0, 0, -1],
+  'XY++': [1, 1, 0], 'XY+-': [1, -1, 0], 'XY-+': [-1, 1, 0], 'XY--': [-1, -1, 0],
+};
+
 const JOINT_KEYS = ['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const;
 type JointKey = (typeof JOINT_KEYS)[number];
 
@@ -88,27 +100,64 @@ export function GamepadController() {
             const currentRobot = activeControllerRef.current.robots.find(r => r.id === selectedRobotIdRef.current);
             if (!currentRobot) continue;
 
-            if (action === 'X+' || action === 'X-' || action === 'Y+' || action === 'Y-' || action === 'Z+' || action === 'Z-') {
-              // Cartesian XYZ jog - mirrors RobotDetail.tsx's own
-              // handleXYZJog exactly (forward kinematics to find the
-              // current tool point, apply the delta on one axis, then
-              // resolveTargetJoints for this model's own real inverse
-              // kinematics) so a gamepad-driven XYZ nudge lands on the
-              // identical per-model IK solution the floating Joystick3D
-              // overlay would produce for the same move, not a second,
-              // possibly-diverging formula.
-              const axisKey = action[0].toLowerCase() as 'x' | 'y' | 'z';
-              const isPos = action.endsWith('+');
-              const step = isPos ? CARTESIAN_JOG_STEP_MM : -CARTESIAN_JOG_STEP_MM;
+            if (CARTESIAN_JOG_DELTAS[action]) {
+              // Cartesian XYZ jog (single-axis or diagonal) - mirrors
+              // RobotDetail.tsx's own handleXYZJog exactly: forward
+              // kinematics to find the current tool point, apply the real
+              // combined delta (both dx and dy at once for a diagonal, not
+              // two independent single-axis solves), resolveTargetJoints
+              // ONCE for this model's own real inverse kinematics against
+              // that true target, then one real command per non-zero axis
+              // - all carrying that SAME resolved `joints` override, same
+              // as handleXYZJog's own per-axis send loop - so a
+              // gamepad-driven move lands on the identical per-model IK
+              // solution the floating Joystick3D overlay would produce for
+              // the same button, not a second, possibly-diverging formula.
+              const [dx, dy, dz] = CARTESIAN_JOG_DELTAS[action];
               const cart = jointsToCartesianForModel(currentRobot.model, currentRobot.joints);
-              const newCart = { ...cart, [axisKey]: cart[axisKey] + step };
-              const newJoints = resolveTargetJoints(currentRobot.model, newCart.x, newCart.y, newCart.z, cart.a, cart.b, cart.c, currentRobot.joints);
-              sendRobotCommandRef.current(
-                currentRobot.id,
-                'jog',
-                { axis: axisKey, amount: step, target: 'robot', joints: newJoints },
-                (r) => ({ pos: { ...r.pos, [axisKey]: newCart[axisKey], a: cart.a, b: cart.b, c: cart.c }, joints: newJoints })
-              );
+              const x = cart.x + dx * CARTESIAN_JOG_STEP_MM;
+              const y = cart.y + dy * CARTESIAN_JOG_STEP_MM;
+              const z = cart.z + dz * CARTESIAN_JOG_STEP_MM;
+              const newJoints = resolveTargetJoints(currentRobot.model, x, y, z, cart.a, cart.b, cart.c, currentRobot.joints);
+              const axes: { axis: 'x' | 'y' | 'z'; amount: number; value: number }[] = [
+                { axis: 'x', amount: dx * CARTESIAN_JOG_STEP_MM, value: x },
+                { axis: 'y', amount: dy * CARTESIAN_JOG_STEP_MM, value: y },
+                { axis: 'z', amount: dz * CARTESIAN_JOG_STEP_MM, value: z },
+              ].filter((a) => a.amount !== 0);
+              for (const a of axes) {
+                sendRobotCommandRef.current(
+                  currentRobot.id,
+                  'jog',
+                  { axis: a.axis, amount: a.amount, target: 'robot', joints: newJoints },
+                  (r) => ({ pos: { ...r.pos, [a.axis]: a.value, a: cart.a, b: cart.b, c: cart.c }, joints: newJoints })
+                );
+              }
+            } else if (action === 'ROT+' || action === 'ROT-') {
+              // Base rotation (J1) - the exact same real move as
+              // RobotDetail.tsx's own handleJ1Jog, the 2 dedicated buttons
+              // that sit right next to Joystick3D in that same floating
+              // overlay. Listed as its own action (not only reachable via
+              // J1+/J1- below) so a gamepad mapping can group it with the
+              // cartesian moves the same way that widget's own layout
+              // does - identical outcome to J1+/J1- either way.
+              const isPos = action === 'ROT+';
+              const step = isPos ? 1.5 : -1.5;
+              const [jMin, jMax] = jointLimitsFor(currentRobot.model, 'j1');
+              const currentVal = currentRobot.joints.j1 || 0;
+              const newVal = Math.min(jMax, Math.max(jMin, currentVal + step));
+              if (newVal !== currentVal) {
+                const newJoints = { ...currentRobot.joints, j1: newVal };
+                const newCart = jointsToCartesianForModel(currentRobot.model, newJoints);
+                sendRobotCommandRef.current(
+                  currentRobot.id,
+                  'jog',
+                  { axis: 'x', amount: 0, target: 'robot', joints: newJoints },
+                  () => ({
+                    pos: { ...currentRobot.pos, x: newCart.x, y: newCart.y, z: newCart.z, a: newCart.a, b: newCart.b, c: newCart.c },
+                    joints: newJoints,
+                  })
+                );
+              }
             } else if (action.startsWith('J')) {
               // Action format: J1+, J1- ... J6+, J6-. Fires the atomic
               // 'jog' command with a client-resolved `joints` override -

@@ -100,6 +100,23 @@ export function GamepadConfig() {
       { value: `${axis}+`, label: t('gamepad_config.actions.cartesian_plus', '{{axis}} +', { axis }) },
       { value: `${axis}-`, label: t('gamepad_config.actions.cartesian_minus', '{{axis}} -', { axis }) }
     ]),
+    // The 4 diagonal XY moves - the exact same real moves Joystick3D's own
+    // corner D-pad buttons make (ArrowUpLeft/UpRight/DownLeft/DownRight,
+    // one real jog with both dx and dy non-zero at once), requested
+    // directly to match that floating overlay's own layout.
+    { value: 'XY++', label: t('gamepad_config.actions.diag_pp', 'X+ Y+') },
+    { value: 'XY+-', label: t('gamepad_config.actions.diag_pm', 'X+ Y-') },
+    { value: 'XY-+', label: t('gamepad_config.actions.diag_mp', 'X- Y+') },
+    { value: 'XY--', label: t('gamepad_config.actions.diag_mm', 'X- Y-') },
+    // Base rotation - the exact same real move as the 2 dedicated J1
+    // buttons that already sit right next to Joystick3D in that same
+    // floating overlay (RobotDetail.tsx's own JoystickOverlay). Listed
+    // here, not only under Joints below, so this group matches that
+    // widget's own real layout: tool-point jog (XYZ + diagonals) plus
+    // base rotation together, requested directly. J1+/J1- under Joints
+    // still work identically - same action.
+    { value: 'ROT+', label: t('gamepad_config.actions.rotation_plus', 'Rotate +') },
+    { value: 'ROT-', label: t('gamepad_config.actions.rotation_minus', 'Rotate -') },
     // Joints
     ...['J1', 'J2', 'J3', 'J4', 'J5', 'J6'].flatMap(j => [
       { value: `${j}+`, label: t('gamepad_config.actions.joint_plus', '{{j}} +', { j }) },
