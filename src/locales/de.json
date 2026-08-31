@@ -765,7 +765,14 @@
     "signing_in": "Anmeldung läuft…",
     "continue_read_only": "Nur lesend fortfahren",
     "read_only_hint": "Du kannst ohne Anmeldung navigieren, aber Änderungen werden nicht gespeichert und Live-Updates bleiben aus.",
-    "sign_out": "Abmelden"
+    "sign_out": "Abmelden",
+    "shutdown": "Herunterfahren",
+    "restart": "Neu Starten",
+    "shutting_down": "Wird heruntergefahren…",
+    "restarting": "Wird neu gestartet…",
+    "confirm_shutdown": "Dieses Gerät jetzt herunterfahren?",
+    "confirm_restart": "Dieses Gerät jetzt neu starten?",
+    "server_admin": "Server-Verwaltung"
   },
   "gamepad_config": {
     "title": "Gamepad-Controller",

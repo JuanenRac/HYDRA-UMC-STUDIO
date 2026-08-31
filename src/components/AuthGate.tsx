@@ -14,8 +14,9 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Lock, User, LogIn } from 'lucide-react';
+import { Lock, User, LogIn, Power, RotateCcw, LayoutDashboard } from 'lucide-react';
 import { useHydraStore } from '../store';
+import { apiUrl } from '../lib/apiBase';
 import HydraIcon from '../assets/HYDRA_UMC_ICON.svg';
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
@@ -25,6 +26,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [readOnly, setReadOnly] = useState(false);
+  // Independent from isSubmitting (the sign-in button's own state) -
+  // shutdown/restart hit a different endpoint entirely and should disable
+  // themselves without touching the login form.
+  const [powerAction, setPowerAction] = useState<'shutdown' | 'restart' | null>(null);
 
   if (authToken || readOnly) return <>{children}</>;
 
@@ -33,6 +38,33 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     setIsSubmitting(true);
     await login(username, password);
     setIsSubmitting(false);
+  };
+
+  // Real, deliberately unauthenticated on the Server side too (see
+  // server.ts's own requireLoopbackCaller) - this screen is shown before
+  // any login, exactly where an operator standing at the physical kiosk
+  // (HYDRA-UMC-OS's own HDMI kiosk, see install_kiosk.sh) needs a real
+  // power button. Server only accepts these 2 calls from its own
+  // loopback, so the same request from anywhere else on the LAN is
+  // refused regardless of what this button sends.
+  const handlePower = async (action: 'shutdown' | 'restart') => {
+    const confirmed = window.confirm(
+      action === 'shutdown' ? t('auth.confirm_shutdown') : t('auth.confirm_restart')
+    );
+    if (!confirmed) return;
+    setPowerAction(action);
+    try {
+      await fetch(apiUrl(action === 'shutdown' ? '/api/system/shutdown' : '/api/system/reboot'), { method: 'POST' });
+      // No res.ok check and no finally-reset of powerAction below: a
+      // successful call means this device is now actually going down -
+      // the button staying disabled/labelled "Shutting down..." until the
+      // page itself loses its connection is the correct, honest state,
+      // not a bug to fix. A REAL failure (e.g. run from a browser that
+      // isn't this device's own kiosk, refused with 403) still needs to
+      // recover, which the catch block below handles.
+    } catch {
+      setPowerAction(null);
+    }
   };
 
   return (
@@ -85,6 +117,38 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           <p className="text-[10px] text-slate-600">{t('auth.read_only_hint')}</p>
         </div>
       </form>
+
+      {/* Kiosk-only device controls, deliberately outside the login card
+          itself - real per-corner placement the operator asked for, not
+          part of the sign-in flow. Both hit Server directly (see
+          server.ts's own loopback gate); nothing here needs authToken. */}
+      <div className="fixed bottom-4 left-4 flex gap-2">
+        <button
+          type="button"
+          onClick={() => handlePower('shutdown')}
+          disabled={powerAction !== null}
+          title={t('auth.shutdown')}
+          className="flex items-center gap-1.5 px-3 py-2 text-xs bg-slate-900/80 hover:bg-rose-950 disabled:opacity-50 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-800 rounded-lg backdrop-blur-sm transition-colors"
+        >
+          <Power size={14} /> {powerAction === 'shutdown' ? t('auth.shutting_down') : t('auth.shutdown')}
+        </button>
+        <button
+          type="button"
+          onClick={() => handlePower('restart')}
+          disabled={powerAction !== null}
+          title={t('auth.restart')}
+          className="flex items-center gap-1.5 px-3 py-2 text-xs bg-slate-900/80 hover:bg-amber-950 disabled:opacity-50 text-slate-400 hover:text-amber-300 border border-slate-800 hover:border-amber-800 rounded-lg backdrop-blur-sm transition-colors"
+        >
+          <RotateCcw size={14} /> {powerAction === 'restart' ? t('auth.restarting') : t('auth.restart')}
+        </button>
+      </div>
+
+      <a
+        href={apiUrl('/admin')}
+        className="fixed bottom-4 right-4 flex items-center gap-1.5 px-3 py-2 text-xs bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-sky-300 border border-slate-800 hover:border-sky-800 rounded-lg backdrop-blur-sm transition-colors"
+      >
+        <LayoutDashboard size={14} /> {t('auth.server_admin')}
+      </a>
     </div>
   );
 }

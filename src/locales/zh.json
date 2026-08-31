@@ -765,7 +765,14 @@
     "signing_in": "登录中…",
     "continue_read_only": "以只读方式继续",
     "read_only_hint": "你可以在不登录的情况下浏览，但更改不会被保存，也不会收到实时更新。",
-    "sign_out": "退出登录"
+    "sign_out": "退出登录",
+    "shutdown": "关机",
+    "restart": "重启",
+    "shutting_down": "正在关机…",
+    "restarting": "正在重启…",
+    "confirm_shutdown": "现在关闭此设备吗？",
+    "confirm_restart": "现在重启此设备吗？",
+    "server_admin": "服务器管理"
   },
   "gamepad_config": {
     "title": "手柄控制器",

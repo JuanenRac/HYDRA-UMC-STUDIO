@@ -765,7 +765,14 @@
     "signing_in": "Connexion…",
     "continue_read_only": "Continuer en lecture seule",
     "read_only_hint": "Vous pouvez naviguer sans vous connecter, mais les modifications ne seront pas enregistrées et les mises à jour en direct n'arriveront pas.",
-    "sign_out": "Se Déconnecter"
+    "sign_out": "Se Déconnecter",
+    "shutdown": "Éteindre",
+    "restart": "Redémarrer",
+    "shutting_down": "Extinction…",
+    "restarting": "Redémarrage…",
+    "confirm_shutdown": "Éteindre cet appareil maintenant ?",
+    "confirm_restart": "Redémarrer cet appareil maintenant ?",
+    "server_admin": "Administration du Serveur"
   },
   "gamepad_config": {
     "title": "Contrôleur de Manette",

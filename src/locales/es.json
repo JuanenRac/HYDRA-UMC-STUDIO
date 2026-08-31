@@ -765,7 +765,14 @@
     "signing_in": "Iniciando sesión…",
     "continue_read_only": "Continuar solo lectura",
     "read_only_hint": "Puedes navegar sin iniciar sesión, pero los cambios no se guardarán y no llegarán actualizaciones en vivo.",
-    "sign_out": "Cerrar Sesión"
+    "sign_out": "Cerrar Sesión",
+    "shutdown": "Apagar",
+    "restart": "Reiniciar",
+    "shutting_down": "Apagando…",
+    "restarting": "Reiniciando…",
+    "confirm_shutdown": "¿Apagar este dispositivo ahora?",
+    "confirm_restart": "¿Reiniciar este dispositivo ahora?",
+    "server_admin": "Panel del Servidor"
   },
   "gamepad_config": {
     "title": "Controlador de Mando",

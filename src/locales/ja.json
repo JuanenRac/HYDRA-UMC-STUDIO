@@ -765,7 +765,14 @@
     "signing_in": "サインイン中…",
     "continue_read_only": "読み取り専用で続行",
     "read_only_hint": "サインインせずに閲覧できますが、変更は保存されず、リアルタイム更新も届きません。",
-    "sign_out": "サインアウト"
+    "sign_out": "サインアウト",
+    "shutdown": "シャットダウン",
+    "restart": "再起動",
+    "shutting_down": "シャットダウン中…",
+    "restarting": "再起動中…",
+    "confirm_shutdown": "このデバイスを今すぐシャットダウンしますか？",
+    "confirm_restart": "このデバイスを今すぐ再起動しますか？",
+    "server_admin": "サーバー管理"
   },
   "gamepad_config": {
     "title": "ゲームパッドコントローラー",

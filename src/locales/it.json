@@ -765,7 +765,14 @@
     "signing_in": "Accesso in corso…",
     "continue_read_only": "Continua in sola lettura",
     "read_only_hint": "Puoi navigare senza accedere, ma le modifiche non verranno salvate e non arriveranno aggiornamenti live.",
-    "sign_out": "Esci"
+    "sign_out": "Esci",
+    "shutdown": "Spegni",
+    "restart": "Riavvia",
+    "shutting_down": "Spegnimento…",
+    "restarting": "Riavvio…",
+    "confirm_shutdown": "Spegnere questo dispositivo ora?",
+    "confirm_restart": "Riavviare questo dispositivo ora?",
+    "server_admin": "Amministrazione Server"
   },
   "gamepad_config": {
     "title": "Controller Gamepad",
