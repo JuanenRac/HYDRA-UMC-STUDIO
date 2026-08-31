@@ -776,6 +776,11 @@
     "visual_reference": "Visual Reference",
     "input": "Input",
     "action": "Action",
+    "mapping_raw": "raw (non-standard)",
+    "detected_info": "{{buttons}} buttons, {{axes}} axes, mapping: {{mapping}}",
+    "connected": "CONNECTED",
+    "no_gamepad": "No gamepad detected - press a button on it to wake the browser up to it.",
+    "live_now": "Active right now",
     "actions": {
       "none": "None",
       "select_robot": "Select Robot {{n}}",

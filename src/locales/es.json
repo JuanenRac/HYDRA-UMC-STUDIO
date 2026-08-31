@@ -776,6 +776,11 @@
     "visual_reference": "Referencia Visual",
     "input": "Entrada",
     "action": "Acción",
+    "mapping_raw": "sin procesar (no estándar)",
+    "detected_info": "{{buttons}} botones, {{axes}} ejes, mapeo: {{mapping}}",
+    "connected": "CONECTADO",
+    "no_gamepad": "No se detecta ningún mando - pulsa un botón para que el navegador lo detecte.",
+    "live_now": "Activo ahora mismo",
     "actions": {
       "none": "Ninguna",
       "select_robot": "Seleccionar Robot {{n}}",

@@ -776,6 +776,11 @@
     "visual_reference": "Riferimento Visivo",
     "input": "Ingresso",
     "action": "Azione",
+    "mapping_raw": "grezzo (non standard)",
+    "detected_info": "{{buttons}} pulsanti, {{axes}} assi, mappatura: {{mapping}}",
+    "connected": "CONNESSO",
+    "no_gamepad": "Nessun gamepad rilevato - premi un pulsante per farlo rilevare dal browser.",
+    "live_now": "Attivo in questo momento",
     "actions": {
       "none": "Nessuna",
       "select_robot": "Seleziona Robot {{n}}",

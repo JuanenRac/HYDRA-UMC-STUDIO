@@ -776,6 +776,11 @@
     "visual_reference": "视觉参考",
     "input": "输入",
     "action": "动作",
+    "mapping_raw": "原始（非标准）",
+    "detected_info": "{{buttons}} 个按钮，{{axes}} 个摇杆轴，映射方式：{{mapping}}",
+    "connected": "已连接",
+    "no_gamepad": "未检测到手柄 - 按下一个按钮以便浏览器检测到它。",
+    "live_now": "当前处于激活状态",
     "actions": {
       "none": "无",
       "select_robot": "选择机器人 {{n}}",

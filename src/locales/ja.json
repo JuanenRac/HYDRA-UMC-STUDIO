@@ -776,6 +776,11 @@
     "visual_reference": "ビジュアルリファレンス",
     "input": "入力",
     "action": "アクション",
+    "mapping_raw": "raw（非標準）",
+    "detected_info": "ボタン {{buttons}} 個、軸 {{axes}} 個、マッピング: {{mapping}}",
+    "connected": "接続済み",
+    "no_gamepad": "ゲームパッドが検出されていません - ボタンを押してブラウザに認識させてください。",
+    "live_now": "現在アクティブ",
     "actions": {
       "none": "なし",
       "select_robot": "ロボット {{n}} を選択",

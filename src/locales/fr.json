@@ -776,6 +776,11 @@
     "visual_reference": "Référence Visuelle",
     "input": "Entrée",
     "action": "Action",
+    "mapping_raw": "brute (non standard)",
+    "detected_info": "{{buttons}} boutons, {{axes}} axes, mappage : {{mapping}}",
+    "connected": "CONNECTÉ",
+    "no_gamepad": "Aucune manette détectée - appuyez sur un bouton pour que le navigateur la détecte.",
+    "live_now": "Actif en ce moment",
     "actions": {
       "none": "Aucune",
       "select_robot": "Sélectionner Robot {{n}}",

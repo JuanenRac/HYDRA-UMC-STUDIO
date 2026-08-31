@@ -776,6 +776,11 @@
     "visual_reference": "Visuelle Referenz",
     "input": "Eingabe",
     "action": "Aktion",
+    "mapping_raw": "roh (nicht standardisiert)",
+    "detected_info": "{{buttons}} Tasten, {{axes}} Achsen, Zuordnung: {{mapping}}",
+    "connected": "VERBUNDEN",
+    "no_gamepad": "Kein Gamepad erkannt - drücke eine Taste, damit der Browser es erkennt.",
+    "live_now": "Gerade jetzt aktiv",
     "actions": {
       "none": "Keine",
       "select_robot": "Roboter {{n}} auswählen",

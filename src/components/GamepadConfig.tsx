@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
 import { Gamepad2 } from 'lucide-react';
@@ -19,6 +19,60 @@ export function GamepadConfig() {
 
   const gamepadEnabled = settings.gamepadEnabled || false;
   const mapping = settings.gamepadMapping || {};
+
+  // Real gap found live: a non-standard or low-button-count controller
+  // (browsers only assign the well-known B0=A/B12=D-pad-Up/etc. layout
+  // below when the Gamepad API reports mapping:"standard" - anything
+  // else keeps whatever raw button order its own driver reports) had no
+  // way to be identified from this screen at all - an operator plugging
+  // in an unusual pad had to guess which row corresponds to which
+  // physical button. This polls the real navigator.getGamepads() (same
+  // per-frame approach GamepadController.tsx already uses to actually
+  // drive the robot) purely to show which input is live right now, so
+  // pressing a physical button visibly highlights its real row here -
+  // no guessing required regardless of how many buttons the pad has or
+  // whether the browser recognizes it as "standard".
+  const [connectedGamepad, setConnectedGamepad] = useState<{ id: string; buttons: number; axes: number; mapping: string } | null>(null);
+  const [activeInputs, setActiveInputs] = useState<Set<string>>(new Set());
+  const detectRequestRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!gamepadEnabled) {
+      setConnectedGamepad(null);
+      setActiveInputs(new Set());
+      return;
+    }
+
+    const DEADZONE = 0.3; // slightly looser than GamepadController's own
+    // 0.2 - this is only ever used for a visual "is this live right now"
+    // highlight, not to fire a real robot command, so a little extra
+    // margin against stick drift on an unfamiliar pad is the right side
+    // to err on here.
+
+    const poll = () => {
+      const gamepads = navigator.getGamepads();
+      const gp = gamepads.find(g => g !== null) || null;
+
+      setConnectedGamepad(gp ? { id: gp.id, buttons: gp.buttons.length, axes: gp.axes.length, mapping: gp.mapping || t('gamepad_config.mapping_raw', 'raw (non-standard)') } : null);
+
+      const active = new Set<string>();
+      if (gp) {
+        gp.buttons.forEach((b, i) => { if (b.pressed) active.add(`B${i}`); });
+        gp.axes.forEach((val, i) => {
+          if (val < -DEADZONE) active.add(`AXIS_${i}_NEG`);
+          if (val > DEADZONE) active.add(`AXIS_${i}_POS`);
+        });
+      }
+      setActiveInputs(active);
+
+      detectRequestRef.current = requestAnimationFrame(poll);
+    };
+    detectRequestRef.current = requestAnimationFrame(poll);
+
+    return () => {
+      if (detectRequestRef.current) cancelAnimationFrame(detectRequestRef.current);
+    };
+  }, [gamepadEnabled, t]);
 
   const toggleGamepad = () => {
     updateSettings({ gamepadEnabled: !gamepadEnabled });
@@ -113,6 +167,28 @@ export function GamepadConfig() {
       </div>
 
       {gamepadEnabled && (
+        <div className="text-xs rounded-lg border p-3 flex items-center justify-between gap-3 border-slate-800 bg-slate-900">
+          {connectedGamepad ? (
+            <>
+              <div className="min-w-0">
+                <div className="text-slate-200 font-medium truncate" title={connectedGamepad.id}>{connectedGamepad.id}</div>
+                <div className="text-slate-500">
+                  {t('gamepad_config.detected_info', '{{buttons}} buttons, {{axes}} axes, mapping: {{mapping}}', {
+                    buttons: connectedGamepad.buttons, axes: connectedGamepad.axes, mapping: connectedGamepad.mapping,
+                  })}
+                </div>
+              </div>
+              <span className="shrink-0 px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 font-bold">
+                {t('gamepad_config.connected', 'CONNECTED')}
+              </span>
+            </>
+          ) : (
+            <span className="text-slate-500">{t('gamepad_config.no_gamepad', 'No gamepad detected - press a button on it to wake the browser up to it.')}</span>
+          )}
+        </div>
+      )}
+
+      {gamepadEnabled && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-slate-900 border border-slate-800 p-4 rounded-lg flex items-center justify-center relative min-h-[300px]">
             {/* SVG Gamepad representation */}
@@ -152,14 +228,26 @@ export function GamepadConfig() {
             <table className="w-full text-left text-xs">
               <thead className="sticky top-0 bg-slate-900 border-b border-slate-800">
                 <tr>
+                  <th className="pb-2 text-slate-400 font-bold uppercase w-6"></th>
                   <th className="pb-2 text-slate-400 font-bold uppercase">{t('gamepad_config.input', 'Input')}</th>
                   <th className="pb-2 text-slate-400 font-bold uppercase">{t('gamepad_config.action', 'Action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/50">
-                {BUTTONS.map(btn => (
-                  <tr key={btn.id} className="hover:bg-slate-800/30">
-                    <td className="py-2 text-slate-300 font-medium">{btn.name}</td>
+                {BUTTONS.map(btn => {
+                  const isLive = activeInputs.has(btn.id);
+                  return (
+                  <tr key={btn.id} className={isLive ? 'bg-sky-500/10' : 'hover:bg-slate-800/30'}>
+                    <td className="py-2">
+                      {/* Real-time "this row is live right now" dot - the
+                          whole point of polling navigator.getGamepads()
+                          above: an operator can physically press a button
+                          on an unfamiliar/low-button-count pad and see
+                          exactly which row corresponds to it, instead of
+                          guessing from this fixed 16-button/4-axis list. */}
+                      {isLive && <span className="inline-block w-2 h-2 rounded-full bg-sky-400 animate-pulse" title={t('gamepad_config.live_now', 'Active right now')} />}
+                    </td>
+                    <td className={`py-2 font-medium ${isLive ? 'text-sky-300' : 'text-slate-300'}`}>{btn.name}</td>
                     <td className="py-2">
                       <select 
                         value={mapping[btn.id] || ''} 
@@ -172,7 +260,8 @@ export function GamepadConfig() {
                       </select>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
