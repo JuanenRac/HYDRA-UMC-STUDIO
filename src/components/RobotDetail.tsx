@@ -193,7 +193,17 @@ const URTC_TOOLS: ToolType[] = [
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
 const CameraPIP = ({ bot, initialX, initialY, label, t: _t }: { bot: RobotState, initialX: number, initialY: number, label: string, t: any }) => {
-  const { settings, updateSettings } = useHydraStore();
+  const { settings, updateSettings, cameras } = useHydraStore();
+  // Real gap closed: this panel used to always show a decorative
+  // CameraIcon regardless of connection state - HYDRA-UMC-SERVER's own
+  // GET /api/camera/:id/stream is a real proxy now (see that repo's own
+  // CHANGELOG), so this renders the real MJPEG stream via a plain <img>
+  // (a browser natively understands multipart/x-mixed-replace on an
+  // <img> src - no <video>/MSE plumbing needed for MJPEG specifically)
+  // once a camera is actually assigned and connected, same isVisionActive
+  // gating this file's own top-level component already uses elsewhere.
+  const camera = cameras.find(c => c.assignedRobotId === bot.id);
+  const isStreaming = bot.visionEnabled && (camera?.connected ?? false);
   const controls = useDragControls();
   const savedPipConfig = settings.uiLayout?.cameraPips?.[bot.id];
   // Memoized so the fallback object keeps ONE stable identity across
@@ -353,8 +363,18 @@ const CameraPIP = ({ bot, initialX, initialY, label, t: _t }: { bot: RobotState,
         </div>
       </div>
       <div className="flex-1 bg-black relative flex items-center justify-center pointer-events-none">
-         <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'linear-gradient(transparent 50%, rgba(0,0,0,0.5) 50%)', backgroundSize: '100% 4px' }} />
-         <CameraIcon size={24} className="text-slate-800 pointer-events-none" />
+         {isStreaming && camera ? (
+           <img
+             src={apiUrl(`/api/camera/${camera.id}/stream`)}
+             alt={`${label} camera`}
+             className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+           />
+         ) : (
+           <>
+             <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'linear-gradient(transparent 50%, rgba(0,0,0,0.5) 50%)', backgroundSize: '100% 4px' }} />
+             <CameraIcon size={24} className="text-slate-800 pointer-events-none" />
+           </>
+         )}
          {bot.playbackState?.isPlaying && (
            <div className="absolute inset-0 border-2 border-emerald-500/30 animate-pulse pointer-events-none" />
          )}
