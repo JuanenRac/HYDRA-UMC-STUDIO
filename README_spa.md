@@ -292,15 +292,12 @@ En conjunto, el ecosistema de este autor abarca muchos proyectos más allá de e
 
 ---
 
-## 👤 Autor
-
+## 👤 AUTOR
 **JuanenRac** (Electro Hobby 3D)
 📧 electrohobby3d@gmail.com
-📺 youtube.com/@electrohobby3d
+📺 [youtube.com/@electrohobby3d](https://youtube.com/@electrohobby3d)
 
----
-
-## 📜 Licencia y Avisos de Copyright
+## 📜 LICENCIA
 
 HYDRA-UMC STUDIO es (c) 2026 JuanenRac (Electro Hobby 3D). Este aviso debe incluirse en cualquier distribución de este proyecto o trabajos derivados.
 
