@@ -333,14 +333,3 @@ La référence exacte au dépôt source, au chemin, et au texte de licence de ch
 Ce tableau de bord est le panneau de contrôle web du projet de carte mère [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) - voir ce dépôt pour le licenciement propre de son matériel (CERN-OHL-S v2) et de son firmware (GPL-3.0), auquel la licence propre de ce dépôt ne s'étend pas, et vice versa. Il implémente également des outils CAN-OTA contre le protocole [URTC](https://github.com/JuanenRac/URTC) - voir le propre dépôt de ce projet pour sa propre licence séparée.
 
 Si vous construisez sur ce projet, gardez à l'esprit la séparation des licences : les modifications de code devraient rester en GPL-3.0, les dérivés de documentation devraient rester en CC BY-SA, et toute redistribution des assets de maillage d'un robot spécifique devrait rester sous la licence d'origine propre à ce modèle - chacun avec attribution vers ce projet et son auteur.
-
-## 🛠️ BUILD & RUN
-
-Utilisez la vérification de compilation sans versionnement avant une compilation de publication :
-
-| Action | Windows | Linux / macOS |
-|---|---|---|
-| Vérification de compilation (sans modifier la version ni le CHANGELOG) | `build-test.bat` | `./build-test.sh` |
-| Exécution / développement (si disponible) | `run*.bat` ou `dev*.bat` | `./run*.sh` ou `./dev*.sh` |
-
-`build-test.bat` et `build-test.sh` compilent ou valident la pile du projet sans incrémenter `hydra-umc.project.json` ni modifier `CHANGELOG.md`. Ils peuvent uniquement créer les sorties normales du compilateur. Les scripts existants `build*.bat`, `build*.sh`, `run*` et `dev*` conservent leur comportement spécifique de versionnement ou d'exécution ; utilisez-les lorsque ce comportement est requis.
