@@ -677,6 +677,7 @@
     "services_running": "运行中",
     "services_stopped": "已停止",
     "services_pid": "PID",
+    "services_error": "错误",
     "services_not_a_service": "不适用",
     "services_none": "未找到任何项目。",
     "services_no_control_note": "目前仅支持查看 - 远程启动/停止服务是另一项更敏感的工作,尚未构建。",

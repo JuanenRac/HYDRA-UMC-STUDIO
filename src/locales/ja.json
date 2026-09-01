@@ -677,6 +677,7 @@
     "services_running": "実行中",
     "services_stopped": "停止",
     "services_pid": "PID",
+    "services_error": "エラー",
     "services_not_a_service": "対象外",
     "services_none": "プロジェクトが見つかりませんでした。",
     "services_no_control_note": "現時点では表示のみです - サービスのリモート起動/停止は別途、より慎重な扱いが必要な作業であり、まだ実装されていません。",

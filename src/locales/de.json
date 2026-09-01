@@ -677,6 +677,7 @@
     "services_running": "Aktiv",
     "services_stopped": "Gestoppt",
     "services_pid": "PID",
+    "services_error": "Fehler",
     "services_not_a_service": "N/A",
     "services_none": "Keine Projekte gefunden.",
     "services_no_control_note": "Derzeit nur Ansicht - Fernstart/-stopp eines Dienstes ist eine separate, sensiblere Arbeit, noch nicht umgesetzt.",

@@ -677,6 +677,7 @@
     "services_running": "En cours",
     "services_stopped": "Arrêté",
     "services_pid": "PID",
+    "services_error": "Erreur",
     "services_not_a_service": "N/A",
     "services_none": "Aucun projet trouvé.",
     "services_no_control_note": "Visualisation uniquement pour l'instant - démarrer/arrêter un service à distance est un travail séparé, plus sensible, pas encore construit.",

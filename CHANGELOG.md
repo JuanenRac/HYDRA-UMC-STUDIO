@@ -29,6 +29,26 @@ a change is actually worth summarizing for a human.
 
 ## Unreleased
 
+## [0.3.6] - Services badge: real green/red/amber health color, version moved inside it, duplicate port line removed
+
+- **The status badge's color didn't distinguish "stopped on purpose" from
+  "actually crashed"** - real feedback from live testing. Now driven by a
+  dedicated `healthColor()`, separate from the badge's own label text:
+  green for genuinely running, red for cleanly stopped, amber for a real
+  error - systemd's own `ActiveState: "failed"` IS that error state
+  (crashed / exited non-zero / exhausted its restart limit), never
+  conflated with `"inactive"` (stopped as expected). A project whose
+  systemd unit says active but whose own declared port probes down is a
+  real contradiction (alive but not actually serving) - also amber,
+  with its own "Error" label text, not silently shown as plain green or
+  lumped in with "Down".
+- **Version number moved inside the status badge, ~2x its own label's
+  font size, directly under Live/Running/Down/Stopped/Error/N/A** - real
+  feedback from live testing, same placement style as the PID chip
+  below it. Removed from the card's own bottom row, which also dropped
+  the port number that duplicated the one already shown next to the IP
+  in the host:port chip.
+
 ## [0.3.5] - Clear survives navigation; Services shows real IP:port and Linux PID per project
 
 - **Server Logs' Clear button didn't survive leaving and returning to the

@@ -62,38 +62,76 @@ const DEFAULT_STACK_COLOR = 'text-slate-400 bg-slate-500/10 border-slate-500/30'
 // network services) - they all fell into the same "N/A" bucket as a project
 // that genuinely isn't a service, indistinguishable from each other. Now a
 // project can also carry real systemd ActiveState/SubState (from an opt-in
-// service.systemd_unit in its own manifest) - `kind` picks the badge from
-// whichever real signal that project actually has, `live` (a port probe)
-// always wins when both are present since it's the more direct signal.
-type BadgeKind = 'live' | 'dead' | 'systemd-up' | 'systemd-down' | 'unknown';
+// service.systemd_unit in its own manifest) - `badgeKind` picks the LABEL
+// TEXT from whichever real signal that project actually has, `live` (a
+// port probe) always wins over systemd for the text when both are present
+// since it's the more direct signal.
+type BadgeKind = 'live' | 'dead' | 'systemd-up' | 'systemd-down' | 'error' | 'unknown';
 
 function badgeKind(p: EcosystemProjectStatus): BadgeKind {
+  // Checked first, same priority as healthColor below: a crashed unit, or
+  // one that's "active" per systemd yet fails its own declared port probe,
+  // is real, distinct information - never silently folded into a plain
+  // Down/Stopped label just because live/activeState alone would also
+  // match one of those.
+  if (p.activeState === 'failed') return 'error';
+  if (p.activeState === 'active' && p.live === false) return 'error';
   if (p.live === true) return 'live';
   if (p.live === false) return 'dead';
   if (p.activeState) return p.activeState === 'active' ? 'systemd-up' : 'systemd-down';
   return 'unknown';
 }
 
-const BADGE_STYLE: Record<BadgeKind, string> = {
-  live: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-  'systemd-up': 'bg-sky-500/10 text-sky-400 border-sky-500/30',
-  dead: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-  'systemd-down': 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-  unknown: 'bg-slate-800/60 text-slate-500 border-slate-700',
+// COLOR is a separate axis from the label text above - real feedback from
+// live testing: green for genuinely running, red for cleanly stopped,
+// amber for a real error, distinct from "stopped on purpose". systemd's
+// own ActiveState already distinguishes these when a project opts into
+// service.systemd_unit: "failed" IS the real error state (crashed / exited
+// non-zero / exhausted its restart limit), never conflated with "inactive"
+// (stopped cleanly, expected). A project whose systemd unit says "active"
+// but whose OWN declared port probes down is a real contradiction worth
+// flagging as an error too (the process is alive but not actually serving)
+// rather than silently showing green. A project with only a port probe
+// (no systemd_unit) falls back to the plain two-color live/dead reading -
+// TCP alone can't distinguish "stopped" from "crashed".
+type HealthColor = 'green' | 'red' | 'amber' | 'slate';
+
+function healthColor(p: EcosystemProjectStatus): HealthColor {
+  if (p.activeState === 'failed') return 'amber';
+  if (p.activeState === 'active') return p.live === false ? 'amber' : 'green';
+  if (p.activeState) return 'red'; // inactive/deactivating/activating under systemd control, not active
+  if (p.live === true) return 'green';
+  if (p.live === false) return 'red';
+  return 'slate';
+}
+
+const COLOR_STYLE: Record<HealthColor, string> = {
+  green: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+  amber: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+  red: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+  slate: 'bg-slate-800/60 text-slate-500 border-slate-700',
 };
-const BADGE_DOT: Record<BadgeKind, string> = {
-  live: 'fill-emerald-400 text-emerald-400 animate-pulse',
-  'systemd-up': 'fill-sky-400 text-sky-400 animate-pulse',
-  dead: 'fill-rose-400 text-rose-400',
-  'systemd-down': 'fill-rose-400 text-rose-400',
-  unknown: 'fill-slate-600 text-slate-600',
+const COLOR_DOT: Record<HealthColor, string> = {
+  green: 'fill-emerald-400 text-emerald-400 animate-pulse',
+  amber: 'fill-amber-400 text-amber-400 animate-pulse',
+  red: 'fill-rose-400 text-rose-400',
+  slate: 'fill-slate-600 text-slate-600',
 };
 
-function StatusBadge({ kind, label }: { kind: BadgeKind; label: string }) {
+// Real feedback from live testing: the version number (previously its own
+// small line at the bottom of the card, duplicating the port shown below
+// too) now lives inside this same badge, at roughly double the label's own
+// font size, directly under the Live/Running/Down/Stopped/N/A text - one
+// glance at the top-right corner of a card answers both "is it up" and
+// "which build".
+function StatusBadge({ color, label, version }: { color: HealthColor; label: string; version: string | null }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border ${BADGE_STYLE[kind]}`}>
-      <Circle size={6} className={BADGE_DOT[kind]} /> {label}
-    </span>
+    <div className={`flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-lg border shrink-0 ${COLOR_STYLE[color]}`}>
+      <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider whitespace-nowrap">
+        <Circle size={6} className={COLOR_DOT[color]} /> {label}
+      </span>
+      {version && <span className="text-lg font-black leading-none font-mono">v{version}</span>}
+    </div>
   );
 }
 
@@ -241,14 +279,19 @@ export function EcosystemServices() {
                   {items.map(p => (
                     <div key={p.name} className="bg-slate-950 border border-slate-800 rounded-xl p-4 shadow-xl hover:border-slate-700 transition-colors">
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <span className="text-xs font-bold text-slate-200 leading-tight">{p.name}</span>
-                        <StatusBadge kind={badgeKind(p)} label={{
-                          live: t('ecosystem.services_live'),
-                          dead: t('ecosystem.services_dead'),
-                          'systemd-up': t('ecosystem.services_running'),
-                          'systemd-down': t('ecosystem.services_stopped'),
-                          unknown: t('ecosystem.services_not_a_service'),
-                        }[badgeKind(p)]} />
+                        <span className="text-xs font-bold text-slate-200 leading-tight pt-1">{p.name}</span>
+                        <StatusBadge
+                          color={healthColor(p)}
+                          version={p.version}
+                          label={{
+                            live: t('ecosystem.services_live'),
+                            dead: t('ecosystem.services_dead'),
+                            'systemd-up': t('ecosystem.services_running'),
+                            'systemd-down': t('ecosystem.services_stopped'),
+                            error: t('ecosystem.services_error'),
+                            unknown: t('ecosystem.services_not_a_service'),
+                          }[badgeKind(p)]}
+                        />
                       </div>
                       <div className="flex items-center gap-1.5 flex-wrap mb-3">
                         {p.stack && <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border ${STACK_COLOR[p.stack] || DEFAULT_STACK_COLOR}`}>{p.stack}</span>}
@@ -265,7 +308,7 @@ export function EcosystemServices() {
                           line, some show both, "not a service" cards show
                           neither. */}
                       {(p.serviceHost || p.pid !== null) && (
-                        <div className="flex items-center gap-1.5 flex-wrap mb-3 text-[9px] font-mono text-slate-500">
+                        <div className="flex items-center gap-1.5 flex-wrap text-[9px] font-mono text-slate-500">
                           {p.serviceHost && (
                             <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800">{p.serviceHost}:{p.servicePort}</span>
                           )}
@@ -274,10 +317,6 @@ export function EcosystemServices() {
                           )}
                         </div>
                       )}
-                      <div className="flex items-center justify-between text-[10px] text-slate-600 font-mono">
-                        <span>{p.version ? `v${p.version}` : '—'}</span>
-                        <span>{p.servicePort ? `:${p.servicePort}` : '—'}</span>
-                      </div>
                     </div>
                   ))}
                 </div>
