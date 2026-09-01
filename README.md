@@ -335,14 +335,3 @@ Each model's own exact source repository, path, and license text reference lives
 This dashboard is the web control panel for the [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) motherboard project - see that repository for its own hardware (CERN-OHL-S v2) and firmware (GPL-3.0) licensing, which this repository's own license doesn't extend to, and vice versa. It also implements CAN-OTA tooling against the [URTC](https://github.com/JuanenRac/URTC) protocol - see that project's own repository for its own separate license.
 
 If you build on this project, keep the licensing split in mind: code changes should stay GPL-3.0, documentation derivatives should stay CC BY-SA, and any redistribution of a specific robot's mesh assets should stay under that model's own original license - each with attribution back to this project and its author.
-
-## 🛠️ BUILD & RUN
-
-Use the non-versioning build check before a release build:
-
-| Action | Windows | Linux / macOS |
-|---|---|---|
-| Build check (no version or CHANGELOG change) | `build-test.bat` | `./build-test.sh` |
-| Run / development (when provided) | `run*.bat` or `dev*.bat` | `./run*.sh` or `./dev*.sh` |
-
-`build-test.bat` and `build-test.sh` compile or validate the project stack without incrementing `hydra-umc.project.json` or modifying `CHANGELOG.md`. They may create normal compiler output only. Existing `build*.bat`, `build*.sh`, `run*` and `dev*` scripts retain their project-specific, versioned or runtime behavior; use them when that behavior is required.
