@@ -29,6 +29,15 @@ a change is actually worth summarizing for a human.
 
 ## Unreleased
 
+- **Coordinated XY-table examples** - the nine examples that use an XY
+  table now describe two deliberately independent motions at every playback
+  step: `tx`/`ty` moves the robot base across the table pattern, while the
+  local Cartesian pose drives a distinct, animated tool task. Raster, scan,
+  circle, diagonal, spiral, snake and flower examples now include a bounded
+  inspection/dispensing gesture; the PnP matrix performs an approach, place
+  and retract cycle at each table cell. `xyTableTaskPoint()` is the shared
+  authoring helper that prevents a future example from accidentally folding
+  table travel into arm kinematics.
 - **Work playback synchronization** - selecting a Work now sends one atomic
   `trajectory` command to HYDRA-UMC-SERVER instead of relying on the delayed
   full-settings save. Server stores the selected points and resets its cursor

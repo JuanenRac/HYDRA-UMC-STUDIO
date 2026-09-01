@@ -5,17 +5,25 @@
 // =============================================================================
 
 import type { KinematicsExample } from '../utils';
-import { cartesianToJoints } from '../utils';
+import { xyTableTaskPoint } from '../utils';
 
 /** Stores the Example configuration or state data. */
 const example: KinematicsExample = {
   id: 'example-16-xy-table-diagonal-sweep',
   name: 'XY Table Diagonal Sweep',
-  points: Array.from({ length: 20 }, (_, i) => ({
-      ...cartesianToJoints(200 + 20 * Math.sin(i), 20 * Math.cos(i), 115, 0, 0, 0),
-      tx: i * 20,
-      ty: i * 20,
-  }))
+  points: Array.from({ length: 36 }, (_, index) => {
+    const progress = index / 35;
+    return xyTableTaskPoint(
+      60 + progress * 430,
+      55 + progress * 280,
+      190 + 42 * Math.sin(progress * Math.PI * 4),
+      -32 + 64 * progress,
+      120 + 14 * Math.sin(progress * Math.PI * 6),
+      0,
+      0,
+      -35 + progress * 70,
+    );
+  }),
 };
 
 export default example;

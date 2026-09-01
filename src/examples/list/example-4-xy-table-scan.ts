@@ -5,18 +5,29 @@
 // =============================================================================
 
 import type { KinematicsExample } from '../utils';
-import { cartesianToJoints } from '../utils';
+import { xyTableTaskPoint } from '../utils';
 
 const example: KinematicsExample = {
   id: 'example-4-xy-table-scan',
   name: 'XY Table Area Scan',
-  points: [
-      { ...cartesianToJoints(200, 0, 10, 0, 0, 0), tx: -100, ty: -100 },
-      { ...cartesianToJoints(200, 0, 10, 0, 0, 0), tx: -100, ty: 100 },
-      { ...cartesianToJoints(200, 0, 10, 0, 0, 0), tx: 0, ty: 100 },
-      { ...cartesianToJoints(200, 0, 10, 0, 0, 0), tx: 0, ty: -100 },
-      { ...cartesianToJoints(200, 0, 10, 0, 0, 0), tx: 100, ty: -100 },
-      { ...cartesianToJoints(200, 0, 10, 0, 0, 0), tx: 100, ty: 100 }
-  ]
+  // The carriage raster covers the work surface while the wrist performs a
+  // small local inspection sweep.  Both motions are intentional and remain
+  // independent through tx/ty versus the tool pose.
+  points: Array.from({ length: 24 }, (_, index) => {
+    const row = Math.floor(index / 6);
+    const inRow = index % 6;
+    const col = row % 2 === 0 ? inRow : 5 - inRow;
+    const phase = index / 23;
+    return xyTableTaskPoint(
+      70 + col * 92,
+      70 + row * 88,
+      205 + 24 * Math.sin(phase * Math.PI * 4),
+      34 * Math.cos(phase * Math.PI * 4),
+      120 + 7 * Math.sin(phase * Math.PI * 8),
+      0,
+      0,
+      phase * 180,
+    );
+  }),
 };
 export default example;

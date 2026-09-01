@@ -25,6 +25,32 @@ export interface KinematicsExample {
 }
 
 /**
+ * Builds one coordinated XY-table task point.
+ *
+ * `tableX`/`tableY` are the carriage coordinates of the robot base.  The
+ * tool pose is deliberately expressed independently in the arm's local
+ * Cartesian workspace.  Keeping both coordinate systems in one timestamped
+ * point makes playback move the base over the table *and* articulate the arm
+ * for the task; table travel must never be folded into the arm target.
+ */
+export function xyTableTaskPoint(
+  tableX: number,
+  tableY: number,
+  toolX: number,
+  toolY: number,
+  toolZ: number,
+  a = 0,
+  b = 0,
+  c = 0,
+): KinematicsPoint {
+  return {
+    ...cartesianToJoints(toolX, toolY, toolZ, a, b, c),
+    tx: tableX,
+    ty: tableY,
+  };
+}
+
+/**
  * Executes the Convert to cartesian logic. 
  * This function handles the necessary computations and state updates.
  */

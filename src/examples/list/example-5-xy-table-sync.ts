@@ -5,17 +5,23 @@
 // =============================================================================
 
 import type { KinematicsExample } from '../utils';
-import { cartesianToJoints } from '../utils';
+import { xyTableTaskPoint } from '../utils';
 
 const example: KinematicsExample = {
   id: 'example-5-xy-table-sync',
   name: 'XY Table Sync',
-  points: [
-      { ...cartesianToJoints(150, 0, 10, 0, 0, 0), tx: -50, ty: -50 },
-      { ...cartesianToJoints(200, 50, 10, 0, 0, 0), tx: 0, ty: 50 },
-      { ...cartesianToJoints(250, 0, 10, 0, 0, 0), tx: 50, ty: -50 },
-      { ...cartesianToJoints(200, -50, 10, 0, 0, 0), tx: 0, ty: 0 },
-      { ...cartesianToJoints(150, 0, 10, 0, 0, 0), tx: -50, ty: -50 }
-  ]
+  points: Array.from({ length: 36 }, (_, index) => {
+    const t = (index * Math.PI * 2) / 35;
+    return xyTableTaskPoint(
+      260 + 170 * Math.cos(t),
+      200 + 110 * Math.sin(t * 2),
+      205 + 30 * Math.cos(t * 3),
+      30 * Math.sin(t * 3),
+      118 + 12 * Math.sin(t * 2),
+      0,
+      0,
+      (t * 180) / Math.PI,
+    );
+  }),
 };
 export default example;
