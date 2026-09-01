@@ -27,6 +27,33 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## Unreleased
+
+- **Work playback synchronization** - selecting a Work now sends one atomic
+  `trajectory` command to HYDRA-UMC-SERVER instead of relying on the delayed
+  full-settings save. Server stores the selected points and resets its cursor
+  before Play is available, so it cannot replay the previously loaded Work.
+  This applies to every robot model; Parol6 native-joint Works retain their
+  `model-joints` path instead of being reinterpreted as generic joints.
+- **Model-specific portable trajectories** - all 26 example trajectories and
+  every A1–A8 Work now resolve their portable Cartesian intent through the
+  selected robot's real IK before reaching Server. The result is persisted as
+  explicit `model-joints`, so Faze4 and Parol6 no longer replay the same
+  generic joint angles as unrelated physical poses. Example selection now uses
+  the same atomic `trajectory` path as Works.
+
+- **Canonical Work geometry** - the eight bundled Work names for every A1-A8
+  robot (`aplicacion_pegamento`, `escalera_dibujo`, `impresion_espiral`,
+  `inspeccion_optica`, `mover_objetos_palet`, `pintado_panel`,
+  `silueta_arbol` and `soldadura_chasis`) are now authored as explicit,
+  deterministic Cartesian XZ paths in the validated A1 workspace, rather
+  than as unrelated generic joint-angle lists. `tools/generate_portable_works.py`
+  regenerates the catalogue and CI rejects drift from that source.
+
+## [0.3.3]
+
+- Build version synchronized with `hydra-umc.project.json` and the repository-native version source.
+
 ## [0.3.2] - Gamepad real-time actions now use the atomic command path
 
 - **`GamepadController.tsx`** - real-time actions (joint jog, XY-table

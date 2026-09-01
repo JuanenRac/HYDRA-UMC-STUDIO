@@ -123,6 +123,21 @@ def validate_local_markdown_links() -> None:
         preview = "; ".join(broken[:10])
         suffix = "" if len(broken) <= 10 else f" (+{len(broken) - 10} more)"
         fail(f"broken local Markdown link(s): {preview}{suffix}")
+
+
+def validate_portable_work_catalogue() -> None:
+    """Keep all model-independent Work files as the checked-in Cartesian source."""
+    result = subprocess.run(
+        (sys.executable, "tools/generate_portable_works.py", "--check"),
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    if result.returncode != 0:
+        detail = result.stdout.strip().replace("\n", "; ")
+        fail(f"portable Work catalogue validation failed: {detail}")
 def main() -> int:
     try:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
@@ -184,6 +199,7 @@ def main() -> int:
         fail(".gitignore must explicitly retain .env.example")
 
     validate_local_markdown_links()
+    validate_portable_work_catalogue()
 
     private_marker = "SON" + "NET"
     private_references = subprocess.run(
