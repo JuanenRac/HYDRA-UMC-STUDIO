@@ -35,12 +35,6 @@ function extractTag(line: string): string | null {
 
 export function AdminLogs() {
   const { t } = useTranslation();
-  const { authToken, isAdmin } = useHydraStore();
-  const [lines, setLines] = useState<string[]>([]);
-  const [live, setLive] = useState(true);
-  const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
-  const [tagFilter, setTagFilter] = useState<string | null>(null);
   // Real feedback from live testing: there was no way to clear the view -
   // `lines` is always replaced wholesale from the server's own last-N-lines
   // response on every poll (see `load()`), so simply emptying it wouldn't
@@ -49,8 +43,19 @@ export function AdminLogs() {
   // log was empty then) and `displayedLines` below only ever shows what
   // comes after that same anchor in each fresh poll - same "clear the
   // screen, keep tailing" behavior as a terminal or devtools console, not
-  // a destructive server-side truncation.
-  const [clearedAt, setClearedAt] = useState<{ anchor: string | null } | null>(null);
+  // a destructive server-side truncation. Lives in the shared store, not
+  // local state - real feedback from a second round of live testing: this
+  // component is conditionally MOUNTED (Dashboard.tsx's own
+  // `{activeTab === 'adminLogs' && <AdminLogs />}`), so plain local state
+  // reset itself every time the operator navigated away and back,
+  // silently un-clearing the view. See logsClearedAt's own doc comment on
+  // the store's context type for the full reasoning.
+  const { authToken, isAdmin, logsClearedAt: clearedAt, setLogsClearedAt: setClearedAt } = useHydraStore();
+  const [lines, setLines] = useState<string[]>([]);
+  const [live, setLive] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
   const wasAtBottomRef = useRef(true);
 

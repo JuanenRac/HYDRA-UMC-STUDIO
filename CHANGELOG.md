@@ -29,6 +29,31 @@ a change is actually worth summarizing for a human.
 
 ## Unreleased
 
+## [0.3.5] - Clear survives navigation; Services shows real IP:port and Linux PID per project
+
+- **Server Logs' Clear button didn't survive leaving and returning to the
+  panel** - real feedback from live testing right after `[0.3.4]` shipped
+  it. `AdminLogs.tsx` is conditionally mounted
+  (`{activeTab === 'adminLogs' && <AdminLogs />}` in Dashboard.tsx), so
+  its own local `clearedAt` state reset every time the operator
+  navigated away and back, silently un-clearing the view. Lifted into
+  the shared store (`logsClearedAt`/`setLogsClearedAt`) so it survives
+  for the life of the session instead of the component's own mount.
+- **Services showed only 6 of 19 real running projects as "Live"** - the
+  other 13 never declared a `service.port` in their manifest (many are
+  CLI/library-shaped, not network services) and looked identical to a
+  project that isn't a service at all - real feedback from live testing.
+  Each card now shows a real local IP:port when `serviceHost`/
+  `servicePort` are set (a TCP/HTTP probe), and a real Linux PID when
+  the project's manifest opts into `service.systemd_unit` (a
+  `systemctl show` probe, independent of whether it also exposes a
+  port - see HYDRA-UMC-SERVER's own `[0.3.6]`). The status badge now
+  has 5 real states instead of 3: Live/Down (port probe) win when
+  present, Running/Stopped (systemd `ActiveState`) cover everything
+  else that opted into `systemd_unit`, N/A stays for a project with
+  neither - so a portless-but-running service reads as "Running", not
+  lumped in with something that genuinely isn't a service.
+
 ## [0.3.4] - Server Logs gets a real Clear button; both Ecosystem panels now fill and scroll properly
 
 - **`AdminLogs.tsx` (Server Logs) had no way to clear the view** - real

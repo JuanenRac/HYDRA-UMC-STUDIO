@@ -38,6 +38,11 @@ interface EcosystemProjectStatus {
   deploymentTarget: string | null;
   servicePort: number | null;
   serviceHealthPath: string | null;
+  serviceHost: string | null;
+  systemdUnit: string | null;
+  pid: number | null;
+  activeState: string | null;
+  subState: string | null;
   live: boolean | null;
 }
 
@@ -52,24 +57,42 @@ const STACK_COLOR: Record<string, string> = {
 };
 const DEFAULT_STACK_COLOR = 'text-slate-400 bg-slate-500/10 border-slate-500/30';
 
-function StatusBadge({ live, label }: { live: boolean | null; label: string }) {
-  if (live === true) {
-    return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-        <Circle size={6} className="fill-emerald-400 text-emerald-400 animate-pulse" /> {label}
-      </span>
-    );
-  }
-  if (live === false) {
-    return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/30">
-        <Circle size={6} className="fill-rose-400 text-rose-400" /> {label}
-      </span>
-    );
-  }
+// Real feedback from live testing: most running services on the CM5 never
+// declared a TCP/HTTP service.port at all (many are CLI/library-shaped, not
+// network services) - they all fell into the same "N/A" bucket as a project
+// that genuinely isn't a service, indistinguishable from each other. Now a
+// project can also carry real systemd ActiveState/SubState (from an opt-in
+// service.systemd_unit in its own manifest) - `kind` picks the badge from
+// whichever real signal that project actually has, `live` (a port probe)
+// always wins when both are present since it's the more direct signal.
+type BadgeKind = 'live' | 'dead' | 'systemd-up' | 'systemd-down' | 'unknown';
+
+function badgeKind(p: EcosystemProjectStatus): BadgeKind {
+  if (p.live === true) return 'live';
+  if (p.live === false) return 'dead';
+  if (p.activeState) return p.activeState === 'active' ? 'systemd-up' : 'systemd-down';
+  return 'unknown';
+}
+
+const BADGE_STYLE: Record<BadgeKind, string> = {
+  live: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+  'systemd-up': 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+  dead: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+  'systemd-down': 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+  unknown: 'bg-slate-800/60 text-slate-500 border-slate-700',
+};
+const BADGE_DOT: Record<BadgeKind, string> = {
+  live: 'fill-emerald-400 text-emerald-400 animate-pulse',
+  'systemd-up': 'fill-sky-400 text-sky-400 animate-pulse',
+  dead: 'fill-rose-400 text-rose-400',
+  'systemd-down': 'fill-rose-400 text-rose-400',
+  unknown: 'fill-slate-600 text-slate-600',
+};
+
+function StatusBadge({ kind, label }: { kind: BadgeKind; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-800/60 text-slate-500 border border-slate-700">
-      <Circle size={6} className="fill-slate-600 text-slate-600" /> {label}
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border ${BADGE_STYLE[kind]}`}>
+      <Circle size={6} className={BADGE_DOT[kind]} /> {label}
     </span>
   );
 }
@@ -219,12 +242,38 @@ export function EcosystemServices() {
                     <div key={p.name} className="bg-slate-950 border border-slate-800 rounded-xl p-4 shadow-xl hover:border-slate-700 transition-colors">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <span className="text-xs font-bold text-slate-200 leading-tight">{p.name}</span>
-                        <StatusBadge live={p.live} label={p.live === true ? t('ecosystem.services_live') : p.live === false ? t('ecosystem.services_dead') : t('ecosystem.services_not_a_service')} />
+                        <StatusBadge kind={badgeKind(p)} label={{
+                          live: t('ecosystem.services_live'),
+                          dead: t('ecosystem.services_dead'),
+                          'systemd-up': t('ecosystem.services_running'),
+                          'systemd-down': t('ecosystem.services_stopped'),
+                          unknown: t('ecosystem.services_not_a_service'),
+                        }[badgeKind(p)]} />
                       </div>
                       <div className="flex items-center gap-1.5 flex-wrap mb-3">
                         {p.stack && <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border ${STACK_COLOR[p.stack] || DEFAULT_STACK_COLOR}`}>{p.stack}</span>}
                         {p.maturity && <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase text-slate-500 bg-slate-900 border border-slate-800">{p.maturity}</span>}
                       </div>
+                      {/* Real feedback from live testing: wanted to see, per
+                          service, whether it's up and its real local IP:port
+                          and Linux PID where those apply - a TCP/HTTP probe
+                          gives the first (serviceHost/servicePort), an
+                          opt-in service.systemd_unit in the manifest gives
+                          the second (pid) independent of whether that same
+                          project exposes a port at all. Only rendered when
+                          at least one is real - most cards show just one
+                          line, some show both, "not a service" cards show
+                          neither. */}
+                      {(p.serviceHost || p.pid !== null) && (
+                        <div className="flex items-center gap-1.5 flex-wrap mb-3 text-[9px] font-mono text-slate-500">
+                          {p.serviceHost && (
+                            <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800">{p.serviceHost}:{p.servicePort}</span>
+                          )}
+                          {p.pid !== null && (
+                            <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800">{t('ecosystem.services_pid')} {p.pid}</span>
+                          )}
+                        </div>
+                      )}
                       <div className="flex items-center justify-between text-[10px] text-slate-600 font-mono">
                         <span>{p.version ? `v${p.version}` : '—'}</span>
                         <span>{p.servicePort ? `:${p.servicePort}` : '—'}</span>
