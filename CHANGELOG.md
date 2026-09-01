@@ -29,6 +29,35 @@ a change is actually worth summarizing for a human.
 
 ## Unreleased
 
+## [0.3.4] - Server Logs gets a real Clear button; both Ecosystem panels now fill and scroll properly
+
+- **`AdminLogs.tsx` (Server Logs) had no way to clear the view** - real
+  feedback from live testing. Added a Clear button next to Pause/Resume;
+  since `lines` is always replaced wholesale from the server's own
+  last-300-lines response on every poll, simply emptying local state
+  wouldn't have stayed empty past one poll tick while live - Clear instead
+  remembers the newest line (or that the log was empty) at the moment it
+  was pressed, and only shows what comes after that same anchor in every
+  later poll, same "clear the screen, keep tailing" behavior as a
+  terminal or devtools console.
+- **Server Logs and Services panels didn't fill or scroll properly on a
+  wide/tall browser window** - real feedback from live testing (tested
+  against the CM5's own served STUDIO, not the desktop build). Both
+  panels' own root had a `max-w-5xl`/`max-w-6xl` cap, so a wide window
+  left real empty space on the right instead of using it. Server Logs'
+  own log box separately capped its height at `70vh` (a fraction of the
+  browser viewport) instead of the real space `flex-1` already gave it
+  inside its own container. Services was worse: its root had no scroll
+  container of its own at all, and its ancestor (Dashboard.tsx's main
+  content area) is `overflow-hidden` - a family list taller than the
+  visible viewport was silently clipped at the bottom with no way to
+  reach the rest, exactly the "services cut off halfway down" report.
+  Both width caps removed; Services now has its own `flex-1 min-h-0
+  overflow-y-auto` region around just the grouped cards (header/stats/
+  search stay fixed above it, same fixed-toolbar-plus-scrolling-body
+  shape as Server Logs' own log box), and Server Logs' box now genuinely
+  fills whatever height its flex container gives it instead of a
+  viewport-fraction cap.
 - **Coordinated XY-table examples** - the nine examples that use an XY
   table now describe two deliberately independent motions at every playback
   step: `tx`/`ty` moves the robot base across the table pattern, while the

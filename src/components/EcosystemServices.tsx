@@ -134,8 +134,8 @@ export function EcosystemServices() {
   }, [projects]);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 max-w-6xl">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div className="h-full flex flex-col gap-6 animate-in fade-in duration-300">
+      <div className="flex items-start justify-between gap-4 flex-wrap shrink-0">
         <div>
           <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><Boxes size={16} /> {t('ecosystem.services_title')}</h3>
           <p className="text-[10px] text-slate-600 leading-relaxed pt-2 max-w-2xl">{t('ecosystem.services_desc')}</p>
@@ -145,16 +145,16 @@ export function EcosystemServices() {
         </button>
       </div>
 
-      {error && <p className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">{error}</p>}
+      {error && <p className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2 shrink-0">{error}</p>}
       {available === false && (
-        <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">{t('ecosystem.services_unavailable')}</p>
+        <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 shrink-0">{t('ecosystem.services_unavailable')}</p>
       )}
 
       {available && (
         <>
           {/* Summary stat strip - the "is the ecosystem healthy" answer at a
               glance, before scanning any individual card. */}
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-3 flex-wrap shrink-0">
             <div className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex-1 min-w-[110px]">
               <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{t('ecosystem.services_stat_total')}</div>
               <div className="text-2xl font-black text-slate-100 mt-0.5">{summary.total}</div>
@@ -170,7 +170,7 @@ export function EcosystemServices() {
           </div>
 
           {/* Search + family filter chips */}
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap shrink-0">
             <div className="relative flex-1 min-w-[200px]">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
               <input
@@ -199,15 +199,22 @@ export function EcosystemServices() {
             </div>
           </div>
 
-          {/* Grouped cards */}
-          <div className="space-y-5">
+          {/* Real feedback from live testing: this whole panel's own
+              ancestor (Dashboard.tsx's main content area) is
+              `overflow-hidden` - without its own scroll container, a
+              families list taller than the visible viewport just got
+              silently clipped at the bottom with no way to reach the rest.
+              Only THIS region (the grouped cards) scrolls - the header/
+              stats/search above stay put, same "fixed toolbar, scrolling
+              body" shape as AdminLogs.tsx's own log box. */}
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-5 pr-1">
             {grouped.map(([family, items]) => (
               <div key={family} className="space-y-2">
                 <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                   {family}
                   <span className="text-slate-700 font-mono normal-case tracking-normal">({items.length})</span>
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                   {items.map(p => (
                     <div key={p.name} className="bg-slate-950 border border-slate-800 rounded-xl p-4 shadow-xl hover:border-slate-700 transition-colors">
                       <div className="flex items-start justify-between gap-2 mb-2">
@@ -234,7 +241,7 @@ export function EcosystemServices() {
         </>
       )}
 
-      <div className="flex items-center justify-between text-[10px] text-slate-600">
+      <div className="flex items-center justify-between text-[10px] text-slate-600 shrink-0">
         <p className="max-w-2xl">{t('ecosystem.services_no_control_note')}</p>
         {scannedAt && <span className="font-mono shrink-0 ml-4">{t('ecosystem.services_scanned_at', { time: new Date(scannedAt).toLocaleTimeString() })}</span>}
       </div>

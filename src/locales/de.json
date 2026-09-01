@@ -709,6 +709,7 @@
     "clients_closing": "Wird geschlossen",
     "clients_refresh_note": "Aktualisiert alle {{seconds}}s.",
     "logs_title": "Server-Log",
+    "logs_clear": "Leeren",
     "logs_pause": "Pause",
     "logs_resume": "Fortsetzen",
     "logs_none": "Noch keine Log-Einträge.",

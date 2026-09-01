@@ -709,6 +709,7 @@
     "clients_closing": "In chiusura",
     "clients_refresh_note": "Si aggiorna ogni {{seconds}}s.",
     "logs_title": "Log del server",
+    "logs_clear": "Pulisci",
     "logs_pause": "Pausa",
     "logs_resume": "Riprendi",
     "logs_none": "Ancora nessuna voce di log.",

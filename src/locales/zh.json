@@ -709,6 +709,7 @@
     "clients_closing": "正在关闭",
     "clients_refresh_note": "每 {{seconds}} 秒刷新一次。",
     "logs_title": "服务器日志",
+    "logs_clear": "清除",
     "logs_pause": "暂停",
     "logs_resume": "继续",
     "logs_none": "暂无日志条目。",

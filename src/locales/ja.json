@@ -709,6 +709,7 @@
     "clients_closing": "切断中",
     "clients_refresh_note": "{{seconds}} 秒ごとに更新されます。",
     "logs_title": "サーバーログ",
+    "logs_clear": "クリア",
     "logs_pause": "一時停止",
     "logs_resume": "再開",
     "logs_none": "まだログエントリがありません。",

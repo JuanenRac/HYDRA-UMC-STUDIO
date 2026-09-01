@@ -20,7 +20,7 @@
 // =============================================================================
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FileText, Pause, Play, Search } from 'lucide-react';
+import { Eraser, FileText, Pause, Play, Search } from 'lucide-react';
 import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 
@@ -41,6 +41,16 @@ export function AdminLogs() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [tagFilter, setTagFilter] = useState<string | null>(null);
+  // Real feedback from live testing: there was no way to clear the view -
+  // `lines` is always replaced wholesale from the server's own last-N-lines
+  // response on every poll (see `load()`), so simply emptying it wouldn't
+  // stay empty for longer than one POLL_MS tick while live. Instead this
+  // remembers the newest line at the moment Clear was pressed (or that the
+  // log was empty then) and `displayedLines` below only ever shows what
+  // comes after that same anchor in each fresh poll - same "clear the
+  // screen, keep tailing" behavior as a terminal or devtools console, not
+  // a destructive server-side truncation.
+  const [clearedAt, setClearedAt] = useState<{ anchor: string | null } | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
   const wasAtBottomRef = useRef(true);
 
@@ -72,14 +82,29 @@ export function AdminLogs() {
     return Array.from(set).sort();
   }, [lines]);
 
+  // See `clearedAt`'s own comment above. `lastIndexOf` on an anchor that's
+  // scrolled off the server's own 300-line window (more real log lines
+  // arrived since Clear than that window holds) can't find it anymore -
+  // falls back to showing everything rather than hiding real content.
+  const displayedLines = useMemo(() => {
+    if (!clearedAt) return lines;
+    if (clearedAt.anchor === null) return lines;
+    const idx = lines.lastIndexOf(clearedAt.anchor);
+    return idx === -1 ? lines : lines.slice(idx + 1);
+  }, [lines, clearedAt]);
+
+  const handleClear = () => {
+    setClearedAt({ anchor: lines.length > 0 ? lines[lines.length - 1] : null });
+  };
+
   const filteredLines = useMemo(() => {
     const needle = search.trim().toLowerCase();
-    return lines.filter(l => {
+    return displayedLines.filter(l => {
       if (tagFilter && extractTag(l) !== tagFilter) return false;
       if (needle && !l.toLowerCase().includes(needle)) return false;
       return true;
     });
-  }, [lines, search, tagFilter]);
+  }, [displayedLines, search, tagFilter]);
 
   // Auto-scroll to the newest line only if the viewer was already at (or
   // near) the bottom - see LogsTab.tsx's own comment on why scrolling
@@ -100,15 +125,23 @@ export function AdminLogs() {
   }
 
   return (
-    <div className="flex flex-col gap-4 h-full max-w-5xl animate-in fade-in duration-300">
+    <div className="flex flex-col gap-4 h-full animate-in fade-in duration-300">
       <div className="flex items-center justify-between shrink-0">
         <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><FileText size={16} /> {t('ecosystem.logs_title')}</h3>
-        <button
-          onClick={() => setLive(l => !l)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-sky-400 transition-colors"
-        >
-          {live ? <><Pause size={12} /> {t('ecosystem.logs_pause')}</> : <><Play size={12} /> {t('ecosystem.logs_resume')}</>}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleClear}
+            className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-sky-400 transition-colors"
+          >
+            <Eraser size={12} /> {t('ecosystem.logs_clear')}
+          </button>
+          <button
+            onClick={() => setLive(l => !l)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-sky-400 transition-colors"
+          >
+            {live ? <><Pause size={12} /> {t('ecosystem.logs_pause')}</> : <><Play size={12} /> {t('ecosystem.logs_resume')}</>}
+          </button>
+        </div>
       </div>
 
       {error && <p className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2 shrink-0">{error}</p>}
@@ -145,10 +178,10 @@ export function AdminLogs() {
       <div
         ref={boxRef}
         onScroll={handleScroll}
-        className="flex-1 min-h-[400px] max-h-[70vh] overflow-y-auto bg-black/60 border border-slate-800 rounded-lg p-3 font-mono text-[11px] text-slate-400 leading-relaxed"
+        className="flex-1 min-h-[300px] overflow-y-auto bg-black/60 border border-slate-800 rounded-lg p-3 font-mono text-[11px] text-slate-400 leading-relaxed"
       >
         {filteredLines.length === 0 ? (
-          <p className="text-slate-600">{lines.length === 0 ? t('ecosystem.logs_none') : t('ecosystem.logs_no_match')}</p>
+          <p className="text-slate-600">{displayedLines.length === 0 ? t('ecosystem.logs_none') : t('ecosystem.logs_no_match')}</p>
         ) : (
           filteredLines.map((line, i) => <div key={i} className="whitespace-pre-wrap break-all">{line}</div>)
         )}
