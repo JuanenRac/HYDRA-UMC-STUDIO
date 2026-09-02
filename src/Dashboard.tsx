@@ -571,6 +571,7 @@ interface SystemMetrics {
   memory_usage: number;
   temp: number | null;
   temp_is_real: boolean;
+  rp1_temp: number | null;
   network: { wifi: boolean | null; ethernet: boolean | null; bluetooth: boolean | null };
 }
 
@@ -612,6 +613,12 @@ function SystemMetricsBar() {
         <Thermometer size={12} className={metrics.temp !== null && metrics.temp > 70 ? "text-rose-500" : "text-slate-500"} />
         {metrics.temp !== null ? `${metrics.temp.toFixed(0)}°C` : '—'}
       </span>
+      {metrics.rp1_temp !== null && (
+        <span className="flex items-center gap-1.5 text-slate-400" title={t('dashboard.rp1_temp')}>
+          <Thermometer size={12} className={metrics.rp1_temp > 70 ? "text-rose-500" : "text-slate-500"} />
+          {metrics.rp1_temp.toFixed(0)}°C
+        </span>
+      )}
       <span className="flex items-center gap-1.5 text-slate-400" title={t('dashboard.cpu_load')}>
         <Cpu size={12} className="text-slate-500" /> {metrics.cpu_load}%
       </span>

@@ -111,7 +111,7 @@ Hasta 8 feeds en vivo simultáneos (visión USB o sensores térmicos de la famil
 
 ## 🌐 Interfaz Multi-Idioma
 
-Traducción completa de la interfaz en **inglés, español, alemán, francés e italiano** (`src/locales/`), incluyendo el menú de Ayuda dentro de la app, el diálogo Acerca de (versión/autor/licencia), y cada pestaña del diálogo de Configuración del Sistema. La cobertura todavía no es del 100% de cada pantalla - un puñado de paneles de accesorios independientes sigue codificado en inglés, sin alcanzar todavía por el trabajo de traducción.
+Traducción completa de la interfaz en **inglés, español, alemán, francés, italiano, chino simplificado y japonés** (`src/locales/`), incluyendo el menú de Ayuda dentro de la app, el diálogo Acerca de (versión/autor/licencia), y cada pestaña del diálogo de Configuración del Sistema. La cobertura todavía no es del 100% de cada pantalla - un puñado de paneles de accesorios independientes sigue codificado en inglés, sin alcanzar todavía por el trabajo de traducción.
 
 ---
 
@@ -246,7 +246,7 @@ Despliega la carpeta `dist/` resultante en cualquier host estático. Por defecto
 
 ### Versionado
 
-Cada `npm run build` real incrementa automáticamente el campo `version` de `package.json` (`scripts/bump-version.mjs`, enganchado como primer paso del script `build`) - un "cuentakilómetros" en base 10: patch +1 por build, con acarreo hacia minor (y de minor hacia major) al superar 9, en vez de llegar nunca a un segmento de dos dígitos (`0.0.9` -> `0.1.0`, no `0.0.10`). La versión en ejecución es visible en vivo en el diálogo **About**, y el historial completo está en [`CHANGELOG.md`](CHANGELOG.md).
+`bump_manifest_version.py` (raíz del repo) es el único dueño tanto de `hydra-umc.project.json` como del campo `version` de `package.json` - `npm run build` (`vite build`) es deliberadamente solo-compilación para que nunca pueda crear desincronización entre ambos incrementando uno sin el otro. `scripts/bump-version.mjs` es un ayudante nativo heredado que se conserva como referencia; nada en este repo lo llama ya. El esquema en sí sigue siendo el "cuentakilómetros" en base 10 de todo el ecosistema: patch +1 por cada incremento real, con acarreo hacia minor (y de minor hacia major) al superar 9, en vez de llegar nunca a un segmento de dos dígitos (`0.0.9` -> `0.1.0`, no `0.0.10`). La versión en ejecución es visible en vivo en el diálogo **About** (leída desde `GET /api/hydra-info`, que el servidor Express lee directamente de `package.json` al arrancar), y el historial completo está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 

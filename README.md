@@ -112,7 +112,7 @@ Up to 8 simultaneous live feeds (USB vision or thermal MLX90640/41/42-family sen
 
 ## 🌐 Multi-Language UI
 
-Full interface translation across **English, Spanish, German, French, and Italian** (`src/locales/`), including the in-app Help menu, the About dialog (version/author/license), and every tab of the System Configuration dialog. Coverage isn't 100% of every screen yet - a handful of standalone accessory panels are still hardcoded English, not yet reached by translation work.
+Full interface translation across **English, Spanish, German, French, Italian, Simplified Chinese, and Japanese** (`src/locales/`), including the in-app Help menu, the About dialog (version/author/license), and every tab of the System Configuration dialog. Coverage isn't 100% of every screen yet - a handful of standalone accessory panels are still hardcoded English, not yet reached by translation work.
 
 ---
 
@@ -247,7 +247,7 @@ Deploy the resulting `dist/` folder to any static host. By default the built app
 
 ### Versioning
 
-Every real `npm run build` bumps `package.json`'s own `version` automatically (`scripts/bump-version.mjs`, wired as the first step of the `build` script) - a base-10 "odometer": patch +1 per build, rolling over into minor (and minor into major) past 9 rather than ever reaching a two-digit segment (`0.0.9` -> `0.1.0`, not `0.0.10`). The running version is visible live in the **About** dialog, and the full history is in [`CHANGELOG.md`](CHANGELOG.md).
+`bump_manifest_version.py` (repo root) is the single owner of both `hydra-umc.project.json` and `package.json`'s own `version` field - `npm run build` (`vite build`) is deliberately compilation-only so it can never create drift between them by bumping one and not the other. `scripts/bump-version.mjs` is a legacy native-only helper kept for reference; nothing in this repo calls it anymore. The scheme itself is still the ecosystem-wide base-10 "odometer": patch +1 per real bump, rolling over into minor (and minor into major) past 9 rather than ever reaching a two-digit segment (`0.0.9` -> `0.1.0`, not `0.0.10`). The running version is visible live in the **About** dialog (read from `GET /api/hydra-info`, which the Express server reads straight from `package.json` at startup), and the full history is in [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 

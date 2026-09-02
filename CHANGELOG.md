@@ -29,6 +29,22 @@ a change is actually worth summarizing for a human.
 
 ## Unreleased
 
+- **RP1 temperature in the Overview footer** - shown next to the existing
+  SoC temperature reading whenever `GET /api/system/metrics` reports a real
+  `rp1_temp` (CM5/Pi 5 family only - hidden entirely, not a placeholder
+  dash, on any host without a real RP1 chip). See HYDRA-UMC-SERVER's own
+  `[Unreleased]` for the real hwmon read behind it.
+- **README doc fixes** - the "Multi-Language UI" section undersold real
+  coverage (said 5 languages; `src/locales/` actually ships 7 complete,
+  wired-in translations - Japanese and Simplified Chinese were already
+  correct in ja.json/zh.json's own README translations, just missing from
+  English/Spanish/French/Italian/German). The "Versioning" section also
+  still described the old `scripts/bump-version.mjs`-in-`npm run build`
+  mechanism, which `package.json`'s own `build` script (`vite build` alone)
+  hasn't done in a while - `bump_manifest_version.py` is the real, current
+  sole owner of the version, exactly as this file's own header already
+  said.
+
 ## [0.3.7] - Real per-project Start/Stop/Restart buttons; 4 new summary stat tiles
 
 - **Real Start/Stop/Restart buttons on each service card** (admin-only) -

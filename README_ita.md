@@ -110,7 +110,7 @@ Fino a 8 feed live simultanei (visione USB o sensori termici della famiglia MLX9
 
 ## 🌐 Interfaccia Multi-Lingua
 
-Traduzione completa dell'interfaccia in **inglese, spagnolo, tedesco, francese e italiano** (`src/locales/`), incluso il menu Aiuto interno all'app, la finestra Informazioni (versione/autore/licenza), e ogni scheda della finestra di Configurazione di Sistema. La copertura non è ancora al 100% di ogni schermata - una manciata di pannelli accessori standalone resta codificata in inglese, non ancora raggiunta dal lavoro di traduzione.
+Traduzione completa dell'interfaccia in **inglese, spagnolo, tedesco, francese, italiano, cinese semplificato e giapponese** (`src/locales/`), incluso il menu Aiuto interno all'app, la finestra Informazioni (versione/autore/licenza), e ogni scheda della finestra di Configurazione di Sistema. La copertura non è ancora al 100% di ogni schermata - una manciata di pannelli accessori standalone resta codificata in inglese, non ancora raggiunta dal lavoro di traduzione.
 
 ---
 
@@ -245,7 +245,7 @@ Distribuisci la cartella `dist/` risultante su qualsiasi host statico. Per defau
 
 ### Versionamento
 
-Ogni vera `npm run build` incrementa automaticamente il campo `version` di `package.json` (`scripts/bump-version.mjs`, agganciato come primo passo dello script `build`) - un "contachilometri" in base 10: patch +1 per build, con riporto su minor (e da minor a major) oltre il 9, invece di raggiungere mai un segmento a due cifre (`0.0.9` -> `0.1.0`, non `0.0.10`). La versione in esecuzione è visibile dal vivo nella finestra **About**, e la cronologia completa è in [`CHANGELOG.md`](CHANGELOG.md).
+`bump_manifest_version.py` (radice del repo) è l'unico proprietario sia di `hydra-umc.project.json` sia del campo `version` di `package.json` - `npm run build` (`vite build`) è deliberatamente solo-compilazione, così da non poter mai creare disallineamento tra i due incrementando uno senza l'altro. `scripts/bump-version.mjs` è un helper nativo legacy conservato come riferimento; nulla in questo repo lo chiama più. Lo schema in sé resta il "contachilometri" in base 10 di tutto l'ecosistema: patch +1 per ogni incremento reale, con riporto su minor (e da minor a major) oltre il 9, invece di raggiungere mai un segmento a due cifre (`0.0.9` -> `0.1.0`, non `0.0.10`). La versione in esecuzione è visibile dal vivo nella finestra **About** (letta da `GET /api/hydra-info`, che il server Express legge direttamente da `package.json` all'avvio), e la cronologia completa è in [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 

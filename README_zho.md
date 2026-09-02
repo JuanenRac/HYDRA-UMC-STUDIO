@@ -245,7 +245,7 @@ npm run preview
 
 ### 版本管理
 
-每次真正执行 `npm run build` 都会自动递增 `package.json` 自身的 `version`（`scripts/bump-version.mjs`，作为 `build` 脚本的第一步运行）——采用十进制“里程表”方式：每次构建 patch 位 +1，超过 9 后向 minor 位（minor 超过 9 后向 major 位）进位，而不会出现两位数字段（`0.0.9` -> `0.1.0`，而非 `0.0.10`）。当前运行版本可在 **About** 对话框中实时查看，完整历史记录见 [`CHANGELOG.md`](CHANGELOG.md)。
+`bump_manifest_version.py`（仓库根目录）是 `hydra-umc.project.json` 和 `package.json` 自身 `version` 字段的唯一所有者——`npm run build`（`vite build`）刻意只负责编译，这样就永远不会因为只递增其中一个而造成两者不同步。`scripts/bump-version.mjs` 是一个遗留的原生辅助脚本，仅作参考保留；本仓库中已没有任何地方调用它。方案本身仍是整个生态系统统一的十进制“里程表”方式：每次真实递增 patch 位 +1，超过 9 后向 minor 位（minor 超过 9 后向 major 位）进位，而不会出现两位数字段（`0.0.9` -> `0.1.0`，而非 `0.0.10`）。当前运行版本可在 **About** 对话框中实时查看（读取自 `GET /api/hydra-info`，该接口由 Express 服务器在启动时直接从 `package.json` 读取），完整历史记录见 [`CHANGELOG.md`](CHANGELOG.md)。
 
 ---
 

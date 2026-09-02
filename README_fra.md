@@ -110,7 +110,7 @@ Jusqu'à 8 flux en direct simultanés (vision USB ou capteurs thermiques de la f
 
 ## 🌐 Interface Multi-Langue
 
-Traduction complète de l'interface en **anglais, espagnol, allemand, français et italien** (`src/locales/`), incluant le menu Aide intégré à l'application, la boîte de dialogue À propos (version/auteur/licence), et chaque onglet de la boîte de dialogue de Configuration Système. La couverture n'est pas encore de 100 % de chaque écran - une poignée de panneaux d'accessoires autonomes reste codée en dur en anglais, pas encore atteinte par le travail de traduction.
+Traduction complète de l'interface en **anglais, espagnol, allemand, français, italien, chinois simplifié et japonais** (`src/locales/`), incluant le menu Aide intégré à l'application, la boîte de dialogue À propos (version/auteur/licence), et chaque onglet de la boîte de dialogue de Configuration Système. La couverture n'est pas encore de 100 % de chaque écran - une poignée de panneaux d'accessoires autonomes reste codée en dur en anglais, pas encore atteinte par le travail de traduction.
 
 ---
 
@@ -245,7 +245,7 @@ Déployez le dossier `dist/` obtenu sur n'importe quel hébergeur statique. Par 
 
 ### Gestion des versions
 
-Chaque `npm run build` réel incrémente automatiquement le champ `version` de `package.json` (`scripts/bump-version.mjs`, intégré comme première étape du script `build`) - un « compteur kilométrique » en base 10 : patch +1 par build, avec report vers minor (et de minor vers major) au-delà de 9, plutôt que d'atteindre un jour un segment à deux chiffres (`0.0.9` -> `0.1.0`, pas `0.0.10`). La version en cours est visible en direct dans la boîte de dialogue **About**, et l'historique complet se trouve dans [`CHANGELOG.md`](CHANGELOG.md).
+`bump_manifest_version.py` (racine du dépôt) est le seul propriétaire à la fois de `hydra-umc.project.json` et du champ `version` de `package.json` - `npm run build` (`vite build`) est délibérément compilation-uniquement afin de ne jamais pouvoir créer de désynchronisation entre les deux en incrémentant l'un sans l'autre. `scripts/bump-version.mjs` est un ancien assistant natif conservé pour référence ; rien dans ce dépôt ne l'appelle plus. Le schéma lui-même reste le « compteur kilométrique » en base 10 de tout l'écosystème : patch +1 à chaque incrément réel, avec report vers minor (et de minor vers major) au-delà de 9, plutôt que d'atteindre un jour un segment à deux chiffres (`0.0.9` -> `0.1.0`, pas `0.0.10`). La version en cours est visible en direct dans la boîte de dialogue **About** (lue depuis `GET /api/hydra-info`, que le serveur Express lit directement dans `package.json` au démarrage), et l'historique complet se trouve dans [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 

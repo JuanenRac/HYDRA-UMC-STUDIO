@@ -246,7 +246,7 @@ npm run preview
 
 ### バージョン管理
 
-実際に `npm run build` が実行されるたびに、`package.json` 自身の `version` が自動的に加算されます（`scripts/bump-version.mjs`、`build` スクリプトの最初のステップとして実行）—— 10 進法の「オドメーター」方式です：ビルドごとに patch を +1 し、9 を超えると minor へ（minor が 9 を超えると major へ）繰り上がります。2 桁の数字を持つセグメントには決して到達しません（`0.0.9` -> `0.1.0` であり、`0.0.10` にはなりません）。現在実行中のバージョンは **About** ダイアログでリアルタイムに確認でき、完全な履歴は [`CHANGELOG.md`](CHANGELOG.md) にあります。
+`bump_manifest_version.py`(リポジトリのルート)が `hydra-umc.project.json` と `package.json` 自身の `version` フィールド両方の唯一の所有者です—— `npm run build`(`vite build`)は意図的にコンパイルのみを行い、片方だけをインクリメントして両者がずれることが決してないようにしています。`scripts/bump-version.mjs` はレガシーなネイティブ専用のヘルパーで、参考としてのみ残されています——このリポジトリのどこからももう呼び出されません。方式自体はエコシステム全体で共通の10進法の「オドメーター」方式のままです:実際にインクリメントするたびに patch を +1 し、9 を超えると minor へ（minor が 9 を超えると major へ）繰り上がります。2 桁の数字を持つセグメントには決して到達しません（`0.0.9` -> `0.1.0` であり、`0.0.10` にはなりません）。現在実行中のバージョンは **About** ダイアログでリアルタイムに確認でき（`GET /api/hydra-info` から読み取られ、これは Express サーバーが起動時に `package.json` から直接読み取るものです）、完全な履歴は [`CHANGELOG.md`](CHANGELOG.md) にあります。
 
 ---
 
