@@ -289,6 +289,20 @@ export interface RobotState {
   };
   cameraView?: { position: [number, number, number]; target: [number, number, number] };
   centerCameraTrigger?: number;
+  /** Real, server-synced jog step (mm for XYZ jog, degrees for joint/base
+   * rotation) - shared across every client viewing this robot (Android,
+   * iOS, STUDIO desktop/tablet) rather than each keeping its own
+   * independent local default. Optional/undefined on any settings.json
+   * saved before this field existed - every reader falls back to `?? 1`. */
+  jogStep?: number;
+  /** Bumped (Date.now()) by the atomic 'reset3D' command whenever ANY
+   * client's own "RESET 3D" button is pressed - every OTHER connected
+   * client (including Android's embedded WebView copy of this same page)
+   * watches for this changing and remounts its own VirtualKinematics to
+   * match, so a purely local camera-framing reset now visibly reaches
+   * every viewer instead of just the one pressed. Real request from live
+   * testing: "verse en studio... y viceversa, asi se ve sincronización". */
+  reset3DTrigger?: number;
 
   juanenPnP: PnPModule;
   lumenPnP: PnPModule;

@@ -718,7 +718,22 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   useEffect(() => { robotsRef.current = robots; }, [robots]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadWorkFileRef = useRef<HTMLInputElement>(null);
-  const [jogStep, setJogStep] = useState<number>(1);
+  // Real, server-synced setting (robot.jogStep) rather than component-local
+  // state - real feedback from live multi-client testing: the jog step
+  // shown/used on one client (Android) never matched another (STUDIO
+  // desktop), since each had always kept its own independent default. Kept
+  // as the same `jogStep`/`setJogStep` names every sub-panel below already
+  // reads/calls, so only this definition needed to change - `?? 1` covers
+  // any already-saved settings.json from before this field existed.
+  //
+  // Routed through the atomic 'jogStep' command (sendRobotCommand), not
+  // updateRobot - updateRobot's optimistic-local + 500ms-debounced-
+  // full-tree save never broadcasts to any OTHER connected client (see
+  // handleReset's own comment below for the full reasoning, same gap),
+  // which would have meant a step chosen on one client still silently
+  // never appeared on another - the exact bug this field exists to fix.
+  const jogStep = robot.jogStep ?? 1;
+  const setJogStep = (v: number) => sendRobotCommand(robot.id, 'jogStep', { value: v }, () => ({ jogStep: v }));
   const [selectedExample, setSelectedExample] = useState<string>(robot.selectedExample || '');
   const [workFiles, setWorkFiles] = useState<string[]>([]);
   const [selectedWorkFile, setSelectedWorkFile] = useState<string>(robot.selectedWorkFile || '');
@@ -1257,6 +1272,20 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   ]);
 
   const [reset3DKey, setReset3DKey] = useState(0);
+  // Cross-client RESET 3D sync - watches robot.reset3DTrigger (bumped by
+  // handleReset3D on ANY client via the atomic 'reset3D' command, this
+  // client's own press included) and remounts VirtualKinematics locally
+  // whenever it changes, so this camera-only reset now really reaches
+  // every other connected client instead of just the one pressed. Skips
+  // the very first render (a ref, not state) so loading a robot that
+  // already has a `reset3DTrigger` from a past session doesn't remount the
+  // freshly-mounted 3D view a second time for nothing.
+  const sawReset3DTrigger = useRef(false);
+  useEffect(() => {
+    if (robot.reset3DTrigger === undefined) return;
+    if (sawReset3DTrigger.current) setReset3DKey(k => k + 1);
+    sawReset3DTrigger.current = true;
+  }, [robot.reset3DTrigger]);
   const [threeDHeight, setThreeDHeight] = useState<number | undefined>(settings.uiLayout?.threeDHeight);
   const dragRef = useRef(false);
   const startDragY = useRef(0);
@@ -1386,6 +1415,76 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
       // server.ts's own jog case comment on that override).
       { axis: 'x', amount: 0, target: 'robot', joints: newJoints },
       () => ({ pos: { ...robot.pos, x: newCart.x, y: newCart.y, z: newCart.z, a: newCart.a, b: newCart.b, c: newCart.c }, joints: newJoints })
+    );
+  };
+
+  // Real pose reset ("HOME"/"RESET" buttons) - was updateRobot(), the
+  // optimistic-local + 500ms-debounced-full-tree-save path meant for UI
+  // *preferences* (layout, panel state) - it never broadcasts to any OTHER
+  // connected client (a second STUDIO window, or the Android app's own
+  // embedded WebView copy of this same page), so a reset triggered on one
+  // client silently never appeared on another, in either direction. Real
+  // feedback from live testing. Routed through the same atomic
+  // sendRobotCommand() channel handleXYZJog/handleJ1Jog above already use,
+  // which the server both persists AND broadcasts to every other client.
+  // HOME and RESET share this same pos+joints reset - only RESET also
+  // stops playback (handleStop), matching each button's own original
+  // behavior before this fix.
+  const resetPose = (alsoStop: boolean) => {
+    if (alsoStop) handleStop();
+    const newJoints = homePoseFor(robot.model);
+    sendRobotCommand(
+      robot.id,
+      'reset',
+      { target: 'robot', joints: newJoints },
+      (r) => ({ pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0, tx: r.pos?.tx, ty: r.pos?.ty, trz: r.pos?.trz }, joints: newJoints })
+    );
+  };
+  const handleHome = () => resetPose(false);
+  const handleReset = () => resetPose(true);
+
+  // Same real-broadcast fix as handleReset above, for the XY table's own
+  // separate "HOME XY" button - resets only pos.tx/ty + xyTable.pos, not
+  // the arm's own pos/joints.
+  const handleResetXY = () => {
+    sendRobotCommand(
+      robot.id,
+      'reset',
+      { target: 'xytable' },
+      (r) => ({
+        pos: { ...r.pos, tx: 0, ty: 0 },
+        xyTable: r.xyTable ? { ...r.xyTable, pos: { x: 0, y: 0 } } : r.xyTable,
+      })
+    );
+  };
+
+  // "RESET 3D" only ever remounts THIS client's own VirtualKinematics
+  // (camera framing, not real robot state) - the reset3DKey effect below
+  // still drives that local remount for every client uniformly (this one
+  // included), but the trigger now comes from robot.reset3DTrigger via
+  // that effect instead of being bumped directly here, so a press on any
+  // client (Android's embedded WebView included) now remounts the 3D view
+  // on every OTHER connected client too, not just the one pressed. Real
+  // request from live testing ("verse en studio... y viceversa, asi se ve
+  // sincronización").
+  const handleReset3D = () => {
+    sendRobotCommand(robot.id, 'reset3D', undefined, () => ({ reset3DTrigger: Date.now() }));
+  };
+
+  // Same real-broadcast fix as handleReset above, for the XY table's own
+  // position sliders (both the floating XYTableOverlay and the docked "XY
+  // Table Controls" panel below) - `absolute: true` tells the server to SET
+  // the axis to `amount` instead of adding it, reusing the same validated
+  // 'jog' command/case rather than a bespoke one.
+  const handleXYAxisChange = (axis: 'tx' | 'ty', val: number) => {
+    sendRobotCommand(
+      robot.id,
+      'jog',
+      { axis: axis === 'tx' ? 'x' : 'y', amount: val, target: 'xytable', absolute: true },
+      (r) => ({
+        pos: { ...r.pos, [axis]: val },
+        xyTable: r.xyTable ? { ...r.xyTable, pos: { ...r.xyTable.pos, [axis === 'tx' ? 'x' : 'y']: val } } : r.xyTable,
+      })
     );
   };
 
@@ -1523,10 +1622,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
               <XYTableOverlay
                 robot={robot}
                 jogStep={jogStep}
-                onAxisChange={(axis, val) => updateRobot(robot.id, {
-                  pos: { ...robot.pos, [axis]: val },
-                  xyTable: robot.xyTable ? { ...robot.xyTable, pos: { ...robot.xyTable.pos, [axis === 'tx' ? 'x' : 'y']: val } } : robot.xyTable,
-                })}
+                onAxisChange={handleXYAxisChange}
                 t={t}
               />
             )}
@@ -1679,21 +1775,21 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                 <div className="hidden landscape:flex items-center gap-1">
                   <div className="w-px h-5 bg-slate-700 mx-0.5" />
 
-                  <button onClick={() => updateRobot(robot.id, { pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }, joints: homePoseFor(robot.model) })} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="HOME">
+                  <button onClick={handleHome} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="HOME">
                     <Home size={16} />
                   </button>
 
                   {robot.hasXYTable && (
-                    <button onClick={() => updateRobot(robot.id, { pos: { ...robot.pos, tx: 0, ty: 0 }, xyTable: robot.xyTable ? { ...robot.xyTable, pos: { x: 0, y: 0 } } : robot.xyTable })} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="HOME XY">
+                    <button onClick={handleResetXY} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="HOME XY">
                       <Grid3x3 size={16} />
                     </button>
                   )}
 
-                  <button onClick={() => { handleStop(); updateRobot(robot.id, { pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }, joints: homePoseFor(robot.model) }); }} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="RESET">
+                  <button onClick={handleReset} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="RESET">
                     <RefreshCw size={16} />
                   </button>
 
-                  <button onClick={() => setReset3DKey(k => k + 1)} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="RESET 3D">
+                  <button onClick={handleReset3D} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="RESET 3D">
                     <RotateCcw size={16} />
                   </button>
 
@@ -1798,7 +1894,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
 
             {/* HOME Button */}
             <button
-              onClick={() => updateRobot(robot.id, { pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 }, joints: homePoseFor(robot.model) })}
+              onClick={handleHome}
               className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
               title="HOME"
             >
@@ -1812,10 +1908,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                 fixed for both). */}
             {robot.hasXYTable && (
               <button
-                onClick={() => updateRobot(robot.id, {
-    pos: { ...robot.pos, tx: 0, ty: 0 },
-    xyTable: robot.xyTable ? { ...robot.xyTable, pos: { x: 0, y: 0 } } : robot.xyTable
-  })}
+                onClick={handleResetXY}
                 className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
                 title="HOME XY"
               >
@@ -1825,13 +1918,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
 
             {/* RESET Button */}
             <button
-              onClick={() => {
-                handleStop();
-                updateRobot(robot.id, {
-                   pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 },
-                                      joints: homePoseFor(robot.model)
-                });
-              }}
+              onClick={handleReset}
               className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-amber-500 shadow-[0_0_15px_rgba(217,119,6,0.3)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
               title="RESET"
             >
@@ -1842,7 +1929,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                 (a camera/record glyph, which read as unrelated to what
                 this button actually does: remount the 3D viewport). */}
             <button
-              onClick={() => setReset3DKey(k => k + 1)}
+              onClick={handleReset3D}
               className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-teal-600 hover:bg-teal-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-teal-500 shadow-[0_0_15px_rgba(13,148,136,0.3)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
               title="RESET 3D"
             >
@@ -2047,12 +2134,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                           min={0}
                           max={maxVal}
                           value={robot.pos[axis] || 0}
-                          onChange={val => {
-                            updateRobot(robot.id, {
-                              pos: { ...robot.pos, [axis]: val },
-                              xyTable: robot.xyTable ? { ...robot.xyTable, pos: { ...robot.xyTable.pos, [axis === 'tx' ? 'x' : 'y']: val } } : robot.xyTable
-                            });
-                          }}
+                          onChange={val => handleXYAxisChange(axis, val)}
                           size={44}
                           step={jogStep}
                         />
@@ -2060,12 +2142,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                           min={0}
                           max={maxVal}
                           value={robot.pos[axis] || 0}
-                          onChange={val => {
-                            updateRobot(robot.id, {
-                              pos: { ...robot.pos, [axis]: val },
-                              xyTable: robot.xyTable ? { ...robot.xyTable, pos: { ...robot.xyTable.pos, [axis === 'tx' ? 'x' : 'y']: val } } : robot.xyTable
-                            });
-                          }}
+                          onChange={val => handleXYAxisChange(axis, val)}
                           className="flex-1"
                           step={jogStep}
                         />

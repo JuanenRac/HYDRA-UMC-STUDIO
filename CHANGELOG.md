@@ -29,6 +29,23 @@ a change is actually worth summarizing for a human.
 
 ## Unreleased
 
+- **Reset, Reset 3D, jog step, and the XY table now really sync across
+  every connected client, in both directions** - real feedback from live
+  multi-client testing found none of them did. Root cause: `RobotDetail.tsx`'s
+  own Reset/HOME/HOME XY buttons, XY table sliders, and jog-step selector
+  all wrote through `updateRobot()` - an optimistic-local +
+  500ms-debounced-full-tree-save path that never broadcasts to any OTHER
+  connected client (a second STUDIO window, or the Android app's own
+  embedded 3D WebView), unlike `sendRobotCommand()`'s atomic, broadcasting
+  channel `handleXYZJog`/`handleJ1Jog` already used. Moved every one of
+  those onto `sendRobotCommand`, backed by two new HYDRA-UMC-SERVER
+  commands (`reset`, `reset3D`) and `absolute` support added to the
+  existing `jog` command (see that repo's own `[Unreleased]`).
+  `robot.jogStep`/`robot.reset3DTrigger` are new, optional `RobotState`
+  fields - "RESET 3D" (camera framing only, no real robot state) still
+  only remounts `VirtualKinematics` locally on every client, but the
+  trigger reaching that remount is now `reset3DTrigger`, broadcast the
+  same way, so a press on any client now reaches every other one too.
 - **RP1 temperature in the Overview footer** - shown next to the existing
   SoC temperature reading whenever `GET /api/system/metrics` reports a real
   `rp1_temp` (CM5/Pi 5 family only - hidden entirely, not a placeholder
