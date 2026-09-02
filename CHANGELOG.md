@@ -29,6 +29,19 @@ a change is actually worth summarizing for a human.
 
 ## Unreleased
 
+- **Supervisor panel scrolls now** - real feedback from live testing: this
+  panel's own ancestor (`Dashboard.tsx`'s main content area) is
+  `overflow-hidden` with no scroll container of its own, so the process
+  table (and, on a short viewport, the charts above it too) just got
+  silently clipped at the bottom with no way to reach the rest - it read
+  as a table cut off mid-row. Gave the panel its own `overflow-y-auto`
+  scrolling body under a fixed header, the same "fixed toolbar, scrolling
+  body" shape `EcosystemServices.tsx`'s own families list already used.
+- **Services panel: version number and Live/Running status split into two
+  separate frames** - they used to share one bordered badge; real feedback
+  was that stacking two different facts ("is it up" and "which build") in
+  one frame read as one fact at a glance. The health status keeps its own
+  color-coded frame, the version now gets its own neutral one right below.
 - **New Supervisor panel** (HYDRA-UMC menu, alongside Server Logs/Server
   Admin) - a real, Netdata-style live monitor of the CM5 this Server runs
   on: per-core CPU load + frequency, a real memory breakdown (used vs.

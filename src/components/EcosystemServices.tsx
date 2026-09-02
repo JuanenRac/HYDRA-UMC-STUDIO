@@ -122,19 +122,25 @@ const COLOR_DOT: Record<HealthColor, string> = {
   slate: 'fill-slate-600 text-slate-600',
 };
 
-// Real feedback from live testing: the version number (previously its own
-// small line at the bottom of the card, duplicating the port shown below
-// too) now lives inside this same badge, at roughly double the label's own
-// font size, directly under the Live/Running/Down/Stopped/N/A text - one
-// glance at the top-right corner of a card answers both "is it up" and
-// "which build".
+// Real feedback from live testing: the version number and the Live/
+// Running/Down/Stopped/N/A status used to share a single bordered badge -
+// two different facts ("is it up" and "which build") crammed into one
+// frame read as one fact at a glance. Split into two separate frames
+// instead: the health status keeps its own color-coded border, the
+// version gets its own neutral frame right below it.
 function StatusBadge({ color, label, version }: { color: HealthColor; label: string; version: string | null }) {
   return (
-    <div className={`flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-lg border shrink-0 ${COLOR_STYLE[color]}`}>
-      <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider whitespace-nowrap">
-        <Circle size={6} className={COLOR_DOT[color]} /> {label}
-      </span>
-      {version && <span className="text-lg font-black leading-none font-mono">v{version}</span>}
+    <div className="flex flex-col items-end gap-1 shrink-0">
+      <div className={`px-2.5 py-1.5 rounded-lg border ${COLOR_STYLE[color]}`}>
+        <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider whitespace-nowrap">
+          <Circle size={6} className={COLOR_DOT[color]} /> {label}
+        </span>
+      </div>
+      {version && (
+        <div className="px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800/60">
+          <span className="text-sm font-black leading-none font-mono text-slate-300">v{version}</span>
+        </div>
+      )}
     </div>
   );
 }

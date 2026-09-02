@@ -164,9 +164,9 @@ export function SystemSupervisor() {
   );
 
   return (
-    <div className="space-y-4 pb-8">
+    <div className="h-full flex flex-col gap-4">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 shrink-0">
         <h3 className="text-sm font-black text-cyan-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2">
           <Gauge size={16} /> {t('ecosystem.supervisor_title', 'System Supervisor')}
         </h3>
@@ -187,6 +187,15 @@ export function SystemSupervisor() {
         </div>
       </div>
 
+      {/* Scrolling body - this panel's own ancestor (Dashboard.tsx's main
+          content area) is `overflow-hidden`; without its own scroll
+          container here, the charts/process table below just got silently
+          clipped at the bottom of the viewport with no way to reach the
+          rest (real feedback: the process table appeared cut mid-row).
+          Only this region scrolls - the header above stays put, same
+          "fixed toolbar, scrolling body" shape as EcosystemServices.tsx's
+          own families list. */}
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4 pb-8">
       {/* Stat tiles */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <StatTile accent="cpu" icon={<Cpu size={13} />} label={t('ecosystem.supervisor_cpu', 'CPU')} value={`${snapshot.cpu.overallPercent.toFixed(0)}%`} sub={snapshot.cpu.model ? `${snapshot.cpu.coreCount} ${t('ecosystem.supervisor_cores', 'cores')}` : undefined} />
@@ -309,6 +318,7 @@ export function SystemSupervisor() {
           <div className="flex items-center justify-center h-full text-xs text-slate-600">{t('ecosystem.supervisor_processes_unavailable', '`ps` is unavailable on this host')}</div>
         )}
       </ChartCard>
+      </div>
     </div>
   );
 }
