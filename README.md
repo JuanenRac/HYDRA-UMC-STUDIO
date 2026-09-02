@@ -150,7 +150,14 @@ HYDRA-UMC-STUDIO/
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # System Configuration and About dialogs - standalone components
 │   │   │                       # reading the same global store, not inlined into the dashboard shell
+│   │   ├── ConfirmDialog.tsx    # Shared yes/no confirmation modal
 │   │   ├── AuthGate.tsx, UsersPanel.tsx  # Login screen and the Config > Users admin/operator account manager
+│   │   ├── AdminServer.tsx, AdminLogs.tsx, AdminClients.tsx  # Ecosystem menu: Server Admin, Server
+│   │   │                       # Logs, and Connected Apps panels
+│   │   ├── EcosystemServices.tsx, EcosystemTelemetry.tsx, AiFamilyStatus.tsx  # Ecosystem menu:
+│   │   │                       # Services, Telemetry, and AI Family status panels
+│   │   ├── SystemSupervisor.tsx  # Ecosystem menu: Netdata-style real-time CPU/memory/disk/temp/
+│   │   │                       # process supervisor, polling HYDRA-UMC-SERVER's GET /api/system/supervisor
 │   │   ├── RobotDetail.tsx      # Shared per-robot jog/trajectory/config implementation (the model
 │   │   │                       # picker lives here) - every robots/A*.tsx entry point below renders this
 │   │   ├── robots/A1.tsx .. A8.tsx  # Per-robot entry points - thin re-exports of RobotDetail.tsx, the
@@ -200,10 +207,24 @@ HYDRA-UMC-STUDIO/
 │   │   └── list/                # 26 canned example trajectories (circles, spirals, XY-table patterns, pick-and-place, ...)
 │   ├── lib/canOta.ts            # CAN-OTA simulation/protocol layer, GitHub firmware download
 │   ├── lib/apiBase.ts           # Backend URL resolution - relative+proxied in dev, VITE_API_BASE_URL in prod
-│   └── locales/                 # en/es/de/fr/it translation files (react-i18next)
-├── public/models/                # Real 3D mesh assets - one folder per robot (24 total),
-│                                  # each with its own ATTRIBUTION.txt - see the license table below
+│   └── locales/                 # en/es/de/fr/it/ja/zh translation files (react-i18next)
+├── public/
+│   ├── models/                  # Real 3D mesh assets - one folder per robot (24 total),
+│   │                             # each with its own ATTRIBUTION.txt - see the license table below
+│   ├── WORKS/                   # Example saved trajectories, one folder per robot
+│   ├── settings.json            # Seeded example settings for a fresh checkout
+│   └── favicon.svg, icons.svg   # App icon and shared icon sprite
 ├── images/                       # README banner
+├── tools/
+│   ├── build_test.py            # Non-versioning build/compile check
+│   ├── ci_validate.py           # Manifest/CHANGELOG/docs validation used by CI
+│   └── generate_portable_works.py  # Regenerates public/WORKS/'s example trajectories
+├── example_trajectory.json       # Standalone example trajectory (joint-angle sequence, sample data)
+├── metadata.json                 # App name/description (used by the hosting platform)
+├── bump_manifest_version.py      # Syncs hydra-umc.project.json's version to the native one (--sync)
+├── build.sh / build.bat          # Install deps + production build
+├── build-test.sh / build-test.bat  # Non-versioning build/compile check
+├── dev.sh / dev.bat              # Install deps + start the Vite dev server
 ├── .env.example                  # VITE_API_BASE_URL template - see src/lib/apiBase.ts
 ├── README.md                     # this file
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  # translations

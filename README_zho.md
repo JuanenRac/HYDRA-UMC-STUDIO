@@ -150,7 +150,14 @@ HYDRA-UMC-STUDIO/
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # 系统配置和关于对话框——读取同一全局存储的独立组件，
 │   │   │                       # 并未内联到仪表盘外壳中
+│   │   ├── ConfirmDialog.tsx    # 共享的是/否确认弹窗
 │   │   ├── AuthGate.tsx, UsersPanel.tsx  # 登录界面和 Config > Users 管理员/操作员账户管理器
+│   │   ├── AdminServer.tsx, AdminLogs.tsx, AdminClients.tsx  # 生态系统菜单：服务器管理、
+│   │   │                       # 服务器日志、已连接应用面板
+│   │   ├── EcosystemServices.tsx, EcosystemTelemetry.tsx, AiFamilyStatus.tsx  # 生态系统菜单：
+│   │   │                       # 服务、遥测、AI 家族状态面板
+│   │   ├── SystemSupervisor.tsx  # 生态系统菜单：Netdata 风格的 CPU/内存/磁盘/温度/进程实时
+│   │   │                       # 监控面板，轮询 HYDRA-UMC-SERVER 的 GET /api/system/supervisor
 │   │   ├── RobotDetail.tsx      # 共享的每机器人点动/轨迹/配置实现（型号选择器就在这里）——
 │   │   │                       # 下方每一个 robots/A*.tsx 入口点都渲染它
 │   │   ├── robots/A1.tsx .. A8.tsx  # 每机器人入口点——RobotDetail.tsx 的薄重导出，是在不触及
@@ -199,9 +206,23 @@ HYDRA-UMC-STUDIO/
 │   ├── lib/canOta.ts            # CAN-OTA 仿真/协议层，GitHub 固件下载
 │   ├── lib/apiBase.ts           # 后端 URL 解析——开发环境中相对路径+代理，生产环境使用 VITE_API_BASE_URL
 │   └── locales/                 # en/es/de/fr/it/zh/ja 翻译文件（react-i18next）
-├── public/models/                # 真实的 3D 网格资产——每个机器人一个文件夹（共 24 个），
-│                                  # 每个都有自己的 ATTRIBUTION.txt——见下方许可证表
+├── public/
+│   ├── models/                  # 真实的 3D 网格资产——每个机器人一个文件夹（共 24 个），
+│   │                             # 每个都有自己的 ATTRIBUTION.txt——见下方许可证表
+│   ├── WORKS/                   # 示例保存轨迹，每个机器人一个文件夹
+│   ├── settings.json            # 全新检出时预置的示例设置
+│   └── favicon.svg, icons.svg   # 应用图标与共享图标精灵图
 ├── images/                       # README 横幅
+├── tools/
+│   ├── build_test.py            # 不递增版本号的构建/编译检查
+│   ├── ci_validate.py           # CI 使用的 manifest/CHANGELOG/docs 校验
+│   └── generate_portable_works.py  # 重新生成 public/WORKS/ 的示例轨迹
+├── example_trajectory.json       # 独立的示例轨迹（关节角序列，示例数据）
+├── metadata.json                 # 应用名称/描述（由托管平台使用）
+├── bump_manifest_version.py      # 将 hydra-umc.project.json 的版本与原生版本同步（--sync）
+├── build.sh / build.bat          # 安装依赖 + 生产构建
+├── build-test.sh / build-test.bat  # 不递增版本号的构建/编译检查
+├── dev.sh / dev.bat              # 安装依赖 + 启动 Vite 开发服务器
 ├── .env.example                  # VITE_API_BASE_URL 模板——见 src/lib/apiBase.ts
 ├── README.md                     # 本文件
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  # 翻译

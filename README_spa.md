@@ -149,7 +149,14 @@ HYDRA-UMC-STUDIO/
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # Diálogos de Configuración del Sistema y Acerca de - componentes independientes
 │   │   │                       # que leen el mismo store global, no integrados en línea en el shell del dashboard
+│   │   ├── ConfirmDialog.tsx    # Modal compartido de confirmación sí/no
 │   │   ├── AuthGate.tsx, UsersPanel.tsx  # Pantalla de inicio de sesión y el gestor de cuentas admin/operator de Config > Users
+│   │   ├── AdminServer.tsx, AdminLogs.tsx, AdminClients.tsx  # Menú Ecosistema: paneles de
+│   │   │                       # Administración del Servidor, Logs del Servidor y Apps Conectadas
+│   │   ├── EcosystemServices.tsx, EcosystemTelemetry.tsx, AiFamilyStatus.tsx  # Menú Ecosistema:
+│   │   │                       # paneles de Servicios, Telemetría y Estado de la Familia IA
+│   │   ├── SystemSupervisor.tsx  # Menú Ecosistema: supervisor en tiempo real estilo Netdata de CPU/
+│   │   │                       # memoria/disco/temperatura/procesos, consultando GET /api/system/supervisor de HYDRA-UMC-SERVER
 │   │   ├── RobotDetail.tsx      # Implementación compartida de jog/trayectoria/config por robot (el selector
 │   │   │                       # de modelo vive aquí) - cada punto de entrada robots/A*.tsx de abajo renderiza esto
 │   │   ├── robots/A1.tsx .. A8.tsx  # Puntos de entrada por robot - reexportaciones delgadas de RobotDetail.tsx, el
@@ -199,10 +206,24 @@ HYDRA-UMC-STUDIO/
 │   │   └── list/                # 26 trayectorias de ejemplo predefinidas (círculos, espirales, patrones de mesa XY, pick-and-place, ...)
 │   ├── lib/canOta.ts            # Capa de simulación/protocolo CAN-OTA, descarga de firmware desde GitHub
 │   ├── lib/apiBase.ts           # Resolución de la URL del backend - relativa+proxeada en dev, VITE_API_BASE_URL en prod
-│   └── locales/                 # Archivos de traducción en/es/de/fr/it (react-i18next)
-├── public/models/                # Assets de malla 3D reales - una carpeta por robot (24 en total),
-│                                  # cada una con su propio ATTRIBUTION.txt - ver la tabla de licencias más abajo
+│   └── locales/                 # Archivos de traducción en/es/de/fr/it/ja/zh (react-i18next)
+├── public/
+│   ├── models/                  # Assets de malla 3D reales - una carpeta por robot (24 en total),
+│   │                             # cada una con su propio ATTRIBUTION.txt - ver la tabla de licencias más abajo
+│   ├── WORKS/                   # Trayectorias guardadas de ejemplo, una carpeta por robot
+│   ├── settings.json            # Settings de ejemplo pre-cargados para una copia nueva
+│   └── favicon.svg, icons.svg   # Icono de la app y sprite de iconos compartido
 ├── images/                       # Banner del README
+├── tools/
+│   ├── build_test.py            # Comprobación de build/compilación sin subir versión
+│   ├── ci_validate.py           # Validación de manifest/CHANGELOG/docs usada por la CI
+│   └── generate_portable_works.py  # Regenera las trayectorias de ejemplo de public/WORKS/
+├── example_trajectory.json       # Trayectoria de ejemplo independiente (secuencia de ángulos de junta, datos de muestra)
+├── metadata.json                 # Nombre/descripción de la app (usado por la plataforma de hosting)
+├── bump_manifest_version.py      # Sincroniza la versión de hydra-umc.project.json con la nativa (--sync)
+├── build.sh / build.bat          # Instala dependencias + build de producción
+├── build-test.sh / build-test.bat  # Comprobación de build/compilación sin subir versión
+├── dev.sh / dev.bat              # Instala dependencias + inicia el servidor de desarrollo de Vite
 ├── .env.example                  # Plantilla de VITE_API_BASE_URL - ver src/lib/apiBase.ts
 ├── README.md                     # este archivo (en inglés)
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  # traducciones

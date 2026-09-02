@@ -150,7 +150,14 @@ HYDRA-UMC-STUDIO/
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # システム設定と About ダイアログ——同じグローバルストアを読み取る
 │   │   │                       # 独立したコンポーネント、ダッシュボードシェルにはインライン化されていない
+│   │   ├── ConfirmDialog.tsx    # 共有の Yes/No 確認モーダル
 │   │   ├── AuthGate.tsx, UsersPanel.tsx  # ログイン画面と Config > Users の管理者/オペレーターアカウント管理
+│   │   ├── AdminServer.tsx, AdminLogs.tsx, AdminClients.tsx  # Ecosystem メニュー：サーバー管理、
+│   │   │                       # サーバーログ、接続アプリのパネル
+│   │   ├── EcosystemServices.tsx, EcosystemTelemetry.tsx, AiFamilyStatus.tsx  # Ecosystem メニュー：
+│   │   │                       # サービス、テレメトリ、AI ファミリー状態のパネル
+│   │   ├── SystemSupervisor.tsx  # Ecosystem メニュー：CPU/メモリ/ディスク/温度/プロセスの Netdata 風
+│   │   │                       # リアルタイムスーパーバイザー、HYDRA-UMC-SERVER の GET /api/system/supervisor をポーリング
 │   │   ├── RobotDetail.tsx      # 共有のロボットごとのジョグ／軌道／設定実装（モデルピッカーはここにある）——
 │   │   │                       # 下記の各 robots/A*.tsx エントリポイントはこれをレンダリングする
 │   │   ├── robots/A1.tsx .. A8.tsx  # ロボットごとのエントリポイント——RobotDetail.tsx の薄い再エクスポート、
@@ -200,9 +207,23 @@ HYDRA-UMC-STUDIO/
 │   ├── lib/canOta.ts            # CAN-OTA シミュレーション/プロトコル層、GitHub ファームウェアダウンロード
 │   ├── lib/apiBase.ts           # バックエンド URL の解決——開発環境では相対パス+プロキシ、本番環境では VITE_API_BASE_URL
 │   └── locales/                 # en/es/de/fr/it/zh/ja 翻訳ファイル（react-i18next）
-├── public/models/                # 実際の 3D メッシュアセット——ロボットごとに 1 フォルダ（計 24）、
-│                                  # それぞれ自身の ATTRIBUTION.txt を持つ——下記のライセンス表を参照
+├── public/
+│   ├── models/                  # 実際の 3D メッシュアセット——ロボットごとに 1 フォルダ（計 24）、
+│   │                             # それぞれ自身の ATTRIBUTION.txt を持つ——下記のライセンス表を参照
+│   ├── WORKS/                   # サンプル保存軌道、ロボットごとに 1 フォルダ
+│   ├── settings.json            # 新規チェックアウト用のサンプル設定
+│   └── favicon.svg, icons.svg   # アプリアイコンと共有アイコンスプライト
 ├── images/                       # README バナー
+├── tools/
+│   ├── build_test.py            # バージョンを更新しないビルド/コンパイル確認
+│   ├── ci_validate.py           # CI が使用する manifest/CHANGELOG/docs の検証
+│   └── generate_portable_works.py  # public/WORKS/ のサンプル軌道を再生成
+├── example_trajectory.json       # 独立したサンプル軌道（関節角シーケンス、サンプルデータ）
+├── metadata.json                 # アプリ名/説明（ホスティングプラットフォームが使用）
+├── bump_manifest_version.py      # hydra-umc.project.json のバージョンをネイティブ側と同期（--sync）
+├── build.sh / build.bat          # 依存関係のインストール + プロダクションビルド
+├── build-test.sh / build-test.bat  # バージョンを更新しないビルド/コンパイル確認
+├── dev.sh / dev.bat              # 依存関係のインストール + Vite 開発サーバーの起動
 ├── .env.example                  # VITE_API_BASE_URL テンプレート——src/lib/apiBase.ts を参照
 ├── README.md                     # 本ファイル
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  # 翻訳
