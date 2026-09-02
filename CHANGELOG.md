@@ -29,6 +29,25 @@ a change is actually worth summarizing for a human.
 
 ## Unreleased
 
+## [0.3.7] - Real per-project Start/Stop/Restart buttons; 4 new summary stat tiles
+
+- **Real Start/Stop/Restart buttons on each service card** (admin-only) -
+  real feedback from live testing. Calls HYDRA-UMC-SERVER's new
+  `POST /api/ecosystem/service/:unit/:action` (see that repo's own
+  `[0.3.7]`), only shown for a project that opted into
+  `service.systemd_unit` at all. Stop/Restart go through `ConfirmDialog`
+  first (non-blocking, unlike `window.confirm()` - this app keeps a live
+  WebSocket and a WebGL viewport running underneath every dialog); Start
+  fires immediately. Only the ONE card whose own action is in flight
+  disables/spins, not the whole panel; a failed action's error message
+  stays attached to that same card.
+- **4 new summary stat tiles** - Running/Stopped/Error/N/A counts,
+  alongside the existing Total/Live/Families - computed from the same
+  `healthColor()` the badges use, so the strip and every card can never
+  disagree about which bucket a project is in.
+- Updated the panel's own footer note, which still claimed start/stop
+  controls were "not built yet".
+
 ## [0.3.6] - Services badge: real green/red/amber health color, version moved inside it, duplicate port line removed
 
 - **The status badge's color didn't distinguish "stopped on purpose" from

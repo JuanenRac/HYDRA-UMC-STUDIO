@@ -17,16 +17,20 @@
 // long flat table - the whole point of scanning ~48 repos is to see the
 // ecosystem's own real shape, which a family grouping actually shows.
 //
-// Deliberately no start/stop controls here: no process supervisor exists
-// anywhere in the ecosystem today (confirmed against server.ts - the only
-// process-control route it has, POST /api/admin/restart, restarts the
-// Server itself, not a sibling repo). Adding real remote start/stop is a
-// separate, more sensitive piece of work, not a fake/disabled button.
+// Real per-project start/stop/restart (admin-only, matching this same
+// gate server-side) - POST /api/ecosystem/service/:unit/:action, only
+// ever reachable for a project whose manifest opts into
+// service.systemd_unit (see server.ts's own route comment for the real
+// security boundary: the unit is re-validated against a fresh scan, not
+// trusted from the client, and requires a real, narrowly-scoped polkit
+// rule installed on the host or the request answers a clean 503).
 // =============================================================================
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Boxes, RefreshCw, Search, Circle } from 'lucide-react';
+import { Boxes, Loader2, Play, RefreshCw, RotateCw, Search, Square, Circle } from 'lucide-react';
 import { apiUrl } from '../lib/apiBase';
+import { useHydraStore } from '../store';
+import { ConfirmDialog } from './ConfirmDialog';
 
 interface EcosystemProjectStatus {
   name: string;
@@ -137,6 +141,7 @@ function StatusBadge({ color, label, version }: { color: HealthColor; label: str
 
 export function EcosystemServices() {
   const { t } = useTranslation();
+  const { authToken, isAdmin } = useHydraStore();
   const [available, setAvailable] = useState<boolean | null>(null);
   const [projects, setProjects] = useState<EcosystemProjectStatus[]>([]);
   const [scannedAt, setScannedAt] = useState<string | null>(null);
@@ -144,6 +149,15 @@ export function EcosystemServices() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [familyFilter, setFamilyFilter] = useState<string | null>(null);
+  // Real feedback from live testing: which single card's own action is
+  // currently in flight (server round-trip), if any - only that one
+  // card's own 3 buttons disable/spin, not the whole panel. actionError
+  // is keyed by unit too, so a failed action's message stays attached to
+  // the right card instead of a single global banner nobody could tell
+  // which project it was actually about.
+  const [actioningUnit, setActioningUnit] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<{ unit: string; message: string } | null>(null);
+  const [confirming, setConfirming] = useState<{ unit: string; action: 'stop' | 'restart'; name: string } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -162,6 +176,41 @@ export function EcosystemServices() {
   }, [t]);
 
   useEffect(() => { load(); }, [load]); // eslint-disable-line -- real fetch on mount, not derived state
+
+  // Real POST to server.ts's own admin-gated route - see this file's own
+  // header comment for the real security boundary that route enforces
+  // server-side (never trusts `unit` from here beyond what a fresh scan
+  // itself already found). Re-runs `load()` on success so every card's
+  // pid/activeState/live reflects the real new state immediately instead
+  // of waiting for whatever poll interval a future version might add.
+  const runAction = useCallback(async (unit: string, action: 'start' | 'stop' | 'restart') => {
+    setActioningUnit(unit);
+    setActionError(null);
+    try {
+      const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+      const res = await fetch(apiUrl(`/api/ecosystem/service/${encodeURIComponent(unit)}/${action}`), {
+        method: 'POST', headers,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setActionError({ unit, message: data.error || `HTTP ${res.status}` });
+        return;
+      }
+      await load();
+    } catch {
+      setActionError({ unit, message: t('ecosystem.services_action_error') });
+    } finally {
+      setActioningUnit(null);
+    }
+  }, [authToken, load, t]);
+
+  const requestAction = (p: EcosystemProjectStatus, action: 'start' | 'stop' | 'restart') => {
+    if (action === 'stop' || action === 'restart') {
+      setConfirming({ unit: p.systemdUnit!, action, name: p.name });
+      return;
+    }
+    runAction(p.systemdUnit!, action);
+  };
 
   const families = useMemo(() => {
     const set = new Set<string>();
@@ -191,11 +240,17 @@ export function EcosystemServices() {
   const summary = useMemo(() => {
     const live = projects.filter(p => p.live === true).length;
     const withService = projects.filter(p => p.live !== null).length;
-    return { live, withService, total: projects.length };
+    // Same health() function the badges use, so this strip and every
+    // card's own badge can never disagree about which bucket a project is in.
+    const running = projects.filter(p => healthColor(p) === 'green').length;
+    const stopped = projects.filter(p => healthColor(p) === 'red').length;
+    const errored = projects.filter(p => healthColor(p) === 'amber').length;
+    const notApplicable = projects.filter(p => healthColor(p) === 'slate').length;
+    return { live, withService, total: projects.length, running, stopped, errored, notApplicable };
   }, [projects]);
 
   return (
-    <div className="h-full flex flex-col gap-6 animate-in fade-in duration-300">
+    <div className="relative h-full flex flex-col gap-6 animate-in fade-in duration-300">
       <div className="flex items-start justify-between gap-4 flex-wrap shrink-0">
         <div>
           <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><Boxes size={16} /> {t('ecosystem.services_title')}</h3>
@@ -227,6 +282,22 @@ export function EcosystemServices() {
             <div className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex-1 min-w-[110px]">
               <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{t('ecosystem.services_stat_families')}</div>
               <div className="text-2xl font-black text-sky-400 mt-0.5">{families.length}</div>
+            </div>
+            <div className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex-1 min-w-[110px]">
+              <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{t('ecosystem.services_stat_running')}</div>
+              <div className="text-2xl font-black text-emerald-400 mt-0.5">{summary.running}</div>
+            </div>
+            <div className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex-1 min-w-[110px]">
+              <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{t('ecosystem.services_stat_stopped')}</div>
+              <div className="text-2xl font-black text-rose-400 mt-0.5">{summary.stopped}</div>
+            </div>
+            <div className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex-1 min-w-[110px]">
+              <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{t('ecosystem.services_stat_error')}</div>
+              <div className="text-2xl font-black text-amber-400 mt-0.5">{summary.errored}</div>
+            </div>
+            <div className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex-1 min-w-[110px]">
+              <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{t('ecosystem.services_stat_na')}</div>
+              <div className="text-2xl font-black text-slate-400 mt-0.5">{summary.notApplicable}</div>
             </div>
           </div>
 
@@ -317,6 +388,54 @@ export function EcosystemServices() {
                           )}
                         </div>
                       )}
+                      {/* Real feedback from live testing: admin-only (this
+                          gate is cosmetic - server.ts's own requireAdmin is
+                          the real one), and only for a project that opted
+                          into service.systemd_unit at all - a project with
+                          neither can't be controlled through this route no
+                          matter what, so no buttons that could only ever
+                          404. Always shows all 3 rather than trying to
+                          predict which makes sense from the last-known
+                          state (systemd itself handles a redundant stop/
+                          start as a harmless no-op) - simpler and never
+                          wrong the instant a real state change lands
+                          between this render and the click landing. */}
+                      {isAdmin && p.systemdUnit && (
+                        <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-slate-800">
+                          {actioningUnit === p.systemdUnit ? (
+                            <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-slate-500">
+                              <Loader2 size={12} className="animate-spin" /> {t('ecosystem.services_action_pending')}
+                            </span>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => requestAction(p, 'start')}
+                                title={t('ecosystem.services_start')}
+                                className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 transition-colors"
+                              >
+                                <Play size={12} />
+                              </button>
+                              <button
+                                onClick={() => requestAction(p, 'stop')}
+                                title={t('ecosystem.services_stop')}
+                                className="flex items-center justify-center w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 transition-colors"
+                              >
+                                <Square size={12} />
+                              </button>
+                              <button
+                                onClick={() => requestAction(p, 'restart')}
+                                title={t('ecosystem.services_restart')}
+                                className="flex items-center justify-center w-7 h-7 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-400 transition-colors"
+                              >
+                                <RotateCw size={12} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                      {actionError && actionError.unit === p.systemdUnit && (
+                        <p className="text-[9px] text-rose-400 mt-2 leading-snug">{actionError.message}</p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -333,6 +452,21 @@ export function EcosystemServices() {
         <p className="max-w-2xl">{t('ecosystem.services_no_control_note')}</p>
         {scannedAt && <span className="font-mono shrink-0 ml-4">{t('ecosystem.services_scanned_at', { time: new Date(scannedAt).toLocaleTimeString() })}</span>}
       </div>
+
+      <ConfirmDialog
+        open={confirming !== null}
+        title={confirming?.action === 'stop' ? t('ecosystem.services_confirm_stop_title') : t('ecosystem.services_confirm_restart_title')}
+        message={confirming ? t(
+          confirming.action === 'stop' ? 'ecosystem.services_confirm_stop_message' : 'ecosystem.services_confirm_restart_message',
+          { name: confirming.name },
+        ) : ''}
+        confirmLabel={confirming?.action === 'stop' ? t('ecosystem.services_stop') : t('ecosystem.services_restart')}
+        onConfirm={() => {
+          if (confirming) runAction(confirming.unit, confirming.action);
+          setConfirming(null);
+        }}
+        onCancel={() => setConfirming(null)}
+      />
     </div>
   );
 }
