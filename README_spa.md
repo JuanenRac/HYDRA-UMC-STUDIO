@@ -99,7 +99,7 @@ Ambos pueden descargar releases de firmware reales directamente desde GitHub (ba
 
 ## 🎮 Soporte de Mando
 
-Integración de mandos USB y Bluetooth con mapeos personalizados por botón/por eje, para jogear robots y accesorios sin ratón/teclado.
+Integración de mandos USB y Bluetooth con mapeos personalizados por botón/por eje, para jogear robots y accesorios sin ratón/teclado. Las acciones en tiempo real (jog de articulaciones/mesa, E-STOP, START/STOP, velocidad de reproducción) disparan la misma vía atómica `sendRobotCommand()` que usan los botones de jog en el panel de detalle del robot, no el guardado de ajustes con debounce - ver `GamepadController.tsx`.
 
 ---
 

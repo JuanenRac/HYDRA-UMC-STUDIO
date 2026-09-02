@@ -98,7 +98,7 @@ Les deux peuvent télécharger de vraies versions de firmware directement depuis
 
 ## 🎮 Support Manette
 
-Intégration de manettes USB et Bluetooth avec mappages personnalisés par bouton/par axe, pour effectuer le jog des robots et accessoires sans souris/clavier.
+Intégration de manettes USB et Bluetooth avec mappages personnalisés par bouton/par axe, pour effectuer le jog des robots et accessoires sans souris/clavier. Les actions en temps réel (jog des articulations/de la table, E-STOP, START/STOP, vitesse de lecture) déclenchent la même voie atomique `sendRobotCommand()` que les boutons de jog du panneau de détail du robot, et non l'enregistrement des réglages avec debounce - voir `GamepadController.tsx`.
 
 ---
 

@@ -98,7 +98,7 @@ Beide können echte Firmware-Releases direkt von GitHub herunterladen (basierend
 
 ## 🎮 Gamepad-Unterstützung
 
-USB- und Bluetooth-Controller-Integration mit benutzerdefinierten Zuordnungen pro Taste/pro Achse, zum Joggen von Robotern und Zubehör ohne Maus/Tastatur.
+USB- und Bluetooth-Controller-Integration mit benutzerdefinierten Zuordnungen pro Taste/pro Achse, zum Joggen von Robotern und Zubehör ohne Maus/Tastatur. Echtzeitaktionen (Gelenk-/Tisch-Jog, E-STOP, START/STOP, Wiedergabegeschwindigkeit) lösen denselben atomaren `sendRobotCommand()`-Pfad aus, den auch die Jog-Schaltflächen im Roboter-Detailpanel verwenden, nicht das entprellte Speichern der Einstellungen - siehe `GamepadController.tsx`.
 
 ---
 
