@@ -29,6 +29,17 @@ a change is actually worth summarizing for a human.
 
 ## Unreleased
 
+- **New Supervisor panel** (HYDRA-UMC menu, alongside Server Logs/Server
+  Admin) - a real, Netdata-style live monitor of the CM5 this Server runs
+  on: per-core CPU load + frequency, a real memory breakdown (used vs.
+  cached/buffers, not just one coarse percentage), flash/eMMC usage, CPU
+  + RP1 temperature trends, and a live top-20 process table, all charted
+  in real time (recharts, polled every 2s against the new
+  `GET /api/system/supervisor` - see HYDRA-UMC-SERVER's own
+  `[Unreleased]`). A field this host genuinely cannot supply (this
+  dev machine's own Windows box has neither `/proc/meminfo` nor
+  per-core cpufreq) renders as an honest empty state, never a guessed
+  number.
 - **Reset, Reset 3D, jog step, and the XY table now really sync across
   every connected client, in both directions** - real feedback from live
   multi-client testing found none of them did. Root cause: `RobotDetail.tsx`'s
