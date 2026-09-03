@@ -118,7 +118,7 @@ a change is actually worth summarizing for a human.
 - **Config -> Camera Setup**: each of the 8 vision slots now has a real
   Source Type toggle (USB / IP Camera), matching
   `HYDRA-UMC-VISION-STREAMER`'s own real `CameraConfig(source_type=...)`
-  one-to-one (see that project's own CHANGELOG, 2026-09-03). USB mode is
+  one-to-one (see that project's own CHANGELOG). USB mode is
   unchanged (the existing Physical Hardware Source field, e.g.
   `/dev/video0`). IP mode adds real, generic RTSP fields - Host/IP
   Address, RTSP Port (defaults to 554, but a real camera on the local
@@ -133,7 +133,7 @@ a change is actually worth summarizing for a human.
   small USB/IP badge next to its ROBOT/LIVE badges, reflecting the same
   `sourceType` - purely informational, since the real live feed itself
   (`GET /api/camera/:id/stream`, real as of `HYDRA-UMC-SERVER`'s own
-  2026-09-03 CHANGELOG entry) already works identically regardless of
+  CHANGELOG entry) already works identically regardless of
   which real backend `mjpeg_server.py` opened.
 - New `source_type`/`source_usb`/`source_ip`/`ip_host`/`rtsp_port`/
   `rtsp_path`/`ip_username`/`ip_password`/`ip_camera_hint` keys (Config
