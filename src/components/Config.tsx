@@ -15,7 +15,7 @@ import {
   Settings, Plus, Trash2, AlertTriangle, Cpu, RefreshCw, Save, FolderOpen, Edit2, Wifi, Smartphone, Tablet,
   Wrench, CheckCircle2, XCircle, Bot, Printer, Watch, Search, Zap,
 } from 'lucide-react';
-import { useHydraStore, createDefaultRobots, createDefaultCameras, RTSP_DEFAULT_PORT } from '../store';
+import { useHydraStore, createDefaultRobots, createDefaultCameras, RTSP_DEFAULT_PORT, ipStreamLabels } from '../store';
 import { UsersPanel } from './UsersPanel';
 import { ConfirmDialog } from './ConfirmDialog';
 import { apiUrl } from '../lib/apiBase';
@@ -538,14 +538,54 @@ export function Config({ onClose }: { onClose: () => void }) {
                                 {t('config.discover_path', 'Discover Path')}
                               </button>
                             </div>
-                            <input
-                              value={c.rtspPath || ""}
-                              onChange={e => updateCamera(c.id, { rtspPath: e.target.value })}
-                              className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400 outline-none focus:border-emerald-500 transition-all"
-                              placeholder="/11"
-                            />
+                            {/* One real field per real stream this camera's
+                                own last discovery actually found - not a
+                                single field a 2nd/3rd real stream had
+                                nowhere to go. discoveredStreamPaths[0] is
+                                always the Main path; rtspPath (the field
+                                that actually drives the live capture -
+                                see server.ts's own cameraFingerprint())
+                                mirrors whichever index the Vision Center
+                                combobox currently has selected, so editing
+                                THAT one here also updates the live stream,
+                                same as before this real multi-path support
+                                existed. Editing any other index only
+                                updates its own stored path - it takes
+                                effect once that stream is actually
+                                selected in Vision Center. */}
+                            {(() => {
+                              const paths = c.discoveredStreamPaths && c.discoveredStreamPaths.length > 0 ? c.discoveredStreamPaths : [c.rtspPath || ''];
+                              const labels = ipStreamLabels(c.discoveredStreamPaths);
+                              const activeIndex = labels.indexOf(c.type as any);
+                              const updatePathAt = (index: number, value: string) => {
+                                const nextPaths = [...paths];
+                                nextPaths[index] = value;
+                                const isLegacySingle = paths.length <= 1;
+                                const isActive = isLegacySingle ? index === 0 : index === (activeIndex >= 0 ? activeIndex : 0);
+                                updateCamera(c.id, isActive ? { discoveredStreamPaths: nextPaths, rtspPath: value } : { discoveredStreamPaths: nextPaths });
+                              };
+                              return paths.map((path, i) => (
+                                <div key={i} className={i > 0 ? "pt-2" : undefined}>
+                                  {i > 0 && (
+                                    <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+                                      {labels[i] === 'IP Vision Camera Sub Stream'
+                                        ? t('cameras.ip_vision_sub', 'IP Vision Camera Sub Stream')
+                                        : labels[i]
+                                          ? t('cameras.ip_vision_sub_n', 'IP Vision Camera Sub Stream {{n}}', { n: i })
+                                          : `${t('config.rtsp_path')} ${i + 1}`}
+                                    </label>
+                                  )}
+                                  <input
+                                    value={path}
+                                    onChange={e => updatePathAt(i, e.target.value)}
+                                    className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400 outline-none focus:border-emerald-500 transition-all"
+                                    placeholder="/11"
+                                  />
+                                </div>
+                              ));
+                            })()}
                             {/* Never invents a path - real success fills
-                                the field above directly (still editable
+                                the field(s) above directly (still editable
                                 by hand after); a real, honest failure
                                 lists exactly which real paths were
                                 actually tried. */}

@@ -31,6 +31,33 @@ a change is actually worth summarizing for a human.
 
 (nothing yet)
 
+## [0.4.5]
+
+- **Fixed the real "picking a different stream always shows the same
+  image" bug, found via live user testing.** `GET /api/camera/:id/stream`
+  is a one-shot proxy (server.ts fetches the local capture process
+  exactly once, then pipes bytes) - when the Vision Center combobox
+  picks a different discovered stream, the server correctly restarts
+  capture against the new `rtspPath`, but that kills the old proxy's
+  own upstream connection, which ends the `<img>`'s response. A plain
+  `<img src="...">` with a constant URL never re-requests after that -
+  it just freezes on the last frame forever, so every stream selection
+  looked identical. `CamerasView.tsx`'s feed `<img>` is now keyed on
+  `rtspPath` (forces a real remount/reconnect on every stream switch)
+  with a real bounded retry-with-backoff on error (the very first
+  reconnect can genuinely land before the server finishes restarting
+  capture - a real, honest transient 502/503, not a permanent failure).
+- **Setup Camera now shows one real, editable path field per discovered
+  stream** - a camera whose last "Discover Path" run found 2 real
+  streams used to have nowhere to put the 2nd one; only the single
+  `rtspPath` field existed. `Config.tsx` now renders one field per
+  entry in `discoveredStreamPaths` (labelled Main/Sub/Sub N, reusing
+  `ipStreamLabels()`), each independently editable; editing the field
+  matching the CURRENTLY selected stream (Vision Center's own combobox)
+  also updates the live `rtspPath`, editing another just updates its
+  own stored path for when that stream gets selected later. A fresh
+  discovery still autofills every field it found.
+
 ## [0.4.4]
 
 - **Stopped is a real status now, not a red "error" badge** - the

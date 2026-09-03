@@ -28,6 +28,13 @@ export function CamerasView() {
   const { cameras, updateCamera, updateRobot } = useHydraStore();
   const { t } = useTranslation();
   const [fullScreenId, setFullScreenId] = useState<number | null>(null);
+  // Real retry counter per camera - see the <img> element's own comment
+  // for why a plain onError->hide isn't enough here: the very first
+  // reconnect attempt right after switching streams can genuinely land
+  // before the server has finished restarting the real capture process
+  // (a real, honest transient 503/502 while it does), and without this
+  // nothing would ever try again.
+  const [streamRetryNonce, setStreamRetryNonce] = useState<Record<number, number>>({});
   const [recordingIds, setRecordingIds] = useState<Set<number>>(new Set());
   const [connectingIds, setConnectingIds] = useState<Set<number>>(new Set());
   const [flashId, setFlashId] = useState<number | null>(null);
@@ -232,11 +239,45 @@ export function CamerasView() {
                           mjpeg_server.py running yet for this camera)
                           so the icon underneath shows through instead of
                           a broken-image glyph. */}
+                      {/* Real bug fixed here, found via live user feedback:
+                          GET /api/camera/:id/stream is a one-shot proxy
+                          (server.ts fetches the local capture process
+                          exactly once, then pipes bytes) - when the
+                          Vision Center combobox below picks a different
+                          discovered stream, the server correctly
+                          restarts capture against the new rtspPath, but
+                          that KILLS the old proxy's own upstream
+                          connection, which ends this <img>'s response.
+                          A plain <img src="..."> with a constant URL
+                          never re-requests after that - it just freezes
+                          on the last frame forever, so every stream
+                          selection looked identical. Keying on rtspPath
+                          (the field that actually drives which real
+                          stream this camera captures) forces React to
+                          unmount/remount the element - a genuinely new
+                          request - every time the selection changes. */}
                       <img
+                        key={`${c.rtspPath || c.hardwareSource || 'default'}-${streamRetryNonce[c.id] || 0}`}
                         src={apiUrl(`/api/camera/${c.id}/stream`)}
                         alt={`${c.type} camera feed`}
                         className="absolute inset-0 w-full h-full object-cover"
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.display = ''; }}
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                          // The very first reconnect right after a stream
+                          // switch can genuinely land before the server
+                          // finishes restarting real capture (a real,
+                          // honest transient 502/503 while it does) -
+                          // retry a few times with a real backoff instead
+                          // of giving up on the first miss. Capped so a
+                          // camera that's genuinely never coming up
+                          // (wrong credentials, unreachable host) doesn't
+                          // retry forever.
+                          const attempt = streamRetryNonce[c.id] || 0;
+                          if (attempt < 6) {
+                            setTimeout(() => setStreamRetryNonce(prev => ({ ...prev, [c.id]: (prev[c.id] || 0) + 1 })), 1500);
+                          }
+                        }}
                       />
                       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-900/10 via-transparent to-transparent opacity-50" />
                       
