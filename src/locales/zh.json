@@ -891,5 +891,10 @@
       "AXIS_3_NEG": "右摇杆上",
       "AXIS_3_POS": "右摇杆下"
     }
+  },
+  "errorBoundary": {
+    "title": "渲染此面板时出现错误。",
+    "hint": "通常刷新页面即可解决，尤其是在此服务器上刚更新过 HYDRA-UMC STUDIO 之后。",
+    "reload": "刷新"
   }
 }

@@ -891,5 +891,10 @@
       "AXIS_3_NEG": "Stick Derecho Arriba",
       "AXIS_3_POS": "Stick Derecho Abajo"
     }
+  },
+  "errorBoundary": {
+    "title": "Algo falló al renderizar este panel.",
+    "hint": "Normalmente se soluciona recargando la página, sobre todo justo después de actualizar HYDRA-UMC STUDIO en este servidor.",
+    "reload": "Recargar"
   }
 }

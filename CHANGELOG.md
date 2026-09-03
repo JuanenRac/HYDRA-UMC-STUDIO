@@ -86,6 +86,33 @@ a change is actually worth summarizing for a human.
   sole owner of the version, exactly as this file's own header already
   said.
 
+## [0.4.0]
+
+- **Real production crash fixed: "Vision Center" black screen after a
+  redeploy** - reported live on the CM5's own kiosk display right after
+  `0.3.9` went out. Root cause confirmed by reading the CM5's own live
+  `settings.json` (camera data itself was fine, ruling that out) and the
+  build output: every Dashboard.tsx panel (`CamerasView` included) is
+  `React.lazy()`-loaded from its own content-hashed chunk
+  (`CamerasView-<hash>.js`, `vite.config.ts`), and this app had **no**
+  error boundary anywhere. A browser tab left open across a redeploy (this
+  app's normal state on a kiosk screen - the mouse cursor stayed visible,
+  confirming the browser/OS itself was fine) still holds the OLD
+  `index.html`, which references the OLD chunk hashes - the redeploy just
+  overwrote those files with new hashes, so navigating to any not-yet-
+  visited panel 404s fetching its own chunk. With no error boundary, that
+  uncaught error unmounted the entire React tree - a blank page on this
+  app's own near-black background reads as a literal black screen. Two-part
+  real fix, not a workaround: `main.tsx` now listens for Vite's own
+  `vite:preloadError` event (emitted for exactly this case) and reloads
+  once automatically, so any user hitting this after a future deploy
+  self-heals without even noticing; a new `ErrorBoundary.tsx` (new
+  `errorBoundary.*` i18n keys, all 7 languages) now wraps the
+  `<Suspense>` panel area as a backstop for any OTHER render crash,
+  keyed by `activeTab` so switching away from a crashed panel actually
+  retries the next one instead of staying stuck on the fallback.
+- Build version synchronized with `hydra-umc.project.json` and the repository-native version source.
+
 ## [0.3.9] - Real IP (RTSP) camera support alongside USB, Config + Vision/Cameras
 
 - **Config -> Camera Setup**: each of the 8 vision slots now has a real

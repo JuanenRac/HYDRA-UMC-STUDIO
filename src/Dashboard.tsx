@@ -45,6 +45,7 @@ function PanelLoadingFallback() {
 import { HelpModal } from './components/HelpModal';
 import { About } from './components/About';
 import { Config } from './components/Config';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Lazy-loaded Panels
 const RobotDetail = React.lazy(() => import('./components/RobotDetail').then(m => ({ default: m.RobotDetail })));
@@ -300,6 +301,12 @@ export default function Dashboard() {
             "flex-1 flex flex-col overflow-hidden backdrop-blur-sm relative transition-all duration-300",
             hideUI ? "bg-black pt-0 px-0 pb-0" : "bg-slate-950/80 pt-0 px-0 pb-0"
         )}>
+          {/* key={activeTab}: an ErrorBoundary's own state (hasError) only
+              clears on remount, not on a props change - without this key,
+              switching away from a panel that crashed to any OTHER panel
+              would keep showing the stale fallback forever instead of
+              actually trying to render the newly-selected one. */}
+          <ErrorBoundary key={activeTab}>
           <React.Suspense fallback={<PanelLoadingFallback />}>
             <div className={cn("w-full h-full overflow-hidden flex flex-col", !hideUI && "pt-8 px-8 pb-4")}>
                {activeTab === 'overview' && !hideUI && <OverviewPanel />}
@@ -330,6 +337,7 @@ export default function Dashboard() {
                {activeTab === 'systemSupervisor' && <SystemSupervisor />}
             </div>
           </React.Suspense>
+          </ErrorBoundary>
         </main>
       </div>
 

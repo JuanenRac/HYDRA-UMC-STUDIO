@@ -891,5 +891,10 @@
       "AXIS_3_NEG": "Rechter Stick Hoch",
       "AXIS_3_POS": "Rechter Stick Runter"
     }
+  },
+  "errorBoundary": {
+    "title": "Beim Rendern dieses Panels ist ein Fehler aufgetreten.",
+    "hint": "Das behebt sich meist durch ein Neuladen der Seite - besonders kurz nachdem HYDRA-UMC STUDIO auf diesem Server aktualisiert wurde.",
+    "reload": "Neu laden"
   }
 }

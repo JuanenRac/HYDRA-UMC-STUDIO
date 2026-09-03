@@ -891,5 +891,10 @@
       "AXIS_3_NEG": "Right Stick Up",
       "AXIS_3_POS": "Right Stick Down"
     }
+  },
+  "errorBoundary": {
+    "title": "Something went wrong rendering this panel.",
+    "hint": "This usually clears up after a reload - especially right after HYDRA-UMC STUDIO itself was just updated on this server.",
+    "reload": "Reload"
   }
 }

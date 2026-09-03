@@ -891,5 +891,10 @@
       "AXIS_3_NEG": "Stick Droit en Haut",
       "AXIS_3_POS": "Stick Droit en Bas"
     }
+  },
+  "errorBoundary": {
+    "title": "Une erreur est survenue lors de l'affichage de ce panneau.",
+    "hint": "Cela se résout généralement en rechargeant la page, surtout juste après une mise à jour de HYDRA-UMC STUDIO sur ce serveur.",
+    "reload": "Recharger"
   }
 }

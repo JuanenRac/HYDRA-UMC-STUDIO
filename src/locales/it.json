@@ -891,5 +891,10 @@
       "AXIS_3_NEG": "Stick Destro Su",
       "AXIS_3_POS": "Stick Destro Giù"
     }
+  },
+  "errorBoundary": {
+    "title": "Si è verificato un errore durante il rendering di questo pannello.",
+    "hint": "Di solito si risolve ricaricando la pagina, soprattutto subito dopo un aggiornamento di HYDRA-UMC STUDIO su questo server.",
+    "reload": "Ricarica"
   }
 }
