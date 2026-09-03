@@ -86,6 +86,33 @@ a change is actually worth summarizing for a human.
   sole owner of the version, exactly as this file's own header already
   said.
 
+## [0.3.9] - Real IP (RTSP) camera support alongside USB, Config + Vision/Cameras
+
+- **Config -> Camera Setup**: each of the 8 vision slots now has a real
+  Source Type toggle (USB / IP Camera), matching
+  `HYDRA-UMC-VISION-STREAMER`'s own real `CameraConfig(source_type=...)`
+  one-to-one (see that project's own CHANGELOG, 2026-09-03). USB mode is
+  unchanged (the existing Physical Hardware Source field, e.g.
+  `/dev/video0`). IP mode adds real, generic RTSP fields - Host/IP
+  Address, RTSP Port (defaults to 554, but a real camera on the local
+  network answers on 8554 - confirmed, not hardcoded), RTSP Path,
+  Username, Password - deliberately not tied to any one camera brand:
+  any real IP camera that speaks RTSP plugs in here the same way. New
+  `CameraState.sourceType`/`ipHost`/`rtspPort`/`rtspPath`/`ipUsername`/
+  `ipPassword` fields (`store.tsx`), all optional so every existing saved
+  controller config keeps working unchanged (`sourceType` undefined
+  reads as `"usb"` everywhere it's checked).
+- **Vision / Cameras (`CamerasView.tsx`)**: each camera tile now shows a
+  small USB/IP badge next to its ROBOT/LIVE badges, reflecting the same
+  `sourceType` - purely informational, since the real live feed itself
+  (`GET /api/camera/:id/stream`, real as of `HYDRA-UMC-SERVER`'s own
+  2026-09-03 CHANGELOG entry) already works identically regardless of
+  which real backend `mjpeg_server.py` opened.
+- New `source_type`/`source_usb`/`source_ip`/`ip_host`/`rtsp_port`/
+  `rtsp_path`/`ip_username`/`ip_password`/`ip_camera_hint` keys (Config
+  namespace) and `source_usb`/`source_ip` (Cameras namespace) across all
+  7 languages. `tsc --noEmit`, `oxlint`, and `vite build` all pass.
+
 ## [0.3.8]
 
 - Build version synchronized with `hydra-umc.project.json` and the repository-native version source.

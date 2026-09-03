@@ -163,6 +163,15 @@
     "assigned_robot": "Assigned Robot",
     "none_floating": "None / Floating",
     "hardware_source": "Physical Hardware Source",
+    "source_type": "Source Type",
+    "source_usb": "USB",
+    "source_ip": "IP Camera",
+    "ip_host": "Host / IP Address",
+    "rtsp_port": "RTSP Port",
+    "rtsp_path": "RTSP Path",
+    "ip_username": "Username",
+    "ip_password": "Password",
+    "ip_camera_hint": "Generic RTSP camera - works with any real IP camera brand that speaks RTSP, not just one manufacturer.",
     "node_name": "Node Name",
     "visual_environment": "Visual Environment",
     "system_localization": "System Localization",
@@ -335,7 +344,9 @@
     "running_inference": "Running Inference...",
     "rec": "REC",
     "connecting": "CONNECTING...",
-    "no_signal": "NO SIGNAL"
+    "no_signal": "NO SIGNAL",
+    "source_usb": "USB",
+    "source_ip": "IP"
   },
   "modules": {
     "atc_title": "ATC Tool Changer",

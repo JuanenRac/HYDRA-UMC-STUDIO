@@ -163,6 +163,15 @@
     "assigned_robot": "Zugewiesener Roboter",
     "none_floating": "Keiner / Frei",
     "hardware_source": "Physische Hardware-Quelle",
+    "source_type": "Quellentyp",
+    "source_usb": "USB",
+    "source_ip": "IP-Kamera",
+    "ip_host": "Host / IP-Adresse",
+    "rtsp_port": "RTSP-Port",
+    "rtsp_path": "RTSP-Pfad",
+    "ip_username": "Benutzername",
+    "ip_password": "Passwort",
+    "ip_camera_hint": "Generische RTSP-Kamera - funktioniert mit jeder echten IP-Kamera-Marke, die RTSP spricht, nicht nur mit einem Hersteller.",
     "node_name": "Knotenname",
     "visual_environment": "Visuelle Umgebung",
     "system_localization": "Systemlokalisierung",
@@ -335,7 +344,9 @@
     "running_inference": "Inferenz läuft...",
     "rec": "AUFNAHME",
     "connecting": "VERBINDEN...",
-    "no_signal": "KEIN SIGNAL"
+    "no_signal": "KEIN SIGNAL",
+    "source_usb": "USB",
+    "source_ip": "IP"
   },
   "modules": {
     "atc_title": "ATC Werkzeugwechsler",

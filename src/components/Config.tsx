@@ -15,7 +15,7 @@ import {
   Settings, Plus, Trash2, AlertTriangle, Cpu, RefreshCw, Save, FolderOpen, Edit2, Wifi, Smartphone, Tablet,
   Wrench, CheckCircle2, XCircle, Bot, Printer, Watch,
 } from 'lucide-react';
-import { useHydraStore, createDefaultRobots, createDefaultCameras } from '../store';
+import { useHydraStore, createDefaultRobots, createDefaultCameras, RTSP_DEFAULT_PORT } from '../store';
 import { UsersPanel } from './UsersPanel';
 import { ConfirmDialog } from './ConfirmDialog';
 import { apiUrl } from '../lib/apiBase';
@@ -283,6 +283,28 @@ export function Config({ onClose }: { onClose: () => void }) {
                           </select>
                         </div>
                         <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('config.source_type')}</label>
+                          <div className="flex gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => updateCamera(c.id, { sourceType: 'usb' })}
+                              className={cn("flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors", (c.sourceType || 'usb') === 'usb' ? "bg-sky-500/20 text-sky-400 border border-sky-500/40" : "bg-slate-900 text-slate-500 border border-slate-800 hover:text-slate-300")}
+                            >
+                              {t('config.source_usb')}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => updateCamera(c.id, { sourceType: 'ip' })}
+                              className={cn("flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors", c.sourceType === 'ip' ? "bg-sky-500/20 text-sky-400 border border-sky-500/40" : "bg-slate-900 text-slate-500 border border-slate-800 hover:text-slate-300")}
+                            >
+                              {t('config.source_ip')}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {(c.sourceType || 'usb') === 'usb' ? (
+                        <div className="space-y-1">
                           <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('config.hardware_source')}</label>
                           <input
                             value={c.hardwareSource || ""}
@@ -291,7 +313,70 @@ export function Config({ onClose }: { onClose: () => void }) {
                             placeholder="/dev/video0"
                           />
                         </div>
-                      </div>
+                      ) : (
+                        // Real, generic RTSP fields - not tied to any one camera brand.
+                        // Any real IP camera that speaks RTSP (the vast majority of
+                        // them) plugs in here the same way: host/port/path plus
+                        // optional credentials, matching HYDRA-UMC-VISION-STREAMER's
+                        // own CameraConfig(source_type="ip") one-to-one (see that
+                        // project's own config.py for the real field-by-field
+                        // reasoning, including why rtsp_port defaults to 554 but a
+                        // real camera answering on a different port - confirmed
+                        // real for one on this network, port 8554 - must be
+                        // explicitly settable, not hardcoded).
+                        <div className="space-y-3 p-3 bg-slate-900/60 border border-slate-800 rounded-lg">
+                          <p className="text-[9px] text-slate-500 leading-relaxed">{t('config.ip_camera_hint')}</p>
+                          <div className="grid grid-cols-3 gap-3">
+                            <div className="col-span-2 space-y-1">
+                              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('config.ip_host')}</label>
+                              <input
+                                value={c.ipHost || ""}
+                                onChange={e => updateCamera(c.id, { ipHost: e.target.value })}
+                                className={cn("w-full bg-slate-950 border rounded-lg p-2 text-xs font-mono outline-none transition-all", hasSourceConflict ? "border-rose-500 text-rose-400" : "border-slate-800 text-emerald-400 focus:border-emerald-500")}
+                                placeholder="192.168.0.210"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('config.rtsp_port')}</label>
+                              <input
+                                type="number"
+                                value={c.rtspPort ?? RTSP_DEFAULT_PORT}
+                                onChange={e => updateCamera(c.id, { rtspPort: parseInt(e.target.value) || RTSP_DEFAULT_PORT })}
+                                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400 outline-none focus:border-emerald-500 transition-all"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('config.rtsp_path')}</label>
+                            <input
+                              value={c.rtspPath || ""}
+                              onChange={e => updateCamera(c.id, { rtspPath: e.target.value })}
+                              className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400 outline-none focus:border-emerald-500 transition-all"
+                              placeholder="/11"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('config.ip_username')}</label>
+                              <input
+                                value={c.ipUsername || ""}
+                                onChange={e => updateCamera(c.id, { ipUsername: e.target.value })}
+                                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs font-mono text-slate-200 outline-none focus:border-sky-500 transition-all"
+                                placeholder="admin"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('config.ip_password')}</label>
+                              <input
+                                type="password"
+                                value={c.ipPassword || ""}
+                                onChange={e => updateCamera(c.id, { ipPassword: e.target.value })}
+                                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs font-mono text-slate-200 outline-none focus:border-sky-500 transition-all"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )})}
                 </div>

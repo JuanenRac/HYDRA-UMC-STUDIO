@@ -163,6 +163,15 @@
     "assigned_robot": "割り当て済みロボット",
     "none_floating": "なし／フローティング",
     "hardware_source": "物理ハードウェアソース",
+    "source_type": "ソースタイプ",
+    "source_usb": "USB",
+    "source_ip": "IPカメラ",
+    "ip_host": "ホスト / IPアドレス",
+    "rtsp_port": "RTSPポート",
+    "rtsp_path": "RTSPパス",
+    "ip_username": "ユーザー名",
+    "ip_password": "パスワード",
+    "ip_camera_hint": "汎用RTSPカメラ - 特定のメーカーに限らず、RTSPに対応する実際のIPカメラであれば動作します。",
     "node_name": "ノード名",
     "visual_environment": "視覚環境",
     "system_localization": "システムローカライゼーション",
@@ -335,7 +344,9 @@
     "running_inference": "推論実行中…",
     "rec": "REC",
     "connecting": "接続中…",
-    "no_signal": "信号なし"
+    "no_signal": "信号なし",
+    "source_usb": "USB",
+    "source_ip": "IP"
   },
   "modules": {
     "atc_title": "ATC 自動工具交換装置",

@@ -118,6 +118,16 @@ export function CamerasView() {
                     {c.assignedRobotId && (
                       <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-sky-500/20 text-sky-400 border border-sky-500/30">ROBOT A{c.assignedRobotId}</span>
                     )}
+                    {/* Purely informational - which real backend this
+                        camera's own stream comes from (Config.tsx's own
+                        source-type toggle), not something this view can
+                        change itself. Same real proxy endpoint below
+                        either way - HYDRA-UMC-SERVER's own
+                        GET /api/camera/:id/stream doesn't care which
+                        backend mjpeg_server.py opened. */}
+                    <span className={cn("px-1.5 py-0.5 rounded text-[8px] font-black border", c.sourceType === 'ip' ? "bg-violet-500/20 text-violet-400 border-violet-500/30" : "bg-slate-800 text-slate-400 border-slate-700")}>
+                      {c.sourceType === 'ip' ? t('cameras.source_ip', 'IP') : t('cameras.source_usb', 'USB')}
+                    </span>
                     {c.connected && (
                       <span className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{t('cameras.live', 'LIVE')}</span>
                     )}

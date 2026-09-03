@@ -163,6 +163,15 @@
     "assigned_robot": "已分配机器人",
     "none_floating": "无／浮动",
     "hardware_source": "物理硬件来源",
+    "source_type": "来源类型",
+    "source_usb": "USB",
+    "source_ip": "IP 摄像头",
+    "ip_host": "主机 / IP 地址",
+    "rtsp_port": "RTSP 端口",
+    "rtsp_path": "RTSP 路径",
+    "ip_username": "用户名",
+    "ip_password": "密码",
+    "ip_camera_hint": "通用 RTSP 摄像头 - 适用于任何支持 RTSP 的真实 IP 摄像头品牌,不局限于单一厂商。",
     "node_name": "节点名称",
     "visual_environment": "视觉环境",
     "system_localization": "系统本地化",
@@ -335,7 +344,9 @@
     "running_inference": "正在推理…",
     "rec": "录制",
     "connecting": "连接中…",
-    "no_signal": "无信号"
+    "no_signal": "无信号",
+    "source_usb": "USB",
+    "source_ip": "IP"
   },
   "modules": {
     "atc_title": "ATC 换刀装置",

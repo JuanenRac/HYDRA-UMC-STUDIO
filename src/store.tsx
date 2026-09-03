@@ -325,16 +325,41 @@ export interface RobotState {
 /** Type definition representing  camera type configurations or states. */
 export type CameraType = 'USB Vision Camera' | 'Thermal (MLX90640)' | 'Thermal (MLX90641)' | 'Thermal (MLX90642)';
 
+/** Where this camera's own real frames actually come from - matches
+ * HYDRA-UMC-VISION-STREAMER's own CameraConfig.source_type (config.py),
+ * the real thing that decides which real backend `stream serve` opens
+ * (a local V4L2 device vs a real RTSP connection). Defaults to "usb" so
+ * every camera entry saved before this field existed keeps working
+ * unchanged (undefined reads the same as "usb" everywhere this is
+ * checked). */
+export type CameraSourceType = 'usb' | 'ip';
+
 /** Defines the data structure and expected properties for  camera state entities. */
 export interface CameraState {
   id: number;
   connected: boolean;
   type: CameraType;
   assignedRobotId?: number;
+  sourceType?: CameraSourceType;
+  // USB (sourceType === 'usb', the default): a real V4L2 device path or
+  // index, e.g. "/dev/video0" - VISION-STREAMER's own CameraConfig.device.
   hardwareSource?: string;
+  // IP (sourceType === 'ip'): a real RTSP camera's own connection
+  // details - VISION-STREAMER's own CameraConfig host/rtspPort/rtspPath/
+  // username/password fields, camelCased. rtspPort defaults to 554 on
+  // the read side (see RTSP_DEFAULT_PORT below) the same way
+  // VISION-STREAMER's own config.py does, so an entry that never set it
+  // explicitly still means the real RTSP default, not port 0.
+  ipHost?: string;
+  rtspPort?: number;
+  rtspPath?: string;
+  ipUsername?: string;
+  ipPassword?: string;
   yoloEnabled: boolean;
   detections: { label: string; confidence: number; box: { x: number; y: number; w: number; h: number } }[];
 }
+
+export const RTSP_DEFAULT_PORT = 554;
 
 /** Defines the data structure and expected properties for  hydra controller entities. */
 export interface HydraController {
