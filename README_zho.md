@@ -120,6 +120,10 @@
 
 两个独立的对话框，均可从头部（`Config`/`About` 按钮）访问：**About** 显示当前运行的应用版本（实时读取自 `GET /api/hydra-info`）、作者和许可证；**Config** 涵盖服务器身份、控制器/节点管理、界面主题 + 语言、机器人重命名、摄像头↔机器人映射（含冲突检测）、自定义 URDF 库、第三方软件集成（OpenPnP/CNC/激光后端）、逐客户端远程访问（SUITE/安卓/iOS 各自独立的开关）、用户账户、每个机器人的工作目录、CAN-OTA 传输，以及手柄映射——每一项都是自己的选项卡。两者都是各自独立的组件（`src/components/About.tsx`、`src/components/Config.tsx`），并未内联到主仪表盘外壳中。
 
+## 🛡️ 可靠性
+
+本应用为自身抵御两类不同的运行时故障，二者都源自一次真实的生产事故（一次重新部署后信息亭屏幕变黑）。`src/main.tsx` 监听 Vite 自身的 `vite:preloadError` 事件——当一个跨越重新部署仍保持打开的浏览器标签页，尝试获取一个通过 `React.lazy()` 加载的面板代码块（`Dashboard.tsx` 中的每个面板，按 `vite.config.ts` 做了内容哈希）、而该代码块在其旧哈希下已不复存在时触发——并自动重新加载一次页面，使长期运行的信息亭标签页或过期的后台标签页在无人察觉的情况下自我修复。一个 `sessionStorage` 保护机制可防止在代码块因其他原因确实缺失时陷入无限重载循环。另外，`src/components/ErrorBoundary.tsx` 包裹了 `<Suspense>` 面板区域，作为其他任何渲染崩溃的后备方案；它按当前活动标签页进行索引，因此切换离开一个已崩溃的面板会真正重试下一个面板，而不会让整个仪表盘卡在回退画面上。
+
 ## 🔐 账户与访问
 
 每个后端在自身首次启动时都会预置一个账户——用户名 `admin`，密码 `admin`——一旦服务器可从完全受信任的局域网之外访问，请立即从 **Config > Users** 修改它。同一个选项卡还允许管理员账户创建额外的**操作员**账户：操作员可以登录、查看实时状态并驱动机器人（点动/播放/暂停/停止/工具/阀门/泵/速度），但不能覆盖全局设置或管理其他账户。仅仅四处浏览并不需要任何账户——登录界面自身的“以只读方式继续”会直接跳转到仪表盘,写入功能被禁用。完整契约（角色、令牌、`/api/users` 路由）记录于 [HYDRA-UMC-SERVER 自身的 `docs/REMOTE_API.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md) 第 2a/2b 节。
@@ -150,6 +154,7 @@ HYDRA-UMC-STUDIO/
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # 系统配置和关于对话框——读取同一全局存储的独立组件，
 │   │   │                       # 并未内联到仪表盘外壳中
+│   │   ├── ErrorBoundary.tsx    # 任何面板渲染崩溃的后备方案 - 按当前活动标签页索引，参见 🛡️ 可靠性
 │   │   ├── ConfirmDialog.tsx    # 共享的是/否确认弹窗
 │   │   ├── AuthGate.tsx, UsersPanel.tsx  # 登录界面和 Config > Users 管理员/操作员账户管理器
 │   │   ├── AdminServer.tsx, AdminLogs.tsx, AdminClients.tsx  # 生态系统菜单：服务器管理、
