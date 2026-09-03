@@ -29,6 +29,32 @@ a change is actually worth summarizing for a human.
 
 ## Unreleased
 
+(nothing yet)
+
+## [0.4.3]
+
+- **Real multi-stream RTSP support - the type combobox now reflects
+  how many streams a camera ACTUALLY has, not a fixed Main/Sub pair.**
+  A real IP camera on this ecosystem's own network can expose 1, 2, or
+  more real RTSP streams at once (`HYDRA-UMC-SERVER`'s own
+  `discoverRtspPath()` used to stop at the first match - see that
+  repo's own CHANGELOG). New `store.tsx`'s `ipStreamLabels()` derives
+  the real option list from a camera's own `discoveredStreamPaths`
+  (every path the last real "Discover Path" run found, not just the
+  first): 1 stream -> "Main" only, 2 -> "Main"/"Sub", 3+ -> "Main"/
+  "Sub Stream 1"/"Sub Stream 2"/... `CamerasView.tsx`'s own Vision
+  Center combobox now builds its IP options from this instead of a
+  hardcoded pair - and picking a different one there is a REAL behavior
+  change, not just a label: it re-points that camera's own `rtspPath`
+  at the corresponding discovered stream, which the server's own
+  process supervisor picks up and respawns the real capture for. A
+  fresh "Discover Path" run in Config.tsx now records the FULL found
+  list (`discoveredStreamPaths`) and resets the selection to Main by
+  default. New `cameras.ip_vision_sub_n` i18n key × 7 languages
+  (807/807 parity verified).
+
+## [0.4.2]
+
 - **Camera config UI: real Discover Path/Discover USB Devices buttons,
   live stream status, and an Apply Now action** - the client half of
   HYDRA-UMC-SERVER's new real per-camera process supervisor (see that

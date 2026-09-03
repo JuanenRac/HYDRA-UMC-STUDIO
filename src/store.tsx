@@ -323,16 +323,50 @@ export interface RobotState {
 }
 
 /** Type definition representing  camera type configurations or states.
- * The 2 "IP Vision Camera ... Stream" values exist because a real IP
- * camera often exposes 2 real streams at once (this ecosystem's own
- * Hipcam cameras: /11 main 2560x1920, /12 sub 800x600 - see
- * HYDRA-UMC-VISION-STREAMER's own ATTRIBUTION notes) - a camera slot
- * pointed at the sub stream needs its own distinct label from one
- * pointed at the main stream of the same physical camera, not both
- * showing as a generic "IP camera". Purely a label (like the USB/
- * Thermal values already were) - which real stream a slot actually
+ * The "IP Vision Camera ... Stream" values exist because a real IP
+ * camera often exposes more than one real stream at once (this
+ * ecosystem's own Hipcam cameras: /11 main 2560x1920, /12 sub 800x600 -
+ * see HYDRA-UMC-VISION-STREAMER's own ATTRIBUTION notes) - a camera
+ * slot pointed at one stream needs its own distinct label from one
+ * pointed at another stream of the same physical camera, not all
+ * showing as a generic "IP camera". The plain "...Sub Stream" template-
+ * literal member covers exactly-2-streams cameras (the only real case
+ * this ecosystem has confirmed so far); "...Sub Stream ${number}"
+ * covers a camera that turns out to expose 3 or more (see
+ * ipStreamLabels() below for exactly how many/which labels a given
+ * camera actually gets - never a fixed pair). Purely a label (like the
+ * USB/Thermal values already were) - which real stream a slot actually
  * captures is still entirely controlled by its own rtspPath field. */
-export type CameraType = 'USB Vision Camera' | 'IP Vision Camera Main Stream' | 'IP Vision Camera Sub Stream' | 'Thermal (MLX90640)' | 'Thermal (MLX90641)' | 'Thermal (MLX90642)';
+export type CameraType =
+  | 'USB Vision Camera'
+  | 'IP Vision Camera Main Stream'
+  | 'IP Vision Camera Sub Stream'
+  | `IP Vision Camera Sub Stream ${number}`
+  | 'Thermal (MLX90640)'
+  | 'Thermal (MLX90641)'
+  | 'Thermal (MLX90642)';
+
+/** Real label set for an IP camera's own stream picker, derived from
+ * how many real RTSP streams `discoverRtspPath()` actually found for
+ * THIS camera (`discoveredStreamPaths`, server.ts's own
+ * `RtspDescribeResult.paths` persisted client-side) - never a fixed
+ * Main/Sub pair, since a real camera on this ecosystem's own network
+ * can expose 1, 2, or more real streams at once. No discovery run yet
+ * (undefined/empty) reads the same as "1 stream, unconfirmed" - the
+ * only honest default when nothing's actually been probed. Exactly 2
+ * streams keeps the plain "Sub Stream" label (matches this ecosystem's
+ * own real Hipcam units, which only ever have the one real sub stream);
+ * 3 or more numbers every stream after the first ("Sub Stream 1", "Sub
+ * Stream 2", ...) so each one stays individually selectable. */
+export const ipStreamLabels = (paths: string[] | undefined): CameraType[] => {
+  const count = paths && paths.length > 0 ? paths.length : 1;
+  if (count <= 1) return ['IP Vision Camera Main Stream'];
+  if (count === 2) return ['IP Vision Camera Main Stream', 'IP Vision Camera Sub Stream'];
+  return [
+    'IP Vision Camera Main Stream',
+    ...Array.from({ length: count - 1 }, (_, i) => `IP Vision Camera Sub Stream ${i + 1}` as CameraType),
+  ];
+};
 
 /** Where this camera's own real frames actually come from - matches
  * HYDRA-UMC-VISION-STREAMER's own CameraConfig.source_type (config.py),
@@ -364,6 +398,13 @@ export interface CameraState {
   rtspPath?: string;
   ipUsername?: string;
   ipPassword?: string;
+  // Every real RTSP path the last "Discover Path" run actually found
+  // for THIS camera (server.ts's own discoverRtspPath()'s full
+  // `paths` list, not just the first) - drives ipStreamLabels() above,
+  // so the type combobox only ever offers as many Main/Sub/Sub N
+  // options as this camera genuinely has real streams for. Undefined
+  // until discovery has actually been run at least once.
+  discoveredStreamPaths?: string[];
   yoloEnabled: boolean;
   detections: { label: string; confidence: number; box: { x: number; y: number; w: number; h: number } }[];
 }

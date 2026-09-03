@@ -121,9 +121,16 @@ export function Config({ onClose }: { onClose: () => void }) {
         method: 'POST', headers, body: JSON.stringify({ host, port, username, password }),
       });
       const body = await res.json();
-      if (res.ok && body.ok) {
-        updateCamera(cameraId, { rtspPath: body.path });
-        setRtspDiscoverStates((prev) => ({ ...prev, [cameraId]: { phase: 'found', message: body.path } }));
+      const foundPaths: string[] = Array.isArray(body.paths) ? body.paths : [];
+      if (res.ok && body.ok && foundPaths.length > 0) {
+        // Real streams found - never just the one: a camera here can
+        // genuinely expose more than one at once (see ipStreamLabels()'s
+        // own header comment). Default the slot to the first/main one;
+        // the type combobox's own options now reflect exactly how many
+        // were actually found, and picking a different one there is
+        // what re-points rtspPath at the rest.
+        updateCamera(cameraId, { rtspPath: foundPaths[0], discoveredStreamPaths: foundPaths, type: 'IP Vision Camera Main Stream' });
+        setRtspDiscoverStates((prev) => ({ ...prev, [cameraId]: { phase: 'found', message: foundPaths.join(', ') } }));
       } else {
         setRtspDiscoverStates((prev) => ({ ...prev, [cameraId]: { phase: 'not-found', message: (body.triedPaths || []).join(', ') } }));
       }

@@ -351,6 +351,7 @@
     "usb_vision": "Caméra de Vision USB",
     "ip_vision_main": "Caméra de Vision IP - Flux Principal",
     "ip_vision_sub": "Caméra de Vision IP - Flux Secondaire",
+    "ip_vision_sub_n": "Caméra de Vision IP - Flux Secondaire {{n}}",
     "thermal_mlx90640": "Thermique (MLX90640)",
     "thermal_mlx90641": "Thermique (MLX90641)",
     "thermal_mlx90642": "Thermique (MLX90642)",

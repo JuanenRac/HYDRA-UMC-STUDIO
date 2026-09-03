@@ -351,6 +351,7 @@
     "usb_vision": "USB Vision Camera",
     "ip_vision_main": "IP Vision Camera Main Stream",
     "ip_vision_sub": "IP Vision Camera Sub Stream",
+    "ip_vision_sub_n": "IP Vision Camera Sub Stream {{n}}",
     "thermal_mlx90640": "Thermal (MLX90640)",
     "thermal_mlx90641": "Thermal (MLX90641)",
     "thermal_mlx90642": "Thermal (MLX90642)",

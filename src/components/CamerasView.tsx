@@ -5,7 +5,7 @@
 // =============================================================================
 
 import { useState } from 'react';
-import { useHydraStore } from '../store';
+import { useHydraStore, ipStreamLabels } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { useTranslation } from 'react-i18next';
 import { Video, Maximize2, Minimize2, Camera as CameraIcon, Power, ScanLine, CircleDot, RefreshCw } from 'lucide-react';
@@ -164,23 +164,46 @@ export function CamerasView() {
                 <div className="w-full">
                   <select
                     value={c.type}
-                    onChange={(e) => updateCamera(c.id, { type: e.target.value as any })}
+                    onChange={(e) => {
+                      const label = e.target.value;
+                      if (c.sourceType === 'ip') {
+                        // Real behavior, not just a label change: picking
+                        // a different discovered stream here re-points
+                        // rtspPath at that real stream's own path, so
+                        // this actually switches what Vision Center shows
+                        // - the server's own camera-process supervisor
+                        // (reconcileCameraProcesses) respawns the real
+                        // capture the moment this saves, since rtspPath
+                        // is part of its fingerprint.
+                        const labels = ipStreamLabels(c.discoveredStreamPaths);
+                        const idx = labels.indexOf(label as any);
+                        const path = idx >= 0 ? c.discoveredStreamPaths?.[idx] : undefined;
+                        updateCamera(c.id, path ? { type: label as any, rtspPath: path } : { type: label as any });
+                      } else {
+                        updateCamera(c.id, { type: label as any });
+                      }
+                    }}
                     className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[10px] text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all"
                   >
-                    {/* USB vs. the 2 real streams a single IP camera can
-                        offer at once (this ecosystem's own Hipcam
-                        cameras: /11 main, /12 sub - see
-                        HYDRA-UMC-VISION-STREAMER's own ATTRIBUTION
-                        notes) are mutually exclusive with each other,
-                        matching c.sourceType - Thermal stays offered
-                        regardless (real hardware type, not tied to
-                        sourceType) until those sensors get real
+                    {/* USB vs. as many real streams as the last real
+                        "Discover Path" run actually found for THIS
+                        camera (ipStreamLabels() - never a fixed pair;
+                        this ecosystem's own real cameras can expose 1,
+                        2, or more) are mutually exclusive with each
+                        other, matching c.sourceType - Thermal stays
+                        offered regardless (real hardware type, not tied
+                        to sourceType) until those sensors get real
                         functionality. */}
                     {c.sourceType === 'ip' ? (
-                      <>
-                        <option value="IP Vision Camera Main Stream">{t('cameras.ip_vision_main', 'IP Vision Camera Main Stream')}</option>
-                        <option value="IP Vision Camera Sub Stream">{t('cameras.ip_vision_sub', 'IP Vision Camera Sub Stream')}</option>
-                      </>
+                      ipStreamLabels(c.discoveredStreamPaths).map((label, i) => (
+                        <option key={label} value={label}>
+                          {label === 'IP Vision Camera Main Stream'
+                            ? t('cameras.ip_vision_main', 'IP Vision Camera Main Stream')
+                            : label === 'IP Vision Camera Sub Stream'
+                              ? t('cameras.ip_vision_sub', 'IP Vision Camera Sub Stream')
+                              : t('cameras.ip_vision_sub_n', 'IP Vision Camera Sub Stream {{n}}', { n: i })}
+                        </option>
+                      ))
                     ) : (
                       <option value="USB Vision Camera">{t('cameras.usb_vision', 'USB Vision Camera')}</option>
                     )}
