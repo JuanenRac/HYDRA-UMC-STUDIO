@@ -86,6 +86,10 @@ a change is actually worth summarizing for a human.
   sole owner of the version, exactly as this file's own header already
   said.
 
+## [0.3.8]
+
+- Build version synchronized with `hydra-umc.project.json` and the repository-native version source.
+
 ## [0.3.7] - Real per-project Start/Stop/Restart buttons; 4 new summary stat tiles
 
 - **Real Start/Stop/Restart buttons on each service card** (admin-only) -
