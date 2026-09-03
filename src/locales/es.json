@@ -183,6 +183,7 @@
     "stream_running": "Transmisión en vivo",
     "stream_starting": "Iniciando…",
     "stream_error": "Error de transmisión",
+    "stream_stopped": "Detenida",
     "node_name": "Nombre del Nodo",
     "visual_environment": "Entorno Visual",
     "system_localization": "Localización del Sistema",

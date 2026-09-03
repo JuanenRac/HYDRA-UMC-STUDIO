@@ -183,6 +183,7 @@
     "stream_running": "Flusso in diretta",
     "stream_starting": "Avvio…",
     "stream_error": "Errore di flusso",
+    "stream_stopped": "Fermata",
     "node_name": "Nome del Nodo",
     "visual_environment": "Ambiente Visivo",
     "system_localization": "Localizzazione del Sistema",

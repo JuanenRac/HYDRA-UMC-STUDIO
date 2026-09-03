@@ -183,6 +183,7 @@
     "stream_running": "Stream live",
     "stream_starting": "Startet…",
     "stream_error": "Stream-Fehler",
+    "stream_stopped": "Gestoppt",
     "node_name": "Knotenname",
     "visual_environment": "Visuelle Umgebung",
     "system_localization": "Systemlokalisierung",

@@ -31,6 +31,18 @@ a change is actually worth summarizing for a human.
 
 (nothing yet)
 
+## [0.4.4]
+
+- **Stopped is a real status now, not a red "error" badge** - the
+  client half of HYDRA-UMC-SERVER's fix for a real bug: a camera
+  toggled off in Vision Center used to leave its real capture process
+  alive, silently burning CPU/memory (see that repo's own CHANGELOG).
+  Now that the server genuinely stops that process and reports a real
+  `"stopped"` status, the Config.tsx status badge shows it as its own
+  neutral, deliberate state (new `config.stream_stopped` i18n key × 7
+  languages) instead of falling into the catch-all "Stream Error" red
+  badge a status it didn't recognize used to become.
+
 ## [0.4.3]
 
 - **Real multi-stream RTSP support - the type combobox now reflects

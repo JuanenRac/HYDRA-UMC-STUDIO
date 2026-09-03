@@ -367,12 +367,23 @@ export function Config({ onClose }: { onClose: () => void }) {
                           {(() => {
                             const st = cameraStatus[`${activeController.id}:${c.id}`];
                             if (!st) return null;
+                            // "stopped" is a real, deliberate state (this
+                            // camera's own connected toggle is off - the
+                            // server already stopped its real process
+                            // rather than burning CPU/memory on a feed
+                            // nothing's asking to see), never an error -
+                            // neutral slate, not alarm red.
                             const cls = st.status === 'running' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                               : st.status === 'starting' ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                              : st.status === 'stopped' ? "bg-slate-500/10 text-slate-400 border-slate-500/30"
                               : "bg-rose-500/10 text-rose-400 border-rose-500/30";
+                            const label = st.status === 'running' ? t('config.stream_running', 'Stream Live')
+                              : st.status === 'starting' ? t('config.stream_starting', 'Starting…')
+                              : st.status === 'stopped' ? t('config.stream_stopped', 'Stopped')
+                              : t('config.stream_error', 'Stream Error');
                             return (
                               <span title={st.lastError || undefined} className={cn("px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border", cls)}>
-                                {st.status === 'running' ? t('config.stream_running', 'Stream Live') : st.status === 'starting' ? t('config.stream_starting', 'Starting…') : t('config.stream_error', 'Stream Error')}
+                                {label}
                               </span>
                             );
                           })()}

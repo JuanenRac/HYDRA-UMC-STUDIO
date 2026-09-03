@@ -183,6 +183,7 @@
     "stream_running": "视频流直播中",
     "stream_starting": "启动中…",
     "stream_error": "视频流错误",
+    "stream_stopped": "已停止",
     "node_name": "节点名称",
     "visual_environment": "视觉环境",
     "system_localization": "系统本地化",

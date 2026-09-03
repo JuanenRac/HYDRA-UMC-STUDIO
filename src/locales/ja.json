@@ -183,6 +183,7 @@
     "stream_running": "配信中",
     "stream_starting": "起動中…",
     "stream_error": "配信エラー",
+    "stream_stopped": "停止中",
     "node_name": "ノード名",
     "visual_environment": "視覚環境",
     "system_localization": "システムローカライゼーション",
