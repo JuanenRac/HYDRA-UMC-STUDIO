@@ -29,6 +29,38 @@ a change is actually worth summarizing for a human.
 
 ## Unreleased
 
+- **Camera config UI: real Discover Path/Discover USB Devices buttons,
+  live stream status, and an Apply Now action** - the client half of
+  HYDRA-UMC-SERVER's new real per-camera process supervisor (see that
+  repo's own CHANGELOG for the actual fix: saving a camera's config
+  used to have zero effect on whether any real video ever showed up).
+  `Config.tsx`'s Camera Setup tab: a "Discover Path" button next to the
+  RTSP path field (IP mode) calls the server's new
+  `POST /api/camera/discover-rtsp-path`, fills the field with the real
+  discovered path or shows exactly which real paths were tried and
+  failed; a "Discover USB Devices" button next to the hardware-source
+  field (USB mode) calls the new `GET /api/camera/discover-usb-devices`
+  and offers the real indices found as clickable chips. Every camera
+  card now shows its own real live stream status (`GET
+  /api/cameras/status`, polled every 3s while this tab is open) -
+  Stream Live / Starting / Stream Error with the real error message on
+  hover - real feedback a config edit never had before. New "Apply Now"
+  button per card - real edits already auto-save via the ordinary
+  500ms debounced `POST /api/settings` this app already uses for every
+  other field, so this doesn't do anything an edit wasn't already going
+  to do; it just skips the wait via a new `flushSettingsSave()`
+  (`store.tsx`) for someone who wants immediate confirmation. New
+  `store.tsx`'s `CameraType` also gained `"IP Vision Camera Main
+  Stream"`/`"IP Vision Camera Sub Stream"` (a real IP camera can expose
+  2 real streams at once - this ecosystem's own Hipcam cameras: `/11`
+  main, `/12` sub) - the Vision Center's own per-camera type combobox
+  (`CamerasView.tsx`) now offers the USB label only in USB mode and the
+  2 IP stream labels only in IP mode (Thermal stays offered regardless
+  of `sourceType`, unchanged, until those sensors get real
+  functionality); switching `sourceType` in Config.tsx re-normalizes a
+  stale label so it always matches one of that combobox's own current
+  options. New i18n keys × 7 languages, all key-count-parity verified
+  (806/806).
 - **Supervisor panel scrolls now** - real feedback from live testing: this
   panel's own ancestor (`Dashboard.tsx`'s main content area) is
   `overflow-hidden` with no scroll container of its own, so the process
@@ -85,6 +117,10 @@ a change is actually worth summarizing for a human.
   hasn't done in a while - `bump_manifest_version.py` is the real, current
   sole owner of the version, exactly as this file's own header already
   said.
+
+## [0.4.1]
+
+- Build version synchronized with `hydra-umc.project.json` and the repository-native version source.
 
 ## [0.4.0]
 

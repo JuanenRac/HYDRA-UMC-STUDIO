@@ -7,13 +7,13 @@
 // its own without risking the rest of the shell. configTab lives here since nothing
 // outside this modal ever reads it.
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import {
   Settings, Plus, Trash2, AlertTriangle, Cpu, RefreshCw, Save, FolderOpen, Edit2, Wifi, Smartphone, Tablet,
-  Wrench, CheckCircle2, XCircle, Bot, Printer, Watch,
+  Wrench, CheckCircle2, XCircle, Bot, Printer, Watch, Search, Zap,
 } from 'lucide-react';
 import { useHydraStore, createDefaultRobots, createDefaultCameras, RTSP_DEFAULT_PORT } from '../store';
 import { UsersPanel } from './UsersPanel';
@@ -73,9 +73,90 @@ function TestConnectionButton({ state, onTest }: { state: TestState; onTest: () 
 
 export function Config({ onClose }: { onClose: () => void }) {
   const { t, i18n } = useTranslation();
-  const { controllers, activeController, updateController, settings, updateSettings, updateRobot, addController, removeController, factoryReset, updateCamera, authToken } = useHydraStore();
+  const { controllers, activeController, updateController, settings, updateSettings, updateRobot, addController, removeController, factoryReset, updateCamera, flushSettingsSave, authToken } = useHydraStore();
   const [configTab, setConfigTab] = useState<ConfigTab>('identity');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  // Real per-camera stream status (HYDRA-UMC-SERVER's own new
+  // GET /api/cameras/status, keyed "<controllerId>:<cameraId>") - only
+  // polled while this dialog's own Cameras tab is actually open, not
+  // continuously in the background. This is the real "did Apply work"
+  // feedback the config UI never had before - saving a camera's config
+  // used to be a black box with no way to tell whether it actually did
+  // anything (see HYDRA-UMC-SERVER's own CHANGELOG for the process
+  // supervisor this reads from).
+  const [cameraStatus, setCameraStatus] = useState<Record<string, { status: string; lastError: string | null }>>({});
+  useEffect(() => {
+    if (configTab !== 'cameras') return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const headers: Record<string, string> = {};
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+        const res = await fetch(apiUrl('/api/cameras/status'), { headers });
+        if (cancelled || !res.ok) return;
+        setCameraStatus(await res.json());
+      } catch {
+        // Real network hiccup - the next poll tick retries; no need to
+        // clear existing status over one missed poll.
+      }
+    };
+    poll();
+    const interval = setInterval(poll, 3000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [configTab, authToken]);
+
+  // Real RTSP path discovery result per camera - 'idle' before the first
+  // try, then either the real discovered path or a real "tried: [...]"
+  // failure, never a guess.
+  type RtspDiscoverState = { phase: 'idle' | 'discovering' | 'found' | 'not-found' | 'error'; message?: string };
+  const [rtspDiscoverStates, setRtspDiscoverStates] = useState<Record<number, RtspDiscoverState>>({});
+  const discoverRtspPath = async (cameraId: number, host: string, port: number, username: string, password: string) => {
+    if (!host.trim()) return;
+    setRtspDiscoverStates((prev) => ({ ...prev, [cameraId]: { phase: 'discovering' } }));
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+      const res = await fetch(apiUrl('/api/camera/discover-rtsp-path'), {
+        method: 'POST', headers, body: JSON.stringify({ host, port, username, password }),
+      });
+      const body = await res.json();
+      if (res.ok && body.ok) {
+        updateCamera(cameraId, { rtspPath: body.path });
+        setRtspDiscoverStates((prev) => ({ ...prev, [cameraId]: { phase: 'found', message: body.path } }));
+      } else {
+        setRtspDiscoverStates((prev) => ({ ...prev, [cameraId]: { phase: 'not-found', message: (body.triedPaths || []).join(', ') } }));
+      }
+    } catch {
+      setRtspDiscoverStates((prev) => ({ ...prev, [cameraId]: { phase: 'error' } }));
+    }
+  };
+
+  // Real USB device discovery, shared across every camera card - one
+  // scan finds every real device at once (the whole point of the real
+  // cv2.VideoCapture probe on the server side), so the result list is
+  // global rather than per-camera; picking one just fills that one
+  // card's own hardwareSource field.
+  type UsbDevice = { index: number; available: boolean; width: number; height: number };
+  const [usbDiscoverPhase, setUsbDiscoverPhase] = useState<'idle' | 'discovering' | 'done' | 'error'>('idle');
+  const [usbDevices, setUsbDevices] = useState<UsbDevice[]>([]);
+  const discoverUsbDevices = async () => {
+    setUsbDiscoverPhase('discovering');
+    try {
+      const headers: Record<string, string> = {};
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+      const res = await fetch(apiUrl('/api/camera/discover-usb-devices'), { headers });
+      const body = await res.json();
+      if (res.ok) {
+        setUsbDevices(body.devices || []);
+        setUsbDiscoverPhase('done');
+      } else {
+        setUsbDiscoverPhase('error');
+      }
+    } catch {
+      setUsbDiscoverPhase('error');
+    }
+  };
 
   // Keyed by integration name so each card's own test result is
   // independent of the others.
@@ -266,8 +347,29 @@ export function Config({ onClose }: { onClose: () => void }) {
                            <div className={cn("w-10 h-10 rounded-full border flex items-center justify-center font-black", (hasConflict || hasSourceConflict) ? "bg-rose-500/20 border-rose-500 text-rose-400" : "bg-slate-900 border-slate-700 text-sky-400")}>C{c.id}</div>
                            <span className="text-xs font-black text-slate-200 uppercase tracking-widest">{t('config.vision_slot')} {idx + 1}</span>
                         </div>
-                        {(hasConflict || hasSourceConflict) && <div className="flex items-center gap-1 text-rose-400 text-[10px] font-bold uppercase"><AlertTriangle size={14}/> {t('config.resource_conflict')}</div>}
-                        {!hasConflict && !hasSourceConflict && <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter", c.connected ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-800 text-slate-600")}>{c.connected ? t('config.active_stream') : t('config.standby')}</span>}
+                        <div className="flex items-center gap-2">
+                          {(hasConflict || hasSourceConflict) && <div className="flex items-center gap-1 text-rose-400 text-[10px] font-bold uppercase"><AlertTriangle size={14}/> {t('config.resource_conflict')}</div>}
+                          {!hasConflict && !hasSourceConflict && <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter", c.connected ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-800 text-slate-600")}>{c.connected ? t('config.active_stream') : t('config.standby')}</span>}
+                          {/* Real live status of this camera's own
+                              stream serve process (HYDRA-UMC-SERVER's
+                              own new GET /api/cameras/status) - the
+                              actual "did Apply work" feedback a config
+                              edit never had before; a black box that
+                              silently did nothing is exactly the bug
+                              this whole feature exists to fix. */}
+                          {(() => {
+                            const st = cameraStatus[`${activeController.id}:${c.id}`];
+                            if (!st) return null;
+                            const cls = st.status === 'running' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                              : st.status === 'starting' ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                              : "bg-rose-500/10 text-rose-400 border-rose-500/30";
+                            return (
+                              <span title={st.lastError || undefined} className={cn("px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border", cls)}>
+                                {st.status === 'running' ? t('config.stream_running', 'Stream Live') : st.status === 'starting' ? t('config.stream_starting', 'Starting…') : t('config.stream_error', 'Stream Error')}
+                              </span>
+                            );
+                          })()}
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
@@ -287,14 +389,36 @@ export function Config({ onClose }: { onClose: () => void }) {
                           <div className="flex gap-1.5">
                             <button
                               type="button"
-                              onClick={() => updateCamera(c.id, { sourceType: 'usb' })}
+                              onClick={() => updateCamera(c.id, {
+                                sourceType: 'usb',
+                                // Re-normalizes the Vision Center's own
+                                // "type" label (CamerasView.tsx) to match
+                                // - that combobox only ever offers "USB
+                                // Vision Camera" once sourceType is
+                                // "usb", so a stale "IP Vision Camera ..."
+                                // value would otherwise match none of its
+                                // rendered options. Thermal stays
+                                // untouched either way - it's a real
+                                // hardware type, not tied to sourceType.
+                                ...(c.type !== 'IP Vision Camera Main Stream' && c.type !== 'IP Vision Camera Sub Stream' ? {} : { type: 'USB Vision Camera' }),
+                              })}
                               className={cn("flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors", (c.sourceType || 'usb') === 'usb' ? "bg-sky-500/20 text-sky-400 border border-sky-500/40" : "bg-slate-900 text-slate-500 border border-slate-800 hover:text-slate-300")}
                             >
                               {t('config.source_usb')}
                             </button>
                             <button
                               type="button"
-                              onClick={() => updateCamera(c.id, { sourceType: 'ip' })}
+                              onClick={() => updateCamera(c.id, {
+                                sourceType: 'ip',
+                                // Same re-normalization the other way -
+                                // defaults a fresh switch to the main
+                                // stream label (the more common real
+                                // choice); rtspPath itself (below) is
+                                // what actually decides which real
+                                // stream gets captured, this is only
+                                // the display label.
+                                ...(c.type !== 'USB Vision Camera' ? {} : { type: 'IP Vision Camera Main Stream' }),
+                              })}
                               className={cn("flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors", c.sourceType === 'ip' ? "bg-sky-500/20 text-sky-400 border border-sky-500/40" : "bg-slate-900 text-slate-500 border border-slate-800 hover:text-slate-300")}
                             >
                               {t('config.source_ip')}
@@ -305,13 +429,50 @@ export function Config({ onClose }: { onClose: () => void }) {
 
                       {(c.sourceType || 'usb') === 'usb' ? (
                         <div className="space-y-1">
-                          <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('config.hardware_source')}</label>
+                          <div className="flex items-center justify-between">
+                            <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('config.hardware_source')}</label>
+                            <button
+                              type="button"
+                              onClick={discoverUsbDevices}
+                              disabled={usbDiscoverPhase === 'discovering'}
+                              className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-sky-400 hover:text-sky-300 disabled:opacity-50"
+                            >
+                              {usbDiscoverPhase === 'discovering' ? <RefreshCw size={11} className="animate-spin" /> : <Search size={11} />}
+                              {t('config.discover_usb_devices', 'Discover USB Devices')}
+                            </button>
+                          </div>
                           <input
                             value={c.hardwareSource || ""}
                             onChange={e => updateCamera(c.id, { hardwareSource: e.target.value })}
                             className={cn("w-full bg-slate-900 border rounded-lg p-2 text-xs font-mono outline-none transition-all", hasSourceConflict ? "border-rose-500 text-rose-400" : "border-slate-800 text-emerald-400 focus:border-emerald-500")}
                             placeholder="/dev/video0"
                           />
+                          {/* Real devices found by the last scan (shared
+                              across every camera card - one scan finds
+                              them all) - picking one just fills THIS
+                              card's own field, doesn't touch any other
+                              camera. */}
+                          {usbDiscoverPhase === 'done' && (
+                            usbDevices.length > 0 ? (
+                              <div className="flex flex-wrap gap-1.5 pt-1">
+                                {usbDevices.map((d) => (
+                                  <button
+                                    key={d.index}
+                                    type="button"
+                                    onClick={() => updateCamera(c.id, { hardwareSource: String(d.index) })}
+                                    className="px-2 py-1 rounded text-[9px] font-mono bg-slate-900 border border-slate-800 text-emerald-400 hover:border-emerald-500 transition-colors"
+                                  >
+                                    #{d.index} · {d.width}×{d.height}
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-[9px] text-slate-600 pt-1">{t('config.no_usb_devices_found', 'No real USB cameras found.')}</p>
+                            )
+                          )}
+                          {usbDiscoverPhase === 'error' && (
+                            <p className="text-[9px] text-rose-400 pt-1">{t('config.usb_discovery_failed', 'Discovery failed - is HYDRA-UMC-VISION-STREAMER installed on this server?')}</p>
+                          )}
                         </div>
                       ) : (
                         // Real, generic RTSP fields - not tied to any one camera brand.
@@ -347,13 +508,38 @@ export function Config({ onClose }: { onClose: () => void }) {
                             </div>
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('config.rtsp_path')}</label>
+                            <div className="flex items-center justify-between">
+                              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('config.rtsp_path')}</label>
+                              <button
+                                type="button"
+                                onClick={() => discoverRtspPath(c.id, c.ipHost || "", c.rtspPort ?? RTSP_DEFAULT_PORT, c.ipUsername || "", c.ipPassword || "")}
+                                disabled={!c.ipHost || rtspDiscoverStates[c.id]?.phase === 'discovering'}
+                                className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-sky-400 hover:text-sky-300 disabled:opacity-50"
+                              >
+                                {rtspDiscoverStates[c.id]?.phase === 'discovering' ? <RefreshCw size={11} className="animate-spin" /> : <Search size={11} />}
+                                {t('config.discover_path', 'Discover Path')}
+                              </button>
+                            </div>
                             <input
                               value={c.rtspPath || ""}
                               onChange={e => updateCamera(c.id, { rtspPath: e.target.value })}
                               className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs font-mono text-emerald-400 outline-none focus:border-emerald-500 transition-all"
                               placeholder="/11"
                             />
+                            {/* Never invents a path - real success fills
+                                the field above directly (still editable
+                                by hand after); a real, honest failure
+                                lists exactly which real paths were
+                                actually tried. */}
+                            {rtspDiscoverStates[c.id]?.phase === 'found' && (
+                              <p className="text-[9px] text-emerald-400 pt-1">{t('config.rtsp_path_found', 'Found: {{path}}', { path: rtspDiscoverStates[c.id]?.message })}</p>
+                            )}
+                            {rtspDiscoverStates[c.id]?.phase === 'not-found' && (
+                              <p className="text-[9px] text-amber-400 pt-1">{t('config.rtsp_path_not_found', 'None of the tried paths answered: {{paths}}', { paths: rtspDiscoverStates[c.id]?.message })}</p>
+                            )}
+                            {rtspDiscoverStates[c.id]?.phase === 'error' && (
+                              <p className="text-[9px] text-rose-400 pt-1">{t('config.rtsp_discovery_failed', 'Discovery failed - could not reach the server.')}</p>
+                            )}
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1">
@@ -377,6 +563,27 @@ export function Config({ onClose }: { onClose: () => void }) {
                           </div>
                         </div>
                       )}
+
+                      {/* Real edits already auto-save (the ordinary
+                          500ms debounced POST /api/settings every other
+                          field in this app already uses) and
+                          HYDRA-UMC-SERVER's own process supervisor
+                          reconciles the real stream process from
+                          whatever lands there - this button doesn't do
+                          anything an edit wasn't already going to do on
+                          its own, it just skips the wait for someone
+                          who wants to confirm "Apply" did something
+                          right now, matching the status badge above. */}
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => flushSettingsSave()}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-slate-900 border border-slate-800 text-slate-400 hover:text-sky-400 hover:border-sky-500/40 transition-colors"
+                        >
+                          <Zap size={12} />
+                          {t('config.apply_now', 'Apply Now')}
+                        </button>
+                      </div>
                     </div>
                   )})}
                 </div>

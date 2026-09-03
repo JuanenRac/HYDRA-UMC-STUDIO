@@ -162,12 +162,28 @@ export function CamerasView() {
                 </div>
                 </div>
                 <div className="w-full">
-                  <select 
-                    value={c.type} 
+                  <select
+                    value={c.type}
                     onChange={(e) => updateCamera(c.id, { type: e.target.value as any })}
                     className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[10px] text-slate-200 focus:border-sky-400 focus:glow-border-sky outline-none transition-all"
                   >
-                    <option value="USB Vision Camera">{t('cameras.usb_vision', 'USB Vision Camera')}</option>
+                    {/* USB vs. the 2 real streams a single IP camera can
+                        offer at once (this ecosystem's own Hipcam
+                        cameras: /11 main, /12 sub - see
+                        HYDRA-UMC-VISION-STREAMER's own ATTRIBUTION
+                        notes) are mutually exclusive with each other,
+                        matching c.sourceType - Thermal stays offered
+                        regardless (real hardware type, not tied to
+                        sourceType) until those sensors get real
+                        functionality. */}
+                    {c.sourceType === 'ip' ? (
+                      <>
+                        <option value="IP Vision Camera Main Stream">{t('cameras.ip_vision_main', 'IP Vision Camera Main Stream')}</option>
+                        <option value="IP Vision Camera Sub Stream">{t('cameras.ip_vision_sub', 'IP Vision Camera Sub Stream')}</option>
+                      </>
+                    ) : (
+                      <option value="USB Vision Camera">{t('cameras.usb_vision', 'USB Vision Camera')}</option>
+                    )}
                     <option value="Thermal (MLX90640)">{t('cameras.thermal_mlx90640', 'Thermal (MLX90640)')}</option>
                     <option value="Thermal (MLX90641)">{t('cameras.thermal_mlx90641', 'Thermal (MLX90641)')}</option>
                     <option value="Thermal (MLX90642)">{t('cameras.thermal_mlx90642', 'Thermal (MLX90642)')}</option>

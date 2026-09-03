@@ -322,8 +322,17 @@ export interface RobotState {
   };
 }
 
-/** Type definition representing  camera type configurations or states. */
-export type CameraType = 'USB Vision Camera' | 'Thermal (MLX90640)' | 'Thermal (MLX90641)' | 'Thermal (MLX90642)';
+/** Type definition representing  camera type configurations or states.
+ * The 2 "IP Vision Camera ... Stream" values exist because a real IP
+ * camera often exposes 2 real streams at once (this ecosystem's own
+ * Hipcam cameras: /11 main 2560x1920, /12 sub 800x600 - see
+ * HYDRA-UMC-VISION-STREAMER's own ATTRIBUTION notes) - a camera slot
+ * pointed at the sub stream needs its own distinct label from one
+ * pointed at the main stream of the same physical camera, not both
+ * showing as a generic "IP camera". Purely a label (like the USB/
+ * Thermal values already were) - which real stream a slot actually
+ * captures is still entirely controlled by its own rtspPath field. */
+export type CameraType = 'USB Vision Camera' | 'IP Vision Camera Main Stream' | 'IP Vision Camera Sub Stream' | 'Thermal (MLX90640)' | 'Thermal (MLX90641)' | 'Thermal (MLX90642)';
 
 /** Where this camera's own real frames actually come from - matches
  * HYDRA-UMC-VISION-STREAMER's own CameraConfig.source_type (config.py),
@@ -637,6 +646,15 @@ interface HydraStoreContextType {
     affectedIds?: number[]
   ) => Promise<void>;
   updateCamera: (id: number, updates: Partial<CameraState>) => void;
+  /** Forces the real debounced settings save (the same POST /api/settings
+   * the 500ms auto-save timer below already sends) to happen right now
+   * instead of waiting - the "Apply Now" affordance a camera config edit
+   * needs for real, immediate feedback (HYDRA-UMC-SERVER's own camera
+   * process supervisor only reconciles a camera's real stream process
+   * once its new config actually lands there). Never throws - a real
+   * network failure here is the same "will retry on the next real
+   * change" case the ordinary debounced save already tolerates. */
+  flushSettingsSave: () => Promise<void>;
   updateSettings: (updates: Partial<SystemSettings>) => void;
   addController: (controller: HydraController) => void;
   removeController: (id: string) => void;
@@ -1260,6 +1278,29 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }));
   };
 
+  // Real, immediate POST /api/settings - same exact payload shape and
+  // same lastPayloadJsonRef dedup the ordinary 500ms debounced save
+  // effect above uses (so this doesn't cause a redundant second POST
+  // once that timer's own tick runs a moment later and finds nothing
+  // changed since). Kept as a real function (not just "wait less") so
+  // an "Apply Now" button gets a real, awaitable completion rather than
+  // firing a request into the void.
+  const flushSettingsSave = async () => {
+    const payload = { settings, controllers, activeControllerId };
+    const payloadJson = JSON.stringify(payload);
+    if (payloadJson === lastPayloadJsonRef.current) return; // already in sync, nothing to send
+    lastPayloadJsonRef.current = payloadJson;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+    try {
+      await fetch(apiUrl('/api/settings'), { method: 'POST', headers, body: payloadJson });
+    } catch {
+      // Real network failure - same tolerance as the ordinary debounced
+      // save above (this file's own established pattern: swallow and
+      // let the next real change retry).
+    }
+  };
+
   const updateSettings = (updates: Partial<SystemSettings>) => {
     setSettings(prev => ({ ...prev, ...updates }));
   };
@@ -1359,7 +1400,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <HydraContext.Provider value={{
       controllers, activeControllerId, activeController, setActiveControllerId,
       robots, cameras, settings,
-      updateController, updateRobot, sendRobotCommand, updateCamera, updateSettings,
+      updateController, updateRobot, sendRobotCommand, updateCamera, flushSettingsSave, updateSettings,
       saveKinematics, loadKinematics, addController, removeController,
       exportScene, importScene, factoryReset,
       authToken, role, isAdmin, login, logout, loginError,
