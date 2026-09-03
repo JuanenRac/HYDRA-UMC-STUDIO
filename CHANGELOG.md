@@ -31,6 +31,31 @@ a change is actually worth summarizing for a human.
 
 (nothing yet)
 
+## [0.4.6]
+
+- **Fixed a real permanent-freeze bug in Vision Center's own retry
+  logic.** Found via a detailed live user report on camera 4 (2 real
+  streams): after enough stream switches, the feed stopped reconnecting
+  automatically at all, needing a manual server-side process kill. Root
+  cause: the `<img>` element's own retry counter was a flat per-camera
+  number that never reset - once ANY stream for a camera exhausted its
+  6-attempt budget, EVERY future switch on that same camera inherited
+  the already-exhausted count and got zero retries, even for a brand
+  new stream it had never actually tried. Now the retry budget is
+  tracked per stream identity (`rtspPath`/`hardwareSource`), so a real
+  switch always starts fresh, and there's no hard retry ceiling at all -
+  HYDRA-UMC-SERVER's own camera-process supervisor now actively kills
+  and respawns a hung capture process on its own (see that repo's
+  CHANGELOG), so the client just needs to keep asking, not give up.
+- **New real PTZ (pan/tilt/zoom) control in Vision Center - IP cameras
+  only.** A toggle button between the power and YOLOv8 buttons (USB
+  cameras have no pan/tilt/zoom hardware to control) reveals a real
+  direction pad + zoom controls; each button sends a real continuous-
+  move command on press and a real stop on release, through
+  HYDRA-UMC-SERVER's own new `POST /api/camera/:id/ptz`. A camera with
+  no real PTZ hardware shows the server's own honest error instead of
+  pretending the move worked.
+
 ## [0.4.5]
 
 - **Fixed the real "picking a different stream always shows the same

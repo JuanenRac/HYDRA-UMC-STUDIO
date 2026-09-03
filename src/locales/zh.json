@@ -353,6 +353,8 @@
     "ip_vision_main": "IP 视觉摄像头 主码流",
     "ip_vision_sub": "IP 视觉摄像头 子码流",
     "ip_vision_sub_n": "IP 视觉摄像头 子码流 {{n}}",
+    "ptz_toggle": "云台 / 变焦控制",
+    "ptz_failed": "PTZ 指令失败",
     "thermal_mlx90640": "热成像（MLX90640）",
     "thermal_mlx90641": "热成像（MLX90641）",
     "thermal_mlx90642": "热成像（MLX90642）",

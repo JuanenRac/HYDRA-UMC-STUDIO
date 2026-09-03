@@ -353,6 +353,8 @@
     "ip_vision_main": "IP ビジョンカメラ メインストリーム",
     "ip_vision_sub": "IP ビジョンカメラ サブストリーム",
     "ip_vision_sub_n": "IP ビジョンカメラ サブストリーム {{n}}",
+    "ptz_toggle": "パン / チルト / ズーム",
+    "ptz_failed": "PTZコマンドが失敗しました",
     "thermal_mlx90640": "サーマル（MLX90640）",
     "thermal_mlx90641": "サーマル（MLX90641）",
     "thermal_mlx90642": "サーマル（MLX90642）",

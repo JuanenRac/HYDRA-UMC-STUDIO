@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useHydraStore, ipStreamLabels } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { useTranslation } from 'react-i18next';
-import { Video, Maximize2, Minimize2, Camera as CameraIcon, Power, ScanLine, CircleDot, RefreshCw } from 'lucide-react';
+import { Video, Maximize2, Minimize2, Camera as CameraIcon, Power, ScanLine, CircleDot, RefreshCw, Move, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -25,16 +25,28 @@ function cn(...inputs: ClassValue[]) {
  * This function handles the necessary computations and state updates.
  */
 export function CamerasView() {
-  const { cameras, updateCamera, updateRobot } = useHydraStore();
+  const { cameras, updateCamera, updateRobot, authToken } = useHydraStore();
   const { t } = useTranslation();
   const [fullScreenId, setFullScreenId] = useState<number | null>(null);
-  // Real retry counter per camera - see the <img> element's own comment
-  // for why a plain onError->hide isn't enough here: the very first
-  // reconnect attempt right after switching streams can genuinely land
-  // before the server has finished restarting the real capture process
-  // (a real, honest transient 503/502 while it does), and without this
-  // nothing would ever try again.
-  const [streamRetryNonce, setStreamRetryNonce] = useState<Record<number, number>>({});
+  // Real retry state per camera, keyed to WHICH stream it's for - see
+  // the <img> element's own comment for why a plain onError->hide isn't
+  // enough here. Real bug fixed here, found via live user feedback on
+  // camera 4 (2 real streams, switching between them "stopped working
+  // automatically" after a while, needing a manual process kill to
+  // recover): a flat retry counter that never reset meant that once ANY
+  // stream for a camera exhausted its retry budget, EVERY future switch
+  // on that same camera inherited the same exhausted count and got zero
+  // retries - so a stream that came back later (HYDRA-UMC-SERVER's own
+  // camera-process supervisor now self-heals a hung capture process, see
+  // its CHANGELOG) never got picked back up client-side. Tracking
+  // `identity` (the same rtspPath/hardwareSource the <img> keys on)
+  // alongside `attempt` means a genuinely different stream - or the same
+  // one after a real reconnect - always starts its own retry budget from
+  // 0, and there is no longer a hard retry ceiling: the server now
+  // actively kills and respawns a hung camera process on its own
+  // (escalating backoff, up to 30s between attempts), so the client just
+  // needs to keep trying, not give up permanently.
+  const [streamRetryState, setStreamRetryState] = useState<Record<number, { identity: string; attempt: number }>>({});
   const [recordingIds, setRecordingIds] = useState<Set<number>>(new Set());
   const [connectingIds, setConnectingIds] = useState<Set<number>>(new Set());
   const [flashId, setFlashId] = useState<number | null>(null);
@@ -95,6 +107,42 @@ export function CamerasView() {
     }
   };
 
+  // Real pan/tilt/zoom control - IP cameras only (HYDRA-UMC-SERVER's own
+  // /api/camera/:id/ptz proxies a real PSIA continuous-move command to
+  // the camera's own HTTP API; a camera with no motorized PTZ hardware
+  // answers honestly with a real error instead of pretending to move,
+  // see that route's own comment). `ptzOpenIds` is which cameras have
+  // the control panel showing; `ptzErrors` is the last real error text
+  // per camera, shown inline instead of silently doing nothing.
+  const [ptzOpenIds, setPtzOpenIds] = useState<Set<number>>(new Set());
+  const [ptzErrors, setPtzErrors] = useState<Record<number, string>>({});
+  const togglePtzPanel = (id: number) => {
+    setPtzOpenIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const sendPtz = async (cam: typeof cameras[number], pan: number, tilt: number, zoom: number) => {
+    if (!cam.ipHost) return;
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+      const res = await fetch(apiUrl(`/api/camera/${cam.id}/ptz`), {
+        method: 'POST', headers,
+        body: JSON.stringify({ host: cam.ipHost, username: cam.ipUsername || '', password: cam.ipPassword || '', pan, tilt, zoom }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.ok) {
+        setPtzErrors(prev => ({ ...prev, [cam.id]: body.error || t('cameras.ptz_failed', 'PTZ command failed') }));
+      } else if (ptzErrors[cam.id]) {
+        setPtzErrors(prev => { const next = { ...prev }; delete next[cam.id]; return next; });
+      }
+    } catch {
+      setPtzErrors(prev => ({ ...prev, [cam.id]: t('cameras.ptz_failed', 'PTZ command failed') }));
+    }
+  };
+
   return (
     <div className="w-full h-full flex flex-col space-y-4">
       <div className="flex items-center justify-between">
@@ -146,6 +194,13 @@ export function CamerasView() {
                   <button onClick={() => toggleConnection(c.id)} className={cn("p-1.5 rounded transition-colors", c.connected ? "text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 glow-border-emerald" : "text-slate-500 hover:text-emerald-400 border border-transparent")}>
                     <Power size={14} />
                   </button>
+                  {/* PTZ is IP-only - a USB webcam has no real
+                      pan/tilt/zoom hardware to control. */}
+                  {c.sourceType === 'ip' && (
+                    <button onClick={() => togglePtzPanel(c.id)} disabled={!c.connected} title={t('cameras.ptz_toggle', 'Pan / Tilt / Zoom')} className={cn("p-1.5 rounded transition-colors disabled:opacity-50", ptzOpenIds.has(c.id) ? "text-violet-400 hover:text-violet-300 bg-violet-500/10 border border-violet-500/30" : "text-slate-500 hover:text-violet-400 border border-transparent")}>
+                      <Move size={14} />
+                    </button>
+                  )}
                   <button onClick={() => toggleYolo(c.id)} disabled={!c.connected} className={cn("p-1.5 rounded transition-colors disabled:opacity-50", c.yoloEnabled ? "text-sky-400 hover:text-sky-300 bg-sky-500/10 border border-sky-500/30 glow-border-sky" : "text-slate-500 hover:text-sky-400 border border-transparent")}>
                     <ScanLine size={14} />
                   </button>
@@ -256,29 +311,54 @@ export function CamerasView() {
                           stream this camera captures) forces React to
                           unmount/remount the element - a genuinely new
                           request - every time the selection changes. */}
-                      <img
-                        key={`${c.rtspPath || c.hardwareSource || 'default'}-${streamRetryNonce[c.id] || 0}`}
-                        src={apiUrl(`/api/camera/${c.id}/stream`)}
-                        alt={`${c.type} camera feed`}
-                        className="absolute inset-0 w-full h-full object-cover"
-                        onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.display = ''; }}
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).style.display = 'none';
-                          // The very first reconnect right after a stream
-                          // switch can genuinely land before the server
-                          // finishes restarting real capture (a real,
-                          // honest transient 502/503 while it does) -
-                          // retry a few times with a real backoff instead
-                          // of giving up on the first miss. Capped so a
-                          // camera that's genuinely never coming up
-                          // (wrong credentials, unreachable host) doesn't
-                          // retry forever.
-                          const attempt = streamRetryNonce[c.id] || 0;
-                          if (attempt < 6) {
-                            setTimeout(() => setStreamRetryNonce(prev => ({ ...prev, [c.id]: (prev[c.id] || 0) + 1 })), 1500);
-                          }
-                        }}
-                      />
+                      {(() => {
+                        const identity = c.rtspPath || c.hardwareSource || 'default';
+                        const retryInfo = streamRetryState[c.id];
+                        // A stored attempt count only applies to the
+                        // stream it was measured against - a different
+                        // identity (a real stream switch) always starts
+                        // its own budget at 0, see this state's own
+                        // comment above.
+                        const attempt = retryInfo?.identity === identity ? retryInfo.attempt : 0;
+                        return (
+                          <img
+                            key={`${identity}-${attempt}`}
+                            src={apiUrl(`/api/camera/${c.id}/stream`)}
+                            alt={`${c.type} camera feed`}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            onLoad={(e) => {
+                              (e.currentTarget as HTMLImageElement).style.display = '';
+                              // Real reconnect succeeded - reset this
+                              // stream's own backoff to 0 so a LATER drop
+                              // starts fresh at 1.5s again instead of
+                              // inheriting a stale, long backoff.
+                              setStreamRetryState(prev => ({ ...prev, [c.id]: { identity, attempt: 0 } }));
+                            }}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).style.display = 'none';
+                              // The very first reconnect right after a
+                              // stream switch (or after the server's own
+                              // camera-process supervisor kills and
+                              // respawns a hung capture process - up to
+                              // 30s between its own attempts on a real
+                              // unresponsive camera) can genuinely land
+                              // before real capture is back up (a real,
+                              // honest transient 502/503) - keep retrying
+                              // with a real, capped backoff instead of
+                              // giving up permanently. The server is the
+                              // one deciding when a camera is truly dead
+                              // vs. still worth retrying; this side just
+                              // needs to keep asking.
+                              if (!c.connected) return; // camera was turned off - stop trying
+                              const nextAttempt = attempt + 1;
+                              const delayMs = Math.min(1500 * nextAttempt, 15000);
+                              setTimeout(() => {
+                                setStreamRetryState(prev => ({ ...prev, [c.id]: { identity, attempt: nextAttempt } }));
+                              }, delayMs);
+                            }}
+                          />
+                        );
+                      })()}
                       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-900/10 via-transparent to-transparent opacity-50" />
                       
                       {/* Grid overlay */}
@@ -314,6 +394,38 @@ export function CamerasView() {
                       
                       {flashId === c.id && (
                         <div className="absolute inset-0 bg-white z-50 animate-out fade-out duration-150" />
+                      )}
+
+                      {/* Real PTZ control - each direction/zoom button
+                          sends a real continuous-move command on
+                          mousedown and a real stop (0/0/0) on
+                          mouseup/mouseleave, mirroring how a physical PTZ
+                          joystick behaves. A camera that answers with a
+                          real error (most of this ecosystem's own real
+                          cameras are fixed, no motor hardware) shows that
+                          error here instead of pretending the move
+                          worked. */}
+                      {c.sourceType === 'ip' && ptzOpenIds.has(c.id) && (
+                        <div className="absolute bottom-2 left-2 z-30 bg-slate-950/85 backdrop-blur border border-violet-500/30 rounded-lg p-1.5 flex items-start gap-1.5">
+                          <div className="grid grid-cols-3 grid-rows-3 gap-0.5 w-[78px]">
+                            <div />
+                            <button onMouseDown={() => sendPtz(c, 0, 60, 0)} onMouseUp={() => sendPtz(c, 0, 0, 0)} onMouseLeave={() => sendPtz(c, 0, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 flex items-center justify-center"><ChevronUp size={12} /></button>
+                            <div />
+                            <button onMouseDown={() => sendPtz(c, -60, 0, 0)} onMouseUp={() => sendPtz(c, 0, 0, 0)} onMouseLeave={() => sendPtz(c, 0, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 flex items-center justify-center"><ChevronLeft size={12} /></button>
+                            <div className="flex items-center justify-center text-slate-700"><Move size={10} /></div>
+                            <button onMouseDown={() => sendPtz(c, 60, 0, 0)} onMouseUp={() => sendPtz(c, 0, 0, 0)} onMouseLeave={() => sendPtz(c, 0, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 flex items-center justify-center"><ChevronRight size={12} /></button>
+                            <div />
+                            <button onMouseDown={() => sendPtz(c, 0, -60, 0)} onMouseUp={() => sendPtz(c, 0, 0, 0)} onMouseLeave={() => sendPtz(c, 0, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 flex items-center justify-center"><ChevronDown size={12} /></button>
+                            <div />
+                          </div>
+                          <div className="flex flex-col gap-0.5">
+                            <button onMouseDown={() => sendPtz(c, 0, 0, 60)} onMouseUp={() => sendPtz(c, 0, 0, 0)} onMouseLeave={() => sendPtz(c, 0, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300"><ZoomIn size={12} /></button>
+                            <button onMouseDown={() => sendPtz(c, 0, 0, -60)} onMouseUp={() => sendPtz(c, 0, 0, 0)} onMouseLeave={() => sendPtz(c, 0, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300"><ZoomOut size={12} /></button>
+                          </div>
+                          {ptzErrors[c.id] && (
+                            <span className="text-[8px] text-rose-400 font-mono max-w-[90px] leading-tight break-words">{ptzErrors[c.id]}</span>
+                          )}
+                        </div>
                       )}
                     </div>
                   </>
