@@ -29,7 +29,13 @@ a change is actually worth summarizing for a human.
 
 ## Unreleased
 
-(nothing yet)
+- **`package.json`** - added the missing `typecheck` script (`tsc
+  --noEmit`). CI's baseline workflow already runs `npm run typecheck
+  --if-present` on every push, but with no script defined it silently
+  no-opped - a real TypeScript compile error could reach `main` without
+  ever failing CI (`vite build`'s own esbuild/SWC transpilation does not
+  type-check). `tsc --noEmit` is currently clean. CI-only fix, no
+  runtime code changed, no version bump.
 
 ## [0.4.7]
 
