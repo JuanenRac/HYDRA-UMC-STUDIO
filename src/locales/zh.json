@@ -228,6 +228,8 @@
     "remote_access_ios_desc": "控制 iOS/Flutter 控制应用自身的发现功能是否能够找到并识别本服务器。",
     "remote_access_watch": "HYDRA-UMC Watch",
     "remote_access_watch_desc": "控制 HYDRA-UMC WATCH(通过配对手机自身的连接中继)是否可以使用本服务器——独立于该手机自身的直接访问权限。",
+    "remote_access_dsi": "HYDRA-UMC DSI",
+    "remote_access_dsi_desc": "控制 DSI 信息屏应用是否可以发现并使用本服务器。",
     "users": "用户",
     "users_desc": "管理允许登录本服务器的账户。“管理员”账户拥有完全访问权限（设置、用户、机器人指令）；“操作员”账户可以登录并发送机器人指令，但不能更改设置或管理其他用户。",
     "users_load_error": "无法加载用户列表。",

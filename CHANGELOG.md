@@ -31,6 +31,20 @@ a change is actually worth summarizing for a human.
 
 (nothing yet)
 
+## [0.4.7]
+
+- **Fixed a real remote-access gap found in an ecosystem roadmap audit:
+  HYDRA-UMC-DSI's own client already sent `X-Hydra-Client: dsi` on every
+  request, but there was no toggle for it in Config > Remote Access, and
+  the server-side gate didn't recognize "dsi" at all - a DSI request fell
+  into the same bucket as an ungated plain browser tab and always passed
+  regardless of any setting.** Added a 5th `remoteAccess.dsi` toggle,
+  same pattern as SUITE/Android/iOS/Watch (`server.ts`'s own
+  `remoteAccessAllowed()` now recognizes "dsi" too - see that repo's own
+  changelog). `tsc --noEmit` and `vite build`: clean.
+
+- Build version synchronized with `hydra-umc.project.json` and the repository-native version source.
+
 ## [0.4.6]
 
 - **Fixed a real permanent-freeze bug in Vision Center's own retry

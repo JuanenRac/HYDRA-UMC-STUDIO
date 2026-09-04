@@ -228,6 +228,8 @@
     "remote_access_ios_desc": "iOS/Flutter 制御アプリ自身のディスカバリーが本サーバーを発見・識別できるかどうかを制御します。",
     "remote_access_watch": "HYDRA-UMC Watch",
     "remote_access_watch_desc": "ペアリングされたスマートフォン自身の接続を介して中継される HYDRA-UMC WATCH が本サーバーを使用できるかどうかを制御します。同じスマートフォン自身の直接アクセスとは独立しています。",
+    "remote_access_dsi": "HYDRA-UMC DSI",
+    "remote_access_dsi_desc": "DSIキオスク表示アプリが本サーバーを発見・使用できるかどうかを制御します。",
     "users": "ユーザー",
     "users_desc": "本サーバーへのログインを許可されたアカウントを管理します。「管理者」アカウントは完全なアクセス権を持ちます（設定、ユーザー、ロボット指令）。「オペレーター」アカウントはログインしてロボット指令を送信できますが、設定の変更やユーザー管理はできません。",
     "users_load_error": "ユーザーリストを読み込めませんでした。",

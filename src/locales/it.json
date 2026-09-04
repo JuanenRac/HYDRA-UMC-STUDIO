@@ -228,6 +228,8 @@
     "remote_access_ios_desc": "Controlla se il rilevamento dell'app di controllo iOS/Flutter può trovare e identificare questo server.",
     "remote_access_watch": "HYDRA-UMC Watch",
     "remote_access_watch_desc": "Controlla se HYDRA-UMC WATCH, inoltrato tramite la connessione propria del telefono associato, può utilizzare questo server, indipendentemente dall'accesso diretto dello stesso telefono.",
+    "remote_access_dsi": "HYDRA-UMC DSI",
+    "remote_access_dsi_desc": "Controlla se l'app del display kiosk DSI può rilevare e utilizzare questo server.",
     "users": "Utenti",
     "users_desc": "Gestisci gli account autorizzati ad accedere a questo server. Gli account \"Amministratore\" hanno accesso completo (impostazioni, utenti, comandi robot); gli account \"Operatore\" possono accedere e inviare comandi robot, ma non possono modificare le impostazioni né gestire gli utenti.",
     "users_load_error": "Impossibile caricare l'elenco utenti.",

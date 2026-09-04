@@ -514,6 +514,8 @@ export interface SystemSettings {
     ios?: boolean;
     /** Whether HYDRA-UMC-WATCH (relayed through the paired phone's own X-Hydra-Client: watch header on POST /api/voice/turn and GET /api/watch/system-status) can use this server - independent of that same phone's own direct "android" access. */
     watch?: boolean;
+    /** Whether the DSI kiosk app (HYDRA-UMC-DSI, X-Hydra-Client: dsi) can discover/use this server. Its own hydra_api_client.dart already sent this header before the server ever recognized it - see server.ts's own remoteAccessAllowed() comment for the real gap this closed. */
+    dsi?: boolean;
   };
   serverName?: string;
   // Whether this server accepts a model submission from HYDRA-UMC-EDITOR-URDF
@@ -770,6 +772,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       android: true,
       ios: true,
       watch: true,
+      dsi: true,
     },
     serverName: "HYDRA-UMC TEST",
   });
