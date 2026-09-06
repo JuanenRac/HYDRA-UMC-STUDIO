@@ -218,6 +218,11 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # 全新检出时预置的示例设置
 │   └── favicon.svg, icons.svg   # 应用图标与共享图标精灵图
 ├── images/                       # README 横幅
+├── tests/                        # 真实的 Vitest 套件(141 个测试)——只测 src/examples/ 的 FK/IK 数学逻辑,不涉及 React/DOM
+│   ├── utils.test.ts             # 共享的通用手臂 FK/IK 组合及其 5 个路径生成器
+│   ├── urKinematicsShared.test.ts  # 真实的 DH 链 FK + 牛顿-拉夫逊 IK 引擎(通过真实的 UR5e 链验证)
+│   ├── parol6Kinematics.test.ts  # Parol6 自身硬编码的真实链条
+│   └── robotKinematicsDispatch.test.ts  # 一套针对全部 24 个真实机器人型号参数化的通用测试
 ├── tools/
 │   ├── build_test.py            # 不递增版本号的构建/编译检查
 │   ├── ci_validate.py           # CI 使用的 manifest/CHANGELOG/docs 校验
@@ -228,6 +233,8 @@ HYDRA-UMC-STUDIO/
 ├── build.sh / build.bat          # 安装依赖 + 生产构建
 ├── build-test.sh / build-test.bat  # 不递增版本号的构建/编译检查
 ├── dev.sh / dev.bat              # 安装依赖 + 启动 Vite 开发服务器
+├── vitest.config.ts              # Vitest 配置(仅针对 tests/,真实的 node 环境——不需要 DOM)
+├── tsconfig.test.json            # tests/ 独立的类型检查项目(与 app/node 的引用配置分开)
 ├── .env.example                  # VITE_API_BASE_URL 模板——见 src/lib/apiBase.ts
 ├── README.md                     # 本文件
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  # 翻译
@@ -255,6 +262,15 @@ npm install
 运行 Vite 自身的开发服务器（纯粹的 `vite`，端口 `5173`），支持实时重载。`vite.config.ts` 自身的 `server.proxy` 会透明地将 `/api`、`/ws` 和 `/WORKS` 转发到 `http://localhost:3000`，因此本应用的相对路径 fetch/WebSocket 调用无需任何 CORS 设置即可到达 HYDRA-UMC SERVER 后端——只需确保先启动该后端：
 - **Windows：** 双击 `dev.bat`，或运行 `npm run dev`
 - **Linux/Mac：** 运行 `./dev.sh` 或 `npm run dev`
+
+### 自动化测试
+
+```bash
+npm test          # vitest run —— 针对 src/examples/ 的 141 个真实测试
+npm run typecheck # tsc -b --noEmit（src/）+ tsc -p tsconfig.test.json --noEmit（tests/）
+```
+
+在一次面向整个生态系统的软件改进审计中发现:`src/examples/`(`robotKinematicsDispatch.ts` 分发到的全部 24 个真实机器人型号的 FK/IK 数学逻辑——`utils.ts` 共享的通用公式、`urKinematicsShared.ts` 中被所有 UR 系列型号共用的真实 DH 链 + 牛顿-拉夫逊求解引擎、`parol6Kinematics.ts` 自身硬编码的链条,以及按机器人拆分的 23 个 `*Kinematics.ts` 文件)此前完全没有自动化测试覆盖。已修复:新增 `tests/`(Vitest)——共 141 个测试,其中大多数是针对 `robotKinematicsDispatch.ts` 自身分发表的一套通用参数化测试,而不是 23 个几乎重复的测试文件,这样以后往表里新增一款机器人也会自动被覆盖到。另外:`npm run typecheck` 本身此前也一直是个悄无声息的空操作——单独的 `tsc --noEmit` 针对本仓库自身"解决方案式"的根 `tsconfig.json`(`"files": []`,只有项目 `"references"`)运行时其实什么都没检查;真正的修复需要项目构建模式(`tsc -b --noEmit`),它一运行就立刻暴露出 8 个真实存在、此前已经悄悄积累下来的类型错误(现已修复)——因为 `vite build` 自身的 esbuild/SWC 转译从不做类型检查。完整细节见 [`CHANGELOG.md`](CHANGELOG.md)。
 
 ### 生产构建
 

@@ -486,7 +486,16 @@ export async function hardwareStartFlash(
     const res = await fetch(apiUrl(`/api/hardware/canota/flash?${qs.toString()}`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/octet-stream', ...authHeaders(authToken) },
-      body: firmware,
+      // Wrapped in a real Blob rather than passed as a raw Uint8Array:
+      // fetch() has always accepted a typed array as BodyInit at runtime,
+      // but a newer TypeScript/DOM lib version made Uint8Array generic
+      // (Uint8Array<ArrayBufferLike>, whose `.buffer` may be a
+      // SharedArrayBuffer) in a way BodyInit/BlobPart's own typed-array
+      // overloads no longer structurally match - a real type-only
+      // regression, not a runtime behavior change. `.slice()` returns a
+      // fresh copy backed by a genuine (never shared) ArrayBuffer, which
+      // both BlobPart and BodyInit accept unambiguously.
+      body: new Blob([firmware.slice()]),
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) return { reachable: true, success: false, reason: body.error || `HTTP ${res.status}` };

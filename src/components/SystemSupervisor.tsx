@@ -220,7 +220,7 @@ export function SystemSupervisor() {
               <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="x" tickFormatter={formatClock} {...axisProps} />
               <YAxis domain={[0, 100]} width={32} {...axisProps} />
-              <Tooltip contentStyle={tooltipStyle} labelFormatter={(v) => formatClock(v as number)} formatter={(v: number) => [`${v}%`, t('ecosystem.supervisor_cpu', 'CPU')]} />
+              <Tooltip contentStyle={tooltipStyle} labelFormatter={(v) => formatClock(v as number)} formatter={(v) => [`${v}%`, t('ecosystem.supervisor_cpu', 'CPU')]} />
               <Area type="monotone" dataKey="y" stroke={ACCENTS.cpu.fill} strokeWidth={2} fill="url(#supCpuFill)" isAnimationActive={false} dot={false} />
             </AreaChart>
           </ResponsiveContainer>
@@ -261,7 +261,7 @@ export function SystemSupervisor() {
                 <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="x" tickFormatter={formatClock} {...axisProps} />
                 <YAxis domain={[0, 100]} width={32} {...axisProps} />
-                <Tooltip contentStyle={tooltipStyle} labelFormatter={(v) => formatClock(v as number)} formatter={(v: number, n: string) => [`${v}%`, n === 'used' ? t('ecosystem.supervisor_used', 'Used') : t('ecosystem.supervisor_cached', 'Cached/Buffers')]} />
+                <Tooltip contentStyle={tooltipStyle} labelFormatter={(v) => formatClock(v as number)} formatter={(v, n) => [`${v}%`, n === 'used' ? t('ecosystem.supervisor_used', 'Used') : t('ecosystem.supervisor_cached', 'Cached/Buffers')]} />
                 <Area type="monotone" dataKey="used" stroke={ACCENTS.mem.fill} strokeWidth={2} fill="url(#supMemFill)" isAnimationActive={false} dot={false} />
                 <Area type="monotone" dataKey="cached" stroke="#94a3b8" strokeWidth={1} fill="none" strokeDasharray="3 3" isAnimationActive={false} dot={false} />
               </AreaChart>
@@ -277,7 +277,7 @@ export function SystemSupervisor() {
               <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="x" tickFormatter={formatClock} {...axisProps} />
               <YAxis domain={['auto', 'auto']} width={32} {...axisProps} unit="°" />
-              <Tooltip contentStyle={tooltipStyle} labelFormatter={(v) => formatClock(v as number)} formatter={(v: number, n: string) => [`${v}°C`, n === 'cpu' ? 'CPU' : 'RP1']} />
+              <Tooltip contentStyle={tooltipStyle} labelFormatter={(v) => formatClock(v as number)} formatter={(v, n) => [`${v}°C`, n === 'cpu' ? 'CPU' : 'RP1']} />
               <Line type="monotone" dataKey="cpu" stroke={ACCENTS.temp.fill} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls />
               <Line type="monotone" dataKey="rp1" stroke="#f472b6" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls />
             </LineChart>

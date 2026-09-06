@@ -218,6 +218,11 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # Settings d'exemple préchargés pour un checkout neuf
 │   └── favicon.svg, icons.svg   # Icône de l'app et sprite d'icônes partagé
 ├── images/                       # Bannière du README
+├── tests/                        # Vraie suite Vitest (141 tests) - uniquement les maths FK/IK de src/examples/, sans React/DOM
+│   ├── utils.test.ts             # Paire FK/IK partagee du bras generique + ses 5 generateurs de trajectoires
+│   ├── urKinematicsShared.test.ts  # Vrai moteur de chaine DH + IK Newton-Raphson (via la vraie chaine UR5e)
+│   ├── parol6Kinematics.test.ts  # Propre chaine reelle et codee en dur de Parol6
+│   └── robotKinematicsDispatch.test.ts  # Une suite generique parametree sur les 24 vrais modeles de robots
 ├── tools/
 │   ├── build_test.py            # Contrôle build/compilation sans gestion de version
 │   ├── ci_validate.py           # Validation manifest/CHANGELOG/docs utilisée par la CI
@@ -228,6 +233,8 @@ HYDRA-UMC-STUDIO/
 ├── build.sh / build.bat          # Installe les dépendances + build de production
 ├── build-test.sh / build-test.bat  # Contrôle build/compilation sans gestion de version
 ├── dev.sh / dev.bat              # Installe les dépendances + démarre le serveur de dev Vite
+├── vitest.config.ts              # Configuration Vitest (tests/ uniquement, vrai environnement node - pas besoin de DOM)
+├── tsconfig.test.json            # Projet de verification de types autonome pour tests/ (separe des references app/node)
 ├── .env.example                  # Modèle de VITE_API_BASE_URL - voir src/lib/apiBase.ts
 ├── README.md                     # ce fichier (en anglais)
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  # traductions
@@ -255,6 +262,15 @@ npm install
 Exécute le propre serveur de développement de Vite (`vite` simple, port `5173`) avec rechargement en direct. Le propre `server.proxy` de `vite.config.ts` redirige de façon transparente `/api`, `/ws`, et `/WORKS` vers `http://localhost:3000`, de sorte que les appels fetch/WebSocket à chemin relatif de l'application atteignent le backend HYDRA-UMC SERVER sans configuration CORS nécessaire - assurez-vous simplement que ce backend est en cours d'exécution en premier :
 - **Windows :** double-cliquez sur `dev.bat` ou exécutez `npm run dev`
 - **Linux/Mac :** exécutez `./dev.sh` ou `npm run dev`
+
+### Tests Automatisés
+
+```bash
+npm test          # vitest run - 141 vrais tests sur src/examples/
+npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
+```
+
+Trouvé lors d'un audit d'amélioration logicielle à l'échelle de l'écosystème : `src/examples/` (les calculs FK/IK des 24 modèles de robots réels vers lesquels `robotKinematicsDispatch.ts` distribue - la formule générique partagée de `utils.ts`, le vrai moteur de chaîne DH + Newton-Raphson de `urKinematicsShared.ts` partagé par tous les modèles de la famille UR, la propre chaîne codée en dur de `parol6Kinematics.ts`, et les 23 fichiers `*Kinematics.ts` par robot) n'avait aucune couverture de tests automatisés. Corrigé : `tests/` (nouveau, Vitest) - 141 tests, la plupart regroupés en une seule suite générique et paramétrée sur la table de distribution propre de `robotKinematicsDispatch.ts`, plutôt que 23 fichiers de test quasi dupliqués, de sorte qu'un nouveau robot ajouté à cette table est couvert automatiquement. Séparément : `npm run typecheck` était *lui aussi* un no-op silencieux depuis le début - `tsc --noEmit` seul, contre le `tsconfig.json` racine de type « solution » de ce dépôt (`"files": []`, uniquement des `"references"` de projets), ne vérifie rien du tout ; le vrai correctif nécessite le mode build de projet (`tsc -b --noEmit`), qui a immédiatement révélé 8 vraies erreurs de type préexistantes (désormais corrigées) qui s'accumulaient silencieusement, puisque la transpilation esbuild/SWC propre à `vite build` ne vérifie jamais les types. Voir [`CHANGELOG.md`](CHANGELOG.md) pour le détail complet.
 
 ### Build de Production
 

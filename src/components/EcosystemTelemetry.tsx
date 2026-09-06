@@ -232,7 +232,7 @@ export function EcosystemTelemetry() {
                       contentStyle={{ background: '#020617', border: '1px solid #1e293b', borderRadius: 8, fontSize: 11 }}
                       labelStyle={{ color: '#64748b' }}
                       labelFormatter={(v) => formatTime(v as number)}
-                      formatter={(v: number) => [v.toFixed(3), t('ecosystem.telemetry_value')]}
+                      formatter={(v) => [Number(v).toFixed(3), t('ecosystem.telemetry_value')]}
                     />
                     <Area type="monotone" dataKey="y" stroke={SKY} strokeWidth={2} fill="url(#telemetryFill)" isAnimationActive={false} dot={chartData.length < 60} />
                   </AreaChart>
@@ -245,7 +245,7 @@ export function EcosystemTelemetry() {
                       contentStyle={{ background: '#020617', border: '1px solid #1e293b', borderRadius: 8, fontSize: 11 }}
                       labelStyle={{ color: '#64748b' }}
                       labelFormatter={(v) => formatTime(v as number)}
-                      formatter={(v: number, n: string) => [n === 'y' ? v.toFixed(3) : v, n === 'y' ? `${agg}(${t('ecosystem.telemetry_value')})` : t('ecosystem.telemetry_count')]}
+                      formatter={(v, n) => [n === 'y' ? Number(v).toFixed(3) : v, n === 'y' ? `${agg}(${t('ecosystem.telemetry_value')})` : t('ecosystem.telemetry_count')]}
                     />
                     <Bar dataKey="y" fill={SKY} radius={[3, 3, 0, 0]} isAnimationActive={false} />
                   </BarChart>

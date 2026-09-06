@@ -1373,9 +1373,9 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     const z = cart.z + dz * jogStep;
     const newJoints = resolveTargetJoints(robot.model, x, y, z, cart.a, cart.b, cart.c, robot.joints);
     const axes: { axis: 'x' | 'y' | 'z'; amount: number; value: number }[] = [
-      { axis: 'x', amount: dx * jogStep, value: x },
-      { axis: 'y', amount: dy * jogStep, value: y },
-      { axis: 'z', amount: dz * jogStep, value: z },
+      { axis: 'x' as const, amount: dx * jogStep, value: x },
+      { axis: 'y' as const, amount: dy * jogStep, value: y },
+      { axis: 'z' as const, amount: dz * jogStep, value: z },
     ].filter((a) => a.amount !== 0);
     for (const a of axes) {
       sendRobotCommand(

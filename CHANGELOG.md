@@ -27,15 +27,62 @@ a change is actually worth summarizing for a human.
 
 ---
 
-## Unreleased
+## [0.4.8] - `typecheck` was still a no-op, plus a real automated test suite
 
-- **`package.json`** - added the missing `typecheck` script (`tsc
-  --noEmit`). CI's baseline workflow already runs `npm run typecheck
-  --if-present` on every push, but with no script defined it silently
-  no-opped - a real TypeScript compile error could reach `main` without
-  ever failing CI (`vite build`'s own esbuild/SWC transpilation does not
-  type-check). `tsc --noEmit` is currently clean. CI-only fix, no
-  runtime code changed, no version bump.
+- **Corrects the previous "Unreleased" entry below, which was itself
+  incomplete.** That pass added a `typecheck` script (`tsc --noEmit`) and
+  reported it "currently clean" - true only because it was checking
+  NOTHING: this repo's root `tsconfig.json` is a solution-style config
+  (`"files": []`, only `"references"` to `tsconfig.app.json`/
+  `tsconfig.node.json`), and plain `tsc --noEmit` against a solution
+  config like that silently no-ops rather than traversing the referenced
+  projects - confirmed by hand by dropping an obvious type error into
+  `src/` and watching `npm run typecheck` report nothing at all. The real
+  fix needs project BUILD mode: `tsc -b --noEmit`.
+- **8 real, pre-existing type errors surfaced immediately once typecheck
+  actually ran for the first time** - `vite build`'s own esbuild/SWC
+  transpilation never type-checks, so these had been silently
+  accumulating on `main` the whole time `npm run typecheck` was a no-op:
+  - `EcosystemTelemetry.tsx`/`SystemSupervisor.tsx` (5 sites): Recharts'
+    own `Tooltip formatter` prop type passes `ValueType | undefined`, not
+    a plain `number` - the existing `(v: number) => ...` annotations were
+    narrower than what Recharts actually calls them with. Fixed by
+    letting the parameter type infer contextually from the prop itself
+    and coercing with `Number(v)` wherever `.toFixed()` is called.
+  - `GamepadController.tsx`/`RobotDetail.tsx` (1 site each, identical
+    code - `GamepadController.tsx`'s own header comment already says it
+    mirrors `RobotDetail.tsx`'s `handleXYZJog`): an `axes: {axis: 'x'|'y'|'z'; ...}[]`
+    array literal chained straight into `.filter(...)` loses its own
+    literal `axis` type through the call (TypeScript's contextual typing
+    from the outer annotation doesn't flow through a method call on the
+    literal) - `.filter()` was returning `{axis: string; ...}[]`. Fixed
+    by adding `as const` to each `axis` value so the literal survives the
+    `.filter()` call.
+  - `canOta.ts` (1 site): `fetch()`'s `body: firmware` (a `Uint8Array`)
+    stopped satisfying `BodyInit` under this TypeScript version's newer,
+    generic `Uint8Array<ArrayBufferLike>` - a real type-only regression
+    (fetch has always accepted a typed array as a body at runtime), not a
+    behavior change. Fixed by wrapping in `new Blob([firmware.slice()])`
+    - `.slice()` guarantees a real (never-shared) `ArrayBuffer` backing,
+    which both `BlobPart` and `BodyInit` accept unambiguously.
+- **`tests/`** (new) - a real, first-ever automated test suite for this
+  repo: 141 tests across 4 files, covering `src/examples/utils.ts`'s
+  shared generic-arm FK/IK pair and its 5 path generators,
+  `urKinematicsShared.ts`'s real DH-chain FK + multi-seeded
+  Newton-Raphson IK engine (exercised through the real UR5e chain),
+  `parol6Kinematics.ts`'s own hard-coded real chain, and - the single
+  highest-value target - `robotKinematicsDispatch.ts`'s own dispatch
+  table, generically parametrized over EVERY one of the 24 real robot
+  models it fans out to (23 dedicated `*Kinematics.ts` files plus the
+  generic fallback), rather than 23 near-duplicate bespoke test files.
+  None of `src/examples/` had a single test before this. Run via
+  `npm test` (`vitest run`, new `vitest.config.ts`); `npm run typecheck`
+  now also covers `tests/` itself via a new, standalone
+  `tsconfig.test.json` (kept separate from the existing app/node project
+  references to avoid touching that graph's own composite/reference
+  wiring).
+- Verified for real: `npm run typecheck` (both halves), `npm test`
+  (141/141), `npm run lint`, and `npm run build` all pass clean.
 
 ## [0.4.7]
 

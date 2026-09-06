@@ -220,6 +220,11 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # Seeded example settings for a fresh checkout
 │   └── favicon.svg, icons.svg   # App icon and shared icon sprite
 ├── images/                       # README banner
+├── tests/                        # Real Vitest suite (141 tests) - src/examples/ FK/IK math only, no React/DOM
+│   ├── utils.test.ts             # Shared generic-arm FK/IK pair + its 5 path generators
+│   ├── urKinematicsShared.test.ts  # Real DH-chain FK + Newton-Raphson IK engine (via the real UR5e chain)
+│   ├── parol6Kinematics.test.ts  # Parol6's own hard-coded real chain
+│   └── robotKinematicsDispatch.test.ts  # One generic suite parametrized over all 24 real robot models
 ├── tools/
 │   ├── build_test.py            # Non-versioning build/compile check
 │   ├── ci_validate.py           # Manifest/CHANGELOG/docs validation used by CI
@@ -230,6 +235,8 @@ HYDRA-UMC-STUDIO/
 ├── build.sh / build.bat          # Install deps + production build
 ├── build-test.sh / build-test.bat  # Non-versioning build/compile check
 ├── dev.sh / dev.bat              # Install deps + start the Vite dev server
+├── vitest.config.ts              # Vitest config (tests/ only, real node environment - no DOM needed)
+├── tsconfig.test.json            # Standalone typecheck project for tests/ (kept separate from the app/node references)
 ├── .env.example                  # VITE_API_BASE_URL template - see src/lib/apiBase.ts
 ├── README.md                     # this file
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  # translations
@@ -257,6 +264,15 @@ npm install
 Runs Vite's own dev server (plain `vite`, port `5173`) with live-reloading. `vite.config.ts`'s own `server.proxy` transparently forwards `/api`, `/ws`, and `/WORKS` to `http://localhost:3000`, so the app's relative-path fetch/WebSocket calls reach the HYDRA-UMC SERVER backend with no CORS setup needed - just make sure that backend is running first:
 - **Windows:** double-click `dev.bat` or run `npm run dev`
 - **Linux/Mac:** run `./dev.sh` or `npm run dev`
+
+### Automated Tests
+
+```bash
+npm test          # vitest run - 141 real tests over src/examples/
+npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
+```
+
+Found in an ecosystem-wide software-improvements audit: `src/examples/` (the FK/IK math for every one of the 24 real robot models `robotKinematicsDispatch.ts` fans out to - `utils.ts`'s shared generic-arm formula, `urKinematicsShared.ts`'s real DH-chain + Newton-Raphson engine shared by every UR-family model, `parol6Kinematics.ts`'s own hard-coded chain, and the 23 per-robot `*Kinematics.ts` files themselves) had zero automated test coverage. Fixed: `tests/` (new, Vitest) - 141 tests, most of them one generic, parametrized suite over `robotKinematicsDispatch.ts`'s own dispatch table rather than 23 near-duplicate bespoke files, so a new robot added to that table is covered automatically. Separately: `npm run typecheck` was *also* itself a silent no-op the whole time - `tsc --noEmit` alone against this repo's own solution-style root `tsconfig.json` (`"files": []`, only project `"references"`) checks nothing at all; the real fix needs project build mode (`tsc -b --noEmit`), which immediately surfaced 8 real, pre-existing type errors (now fixed) that had been silently accumulating since `vite build`'s own esbuild/SWC transpilation never type-checks. See [`CHANGELOG.md`](CHANGELOG.md) for the full breakdown.
 
 ### Production Build
 

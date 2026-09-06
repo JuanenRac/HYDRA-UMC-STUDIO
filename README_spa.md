@@ -219,6 +219,11 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # Settings de ejemplo pre-cargados para una copia nueva
 │   └── favicon.svg, icons.svg   # Icono de la app y sprite de iconos compartido
 ├── images/                       # Banner del README
+├── tests/                        # Suite real de Vitest (141 pruebas) - solo la matematica FK/IK de src/examples/, sin React/DOM
+│   ├── utils.test.ts             # Par FK/IK compartido del brazo generico + sus 5 generadores de trayectorias
+│   ├── urKinematicsShared.test.ts  # Motor real de cadena DH + IK Newton-Raphson (via la cadena real de UR5e)
+│   ├── parol6Kinematics.test.ts  # Cadena real y fija propia de Parol6
+│   └── robotKinematicsDispatch.test.ts  # Una suite generica parametrizada sobre los 24 modelos de robot reales
 ├── tools/
 │   ├── build_test.py            # Comprobación de build/compilación sin subir versión
 │   ├── ci_validate.py           # Validación de manifest/CHANGELOG/docs usada por la CI
@@ -229,6 +234,8 @@ HYDRA-UMC-STUDIO/
 ├── build.sh / build.bat          # Instala dependencias + build de producción
 ├── build-test.sh / build-test.bat  # Comprobación de build/compilación sin subir versión
 ├── dev.sh / dev.bat              # Instala dependencias + inicia el servidor de desarrollo de Vite
+├── vitest.config.ts              # Configuracion de Vitest (solo tests/, entorno node real - no hace falta DOM)
+├── tsconfig.test.json            # Proyecto de verificacion de tipos independiente para tests/ (separado de las referencias app/node)
 ├── .env.example                  # Plantilla de VITE_API_BASE_URL - ver src/lib/apiBase.ts
 ├── README.md                     # este archivo (en inglés)
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  # traducciones
@@ -256,6 +263,15 @@ npm install
 Ejecuta el propio servidor de desarrollo de Vite (`vite` simple, puerto `5173`) con recarga en vivo. El propio `server.proxy` de `vite.config.ts` reenvía de forma transparente `/api`, `/ws`, y `/WORKS` a `http://localhost:3000`, de modo que las llamadas fetch/WebSocket de ruta relativa de la app llegan al backend HYDRA-UMC SERVER sin necesidad de configurar CORS - solo asegúrate de que ese backend esté en marcha primero:
 - **Windows:** doble clic en `dev.bat` o ejecuta `npm run dev`
 - **Linux/Mac:** ejecuta `./dev.sh` o `npm run dev`
+
+### Pruebas Automatizadas
+
+```bash
+npm test          # vitest run - 141 pruebas reales sobre src/examples/
+npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
+```
+
+Encontrado en una auditoría de mejoras de software a nivel de todo el ecosistema: `src/examples/` (la matemática FK/IK de los 24 modelos de robot reales a los que `robotKinematicsDispatch.ts` distribuye - la fórmula genérica compartida de `utils.ts`, el motor real de cadena DH + Newton-Raphson de `urKinematicsShared.ts` compartido por todos los modelos de la familia UR, la propia cadena fija de `parol6Kinematics.ts`, y los 23 archivos `*Kinematics.ts` por robot) tenía cero cobertura de pruebas automatizadas. Arreglado: `tests/` (nuevo, Vitest) - 141 pruebas, la mayoría en una única suite genérica y parametrizada sobre la propia tabla de despacho de `robotKinematicsDispatch.ts`, en vez de 23 archivos de prueba casi duplicados, de modo que un robot nuevo añadido a esa tabla queda cubierto automáticamente. Por separado: `npm run typecheck` también era en sí mismo un no-op silencioso todo este tiempo - `tsc --noEmit` solo, contra el propio `tsconfig.json` raíz de tipo "solución" de este repositorio (`"files": []`, solo `"references"` a proyectos), no comprueba nada en absoluto; el arreglo real necesita el modo build de proyecto (`tsc -b --noEmit`), que sacó a la luz de inmediato 8 errores de tipo reales y ya preexistentes (ahora arreglados) que se habían ido acumulando en silencio, ya que la propia transpilación esbuild/SWC de `vite build` nunca comprueba tipos. Ver [`CHANGELOG.md`](CHANGELOG.md) para el desglose completo.
 
 ### Compilación de Producción
 

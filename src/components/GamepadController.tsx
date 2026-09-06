@@ -120,9 +120,9 @@ export function GamepadController() {
               const z = cart.z + dz * CARTESIAN_JOG_STEP_MM;
               const newJoints = resolveTargetJoints(currentRobot.model, x, y, z, cart.a, cart.b, cart.c, currentRobot.joints);
               const axes: { axis: 'x' | 'y' | 'z'; amount: number; value: number }[] = [
-                { axis: 'x', amount: dx * CARTESIAN_JOG_STEP_MM, value: x },
-                { axis: 'y', amount: dy * CARTESIAN_JOG_STEP_MM, value: y },
-                { axis: 'z', amount: dz * CARTESIAN_JOG_STEP_MM, value: z },
+                { axis: 'x' as const, amount: dx * CARTESIAN_JOG_STEP_MM, value: x },
+                { axis: 'y' as const, amount: dy * CARTESIAN_JOG_STEP_MM, value: y },
+                { axis: 'z' as const, amount: dz * CARTESIAN_JOG_STEP_MM, value: z },
               ].filter((a) => a.amount !== 0);
               for (const a of axes) {
                 sendRobotCommandRef.current(

@@ -219,6 +219,11 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # 新規チェックアウト用のサンプル設定
 │   └── favicon.svg, icons.svg   # アプリアイコンと共有アイコンスプライト
 ├── images/                       # README バナー
+├── tests/                        # 実際の Vitest スイート(141 件のテスト)—— src/examples/ の FK/IK 数学のみ、React/DOM は不使用
+│   ├── utils.test.ts             # 共有の汎用アーム FK/IK ペアとその 5 つのパスジェネレーター
+│   ├── urKinematicsShared.test.ts  # 実際の DH チェーン FK + Newton-Raphson IK エンジン(実際の UR5e チェーンを通じて検証)
+│   ├── parol6Kinematics.test.ts  # Parol6 自身のハードコードされた実際のチェーン
+│   └── robotKinematicsDispatch.test.ts  # 24 の実在するロボットモデルすべてにわたる単一の汎用パラメータ化スイート
 ├── tools/
 │   ├── build_test.py            # バージョンを更新しないビルド/コンパイル確認
 │   ├── ci_validate.py           # CI が使用する manifest/CHANGELOG/docs の検証
@@ -229,6 +234,8 @@ HYDRA-UMC-STUDIO/
 ├── build.sh / build.bat          # 依存関係のインストール + プロダクションビルド
 ├── build-test.sh / build-test.bat  # バージョンを更新しないビルド/コンパイル確認
 ├── dev.sh / dev.bat              # 依存関係のインストール + Vite 開発サーバーの起動
+├── vitest.config.ts              # Vitest 設定(tests/ のみ、実際の node 環境 —— DOM は不要)
+├── tsconfig.test.json            # tests/ 用の独立した型チェックプロジェクト(app/node の参照とは分離)
 ├── .env.example                  # VITE_API_BASE_URL テンプレート——src/lib/apiBase.ts を参照
 ├── README.md                     # 本ファイル
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  # 翻訳
@@ -256,6 +263,15 @@ npm install
 Vite 自身の開発サーバー（純粋な `vite`、ポート `5173`）をライブリロード付きで実行します。`vite.config.ts` 自身の `server.proxy` が `/api`、`/ws`、`/WORKS` を透過的に `http://localhost:3000` へ転送するため、本アプリの相対パスの fetch/WebSocket 呼び出しは CORS 設定なしで HYDRA-UMC SERVER バックエンドに到達します——先にそのバックエンドが起動していることだけ確認してください：
 - **Windows：** `dev.bat` をダブルクリックするか、`npm run dev` を実行
 - **Linux/Mac：** `./dev.sh` または `npm run dev` を実行
+
+### 自動テスト
+
+```bash
+npm test          # vitest run —— src/examples/ に対する 141 件の実際のテスト
+npm run typecheck # tsc -b --noEmit（src/）+ tsc -p tsconfig.test.json --noEmit（tests/）
+```
+
+エコシステム全体のソフトウェア改善監査で発見:`src/examples/`(`robotKinematicsDispatch.ts` が振り分ける 24 の実在するロボットモデルすべての FK/IK 数学 —— `utils.ts` の共有汎用フォーミュラ、UR ファミリーの全モデルが共有する `urKinematicsShared.ts` の実際の DH チェーン + Newton-Raphson エンジン、`parol6Kinematics.ts` 自身のハードコードされたチェーン、そしてロボットごとの 23 個の `*Kinematics.ts` ファイル)には自動テストのカバレッジが一切ありませんでした。修正済み:`tests/`(新規、Vitest)—— 141 件のテストのうち、その大半は `robotKinematicsDispatch.ts` 自身のディスパッチテーブルに対する単一の汎用的なパラメータ化テストスイートとしてまとめられており、23 個のほぼ重複したテストファイルを書く代わりに、そのテーブルに新しいロボットが追加されれば自動的にカバーされます。別件として:`npm run typecheck` もまた、ずっと静かに何もしていない no-op でした —— このリポジトリ自身のソリューション形式のルート `tsconfig.json`(`"files": []`、プロジェクトの `"references"` のみ)に対して単独の `tsc --noEmit` を実行しても、実際には何もチェックされません。本当の修正にはプロジェクトのビルドモード(`tsc -b --noEmit`)が必要で、これを実行すると、`vite build` 自身の esbuild/SWC トランスパイルが型チェックを一切行わないために静かに蓄積していた、8 件の実在する既存の型エラー(現在は修正済み)が即座に明らかになりました。詳細な内訳は [`CHANGELOG.md`](CHANGELOG.md) を参照してください。
 
 ### プロダクションビルド
 
