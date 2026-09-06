@@ -28,8 +28,9 @@
 // reaches within a few mm of. Fixed by clamping j1/j2/j3 to their real
 // limits INSIDE every Newton-Raphson iteration (projected Newton) instead
 // of only at the end, so the solve itself stays inside the feasible box
-// and actually converges toward the true closest reachable pose. See
-// auditoria_historial.txt for the before/after numbers.
+// and actually converges toward the true closest reachable pose - raised
+// the realistic-sweep success rate from 32.5% to 58.1%, with the
+// remaining misses confirmed as genuine out-of-reach cases, not solver gaps.
 // =============================================================================
 
 import { Matrix4, Quaternion, Vector3, Euler } from 'three';
@@ -163,7 +164,7 @@ function solveJ1J2J3(xt: number, yt: number, zt: number): { j1: number; j2: numb
 // app z=0 maps to this many mm above AR4's own base - calibrated against a pose well
 // inside AR4's real J2/J3 limits (j2=80,j3=-70 gives height=177mm in AR4's own frame) rather
 // than the app's own ~200mm default radius, which sits outside AR4's real reach entirely
-// (this is genuinely a bigger arm) - see auditoria_historial.txt for the derivation.
+// (this is genuinely a bigger arm).
 // Re-derived a second time after the rpy Euler order fix (was -176 after the root-orientation
 // fix alone; J2/J4/J5's own rpy are all 2-axis, so this pose's real height changed again -
 // coincidentally landing back near its pre-root-fix magnitude, this time positive again).

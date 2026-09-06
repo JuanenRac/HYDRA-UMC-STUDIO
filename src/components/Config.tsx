@@ -73,7 +73,7 @@ function TestConnectionButton({ state, onTest }: { state: TestState; onTest: () 
 
 export function Config({ onClose }: { onClose: () => void }) {
   const { t, i18n } = useTranslation();
-  const { controllers, activeController, updateController, settings, updateSettings, updateRobot, addController, removeController, factoryReset, updateCamera, flushSettingsSave, authToken } = useHydraStore();
+  const { controllers, activeController, activeControllerId, updateController, settings, updateSettings, updateRobot, addController, removeController, factoryReset, updateCamera, flushSettingsSave, authToken, serverReachable } = useHydraStore();
   const [configTab, setConfigTab] = useState<ConfigTab>('identity');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
@@ -264,14 +264,34 @@ export function Config({ onClose }: { onClose: () => void }) {
                       <tr><th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.node_name')}</th><th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.ip_address')}</th><th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.status')}</th><th className="px-4 py-3"></th></tr>
                     </thead>
                     <tbody>
-                      {controllers.map(c => (
+                      {controllers.map(c => {
+                        // STUDIO-01: this table's `status` cell used to
+                        // render c.status verbatim - a saved config value
+                        // with no live check behind it - as if it were a
+                        // real reachability check. This app only ever
+                        // holds one live connection at a time (to
+                        // whichever controller is active), so that's the
+                        // one row where a real signal (serverReachable)
+                        // actually exists; every other listed node is
+                        // genuinely unverified from here and says so
+                        // rather than showing a stale/fixture pill.
+                        const isActiveRow = c.id === activeControllerId;
+                        const knownOnline = isActiveRow && serverReachable;
+                        return (
                         <tr key={c.id} className="border-b border-slate-800/50 hover:bg-slate-900/50 transition-colors">
                           <td className="px-4 py-3"><input value={c.name} onChange={e => updateController(c.id, { name: e.target.value })} className="bg-transparent outline-none w-full text-slate-200 font-bold" /></td>
                           <td className="px-4 py-3 font-mono text-xs text-slate-400"><input value={c.ip} onChange={e => updateController(c.id, { ip: e.target.value })} className="bg-transparent outline-none w-full" /></td>
-                          <td className="px-4 py-3"><span className={cn("px-2 py-1 rounded text-[10px] font-black uppercase", c.status === 'online' ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500")}>{c.status === 'online' ? t('config.online') : t('config.offline')}</span></td>
+                          <td className="px-4 py-3">
+                            {isActiveRow ? (
+                              <span className={cn("px-2 py-1 rounded text-[10px] font-black uppercase", knownOnline ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500")}>{knownOnline ? t('config.online') : t('config.offline')}</span>
+                            ) : (
+                              <span className="px-2 py-1 rounded text-[10px] font-black uppercase bg-slate-700/40 text-slate-400" title="Not the active connection - this app only checks the one it's currently using.">{t('config.unverified')}</span>
+                            )}
+                          </td>
                           <td className="px-4 py-3 text-right"><button onClick={() => removeController(c.id)} className="text-slate-600 hover:text-rose-500 transition-colors"><Trash2 size={16}/></button></td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

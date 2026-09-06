@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "ecosystem": "HYDRA-UMC",
   "name": "HYDRA-UMC-STUDIO",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "role": "ui",
   "stack": "node",
   "technologies": [
@@ -16,7 +16,7 @@
   "family": "Core Backend & Clients",
   "parent": "HYDRA-UMC-SERVER",
   "build": "npm install && npm run build.",
-  "notes": "Web control dashboard with 3D multi-robot visualization, talking to HYDRA-UMC-SERVER's own API. GamepadController.tsx's real-time actions (joint/table jog, E-STOP, START/STOP, speed) now fire the atomic sendRobotCommand()/POST /api/robot/:id/command path instead of the 500ms-debounced settings save, matching every other real-time control surface in RobotDetail.tsx; jointLimitsFor() moved to the shared examples/robotKinematicsDispatch.ts so both reuse the same per-model joint-limit clamping. `npm run typecheck` (tsc --noEmit) was itself a silent no-op against this repo's own solution-style tsconfig - fixed to real `tsc -b --noEmit`, which immediately surfaced and got 8 real pre-existing type errors fixed. tests/ (new, vitest) now covers 141 real cases across src/examples/ - the FK/IK math for all 24 robot models robotKinematicsDispatch.ts fans out to, none of which had a single test before.",
+  "notes": "Web control dashboard with 3D multi-robot visualization, talking to HYDRA-UMC-SERVER's own API. GamepadController.tsx's real-time actions (joint/table jog, E-STOP, START/STOP, speed) now fire the atomic sendRobotCommand()/POST /api/robot/:id/command path instead of the 500ms-debounced settings save, matching every other real-time control surface in RobotDetail.tsx; jointLimitsFor() moved to the shared examples/robotKinematicsDispatch.ts so both reuse the same per-model joint-limit clamping. `npm run typecheck` (tsc --noEmit) was itself a silent no-op against this repo's own solution-style tsconfig - fixed to real `tsc -b --noEmit`, which immediately surfaced and got 8 real pre-existing type errors fixed. tests/ (new, vitest) now covers 145 real cases across src/examples/ and the default-fixture seed - the FK/IK math for all 24 robot models robotKinematicsDispatch.ts fans out to, none of which had a single test before. Example robots/cameras seeded on a fresh install no longer claim a live online/urtcConnected/connected hardware connection they don't have; a new serverReachable signal (real, live, never persisted to settings.json) now drives the System Online/Offline badge instead of a static fixture field.",
   "native_version": {
     "file": "package.json",
     "pattern": "\"version\":\\s*\"(\\d+)\\.(\\d+)\\.(\\d+)\""

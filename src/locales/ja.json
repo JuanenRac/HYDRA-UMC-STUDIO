@@ -111,6 +111,7 @@
     "status": "状態",
     "online": "オンライン",
     "offline": "オフライン",
+    "unverified": "未確認",
     "add_node": "ノードを追加",
     "auto_search": "HYDRA-UMC を自動検索",
     "advanced_config": "詳細設定",

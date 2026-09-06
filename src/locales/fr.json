@@ -111,6 +111,7 @@
     "status": "Statut",
     "online": "En ligne",
     "offline": "Hors ligne",
+    "unverified": "Non vérifié",
     "add_node": "Ajouter un Nœud",
     "auto_search": "Recherche Auto",
     "advanced_config": "Configuration Avancée",

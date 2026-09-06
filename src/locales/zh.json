@@ -111,6 +111,7 @@
     "status": "状态",
     "online": "在线",
     "offline": "离线",
+    "unverified": "未验证",
     "add_node": "添加节点",
     "auto_search": "自动搜索 HYDRA-UMC",
     "advanced_config": "高级配置",

@@ -40,7 +40,7 @@
 // this centering fix it isn't a data transcription bug.
 //
 // Known, larger version of the trade-off already accepted for the other
-// robots' link-length differences (see mejoras_futuras.txt): the shared
+// robots' link-length differences: the shared
 // 2-link trajectory kinematics in examples/utils.ts / RobotDetail.tsx /
 // PathVisualizer.tsx has no idea this robot's joints don't map onto a
 // simple planar 2-link model the way the other rigs' simplified

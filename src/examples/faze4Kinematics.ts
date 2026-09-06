@@ -127,7 +127,7 @@ function solveJ1J2J3(xt: number, yt: number, zt: number): { j1: number; j2: numb
 
 // app z=0 maps to this many mm above Faze4's own neutral (j2=j3=0) pose height, chosen
 // so the shared examples' usual ~200mm radius / near-zero z sit mid-workspace for this
-// robot's own (larger) real reach - see auditoria_historial.txt for the derivation.
+// robot's own (larger) real reach.
 // Re-derived after the rpy Euler order fix (was 185 under the old, wrong 'XYZ' order -
 // the neutral pose itself moved a lot since J1's own rpy is 2-axis, which corrupted
 // FAZE4_ROOT_QUAT along with most of the rest of this chain).

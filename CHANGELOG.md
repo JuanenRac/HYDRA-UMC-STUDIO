@@ -27,6 +27,39 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.4.9] - Example data can no longer look like a live connection (STUDIO-01)
+
+Found in an ecosystem-wide software-improvements audit (P1): the example
+robots/cameras this app seeds on a fresh install had `online`/
+`urtcConnected`/`connected: true` (and populated firmware/hardware-ID
+fields) for a few entries, and the example controller's own `status`
+started `'online'` - indistinguishable from a real, live connection
+before this app had ever actually heard from a real Server. Worse,
+`status` lives inside the same `controllers` array the debounced save
+effect POSTs to `settings.json`, so that fake claim could persist.
+
+- `createDefaultRobots()`/`createDefaultCameras()` now start every live-
+  connection field (`online`, `urtcConnected`, `connected`,
+  `controllerBoard`/`urtcHead`/`urtcExpansion`) false/undefined - the
+  useful example content (robot models, roles, tools, joint angles, the
+  Pnp/CNC/Inspection role assignments) is unchanged.
+- New `serverReachable` state in `HydraProvider`: a real, live signal set
+  from the actual boot fetch and WebSocket open/close lifecycle - never
+  from a fixture default, and never written into `settings`/`controllers`
+  (so it can never persist into `settings.json` the way the old `status`
+  field's fake `'online'` used to). The "System Online/Offline" badge
+  (header and footer) now reads this instead of `activeController.status`,
+  and shows an explicit "Example data" tag while no real connection has
+  been confirmed yet.
+- Config > Controllers' per-node status pill only shows a real Online/
+  Offline verdict for the currently-active connection (the only one this
+  app actually checks); every other listed node now honestly reads
+  "Unverified" instead of replaying its last-saved `status` as if it were
+  a live check. New `config.unverified` string in all 7 locales.
+- New `tests/defaultFixtures.test.ts` (4 tests) locks in that every
+  example robot/camera the app ships with starts with no live connection
+  claimed, while still returning 8 usefully pre-configured examples.
+
 ## [0.4.8] - `typecheck` was still a no-op, plus a real automated test suite
 
 - **Corrects the previous "Unreleased" entry below, which was itself
@@ -1052,7 +1085,7 @@ Translated `README.md` into Spanish, Italian, French, and German
 
 A full line-by-line (not sampled) audit of the backend and `src/` root plus
 `components/` (excluding `3d/`), followed by two passes over the
-accumulated `mejoras_futuras.txt` backlog. Notable real fix: AR4's inverse
+accumulated known-issues backlog. Notable real fix: AR4's inverse
 kinematics solver clamped j1/j2/j3 only *after* an unconstrained
 Newton-Raphson solve, which could land on an internally inconsistent pose;
 changed to clamp after every iteration (projected Newton-Raphson), raising

@@ -111,10 +111,10 @@ function solveJ1J2J3(xt: number, yt: number, zt: number): { j1: number; j2: numb
 }
 
 // app z=0 maps to this many mm above AR3's own base - calibrated against a pose well inside
-// AR3's own workspace (j2=-60,j3=60 gives height=541mm in AR3's own frame) - see
-// auditoria_historial.txt for the derivation. Re-derived a second time after the rpy Euler
-// order fix (was 567 after the root-orientation fix alone; J2/J4/J5's own rpy are all 2-axis,
-// so this pose's real height/radius changed again once those joints' transforms were fixed).
+// AR3's own workspace (j2=-60,j3=60 gives height=541mm in AR3's own frame). Re-derived a
+// second time after the rpy Euler order fix (was 567 after the root-orientation fix alone;
+// J2/J4/J5's own rpy are all 2-axis, so this pose's real height/radius changed again once
+// those joints' transforms were fixed).
 const Z_OFFSET_MM = 541;
 
 export function ar3JointsToCartesian(pt: KinematicsPoint): { x: number; y: number; z: number; a: number; b: number; c: number } {

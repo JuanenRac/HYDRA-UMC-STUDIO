@@ -544,17 +544,30 @@ export interface SystemSettings {
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
 export const createDefaultRobots = (): RobotState[] => {
+  // STUDIO-01 (found in an ecosystem-wide software-improvements audit,
+  // P1): online/urtcConnected/controllerBoard/urtcHead/urtcExpansion used
+  // to be true/populated for the first 3 example robots, presenting
+  // fixture data as evidence of a real hardware connection the very first
+  // time this app renders (before any real Server has ever answered) -
+  // and, since this seed is what gets POSTed back via the debounced save
+  // effect, that fake "connected" claim could persist into settings.json
+  // itself. Every LIVE field here now starts false/undefined - a fresh
+  // install shows real, useful example robots (models/roles/tools/joint
+  // angles below), never a fake live connection. See defaultControllers'
+  // own header comment and HydraProvider's serverReachable state for the
+  // real, non-persisted signal that now drives the "System Online/
+  // Offline" badge instead.
   const bots = Array.from({ length: 8 }, (_, i) => ({
     id: i + 1,
     name: `Robot A${i + 1}`,
-    online: i < 3,
+    online: false,
     model: (i % 2 === 0 ? 'Parol6 (6-DOF)' : 'Faze4 (6-DOF)') as RobotModel,
     role: 'Idle' as RobotRole,
     tool: 'None' as ToolType,
-    urtcConnected: i < 3,
-    controllerBoard: i < 3 ? { firmwareVersion: '0.2.0', bootloaderVersion: '0.0.0', hardwareId: `RCB-${(i + 1).toString().padStart(3, '0')}` } : undefined,
-    urtcHead: i < 3 ? { firmwareVersion: '2.1.3', bootloaderVersion: '0.0.0', hardwareId: `URTC-${(i + 1).toString().padStart(3, '0')}`, expansionBoardType: i === 0 ? 3 : 0 } : undefined,
-    urtcExpansion: i === 0 ? { firmwareVersion: '0.0.1', bootloaderVersion: '0.0.0', hardwareId: `EXP-${(i + 1).toString().padStart(3, '0')}` } : undefined,
+    urtcConnected: false,
+    controllerBoard: undefined,
+    urtcHead: undefined,
+    urtcExpansion: undefined,
     pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 },
     joints: { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 },
     valves: [false, false] as [boolean, boolean],
@@ -608,9 +621,12 @@ export const createDefaultRobots = (): RobotState[] => {
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
 export const createDefaultCameras = (): CameraState[] => {
+  // STUDIO-01: same reasoning as createDefaultRobots() above - `connected`
+  // used to default to true for the first 2 example cameras, a fixture
+  // value indistinguishable from a real detected camera.
   return Array.from({ length: 8 }, (_, i) => ({
     id: i + 1,
-    connected: i < 2,
+    connected: false,
     type: 'USB Vision Camera',
     assignedRobotId: i + 1,
     hardwareSource: `USB_DEV_${i}`,
@@ -622,13 +638,23 @@ export const createDefaultCameras = (): CameraState[] => {
   }));
 };
 
-/** Stores the Default controllers configuration or state data. */
+/** Stores the Default controllers configuration or state data.
+ * STUDIO-01: `status` starts 'offline' - it used to start 'online' before
+ * this app had ever actually heard from a real Server, and this field is
+ * itself part of the `controllers` array the debounced save effect POSTs
+ * back to settings.json, so that fake 'online' claim could persist
+ * indefinitely. The "System Online/Offline" badge (Dashboard.tsx) no
+ * longer even reads this field - it reads HydraProvider's own
+ * `serverReachable`, a real, non-persisted signal set from the actual
+ * fetch/WebSocket connection lifecycle. This `status` field remains only
+ * for schema/backward-compat with an older settings.json that still has
+ * it. */
 const defaultControllers: HydraController[] = [
   {
     id: '192.168.1.100',
     name: 'HYDRA-UMC Master',
     ip: '192.168.1.100',
-    status: 'online',
+    status: 'offline',
     fdcanBaudrate: 1000,
     fdcanDataBaudrate: 5000,
     robots: createDefaultRobots(),
@@ -720,6 +746,11 @@ interface HydraStoreContextType {
   /** Real feedback from live testing: AdminLogs.tsx (Server Logs) is conditionally mounted (`{activeTab === 'adminLogs' && <AdminLogs />}` in Dashboard.tsx), so its own local state was wiped every time the operator navigated away and back - clicking Clear, then leaving and returning, showed everything again. Lifted here so it survives navigation for the life of this session. `anchor` is the newest log line at the moment Clear was pressed (or null if the log was empty then) - AdminLogs.tsx only displays what comes after it in each later poll. Null (the default) means "never cleared this session". */
   logsClearedAt: { anchor: string | null } | null;
   setLogsClearedAt: (value: { anchor: string | null } | null) => void;
+  /** STUDIO-01: real, live "has a real Server actually answered/is the
+   * WebSocket actually open right now" signal - never a fixture default,
+   * never persisted into settings.json. Drives the "System Online/
+   * Offline" badge; see its own useState comment in HydraProvider. */
+  serverReachable: boolean;
 }
 
 /** Stores the  hydra context configuration or state data. */
@@ -777,6 +808,14 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     serverName: "HYDRA-UMC TEST",
   });
   const [isLoaded, setIsLoaded] = useState(false);
+  // STUDIO-01: the real, live "have we actually heard from a real Server"
+  // signal - starts false (honest: nothing confirmed yet) and is set from
+  // the actual fetch/WebSocket lifecycle below, never from a fixture
+  // default and never written into `settings`/`controllers` (so it can
+  // never persist into settings.json the way controllers[].status used
+  // to). Dashboard.tsx's "System Online/Offline" badge reads this, not
+  // activeController.status.
+  const [serverReachable, setServerReachable] = useState(false);
 
   // Session token - lazy-initialized synchronously (not in a useEffect) so the
   // very first render already knows whether we're authenticated, avoiding a
@@ -1078,9 +1117,13 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const headers: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
 
     fetch(apiUrl('/api/settings'), { headers }).then(r => r.json()).then(data => {
-      if (!cancelled) applyServerData(data);
+      // STUDIO-01: this fetch actually succeeding IS the real evidence a
+      // live Server answered - set before applyServerData so even the
+      // "server answered but has no saved controllers yet" branch (a
+      // genuinely fresh install) still shows System Online, honestly.
+      if (!cancelled) { setServerReachable(true); applyServerData(data); }
     }).catch(() => {
-      if (!cancelled) setIsLoaded(true);
+      if (!cancelled) { setServerReachable(false); setIsLoaded(true); }
     });
 
     // Live sync: any client (this tab, another tab, HYDRA-UMC SUITE, a
@@ -1136,6 +1179,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // useful for a real desktop STUDIO tab's own devtools console.
         socket.onopen = () => {
           console.log(`[WS] connected (robotId param: ${new URLSearchParams(window.location.search).get('robotId') ?? 'none'})`);
+          setServerReachable(true);
         };
         socket.onmessage = (ev) => {
           try {
@@ -1162,6 +1206,11 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         socket.onclose = (ev) => {
           console.log(`[WS] closed code=${ev.code} reason=${ev.reason || '(none)'}`);
           if (ws === socket) ws = null;
+          // STUDIO-01: a dropped socket is real, live evidence the Server
+          // connection is no longer confirmed - reflect that immediately
+          // rather than leaving the badge stuck on the last known-good
+          // state until (or unless) a reconnect happens to succeed.
+          setServerReachable(false);
           if (cancelled) return;
           reconnectTimer = setTimeout(openWs, WS_RECONNECT_MS);
         };
@@ -1449,7 +1498,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       exportScene, importScene, factoryReset,
       authToken, role, isAdmin, login, logout, loginError,
       canotaProgress,
-      logsClearedAt, setLogsClearedAt
+      logsClearedAt, setLogsClearedAt,
+      serverReachable
     }}>
       {children}
     </HydraContext.Provider>

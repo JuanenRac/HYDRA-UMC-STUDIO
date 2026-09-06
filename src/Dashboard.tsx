@@ -99,7 +99,7 @@ const SystemSupervisor = React.lazy(() => import('./components/SystemSupervisor'
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
-  const { controllers, activeControllerId, setActiveControllerId, activeController, robots, settings, updateRobot, isAdmin, logout } = useHydraStore();
+  const { controllers, activeControllerId, setActiveControllerId, activeController, robots, settings, updateRobot, isAdmin, logout, serverReachable } = useHydraStore();
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -204,8 +204,16 @@ export default function Dashboard() {
             <IconButton onClick={() => setIsAboutOpen(true)} icon={<Info size={18}/>} label="About" />
             <div className="w-px h-6 bg-slate-800 mx-2"></div>
             <div className="flex items-center gap-3">
-              <span className={cn("w-4 h-4 rounded-full animate-pulse", activeController?.status === 'online' ? "bg-emerald-500 shadow-[0_0_10px_#10b981]" : "bg-rose-500 shadow-[0_0_10px_#f43f5e]")} />
-              <span className={cn("tracking-widest font-bold text-xs uppercase", activeController?.status === 'online' ? "text-emerald-400" : "text-rose-400")}>{activeController?.status === 'online' ? 'System Online' : 'System Offline'}</span>
+              {/* STUDIO-01: reads the real, live serverReachable signal,
+                  never activeController.status - see that field's own
+                  header comment in store.tsx for why. */}
+              <span className={cn("w-4 h-4 rounded-full animate-pulse", serverReachable ? "bg-emerald-500 shadow-[0_0_10px_#10b981]" : "bg-rose-500 shadow-[0_0_10px_#f43f5e]")} />
+              <span className={cn("tracking-widest font-bold text-xs uppercase", serverReachable ? "text-emerald-400" : "text-rose-400")}>{serverReachable ? 'System Online' : 'System Offline'}</span>
+              {!serverReachable && (
+                <span className="ml-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-amber-500/20 text-amber-400 border border-amber-500/40" title="No real Server connection has been confirmed yet - the robots/cameras shown are example configuration, not live telemetry.">
+                  Example data
+                </span>
+              )}
             </div>
             <select value={activeControllerId} onChange={(e) => setActiveControllerId(e.target.value)} className="ml-4 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 font-mono text-xs font-bold text-sky-400 outline-none appearance-none cursor-pointer hover:border-sky-500 transition-all shadow-inner">
               {controllers.map(c => <option key={c.id} value={c.id}>{c.name} ({c.ip})</option>)}
@@ -348,7 +356,7 @@ export default function Dashboard() {
              <div className="flex items-center gap-3">
                 <span className="text-sky-400 font-black tracking-widest bg-sky-500/10 px-3 py-1 rounded border border-sky-500/20">{settings.serverName || "HYDRA-UMC TEST"}</span>
                 <div className="w-px h-4 bg-slate-800"></div>
-                <span className={cn("w-2.5 h-2.5 rounded-full", activeController?.status === 'online' ? "bg-emerald-500 shadow-[0_0_12px_#10b981]" : "bg-rose-500 shadow-[0_0_12px_#f43f5e]")} />
+                <span className={cn("w-2.5 h-2.5 rounded-full", serverReachable ? "bg-emerald-500 shadow-[0_0_12px_#10b981]" : "bg-rose-500 shadow-[0_0_12px_#f43f5e]")} />
                 <span className="text-slate-200 tracking-[0.4em]">{t('dashboard.system_master_hub')}</span>
              </div>
              <span>{robots.filter(r => r.online).length} / {robots.length} {t('dashboard.nodes_active')}</span>
@@ -461,9 +469,10 @@ function OverviewPanel() {
             // Array.from(new Set()) guards a follower combined into more than one leader
             // at once from listing the same leader twice, and is also a display-layer
             // safety net in case combinedWith itself ever picks up duplicate ids - see
-            // RobotDetail.tsx's combine-robot checkbox handler (which dedupes on write)
-            // and auditoria_historial.txt for a documented case (144 entries, 3 ids
-            // repeated 48x).
+            // RobotDetail.tsx's combine-robot checkbox handler (which dedupes on write).
+            // A saved config was once observed with the same leader id duplicated dozens
+            // of times across a single robot's combinedWith array, which this guard
+            // renders correctly instead of repeating the same name in the list.
             const combinedLeaders = robots.filter(other => other.id !== r.id && other.combinedWith?.includes(r.id)).map(other => other.id);
             const combinedNames = Array.from(new Set(combinedLeaders)).map(id => robots.find(o => o.id === id)?.name || `A${id}`);
             const isRunning = r.online && !!r.playbackState?.isPlaying;

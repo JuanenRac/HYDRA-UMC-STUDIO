@@ -16,8 +16,8 @@
 //
 // The 6-step transform chain below (position, rpy, axis sign) is copied
 // from the same PAROL6.urdf as Parol6Arm.tsx's own header comment - kept in
-// sync BY HAND with that file (same tech debt already flagged for the
-// shared 2-link formula's own 3-way duplication in mejoras_futuras.txt) -
+// sync BY HAND with that file (the same 3-way duplication trade-off already
+// accepted for the shared 2-link formula) -
 // deliberately not refactored into one shared data table this session,
 // since Parol6Arm.tsx's own JSX is confirmed visually correct and touching
 // its structure to extract a shared table would risk regressing that for a
