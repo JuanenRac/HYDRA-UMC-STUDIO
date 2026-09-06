@@ -17,7 +17,7 @@
 
 ### 🤖 Dashboard di Controllo Web per la Micro-Fabbrica Multi-Robot HYDRA-UMC
 
-<p align="left">
+<p align="center">
   <img src="https://img.shields.io/badge/Licenza-GPL%203.0-blue.svg" alt="GPL 3.0">
   <img src="https://img.shields.io/badge/Framework-React%2019-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/Strumento-Vite-646CFF.svg" alt="Vite">

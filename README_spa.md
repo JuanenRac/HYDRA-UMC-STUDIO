@@ -17,7 +17,7 @@
 
 ### 🤖 Panel de Control Web para la Micro-Fábrica Multi-Robot HYDRA-UMC
 
-<p align="left">
+<p align="center">
   <img src="https://img.shields.io/badge/Licencia-GPL%203.0-blue.svg" alt="GPL 3.0">
   <img src="https://img.shields.io/badge/Framework-React%2019-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/Herramienta-Vite-646CFF.svg" alt="Vite">

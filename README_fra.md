@@ -17,7 +17,7 @@
 
 ### 🤖 Tableau de Bord de Contrôle Web pour la Micro-Usine Multi-Robots HYDRA-UMC
 
-<p align="left">
+<p align="center">
   <img src="https://img.shields.io/badge/Licence-GPL%203.0-blue.svg" alt="GPL 3.0">
   <img src="https://img.shields.io/badge/Framework-React%2019-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/Outil-Vite-646CFF.svg" alt="Vite">

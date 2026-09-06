@@ -17,7 +17,7 @@
 
 ### 🤖 HYDRA-UMC 多机器人微工厂的网页版控制仪表盘
 
-<p align="left">
+<p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
   <img src="https://img.shields.io/badge/Framework-React%2019-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
