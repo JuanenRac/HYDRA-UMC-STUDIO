@@ -3,7 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 //
-// Real geometry, not a placeholder: 5 merged meshes (public/models/
+// Real geometry, not a placeholder: 7 merged meshes (public/models/
 // lumenpnp/*.glb, see that folder's own ATTRIBUTION.txt - the .stl
 // originals tessellated from Opulo's own official FreeCAD source are kept
 // alongside them as the source-of-truth for regenerating the .glb, but
@@ -20,14 +20,30 @@
 // objects anywhere in the source file) and isn't a serial robot arm, so
 // this doesn't reuse the *Arm.tsx joint-chain pattern - it's a real
 // Cartesian gantry, built from the machine's own real mechanical
-// structure instead:
+// structure instead, matching this project's own formal
+// lumenpnp_juanenpnp.urdf (7 links/6 joints, built the same way from the
+// same source CAD) link-for-link:
 //   base (fixed)
 //     -> y_carriage   (translates world Y,  0-487mm - openpnp/machine.xml)
 //        -> x_carriage (translates local X, 0-433mm - openpnp/machine.xml)
-//           -> z_carriage_n1 (translates local Z, rotates "A" - nozzle 1)
-//           -> z_carriage_n2 (translates local Z, rotates "B" - nozzle 2,
-//                              mirrors n1's Z per machine.xml's own
-//                              z2 input-axis-id="z1" mapping)
+//           -> z_carriage_left  (translates local Z only - the rail slider
+//              housing, does NOT rotate on the real machine)
+//              -> nozzle_left    (rotates "A" only, no extra translation -
+//                 same joint origin as its z_carriage_left parent)
+//           -> z_carriage_right (translates local Z only, mirrors
+//              z_carriage_left's Z per machine.xml's own z2
+//              input-axis-id="z1" mapping)
+//              -> nozzle_right   (rotates "B" only)
+// Real bug fixed 2026-09-08: an earlier revision of this rig merged each
+// Z-carriage housing and its nozzle into ONE rigid mesh per side
+// (z_carriage_n1/n2) that translated AND rotated together - a real, visible
+// error, not a harmless simplification: the housing's own real footprint is
+// ~44x51mm at that joint (measured off the real per-part CAD bounding box),
+// so the whole rectangular slider block visibly swung around the Z axis
+// every time a nozzle rotated, which the physical machine never does (only
+// the ~10x10mm nozzle barrel itself spins). Splitting them into the 7 real
+// links above - already the formal URDF's own link split - fixes it: only
+// nozzle_left/nozzle_right rotate now.
 // Which real CAD parts belong to which link was determined by opening the
 // real assembly.FCStd headless (FreeCAD 1.1's own Python API) and reading
 // every leaf part's real bounding box - e.g. GT2BeltClamp's own bbox
@@ -84,7 +100,7 @@ function useRealScaleGLB(url: string): THREE.BufferGeometry {
 }
 
 const MESH_BASE = '/models/lumenpnp/';
-const MESH_URLS = ['base.glb', 'x_carriage.glb', 'y_carriage.glb', 'z_carriage_n1.glb', 'z_carriage_n2.glb'].map((f) => MESH_BASE + f);
+const MESH_URLS = ['base.glb', 'x_carriage.glb', 'y_carriage.glb', 'z_carriage_left.glb', 'z_carriage_right.glb', 'nozzle_left.glb', 'nozzle_right.glb'].map((f) => MESH_BASE + f);
 // Kicks off all 5 fetches immediately, in parallel, the moment this
 // module is imported - without this, each of the 5 useGLTF() calls below
 // only starts ITS OWN fetch on the Suspense retry where React reaches it,
@@ -100,12 +116,14 @@ const carriageMat = { color: '#c7cdd6', roughness: 0.45, metalness: 0.4 };
 const nozzleMat = { color: '#eab308', roughness: 0.4, metalness: 0.3 };
 
 export default function LumenPnPRig({ module }: { module: PnPModule }) {
-  const [baseUrl, xUrl, yUrl, zN1Url, zN2Url] = MESH_URLS;
+  const [baseUrl, xUrl, yUrl, zLeftUrl, zRightUrl, nozzleLeftUrl, nozzleRightUrl] = MESH_URLS;
   const baseGeo = useRealScaleGLB(baseUrl);
   const yCarriageGeo = useRealScaleGLB(yUrl);
   const xCarriageGeo = useRealScaleGLB(xUrl);
-  const zN1Geo = useRealScaleGLB(zN1Url);
-  const zN2Geo = useRealScaleGLB(zN2Url);
+  const zCarriageLeftGeo = useRealScaleGLB(zLeftUrl);
+  const zCarriageRightGeo = useRealScaleGLB(zRightUrl);
+  const nozzleLeftGeo = useRealScaleGLB(nozzleLeftUrl);
+  const nozzleRightGeo = useRealScaleGLB(nozzleRightUrl);
 
   // Real axis values are millimeters (matching openpnp/machine.xml's own
   // units) - converted to meters here at the one point they're consumed,
@@ -135,16 +153,29 @@ export default function LumenPnPRig({ module }: { module: PnPModule }) {
             <meshStandardMaterial {...carriageMat} />
           </mesh>
 
-          <group position={[0, 0, z]} rotation={[0, 0, rotA]}>
-            <mesh geometry={zN1Geo} castShadow receiveShadow>
-              <meshStandardMaterial {...nozzleMat} />
+          <group position={[0, 0, z]}>
+            <mesh geometry={zCarriageLeftGeo} castShadow receiveShadow>
+              <meshStandardMaterial {...carriageMat} />
             </mesh>
+            {/* Only the nozzle barrel rotates - same joint origin as its
+                z_carriage_left parent, matching joint_c_left's real
+                "0 0 0" origin in lumenpnp_juanenpnp.urdf. */}
+            <group rotation={[0, 0, rotA]}>
+              <mesh geometry={nozzleLeftGeo} castShadow receiveShadow>
+                <meshStandardMaterial {...nozzleMat} />
+              </mesh>
+            </group>
           </group>
 
-          <group position={[0, 0, z]} rotation={[0, 0, rotB]}>
-            <mesh geometry={zN2Geo} castShadow receiveShadow>
-              <meshStandardMaterial {...nozzleMat} />
+          <group position={[0, 0, z]}>
+            <mesh geometry={zCarriageRightGeo} castShadow receiveShadow>
+              <meshStandardMaterial {...carriageMat} />
             </mesh>
+            <group rotation={[0, 0, rotB]}>
+              <mesh geometry={nozzleRightGeo} castShadow receiveShadow>
+                <meshStandardMaterial {...nozzleMat} />
+              </mesh>
+            </group>
           </group>
         </group>
       </group>
