@@ -27,6 +27,31 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.5.2] - LumenPnP/JuanenPnP: nozzle no longer spins its own housing
+
+`LumenPnPRig.tsx` used to merge each Z-carriage housing and its nozzle
+into one rigid mesh per side (`z_carriage_n1`/`z_carriage_n2`) that
+translated *and* rotated together. Real, visible bug, not a harmless
+simplification: the housing's own real footprint at that joint is
+~44x51mm (measured off the real per-part CAD bounding box), so the whole
+rectangular slider block visibly swung around the Z axis every time a
+nozzle rotated - the physical machine never does that, only the
+~10x10mm nozzle barrel itself spins. Split into `z_carriage_left`/
+`z_carriage_right` (translate only) + `nozzle_left`/`nozzle_right`
+(rotate only, same joint origin as their carriage parent) - matching
+this project's own formal `lumenpnp_juanenpnp.urdf` (7 links/6 joints)
+link-for-link, which had already modeled this correctly but was never
+wired into the live viewer. New meshes generated the same way as the
+existing 5 (opening the real CAD headless, offline-merged to indexed
+`.glb`), see `public/models/lumenpnp/ATTRIBUTION.txt` for the full story
+and the new triangle counts. Same fix ported to HYDRA-UMC-SUITE's
+`render/pnp_rig.py`/`viewport.py` and mirrored into HYDRA-UMC-SERVER's
+own copy of these public assets.
+
+## [0.5.2]
+
+- Build version synchronized with `hydra-umc.project.json` and the repository-native version source.
+
 ## [0.5.1]
 
 - Removed 2 real dead-code lint warnings surfaced during an ecosystem-wide
