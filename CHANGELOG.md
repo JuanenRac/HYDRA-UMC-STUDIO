@@ -27,6 +27,16 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.5.3] - First real persisted Work exercising the XY table
+
+`public/WORKS/RobotA1/inspeccion_con_mesa_xy.json` - mirrors the same new
+Work added to HYDRA-UMC-SERVER's own `data/WORKS/RobotA1/`, added to this
+folder's own `index.json` too. Every Work ever actually saved here used
+only `{x,y,z,a,b,c}` - the XY table's own `tx`/`ty` axes were exercised
+exclusively by this repo's in-memory Examples (`src/examples/list/*.ts`),
+never by anything a real user could load, save and replay from the file
+picker.
+
 ## [0.5.2] - LumenPnP/JuanenPnP: nozzle no longer spins its own housing
 
 `LumenPnPRig.tsx` used to merge each Z-carriage housing and its nozzle
