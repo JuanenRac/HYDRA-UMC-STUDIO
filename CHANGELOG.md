@@ -27,6 +27,22 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.5.4] - Fixed real readability bug: unreadable Industrial submenu labels
+
+`Dashboard.tsx`'s own Industrial submenu button labels came straight
+from a plain literal array (`'PickAndPlace'`, `'VacuumTable'`,
+`'HeatedBed'`) rendered through the button's own `uppercase` CSS class -
+correct for the multi-word entries in that same array (`'XY Table'` ->
+"XY TABLE", `'ATC Tools'` -> "ATC TOOLS"), but these 3 have no space at
+all, so they rendered as one unreadable run: "PICKANDPLACE",
+"VACUUMTABLE", "HEATEDBED". Fixed with a new `INDUSTRIAL_MENU_LABELS`
+display-only lookup ("Pick & Place" / "Vacuum Table" / "Heated Bed") -
+the array items themselves, and the `activeTab` slug derived from them,
+are unchanged, so nothing else in this file needed to move. SUITE
+already had the correct labels (`HEADING_PICK_AND_PLACE`=`"Pick &
+Place"` etc. in every one of its own `language/*.lng` files) - no
+change needed there.
+
 ## [0.5.3] - First real persisted Work exercising the XY table
 
 `public/WORKS/RobotA1/inspeccion_con_mesa_xy.json` - mirrors the same new
