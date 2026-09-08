@@ -100,3 +100,78 @@ Z-carriage rail length instead of a quoted spec.
 JuanenPnP (this project's own author's build) shares this exact mesh set
 and kinematic rig - per the author's own confirmation, it is visually and
 mechanically identical to stock LumenPnP v4.
+
+
+---
+
+parts/ subfolder (47 additional real, individually-named CAD parts, added
+alongside the 7 rigid-body groups above)
+
+The 7 groups above stayed a "recognizable silhouette" cut - correct for
+the moving assemblies, but they left several real, visually-significant
+parts out entirely (most notably the machine's own 4 legs and its control
+box, both requested explicitly). Rather than re-fusing those into the 7
+existing groups (which is exactly what produced the original 800MB/44MB
+base_link problem this file already documents above), each of these 47
+parts is exported and shipped as its own small, individually-loaded
+file - both because that is what keeps each one small and fast to
+tessellate/render on its own, and because it lets real machine detail
+(legs, control box, V-slot frame extrusions, top/bottom cameras and ring
+lights, all 6 real strip-feeder sizes, the vacuum pump, a solenoid valve,
+the nozzle rack, 2 nozzle holders, the X/Y gantry brackets and idler/motor
+mounts) be added without ever re-touching the 7 existing files.
+
+Selection: every part here is a real, distinctly-modeled part in Opulo's
+own pnp/cad/FDM, pnp/cad/MISC or pnp/cad/PCB source folders (i.e. a real
+printed part or a real purchased/PCB component with its own CAD file,
+never a raw fastener) - chosen from the ~86 distinct part types in those
+3 folders for real visual significance at this viewport's scale. Tiny
+repeated hardware this rig will never zoom in on (all ~30 individual
+Y-axis drag-chain links, all 16 individual extrusion cable clips, the
+full internal motherboard PCB fused with the control box) was left out on
+the same "no payoff at any zoom level this viewport is used at" basis the
+first cut above already used for its own Group027 exclusion - not a
+guess, the same real precedent already on this file. One part,
+static-camera-foot, was tried and dropped: its own real CAD carries
+71,896 pre-tessellated facets regardless of the LinearDeflection passed
+to MeshPart.meshFromShape() (a Mesh::Feature-backed part, not a plain
+B-Rep solid - deflection has no effect on those), producing a 5MB+ .glb
+for one small decorative foot bracket; not worth the payload.
+
+Placement: each part's own Shape is already in the real assembly's own
+absolute world-space (same "flat grouped-parts CAD file" structure this
+file already documents - Opulo's own object tree has no nested Assembly/
+Product placement stacking, every leaf's own Placement is already
+absolute), so every part here is exported and rendered exactly like the 7
+groups above: identity local transform, real assembled offset baked
+straight into the mesh.
+
+Which of the 3 existing links (base_link / y_carriage / x_carriage) each
+part was attached under was decided by real mechanical role, following
+this file's own established precedent above (X-Motor: "bbox stays fixed
+regardless of toolhead position, so it's grouped with the Y-carriage
+bridge instead") rather than a naive bounding-box-overlap heuristic (which
+was tried first and rejected here: at this CAD file's own modeled
+rest/home pose the y_carriage group's real bbox is large enough to
+spatially contain most of the static frame too, so raw AABB overlap alone
+mis-bucketed several legitimately-static parts into y_carriage). Legs,
+their extensions, the control box and lid, the 7 V-slot frame extrusion
+segments, both cameras, both ring lights, both light mounts, the aux
+staging-plate foot, all 6 feeders, the vacuum pump, the solenoid valve,
+the nozzle rack, both nozzle holders and the XY limit switch board are
+static → base_link. The X-idler-mount, X-motor-mount, both Y-gantry
+carriage blocks, the Y-limit striker and the squaring bracket are all
+fixed to the Y-bridge's own ends → y_carriage (moves in Y only, same
+X-Motor precedent). The toolhead's own front/back gantry plates
+(x-gantry-back/front) slide along the beam in X → x_carriage.
+
+47 parts, combined ~9.3MB across all .glb files (avg ~200KB/part,
+matching this viewport's existing per-part budget), tessellated the same
+way as the 7 groups above (MeshPart.meshFromShape(), coarser
+LinearDeflection overridden per-part only where a part's own real facet
+count demanded it - control-box/-lid and both ring lights, all real
+per-part decisions logged in this same folder's parts/manifest.json
+alongside every part's own real CAD source label, assembled bounding box
+and triangle count) and converted to .glb the same Node-side way
+documented above (binary STL parsed by hand, vertices welded, a minimal
+hand-written spec-valid GLB written directly - no browser-only globals).
