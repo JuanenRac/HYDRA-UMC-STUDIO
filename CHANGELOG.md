@@ -27,6 +27,25 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.5.7] - Real bug: an expired/revoked session looped forever instead of logging out
+
+`store.tsx`'s WebSocket reconnect effect rescheduled itself unconditionally
+on every close, including code 1008 (server.ts's own real close code for
+every auth rejection - no token / invalid token / session revoked, see
+its own 4 `ws.close(1008, ...)` call sites). A token that just expired or
+was revoked kept being retried with itself forever, silently, never
+surfaced to the user - the same real class of bug already fixed for
+Android/iOS/DSI's own `wsAuthRejected` handling earlier this session, just
+never ported to STUDIO itself. Fixed: `ev.code === 1008` now calls
+`logout()` (which reloads the page) instead of rescheduling.
+
+Also: `decodeJwtRole()` is now exported and has real unit tests
+(`tests/decodeJwtRole.test.ts`, 9 cases - a malformed/missing token, a
+non-JSON payload, a role field present but not a string, the URL-safe
+base64 alphabet a real JWT can use) - STUDIO's first test of its own
+session/credentials handling (found missing in an ecosystem-wide audit;
+IOS-CONTROL/ANDROID/SERVER already had their own).
+
 ## [0.5.6] - LumenPnP: 87 more real parts (motors, pulleys, belts, drag chain, rails) + ground-offset fix + Pick & Place resizable split
 
 Three real fixes/additions made after the previous release shipped and
