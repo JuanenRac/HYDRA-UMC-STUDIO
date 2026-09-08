@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw, Cpu, Maximize2, Plus } from 'lucide-react';
@@ -19,10 +19,58 @@ import SharedModule3DView from './3d/SharedModule3DView';
  */
 export function PickAndPlace() {
   const { t } = useTranslation();
-  const { robots, updateRobot } = useHydraStore();
+  const { robots, updateRobot, settings, updateSettings } = useHydraStore();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [machineType, setMachineType] = useState<'juanenPnP' | 'lumenPnP'>('juanenPnP');
-  
+
+  // Resizable split between Module Settings and the 3D viewer - default
+  // 40/60 (viewer 1.5x the settings panel's own width) - matches
+  // RobotDetail.tsx's own pointer-drag pattern for its right panel, same
+  // persisted-to-uiLayout convention, applied here between these two
+  // panels instead.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [settingsWidthPercent, setSettingsWidthPercent] = useState(settings.uiLayout?.pickAndPlaceSettingsWidthPercent ?? 40);
+  const [isResizingSplit, setIsResizingSplit] = useState(false);
+  const resizeStartRef = useRef({ percent: 0, x: 0 });
+  const settingsWidthPercentRef = useRef(settingsWidthPercent);
+  const uiLayoutRef = useRef(settings.uiLayout);
+
+  useEffect(() => {
+    settingsWidthPercentRef.current = settingsWidthPercent;
+    uiLayoutRef.current = settings.uiLayout;
+  }, [settingsWidthPercent, settings.uiLayout]);
+
+  useEffect(() => {
+    const handleMove = (e: PointerEvent) => {
+      if (!isResizingSplit || !containerRef.current) return;
+      const containerWidth = containerRef.current.getBoundingClientRect().width;
+      if (containerWidth <= 0) return;
+      const deltaPercent = ((e.clientX - resizeStartRef.current.x) / containerWidth) * 100;
+      const newPercent = Math.max(20, Math.min(70, resizeStartRef.current.percent + deltaPercent));
+      setSettingsWidthPercent(newPercent);
+    };
+    const handleUp = () => {
+      if (!isResizingSplit) return;
+      document.body.classList.remove('select-none');
+      setIsResizingSplit(false);
+      updateSettings({
+        uiLayout: {
+          ...uiLayoutRef.current,
+          pickAndPlaceSettingsWidthPercent: settingsWidthPercentRef.current,
+        }
+      });
+    };
+
+    if (isResizingSplit) {
+      window.addEventListener('pointermove', handleMove);
+      window.addEventListener('pointerup', handleUp);
+    }
+    return () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+    };
+  }, [isResizingSplit, updateSettings]);
+
   const selectedRobot = robots.find(r => r.id === selectedRobotId);
   if (!selectedRobot) return null;
   
@@ -107,8 +155,11 @@ export function PickAndPlace() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0">
-          <div className="space-y-4 overflow-y-auto custom-scrollbar pr-2">
+        <div ref={containerRef} className="flex flex-col md:flex-row gap-4 flex-1 min-h-0">
+          <div
+            className="space-y-4 overflow-y-auto custom-scrollbar pr-2 md:shrink-0"
+            style={{ width: '100%', ...(typeof window === 'undefined' || window.innerWidth >= 768 ? { width: `${settingsWidthPercent}%` } : {}) }}
+          >
             <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-medium text-slate-200">{t('modules.module_settings', 'Module Settings')}</h3>
@@ -184,7 +235,19 @@ export function PickAndPlace() {
             </div>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden relative h-[400px] md:h-auto min-h-[400px]">
+          <div
+            className="hidden md:flex w-2 cursor-col-resize hover:bg-slate-700/50 rounded shrink-0 items-center justify-center transition-colors touch-none"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              document.body.classList.add('select-none');
+              setIsResizingSplit(true);
+              resizeStartRef.current = { percent: settingsWidthPercent, x: e.clientX };
+            }}
+          >
+            <div className="w-0.5 h-12 bg-slate-600 rounded-full" />
+          </div>
+
+          <div className="flex-1 min-w-0 bg-slate-900 border border-slate-800 rounded-lg overflow-hidden relative h-[400px] md:h-auto min-h-[400px]">
             <div className="absolute top-3 left-3 z-10 pointer-events-none">
               <span className="bg-slate-950/80 backdrop-blur text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-800">
                 {t('modules.live_view_3d', '3D Live View')}

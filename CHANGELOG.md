@@ -27,6 +27,36 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.5.6] - LumenPnP: 87 more real parts (motors, pulleys, belts, drag chain, rails) + ground-offset fix + Pick & Place resizable split
+
+Three real fixes/additions made after the previous release shipped and
+was checked live on the real CM5:
+
+- **Ground-offset bug**: the 47 parts added in 0.5.5 made a real,
+  visible bug obvious for the first time - half the machine (the real
+  legs, which reach down to Z=-100.81mm, the machine's own real feet)
+  rendered below this app's shared ground plane, because CAD Z=0 is the
+  machine's own WORK surface, not its feet. `LumenPnPRig.tsx`'s root
+  group now carries a `GROUND_OFFSET_M` lift so the real lowest point
+  sits at Y=0 like every other robot in this app.
+- **87 more real CAD parts** (`public/models/lumenpnp/parts/`, batches
+  2-4 - see ATTRIBUTION.txt for the full per-batch breakdown): the 2 Y
+  motors + their pulleys/idlers + the X motor/pulley/idler + the
+  toolhead's own motor/pulley/idler (batch 2, 46 parts, plus the real
+  30-link Y drag chain), the GT2 belt loops + tension arms + belt-clamps
+  (batch 3, 13 parts), and the fixed/moving linear rails+carriages, the
+  fiducial reference board, the 2 blade-feeder mechanisms, the main
+  work-surface staging plates and cable clips (batch 4, 28 of 30
+  exported - 2 PCB parts dropped for the same "fine copper-trace
+  geometry, no payoff at this scale" reason Group027 was dropped in the
+  very first cut). 134 real parts total now, ~20.7MB combined .stl.
+- **Pick & Place panel**: the 3D viewer and Module Settings panel are
+  now a resizable split (default 40/60, viewer 1.5x the settings
+  panel's own width, drag the bar between them to change it) instead of
+  a fixed 50/50 grid - same pointer-drag pattern RobotDetail.tsx's own
+  right panel already uses, persisted to `settings.uiLayout` the same
+  way.
+
 ## [0.5.5] - LumenPnP rig: 47 real CAD parts added (legs, control box, frame, cameras, feeders, gantry hardware)
 
 The LumenPnP/JuanenPnP 3D rig previously shipped only the 7 rigid-body

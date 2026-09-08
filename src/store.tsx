@@ -536,6 +536,10 @@ export interface SystemSettings {
     pointsTableHeight?: number;
     threeDHeight?: number;
     cameraPips?: Record<number, { x?: number, y?: number, w?: number, h?: number, isOpen?: boolean }>;
+    /** PickAndPlace.tsx's own split between its Module Settings panel
+     * (this percent) and its 3D viewer (the rest) - default 40 gives the
+     * viewer 60%, 1.5x the settings panel's own width. */
+    pickAndPlaceSettingsWidthPercent?: number;
   };
 }
 
