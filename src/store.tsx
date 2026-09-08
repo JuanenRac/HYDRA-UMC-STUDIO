@@ -896,10 +896,55 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return false;
       }
       localStorage.setItem('hydra_token', data.token);
+      // C08: server.ts's own POST /api/login now also returns a real
+      // opaque refresh token alongside the access token (see
+      // refresh_tokens.ts) - stashed here so a later WS 1008 close can
+      // silently recover a fresh access token via attemptTokenRefresh()
+      // below instead of forcing this tab back to the login screen. A
+      // server predating this field simply never sends it, so
+      // data.refreshToken is undefined and this degrades to exactly
+      // today's forced-logout behavior - purely additive.
+      if (typeof data.refreshToken === 'string') {
+        localStorage.setItem('hydra_refresh_token', data.refreshToken);
+      }
       setAuthToken(data.token);
       return true;
     } catch {
       setLoginError('Cannot reach server');
+      return false;
+    }
+  }, []);
+
+  // C08: called only when the WS reconnect effect below sees a real 1008
+  // close - tries to recover silently (no visible interruption, no lost
+  // view/robot selection) before falling back to logout()'s own full
+  // reload. Deliberately NOT attempted for "no token"/never-logged-in
+  // (nothing to refresh) - only when a refresh token is actually on file.
+  // Mirrors server.ts's own /api/refresh contract exactly: success
+  // rotates both tokens, failure (revoked account, expired refresh token,
+  // or the server simply predating this feature) means a real re-login is
+  // the only correct next step, same as before this fix existed.
+  const attemptTokenRefresh = useCallback(async (): Promise<boolean> => {
+    const refreshToken = localStorage.getItem('hydra_refresh_token');
+    if (!refreshToken) return false;
+    try {
+      const res = await fetch(apiUrl('/api/refresh'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.token) return false;
+      localStorage.setItem('hydra_token', data.token);
+      if (typeof data.refreshToken === 'string') {
+        localStorage.setItem('hydra_refresh_token', data.refreshToken);
+      }
+      // Updating authToken re-runs the WS-reconnect effect below (it's in
+      // that effect's own dependency array) with the fresh token - no
+      // separate reconnect call needed here.
+      setAuthToken(data.token);
+      return true;
+    } catch {
       return false;
     }
   }, []);
@@ -916,7 +961,21 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // future screen might introduce) rather than trying to track down and
   // individually clear every local flag anything could ever gate on.
   const logout = useCallback(() => {
+    // C08: revoke the refresh token server-side too (best-effort - a
+    // failed/slow request here must never block or delay the reload below,
+    // this tab is logging out either way), not just discard it client-side,
+    // which would otherwise leave it silently valid for the rest of its
+    // real TTL on server.ts. See refresh_tokens.ts's own revokeRefreshToken().
+    const refreshToken = localStorage.getItem('hydra_refresh_token');
+    if (refreshToken) {
+      fetch(apiUrl('/api/logout'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      }).catch(() => {});
+    }
     localStorage.removeItem('hydra_token');
+    localStorage.removeItem('hydra_refresh_token');
     setAuthToken(null);
     window.location.reload();
   }, []);
@@ -1245,12 +1304,21 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           // 1008, ...) call sites), never anything else. Before this fix,
           // reconnecting here unconditionally meant a token that just
           // expired or was revoked kept being retried with itself forever -
-          // an infinite 1008 loop, never surfaced to the user. Same real
-          // fix already shipped for Android/iOS/DSI's own wsAuthRejected
-          // handling this session: force a real logout instead of retrying
-          // a token the Server has already rejected.
+          // an infinite 1008 loop, never surfaced to the user.
+          //
+          // C08 follow-up, same day: forcing a full logout() on EVERY 1008
+          // was still overly broad - the single most common real cause of
+          // a 1008 (the access token's own JWT_EXPIRES_IN elapsing on a
+          // dashboard tab left open) doesn't mean the account was actually
+          // revoked. attemptTokenRefresh() tries server.ts's own new
+          // POST /api/refresh first (silent, no lost view/robot selection);
+          // only if THAT also fails (a genuinely revoked session, an
+          // expired/never-issued refresh token, or a server predating this
+          // feature) does this fall back to logout(), same as before.
           if (ev.code === 1008) {
-            logout();
+            attemptTokenRefresh().then((recovered) => {
+              if (!recovered) logout();
+            });
             return;
           }
           reconnectTimer = setTimeout(openWs, WS_RECONNECT_MS);
@@ -1275,7 +1343,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (reconnectTimer) clearTimeout(reconnectTimer);
       ws?.close();
     };
-  }, [applyServerData, applyRobotDelta, authToken]);
+  }, [applyServerData, applyRobotDelta, authToken, attemptTokenRefresh, logout]);
 
   useEffect(() => {
     if (!isLoaded) return;

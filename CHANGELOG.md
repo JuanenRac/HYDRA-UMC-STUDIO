@@ -27,6 +27,27 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.5.9] - Real silent recovery from a WS 1008 close, instead of always forcing logout
+
+Follow-up to 0.5.7: forcing a full `logout()` on EVERY WebSocket 1008
+close was still overly broad - the most common real cause (the access
+token's own 30-day expiry on a dashboard tab left open) doesn't mean the
+account was actually revoked, and a forced logout loses whatever
+view/robot selection was open. `store.tsx` now tries HYDRA-UMC-SERVER's
+own new `POST /api/refresh` first (silent, no visible interruption,
+using a real opaque refresh token `login()` now also stores) before
+falling back to today's forced logout - which still happens exactly when
+it should (a genuinely revoked session, an expired/never-issued refresh
+token, or an older server that doesn't support this yet). `logout()`
+itself now also calls the new `POST /api/logout` so a real sign-out
+revokes the refresh token server-side, not just discards it locally.
+154 tests still pass - no dedicated new test file for this specific
+change, `store.tsx`'s WS-reconnect effect isn't unit-tested in isolation
+from its own provider (see `tests/decodeJwtRole.test.ts` for the one pure
+function that already is); verified instead against HYDRA-UMC-SERVER's
+own new `tools/verify_refresh_token_contract.mjs`, which proves the exact
+`/api/refresh`/`/api/logout` contract this change calls.
+
 ## [0.5.8] - LumenPnP: 26 more real parts (160 total) + a real bucketing bug fixed
 
 26 more real parts (`public/models/lumenpnp/parts/`, batch 5): the 2
