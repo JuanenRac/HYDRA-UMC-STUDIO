@@ -27,6 +27,25 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.5.5] - LumenPnP rig: 47 real CAD parts added (legs, control box, frame, cameras, feeders, gantry hardware)
+
+The LumenPnP/JuanenPnP 3D rig previously shipped only the 7 rigid-body
+kinematic groups (base/y_carriage/x_carriage/z_carriage_left/right/
+nozzle_left/right) - correct for the moving assemblies, but visually
+incomplete: the machine's own real legs and control box were entirely
+absent, among other real parts. Added 47 individually-exported real CAD
+parts (`public/models/lumenpnp/parts/*.glb`, ~9.3MB combined, avg
+~200KB/part) straight from Opulo's own `assembly.FCStd` - all 4 legs +
+extensions, the control box + lid, 7 V-slot frame extrusion segments,
+both top/bottom cameras + ring lights + light mounts, all 6 real
+strip-feeder sizes, the vacuum pump, a solenoid valve, the nozzle rack,
+2 nozzle holders, and the X/Y gantry brackets/idler/motor mounts - each
+attached under whichever of the 3 relevant links (`base_link`/
+`y_carriage`/`x_carriage`) matches its own real mechanical role. See
+`public/models/lumenpnp/ATTRIBUTION.txt` for the full per-part selection
+and placement methodology and `parts/manifest.json` for every part's own
+real CAD source label, assembled bounding box and triangle count.
+
 ## [0.5.4] - Fixed real readability bug: unreadable Industrial submenu labels
 
 `Dashboard.tsx`'s own Industrial submenu button labels came straight

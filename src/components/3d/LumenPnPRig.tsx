@@ -77,6 +77,63 @@ import type { PnPModule } from '../../store';
 // public/models/lumenpnp/ATTRIBUTION.txt for the exact conversion) moves
 // that cost out of the browser entirely - useGLTF hands back
 // already-indexed geometry with nothing left to compute on load.
+const MESH_BASE = '/models/lumenpnp/';
+
+// Real, individually-named CAD parts (public/models/lumenpnp/parts/*.glb -
+// legs, control box, frame extrusions, cameras/lights, feeders, nozzle
+// hardware, X/Y gantry brackets) added 2026-09-08 alongside the 7 rigid-
+// body groups above, so the rig is no longer just those 7 silhouettes -
+// see parts/manifest.json for the exact CAD source label, real assembled
+// bounding box and triangle count behind every file here, and
+// ATTRIBUTION.txt for the full methodology (same headless FreeCAD export,
+// same MeshPart.meshFromShape()+hand-written GLB pipeline as the 7 above).
+// Each part is already in real assembled world-space, so it is rendered
+// with an identity local transform, exactly like the 7 groups it augments.
+const PARTS_BASE = MESH_BASE + 'parts/';
+const BASE_STATIC_PARTS = [
+  'back-leg', 'back-leg001', 'back-leg-extension_001', 'back-leg-extension_002',
+  'front-left-leg', 'front-right-leg', 'front-leg-extension_001', 'front-leg-extension_002',
+  'control-box_001', 'control-box-lid',
+  'vslot-extrusion-20mmx20mmx600mm', 'vslot-extrusion-20mmx20mmx600mm001',
+  'vslot-extrusion-20mmx20mmx600mm002', 'vslot-extrusion-20mmx20mmx600mm003',
+  'vslot-extrusion-20mmx20mmx600mm007', 'vslot-extrusion-20mmx20mmx600mm008', 'vslot-extrusion-20mmx20mmx600mm009',
+  'bottom-camera-cover', 'bottom-camera-mount', 'bottom-camera_001', 'top-camera001',
+  'bottom-light-mount', 'top-light-mount', 'bottom-ring-light', 'top-ring-light',
+  'aux-staging-plate-foot',
+  '8mm-strip-feeder', '12mm-strip-feeder', '16mm-strip-feeder', '24mm-strip-feeder', '32mm-strip-feeder', 'adj-strip-feeder',
+  'vacuum-pump002', 'solenoid-valve003',
+  'nozzle-rack', 'nozzle-camera-mask_001', 'nozzle-holder_001', 'nozzle-holder_002',
+  'xy-limit_001',
+];
+// Fixed to the Y-bridge's own ends (moves with y_carriage in Y, not with
+// x_carriage in X) - same real precedent as X-Motor in the block comment
+// above (a fixed-to-the-bridge part, not carried by the toolhead).
+const Y_CARRIAGE_STATIC_PARTS = [
+  'x-idler-mount', 'x-motor-mount', 'y-gantry-left002', 'y-gantry-right002',
+  'y-limit-striker_Body_001', 'squaring-bracket',
+];
+// The toolhead's own front/back gantry plates - slide in X with the rest
+// of x_carriage.
+const X_CARRIAGE_STATIC_PARTS = ['x-gantry-back', 'x-gantry-front'];
+
+// Same immediate-parallel-preload treatment as the 7 groups above - none
+// of these 47 parts are merged into those, so each is its own small
+// fetch; queuing all of them at import time (instead of one Suspense
+// retry at a time) keeps total load latency close to the single slowest
+// file, not the sum of all 47.
+[...BASE_STATIC_PARTS, ...Y_CARRIAGE_STATIC_PARTS, ...X_CARRIAGE_STATIC_PARTS].forEach((label) =>
+  useGLTF.preload(PARTS_BASE + label + '.glb')
+);
+
+function StaticCadPart({ label, material }: { label: string; material: typeof frameMat }) {
+  const geo = useRealScaleGLB(PARTS_BASE + label + '.glb');
+  return (
+    <mesh geometry={geo} castShadow receiveShadow>
+      <meshStandardMaterial {...material} />
+    </mesh>
+  );
+}
+
 function useRealScaleGLB(url: string): THREE.BufferGeometry {
   const { scene } = useGLTF(url);
   return useMemo(() => {
@@ -99,7 +156,6 @@ function useRealScaleGLB(url: string): THREE.BufferGeometry {
   }, [scene, url]);
 }
 
-const MESH_BASE = '/models/lumenpnp/';
 const MESH_URLS = ['base.glb', 'x_carriage.glb', 'y_carriage.glb', 'z_carriage_left.glb', 'z_carriage_right.glb', 'nozzle_left.glb', 'nozzle_right.glb'].map((f) => MESH_BASE + f);
 // Kicks off all 5 fetches immediately, in parallel, the moment this
 // module is imported - without this, each of the 5 useGLTF() calls below
@@ -142,16 +198,25 @@ export default function LumenPnPRig({ module }: { module: PnPModule }) {
       <mesh geometry={baseGeo} castShadow receiveShadow>
         <meshStandardMaterial {...frameMat} />
       </mesh>
+      {BASE_STATIC_PARTS.map((label) => (
+        <StaticCadPart key={label} label={label} material={frameMat} />
+      ))}
 
       <group position={[0, y, 0]}>
         <mesh geometry={yCarriageGeo} castShadow receiveShadow>
           <meshStandardMaterial {...carriageMat} />
         </mesh>
+        {Y_CARRIAGE_STATIC_PARTS.map((label) => (
+          <StaticCadPart key={label} label={label} material={carriageMat} />
+        ))}
 
         <group position={[x, 0, 0]}>
           <mesh geometry={xCarriageGeo} castShadow receiveShadow>
             <meshStandardMaterial {...carriageMat} />
           </mesh>
+          {X_CARRIAGE_STATIC_PARTS.map((label) => (
+            <StaticCadPart key={label} label={label} material={carriageMat} />
+          ))}
 
           <group position={[0, 0, z]}>
             <mesh geometry={zCarriageLeftGeo} castShadow receiveShadow>
