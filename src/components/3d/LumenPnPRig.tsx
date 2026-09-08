@@ -104,6 +104,26 @@ const BASE_STATIC_PARTS = [
   'vacuum-pump002', 'solenoid-valve003',
   'nozzle-rack', 'nozzle-camera-mask_001', 'nozzle-holder_001', 'nozzle-holder_002',
   'xy-limit_001',
+  // Batch 2 (2026-09-08, found missing by the user looking at the live
+  // rig): the 2 real Y motors are bolted to the FIXED frame at the rear
+  // (they drive belts, they don't ride the bridge) - same for their own
+  // paired rear pulleys and the front idlers closing each belt loop.
+  'NEMA17-stepper003', 'NEMA17-stepper004', 'GT2-pulley002', 'GT2-pulley003', 'GT2-idler002', 'GT2-idler003',
+  // Batch 3: the Y belt loops (both sides) run frame-pulley to
+  // frame-idler, and their own tension arms sit right next to those same
+  // frame idlers - all fixed.
+  'y-gantry-gt2-belt_left', 'y-gantry-gt2-belt_right', 'y1-belt-tension-arm', 'y2-belt-tension-arm',
+  // Batch 4: fiducial reference board, the 2 blade-feeder mechanisms
+  // (mechanical body only - their own PCBs were dropped, see
+  // ATTRIBUTION.txt), the main work-surface staging plates, cable clips
+  // along the right frame extrusion, and the fixed Y-axis side rails
+  // (525/550mm-MGN12H - the rails themselves don't move, only their
+  // carriages below do).
+  'datum-board', 'datum-board-mount', 'secondary-fid-mount_001',
+  'blade12_004', 'blade13_003', 'pcb-staging-plate', 'pcb-staging-plate-aux',
+  'peek-cable-clamp', 'peek-cable-clamp004', 'peek-cable-2',
+  '550mm-MGN12H001_001', '550mm-MGN12H001_002',
+  'extrusion-cable-clip', 'extrusion-cable-clip002', 'extrusion-cable-clip003',
 ];
 // Fixed to the Y-bridge's own ends (moves with y_carriage in Y, not with
 // x_carriage in X) - same real precedent as X-Motor in the block comment
@@ -111,10 +131,46 @@ const BASE_STATIC_PARTS = [
 const Y_CARRIAGE_STATIC_PARTS = [
   'x-idler-mount', 'x-motor-mount', 'y-gantry-left002', 'y-gantry-right002',
   'y-limit-striker_Body_001', 'squaring-bracket',
+  // Batch 2: the X motor mounted ON the bridge (same real X-motor-mount
+  // precedent above) plus its own pulley/idler pair, and the real Y drag
+  // chain (30 links + 4 end connectors) - one end anchored near the
+  // bridge, rendered as one rigid attachment here rather than a
+  // procedurally-folding chain (this rig has no cable-chain physics
+  // anywhere yet), same real simplification tradeoff already made for
+  // every other static part in this file.
+  'NEMA17-stepper006', 'GT2-pulley005', 'GT2-idler005',
+  'y-drag-chain-link-001', 'y-drag-chain-link-002', 'y-drag-chain-link-003', 'y-drag-chain-link-004', 'y-drag-chain-link-005',
+  'y-drag-chain-link-006', 'y-drag-chain-link-007', 'y-drag-chain-link-008', 'y-drag-chain-link-009', 'y-drag-chain-link-010',
+  'y-drag-chain-link-011', 'y-drag-chain-link-012', 'y-drag-chain-link-013', 'y-drag-chain-link-014', 'y-drag-chain-link-015',
+  'y-drag-chain-link-016', 'y-drag-chain-link-017', 'y-drag-chain-link-018', 'y-drag-chain-link-019', 'y-drag-chain-link-020',
+  'y-drag-chain-link-021', 'y-drag-chain-link-022', 'y-drag-chain-link-023', 'y-drag-chain-link-024', 'y-drag-chain-link-025',
+  'y-drag-chain-link-026', 'y-drag-chain-link-027', 'y-drag-chain-link-028', 'y-drag-chain-link-029', 'y-drag-chain-link-030',
+  'ldo-drag-chain-end_Body_001', 'ldo-drag-chain-end_Body_003', 'ldo-drag-chain-end_Body_005', 'ldo-drag-chain-end_Body_006',
+  // Batch 3: the X belt's own tension arm and the belt-clamps nearest
+  // the bridge's own hardware (see Batch 4's own x-cable-chain-support
+  // below for the same "spans the bridge" reasoning).
+  'x-gantry-gt2-belt', 'x-belt-tension-arm', 'belt-clamp009', 'belt-clamp010', 'belt-clamp013', 'belt-clamp014',
+  // Batch 4: the moving X-axis rail (525mm-MGN12H, mounted ON the
+  // bridge, unlike the fixed 550mm Y rails above), its own carriages,
+  // and the cable-chain support spanning the bridge's own width.
+  '525mm-MGN12H', 'MGN12H-linear-rail-carriage', 'MGN12H-linear-rail-carriage001', 'x-cable-chain-support',
 ];
 // The toolhead's own front/back gantry plates - slide in X with the rest
 // of x_carriage.
-const X_CARRIAGE_STATIC_PARTS = ['x-gantry-back', 'x-gantry-front'];
+const X_CARRIAGE_STATIC_PARTS = [
+  'x-gantry-back', 'x-gantry-front',
+  // Batch 2: the toolhead's own small stepper (nozzle/blade drive) and
+  // its pulley/idler pair - moves with the toolhead in X.
+  'NEMA17-stepper005', 'GT2-pulley004', 'GT2-idler004',
+  // Batch 3: the Z belt loop and the toolhead's own belt clamps.
+  'z-belt-loop', 'belt-clamp007', 'belt-clamp008',
+  // Batch 4: the toolhead's own Z-axis linear rails/carriages and side
+  // plates/backplates, and its Z limit switch.
+  'mgn9-linear-rail-carriage', 'mgn9-linear-rail-carriage001',
+  'linear-rail-100mm_001', 'linear-rail-100mm_002',
+  'z-gantry-backplate-left001', 'z-gantry-backplate-right002', 'z-gantry-left001', 'z-gantry-right001',
+  'z-limit_001',
+];
 
 // Same immediate-parallel-preload treatment as the 7 groups above - none
 // of these 47 parts are merged into those, so each is its own small
@@ -167,6 +223,11 @@ MESH_URLS.forEach((url) => useGLTF.preload(url));
 // yellow in every official product photo) picked up on the carriages;
 // the fixed frame stays a neutral aluminum-extrusion gray so the moving
 // assemblies read clearly against it.
+// Real measured value, not a guess: front-leg-extension's own real CAD
+// bbox min Z is -100.81mm (parts/manifest.json) - the lowest point of
+// any real part in this rig, i.e. where the legs' own feet actually are.
+const GROUND_OFFSET_M = 0.10081;
+
 const frameMat = { color: '#9aa1ab', roughness: 0.55, metalness: 0.35 };
 const carriageMat = { color: '#c7cdd6', roughness: 0.45, metalness: 0.4 };
 const nozzleMat = { color: '#eab308', roughness: 0.4, metalness: 0.3 };
@@ -193,8 +254,17 @@ export default function LumenPnPRig({ module }: { module: PnPModule }) {
   return (
     // CAD source is Z-up millimeters (matches every *Arm.tsx's own
     // convention in this folder) - one outer flip to Three.js's Y-up,
-    // same as URArm.tsx's own root wrapper.
-    <group rotation={[-Math.PI / 2, 0, 0]}>
+    // same as URArm.tsx's own root wrapper. CAD Z=0 is the machine's own
+    // WORK surface (where openpnp's real 0-90mm Z-axis travel starts),
+    // not its feet - the real legs added 2026-09-08 reach down to
+    // Z=-100.81mm (front-leg-extension's own real bbox min, see
+    // parts/manifest.json) to actually touch the floor. Without this
+    // offset the rig's local Y=0 sits at the WORK surface, so those legs
+    // rendered poking below this app's own shared ground plane (visible
+    // real bug: "half the machine hidden below the floor" once the legs
+    // existed to make it obvious) - GROUND_OFFSET_M lifts the whole rig
+    // so the real lowest point (the legs' own feet) sits at Y=0 instead.
+    <group rotation={[-Math.PI / 2, 0, 0]} position={[0, GROUND_OFFSET_M, 0]}>
       <mesh geometry={baseGeo} castShadow receiveShadow>
         <meshStandardMaterial {...frameMat} />
       </mesh>
