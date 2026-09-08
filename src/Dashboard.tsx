@@ -82,6 +82,20 @@ const VacuumTableConfig = React.lazy(() => import('./components/VacuumTableConfi
 const HeatedBedConfig = React.lazy(() => import('./components/HeatedBedConfig').then(m => ({ default: m.HeatedBedConfig })));
 const ATCToolsConfig = React.lazy(() => import('./components/ATCToolsConfig').then(m => ({ default: m.ATCToolsConfig })));
 const RackConfigView = React.lazy(() => import('./components/RackConfigView').then(m => ({ default: m.RackConfigView })));
+
+// Real display-only labels for the Industrial submenu below - the array
+// items themselves (PickAndPlace/VacuumTable/HeatedBed) stay unchanged
+// since `activeTab` is derived from them (m.toLowerCase().replace(" ",
+// "")) and matched literally elsewhere (e.g. `activeTab === 'pickandplace'`);
+// only what's actually RENDERED in the button changes. The button's own
+// `uppercase` CSS class already renders any label in caps with no
+// visible word separation for a no-space string - "PickAndPlace" reads
+// as "PICKANDPLACE" - a real readability bug the space/ampersand here fixes.
+const INDUSTRIAL_MENU_LABELS: Record<string, string> = {
+  PickAndPlace: 'Pick & Place',
+  VacuumTable: 'Vacuum Table',
+  HeatedBed: 'Heated Bed',
+};
 const Flasher = React.lazy(() => import('./components/Flasher').then(m => ({ default: m.Flasher })));
 const Tester = React.lazy(() => import('./components/Tester').then(m => ({ default: m.Tester })));
 const KinematicBrainStage = React.lazy(() => import('./components/KinematicBrainStage').then(m => ({ default: m.KinematicBrainStage })));
@@ -282,7 +296,7 @@ export default function Dashboard() {
                <div className="flex flex-col gap-1 animate-in slide-in-from-right-4 duration-300">
                   <button onClick={() => setNavStack([])} className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-sky-500 uppercase tracking-widest mb-4 hover:text-sky-400 transition-colors"><ArrowLeft size={14}/> Back to Root</button>
                   {['XY Table', 'ATC Tools', 'Rack', 'PickAndPlace', 'CNC', 'Laser', 'VacuumTable', 'HeatedBed'].map(m => (
-                    <button key={m} onClick={() => setActiveTab(m.toLowerCase().replace(" ",""))} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === m.toLowerCase().replace(" ","") ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{m}</button>
+                    <button key={m} onClick={() => setActiveTab(m.toLowerCase().replace(" ",""))} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === m.toLowerCase().replace(" ","") ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{INDUSTRIAL_MENU_LABELS[m] ?? m}</button>
                   ))}
                </div>
              )}
