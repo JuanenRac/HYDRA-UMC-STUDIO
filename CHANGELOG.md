@@ -27,6 +27,23 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.5.8] - LumenPnP: 26 more real parts (160 total) + a real bucketing bug fixed
+
+26 more real parts (`public/models/lumenpnp/parts/`, batch 5): the 2
+real nozzle-rotation motors (hollow-shaft NEMA11), a real 2nd pair of
+blade-dispenser units, a real 2nd pump/valve pair with their own
+pneumatic fittings, 2 spare nozzle tips, the real X-axis drag chain (4
+links), a 3rd Z-rail carriage, and generic frame hardware. 160 real
+parts total now across 5 batches, ~23.9MB combined - fasteners
+(screws/nuts/washers/binders, ~2400 real instances in the source CAD)
+excluded throughout by explicit instruction.
+
+Also fixes a real bucketing bug found in the same pass:
+`nozzle-camera-mask_001` (added in the very first batch) was attached
+to `base_link` - its own real bbox sits at the toolhead's own height,
+matching `z_carriage_left`/`nozzle_left`, not the static frame. Moved
+to `x_carriage` alongside its new `_002` sibling.
+
 ## [0.5.7] - Real bug: an expired/revoked session looped forever instead of logging out
 
 `store.tsx`'s WebSocket reconnect effect rescheduled itself unconditionally

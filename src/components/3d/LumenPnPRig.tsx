@@ -102,7 +102,16 @@ const BASE_STATIC_PARTS = [
   'aux-staging-plate-foot',
   '8mm-strip-feeder', '12mm-strip-feeder', '16mm-strip-feeder', '24mm-strip-feeder', '32mm-strip-feeder', 'adj-strip-feeder',
   'vacuum-pump002', 'solenoid-valve003',
-  'nozzle-rack', 'nozzle-camera-mask_001', 'nozzle-holder_001', 'nozzle-holder_002',
+  'nozzle-rack', 'nozzle-holder_001', 'nozzle-holder_002',
+  // Batch 5: 2 spare nozzle tips sitting in the rack (not the active tip
+  // on either nozzle barrel), 2 real second blade-dispenser units (the
+  // machine has 2 pairs, front and back), a 2nd pump/valve pair, pneumatic
+  // fittings feeding them, and generic frame hardware.
+  'n40-nozzle', 'n08-nozzle', 'blade12_005', 'blade13_004', 'vacuum-pump003', 'solenoid-valve004',
+  'reducing-union-tee-4-6-4', 'reducing-union-tee-4-6-4_01',
+  'corner-bracket006', 'corner-bracket007',
+  'board-mount-static_001', 'board-mount-dynamic_001', 'board-support_001',
+  'extrusion-cable-clip004', 'extrusion-cable-clip005',
   'xy-limit_001',
   // Batch 2 (2026-09-08, found missing by the user looking at the live
   // rig): the 2 real Y motors are bolted to the FIXED frame at the rear
@@ -154,6 +163,10 @@ const Y_CARRIAGE_STATIC_PARTS = [
   // bridge, unlike the fixed 550mm Y rails above), its own carriages,
   // and the cable-chain support spanning the bridge's own width.
   '525mm-MGN12H', 'MGN12H-linear-rail-carriage', 'MGN12H-linear-rail-carriage001', 'x-cable-chain-support',
+  // Batch 5: the real X-axis drag chain (4 links) - same rigid-
+  // attachment-to-the-bridge simplification already used for the Y chain
+  // above (no cable-chain physics in this rig).
+  'drag-chain-link_001', 'drag-chain-link_002', 'drag-chain-link_003', 'drag-chain-link_004',
 ];
 // The toolhead's own front/back gantry plates - slide in X with the rest
 // of x_carriage.
@@ -170,6 +183,18 @@ const X_CARRIAGE_STATIC_PARTS = [
   'linear-rail-100mm_001', 'linear-rail-100mm_002',
   'z-gantry-backplate-left001', 'z-gantry-backplate-right002', 'z-gantry-left001', 'z-gantry-right001',
   'z-limit_001',
+  // Batch 5: the real nozzle-rotation motors (hollow-shaft - vacuum
+  // tubing passes through the center while the shaft spins the nozzle;
+  // the motor BODY moves with the toolhead in X, only the nozzle barrel
+  // itself rotates - see LumenPnPRig.tsx's own z_carriage/nozzle split
+  // above for that same real distinction), the toolhead's own 2nd
+  // camera-mask instance (mirrors the 1st, moved here from base_link -
+  // a real bucketing bug found and fixed this same pass, both sit at
+  // z_carriage/nozzle height, not the static frame), a 3rd Z-rail
+  // carriage, the toolhead's own cable splay and pneumatic fittings.
+  'NEMA11-hollow-shaft-stepper002', 'NEMA11-hollow-shaft-stepper003',
+  'nozzle-camera-mask_001', 'nozzle-camera-mask_002',
+  'MGN12H001_002', 'cable-splay', 'rotary-pneumatic-adapter_001', 'rotary-pneumatic-adapter_002',
 ];
 
 // Same immediate-parallel-preload treatment as the 7 groups above - none
