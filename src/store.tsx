@@ -28,7 +28,7 @@ export const globalPlaybacks: Record<number, boolean> = {};
  * corrupted localStorage value must degrade to "unknown role", never crash
  * the app.
  */
-function decodeJwtRole(token: string | null): string | null {
+export function decodeJwtRole(token: string | null): string | null {
   if (!token) return null;
   try {
     const payload = token.split('.')[1];
@@ -1239,6 +1239,20 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           // state until (or unless) a reconnect happens to succeed.
           setServerReachable(false);
           if (cancelled) return;
+          // Real bug found and fixed 2026-09-08 (C08): server.ts always
+          // closes an auth-rejected connection with code 1008 (no token/
+          // invalid token/session revoked - see server.ts's own 4 ws.close(
+          // 1008, ...) call sites), never anything else. Before this fix,
+          // reconnecting here unconditionally meant a token that just
+          // expired or was revoked kept being retried with itself forever -
+          // an infinite 1008 loop, never surfaced to the user. Same real
+          // fix already shipped for Android/iOS/DSI's own wsAuthRejected
+          // handling this session: force a real logout instead of retrying
+          // a token the Server has already rejected.
+          if (ev.code === 1008) {
+            logout();
+            return;
+          }
           reconnectTimer = setTimeout(openWs, WS_RECONNECT_MS);
         };
         // onerror always precedes onclose for a WebSocket - no separate
