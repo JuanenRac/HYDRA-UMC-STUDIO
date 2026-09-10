@@ -97,7 +97,7 @@ Also: `decodeJwtRole()` is now exported and has real unit tests
 (`tests/decodeJwtRole.test.ts`, 9 cases - a malformed/missing token, a
 non-JSON payload, a role field present but not a string, the URL-safe
 base64 alphabet a real JWT can use) - STUDIO's first test of its own
-session/credentials handling (found missing in an ecosystem-wide audit;
+session/credentials handling (found missing while reviewing this;
 IOS-CONTROL/ANDROID/SERVER already had their own).
 
 ## [0.5.6] - LumenPnP: 87 more real parts (motors, pulleys, belts, drag chain, rails) + ground-offset fix + Pick & Place resizable split
@@ -202,8 +202,8 @@ own copy of these public assets.
 
 ## [0.5.1]
 
-- Removed 2 real dead-code lint warnings surfaced during an ecosystem-wide
-  audit follow-up: an unused `SKY_SOFT` color constant in
+- Removed 2 real dead-code lint warnings surfaced while auditing the code:
+  an unused `SKY_SOFT` color constant in
   `EcosystemTelemetry.tsx`, and `activeController` destructured from
   `useHydraStore()` in `Dashboard.tsx` but never read (only mentioned inside
   a comment). No behavior change; `npm run lint` warning count for real
@@ -246,7 +246,7 @@ setting change never actually applied.
 
 ## [0.4.9] - Example data can no longer look like a live connection (STUDIO-01)
 
-Found in an ecosystem-wide software-improvements audit (P1): the example
+Found while auditing the code (P1): the example
 robots/cameras this app seeds on a fresh install had `online`/
 `urtcConnected`/`connected: true` (and populated firmware/hardware-ID
 fields) for a few entries, and the example controller's own `status`
@@ -336,7 +336,7 @@ effect POSTs to `settings.json`, so that fake claim could persist.
 
 ## [0.4.7]
 
-- **Fixed a real remote-access gap found in an ecosystem roadmap audit:
+- **Fixed a real remote-access gap found while auditing the code:
   HYDRA-UMC-DSI's own client already sent `X-Hydra-Client: dsi` on every
   request, but there was no toggle for it in Config > Remote Access, and
   the server-side gate didn't recognize "dsi" at all - a DSI request fell
@@ -1281,7 +1281,7 @@ and a per-client remote-access toggle in Config.
 
 ### Real authentication and accounts
 
-A background reconnaissance audit fed a real implementation pass. The
+A background reconnaissance pass fed a real implementation pass. The
 owner's own live testing surfaced a real robot-state bug (A1) fixed on the
 spot, and a major structural finding: STUDIO never actually had a login
 screen despite the server already expecting authenticated requests -
