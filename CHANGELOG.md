@@ -27,6 +27,22 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.6.0] - Real selectable vacuum table models replace the primitive one
+
+- The vacuum table module was a bare parametric box. It is now a catalog of
+  six real vacuum tables (`public/models/vacuum-tables/`), each shipping its
+  own OpenSCAD source and a binary STL mesh rendered in the 3D viewport
+  (`VacuumTableMesh.tsx`). Selecting a model keeps pump/valve state, world
+  pose and render scale intact - only geometry and the fixed physical
+  dimensions change (`selectVacuumTable()` in `src/vacuumTables.ts`).
+- `VacuumTableModule` gains a `modelId`, persisted through the existing robot
+  settings; a missing or unknown id falls back to the 160x120 model rather
+  than erroring.
+- Seven-language selector label, compatibility note and error text; new
+  `docs/VACUUM_TABLE_MODELS.md`; `tests/vacuumTables.test.ts` validates every
+  STL's real triangle count and bounding box against its catalog dimensions,
+  the pose/pump/valve preservation, unknown-id rejection, and the locale keys.
+
 ## [0.5.9] - Real silent recovery from a WS 1008 close, instead of always forcing logout
 
 Follow-up to 0.5.7: forcing a full `logout()` on EVERY WebSocket 1008

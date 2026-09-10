@@ -79,6 +79,14 @@ Pannelli dedicati per le macchine e gli accessori che accompagnano una cella rob
 
 ---
 
+### 🧩 Tavoli a vuoto selezionabili
+
+Scegli uno dei sei modelli STL reali in Tavolo a Vuoto: 160 × 120, 230 × 210, 230 × 250, 232 × 217, 240 × 240 o 250 × 250 mm. La base è spessa 15 mm; l’altezza totale con le pareti di allineamento è 16,2 mm. Le dimensioni sono fisse. La selezione conserva posizione, pompa e valvola; il ripristino seleziona 160 × 120 mm e spegne pompa e valvola. Gli identificatori precedenti o sconosciuti mostrano il primo modello. STUDIO e le due interfacce di SUITE condividono catalogo e modelId nella configurazione del robot.
+
+[Guida ai modelli, configurazione e rigenerazione](docs/VACUUM_TABLE_MODELS.md).
+
+Questi modelli originali JuanenPNP / HYDRA-UMC e i sorgenti SCAD sono sotto GPL-3.0; non sono il CAD della macchina Opulo.
+
 ## 🔄 Lavori e Traiettorie
 
 Carica traiettorie di esempio predefinite, esegui jog e registra i tuoi punti dal vivo, oppure carica/salva/modifica/riproduci traiettorie complesse multi-punto (JSON) per robot. Le traiettorie sono portabili tra modelli di robot - ogni punto registrato viene risolto attraverso la cinematica reale propria di quello specifico robot (`src/examples/robotKinematicsDispatch.ts`) al momento del caricamento/disegno/riproduzione, non calcolato in modo fisso rispetto al robot con cui è stato registrato, così lo stesso file di traiettoria pilota correttamente sia un Parol6 che un UR10e lungo la propria geometria raggiungibile reale.
@@ -144,6 +152,11 @@ Lo stesso contratto `GET`/`POST /api/settings`, più un endpoint di discovery (`
 
 ```text
 HYDRA-UMC-STUDIO/
+├── docs/VACUUM_TABLE_MODELS.md
+├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
+├── src/vacuumTables.ts
+├── src/components/3d/VacuumTableMesh.tsx
+├── tests/vacuumTables.test.ts
 ├── src/
 │   ├── Dashboard.tsx            # Shell principale dell'app - navigazione, pannello Overview, metriche di sistema nel footer
 │   ├── store.tsx                # Stato globale: RobotModel/RobotState/HydraController/SystemSettings -

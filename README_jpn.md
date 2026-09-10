@@ -81,6 +81,14 @@ HYDRA-UMC マザーボード自身のローカル運動サブシステム——S
 
 ---
 
+### 🧩 選択可能な真空テーブル
+
+真空テーブルメニューで6種類の実際のSTLモデルから選択できます：160 × 120、230 × 210、230 × 250、232 × 217、240 × 240、250 × 250 mm。ベース厚は15 mm、位置決め壁を含む全高は16.2 mmです。寸法は固定です。モデルの選択は位置、ポンプ、バルブの状態を保持します。リセットは160 × 120 mmを選択し、ポンプとバルブをオフにします。旧設定や不明なモデルIDは最初のモデルで表示されます。STUDIOとSUITEの両インターフェースは同じカタログとロボット設定のmodelIdを使用します。
+
+[モデル・設定・再生成ガイド](docs/VACUUM_TABLE_MODELS.md).
+
+これらのオリジナルJuanenPNP / HYDRA-UMCモデルとSCADソースはGPL-3.0です。Opulo製マシンのCADではありません。
+
 ## 🔄 作業と軌道
 
 既定のサンプル軌道を読み込む、あるいは自分自身のポイントをリアルタイムでジョグ＆記録する、またはロボットごとに複雑な多点軌道（JSON）を読み込み／保存／編集／再生します。軌道はロボットモデル間で移植可能です——記録された各ポイントは、それをたまたま記録したロボットに対して固定されるのではなく、読み込み／描画／再生の時点でその特定のロボット自身の実際の運動学（`src/examples/robotKinematicsDispatch.ts`）を通じて解決されるため、同じ軌道ファイルが Parol6 と UR10e それぞれの実際に到達可能なジオメトリに沿って正しく駆動します。
@@ -146,6 +154,11 @@ HYDRA-UMC STUDIO 自体は純粋なクライアントです——現在のセッ
 
 ```text
 HYDRA-UMC-STUDIO/
+├── docs/VACUUM_TABLE_MODELS.md
+├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
+├── src/vacuumTables.ts
+├── src/components/3d/VacuumTableMesh.tsx
+├── tests/vacuumTables.test.ts
 ├── src/
 │   ├── Dashboard.tsx            # トップレベルのアプリシェル——ナビゲーション、概要パネル、フッターのシステム指標
 │   ├── store.tsx                # グローバル状態：RobotModel/RobotState/HydraController/SystemSettings ——

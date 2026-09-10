@@ -79,6 +79,14 @@ Dedizierte Panels für die Maschinen und Zubehörteile, die eine Roboterzelle be
 
 ---
 
+### 🧩 Auswählbare Vakuumtische
+
+Wähle im Vakuumtisch-Menü eines von sechs echten STL-Modellen: 160 × 120, 230 × 210, 230 × 250, 232 × 217, 240 × 240 oder 250 × 250 mm. Die Basis ist 15 mm dick; die Gesamthöhe mit Ausrichtungswänden beträgt 16,2 mm. Die Abmessungen sind fest. Die Auswahl erhält Position, Pumpen- und Ventilzustand; Zurücksetzen wählt 160 × 120 mm und schaltet Pumpe und Ventil aus. Alte oder unbekannte Modell-IDs zeigen das erste Modell. STUDIO und beide SUITE-Oberflächen verwenden denselben Katalog und modelId in den Robotereinstellungen.
+
+[Modellhandbuch, Konfiguration und Neugenerierung](docs/VACUUM_TABLE_MODELS.md).
+
+Diese originalen JuanenPNP-/HYDRA-UMC-Modelle und ihre SCAD-Quellen stehen unter GPL-3.0; sie sind nicht die Maschinen-CAD-Dateien von Opulo.
+
 ## 🔄 Werke und Trajektorien
 
 Laden Sie vorgefertigte Beispieltrajektorien, joggen und zeichnen Sie live eigene Punkte auf, oder laden/speichern/bearbeiten/spielen Sie komplexe Mehrpunkt-Trajektorien (JSON) pro Roboter ab. Trajektorien sind zwischen Robotermodellen portabel - jeder aufgezeichnete Punkt wird beim Laden/Zeichnen/Abspielen über die eigene reale Kinematik dieses spezifischen Roboters (`src/examples/robotKinematicsDispatch.ts`) aufgelöst, nicht fest gegen den Roboter berechnet, mit dem er aufgezeichnet wurde, sodass dieselbe Trajektoriendatei einen Parol6 und einen UR10e korrekt entlang ihrer eigenen real erreichbaren Geometrie steuert.
@@ -144,6 +152,11 @@ Derselbe `GET`-/`POST /api/settings`-Vertrag, plus ein Discovery-Endpunkt (`GET 
 
 ```text
 HYDRA-UMC-STUDIO/
+├── docs/VACUUM_TABLE_MODELS.md
+├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
+├── src/vacuumTables.ts
+├── src/components/3d/VacuumTableMesh.tsx
+├── tests/vacuumTables.test.ts
 ├── src/
 │   ├── Dashboard.tsx            # App-Shell oberster Ebene - Navigation, Overview-Panel, Systemmetriken in der Fußzeile
 │   ├── store.tsx                # Globaler Zustand: RobotModel/RobotState/HydraController/SystemSettings -

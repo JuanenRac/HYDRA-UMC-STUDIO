@@ -7,6 +7,7 @@
 import React from 'react';
 import { Box, Cylinder } from '@react-three/drei';
 import LumenPnPRig from './LumenPnPRig';
+import VacuumTableMesh from './VacuumTableMesh';
 import type { PnPModule } from '../../store';
 
 /**
@@ -110,12 +111,7 @@ export default function SharedModule3DView({ module, type }: { module: any, type
   const length = module?.size?.length ? module.size.length / 1000 : 0.5;
 
   if (type === 'vacuumTable') {
-    return (
-      <group>
-        <Box args={[width, 0.05, length]} position={[0, 0.025, 0]} material-color="#1e293b" castShadow />
-        <Box args={[Math.max(0.01, width - 0.05), 0.01, Math.max(0.01, length - 0.05)]} position={[0, 0.055, 0]} material-color="#0f172a" />
-      </group>
-    );
+    return <VacuumTableMesh modelId={module?.modelId} />;
   }
   if (type === 'heatedBed') {
     return (

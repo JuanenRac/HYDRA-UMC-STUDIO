@@ -167,6 +167,7 @@ export interface SharedModuleGeneric {
 
 /** Defines the data structure and expected properties for  vacuum table module entities. */
 export interface VacuumTableModule extends SharedModuleGeneric {
+  modelId?: string; // Stable catalog ID; missing/unknown IDs display the 160x120 model.
   pumpActive: boolean;
   valveActive: boolean;
 }
@@ -587,7 +588,7 @@ export const createDefaultRobots = (): RobotState[] => {
     lumenPnP: { enabled: false, size: { width: 500, length: 500 }, axisX: 0, axisY: 0, axisZ: 0, nozzle1Rotation: 0, nozzle2Rotation: 0 },
     juanenCNC: { enabled: false, size: { width: 500, length: 500 } },
     juanenLaser: { enabled: false, size: { width: 500, length: 500 } },
-    vacuumTable: { enabled: false, size: { width: 100, length: 100 }, pumpActive: false, valveActive: false },
+    vacuumTable: { enabled: false, modelId: '160x120x15', size: { width: 160, length: 120 }, pumpActive: false, valveActive: false },
     heatedBed: { enabled: false, size: { width: 200, length: 200 }, targetTemp: 60, currentTemp1: 25, currentTemp2: 25, ssrActive: false },
 
     rackSystem: {
