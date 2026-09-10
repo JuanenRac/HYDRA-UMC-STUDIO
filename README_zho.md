@@ -81,6 +81,14 @@
 
 ---
 
+### 🧩 可选真空台模型
+
+在真空台菜单中选择六种真实STL模型之一：160 × 120、230 × 210、230 × 250、232 × 217、240 × 240或250 × 250 mm。底座厚15 mm，含定位壁的总高度为16.2 mm。尺寸固定。切换型号保留位置、泵和阀门状态；重置选择160 × 120 mm并关闭泵和阀门。旧型号或未知型号ID显示第一个模型。STUDIO和SUITE的两种界面使用相同目录以及机器人配置中的modelId。
+
+[型号、配置与重新生成指南](docs/VACUUM_TABLE_MODELS.md).
+
+这些原创JuanenPNP / HYDRA-UMC模型及其SCAD源文件采用GPL-3.0；它们不是Opulo机器的CAD文件。
+
 ## 🔄 工作与轨迹
 
 加载预置的示例轨迹，实时点动并记录你自己的点位，或按机器人加载/保存/编辑/回放复杂的多点轨迹（JSON）。轨迹在不同机器人型号之间是可移植的——每一个已记录的点位都会在加载/绘制/播放时通过该特定机器人自身真实的运动学（`src/examples/robotKinematicsDispatch.ts`）进行解析，而不是针对当初记录它的那个机器人被固化，因此同一个轨迹文件能够沿着 Parol6 和 UR10e 各自真实的可达几何正确驱动它们。
@@ -146,6 +154,11 @@ HYDRA-UMC STUDIO 本身是一个纯客户端——除了当前会话在内存中
 
 ```text
 HYDRA-UMC-STUDIO/
+├── docs/VACUUM_TABLE_MODELS.md
+├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
+├── src/vacuumTables.ts
+├── src/components/3d/VacuumTableMesh.tsx
+├── tests/vacuumTables.test.ts
 ├── src/
 │   ├── Dashboard.tsx            # 顶层应用外壳——导航、概览面板、页脚系统指标
 │   ├── store.tsx                # 全局状态：RobotModel/RobotState/HydraController/SystemSettings ——

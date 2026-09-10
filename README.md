@@ -81,6 +81,14 @@ Dedicated panels for the machines and accessories that go alongside a robot cell
 
 ---
 
+### 🧩 Selectable vacuum tables
+
+Choose one of six real STL models in Vacuum Table: 160 × 120, 230 × 210, 230 × 250, 232 × 217, 240 × 240 or 250 × 250 mm. Base thickness is 15 mm; total height with alignment walls is 16.2 mm. Dimensions are fixed. Selection preserves placement, pump and valve state; reset selects 160 × 120 mm and switches pump and valve off. Legacy/unknown model IDs display the first model. STUDIO and both SUITE interfaces use the same catalog and modelId in robot settings.
+
+[Model guide, configuration and regeneration](docs/VACUUM_TABLE_MODELS.md).
+
+These original JuanenPNP / HYDRA-UMC assets and their SCAD sources use GPL-3.0; they are not Opulo machine CAD.
+
 ## 🔄 Works & Trajectories
 
 Load canned example trajectories, jog-and-record your own points live, or load/save/edit/play back complex multi-point trajectories (JSON) per robot. Trajectories are portable between robot models - each recorded point is resolved through that specific robot's own real kinematics (`src/examples/robotKinematicsDispatch.ts`) at load/draw/play time, not baked against whichever robot happened to record it, so the same trajectory file drives a Parol6 and a UR10e correctly along their own real reachable geometry.
@@ -146,6 +154,11 @@ The same `GET`/`POST /api/settings` contract, plus a discovery endpoint (`GET /a
 
 ```text
 HYDRA-UMC-STUDIO/
+├── docs/VACUUM_TABLE_MODELS.md
+├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
+├── src/vacuumTables.ts
+├── src/components/3d/VacuumTableMesh.tsx
+├── tests/vacuumTables.test.ts
 ├── src/
 │   ├── Dashboard.tsx            # Top-level app shell - navigation, Overview panel, footer system metrics
 │   ├── store.tsx                # Global state: RobotModel/RobotState/HydraController/SystemSettings -

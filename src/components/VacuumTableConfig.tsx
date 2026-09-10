@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { useHydraStore } from '../store';
+import { VACUUM_TABLE_MODELS, vacuumTableModel, selectVacuumTable } from '../vacuumTables';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw, Wind, Maximize2, Plus, Power } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
@@ -27,19 +28,18 @@ export function VacuumTableConfig() {
 
   if (!selectedRobot) return null;
 
-  const moduleData = selectedRobot.vacuumTable as any;
+  const moduleData = selectedRobot.vacuumTable;
+  const model = vacuumTableModel(moduleData?.modelId);
   const isEnabled = moduleData?.enabled || false;
 
   const handleToggle = () => {
     updateRobot(selectedRobot.id, {
-      vacuumTable: { ...moduleData, enabled: !isEnabled }
+      vacuumTable: { ...selectVacuumTable(moduleData, model.id), enabled: !isEnabled }
     } as any);
   };
 
-  const handleSizeChange = (axis: 'width' | 'length', value: number) => {
-    updateRobot(selectedRobot.id, {
-      vacuumTable: { ...moduleData, size: { ...moduleData.size, [axis]: value } }
-    } as any);
+  const handleModelChange = (id: string) => {
+    updateRobot(selectedRobot.id, { vacuumTable: selectVacuumTable(moduleData, id) });
   };
 
   const handleCustomChange = (field: string, value: any) => {
@@ -51,7 +51,7 @@ export function VacuumTableConfig() {
   
   const handleReset = () => {
     updateRobot(selectedRobot.id, {
-      vacuumTable: { enabled: true, size: { width: 100, length: 100 }, pumpActive: false, valveActive: false, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
+      vacuumTable: { enabled: true, modelId: VACUUM_TABLE_MODELS[0].id, size: { width: 160, length: 120 }, pumpActive: false, valveActive: false, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
     } as any);
   };
   
@@ -108,6 +108,14 @@ export function VacuumTableConfig() {
               </div>
               
               <div className="space-y-4">
+                <label className="block text-sm text-slate-300">
+                  {t('modules.vacuum_model')}
+                  <select className="mt-2 w-full bg-slate-950 border border-slate-700 rounded px-3 py-2"
+                    value={model.id} onChange={e => handleModelChange(e.target.value)}>
+                    {VACUUM_TABLE_MODELS.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
+                  </select>
+                </label>
+                <p className="text-xs text-slate-400">{t('modules.vacuum_model_note')}</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
@@ -117,8 +125,9 @@ export function VacuumTableConfig() {
                       type="number"
                       min="10" max="5000" step="10"
                       className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-xs text-slate-200 focus:outline-none focus:border-sky-500"
-                      value={moduleData?.size?.width || 500}
-                      onChange={(e) => handleSizeChange('width', Number(e.target.value))}
+                      value={model.width}
+                      readOnly
+                      
                     />
                   </div>
                   <div>
@@ -129,8 +138,9 @@ export function VacuumTableConfig() {
                       type="number"
                       min="10" max="5000" step="10"
                       className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-xs text-slate-200 focus:outline-none focus:border-sky-500"
-                      value={moduleData?.size?.length || 500}
-                      onChange={(e) => handleSizeChange('length', Number(e.target.value))}
+                      value={model.length}
+                      readOnly
+                      
                     />
                   </div>
                 </div>
@@ -163,7 +173,7 @@ export function VacuumTableConfig() {
                 {t('modules.live_view_3d', '3D Live View')}
               </span>
             </div>
-            <Canvas camera={{ position: [0.6, 0.6, 0.6], fov: 50 }} shadows className="w-full h-full outline-none">
+            <Canvas camera={{ position: [0.3, 0.3, 0.3], fov: 50 }} shadows className="w-full h-full outline-none">
               <Shared3DEnvironment />
               
               {moduleData && <SharedModule3DView module={moduleData} type="vacuumTable" />}
