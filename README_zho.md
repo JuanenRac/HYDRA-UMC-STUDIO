@@ -283,7 +283,7 @@ npm test          # vitest run —— 针对 src/examples/ 的 145 个真实测�
 npm run typecheck # tsc -b --noEmit（src/）+ tsc -p tsconfig.test.json --noEmit（tests/）
 ```
 
-在一次面向整个生态系统的软件改进审计中发现:`src/examples/`(`robotKinematicsDispatch.ts` 分发到的全部 24 个真实机器人型号的 FK/IK 数学逻辑——`utils.ts` 共享的通用公式、`urKinematicsShared.ts` 中被所有 UR 系列型号共用的真实 DH 链 + 牛顿-拉夫逊求解引擎、`parol6Kinematics.ts` 自身硬编码的链条,以及按机器人拆分的 23 个 `*Kinematics.ts` 文件)此前完全没有自动化测试覆盖。已修复:新增 `tests/`(Vitest)——共 145 个测试,其中大多数是针对 `robotKinematicsDispatch.ts` 自身分发表的一套通用参数化测试,而不是 23 个几乎重复的测试文件,这样以后往表里新增一款机器人也会自动被覆盖到。另外:`npm run typecheck` 本身此前也一直是个悄无声息的空操作——单独的 `tsc --noEmit` 针对本仓库自身"解决方案式"的根 `tsconfig.json`(`"files": []`,只有项目 `"references"`)运行时其实什么都没检查;真正的修复需要项目构建模式(`tsc -b --noEmit`),它一运行就立刻暴露出 8 个真实存在、此前已经悄悄积累下来的类型错误(现已修复)——因为 `vite build` 自身的 esbuild/SWC 转译从不做类型检查。完整细节见 [`CHANGELOG.md`](CHANGELOG.md)。
+在审计代码时发现:`src/examples/`(`robotKinematicsDispatch.ts` 分发到的全部 24 个真实机器人型号的 FK/IK 数学逻辑——`utils.ts` 共享的通用公式、`urKinematicsShared.ts` 中被所有 UR 系列型号共用的真实 DH 链 + 牛顿-拉夫逊求解引擎、`parol6Kinematics.ts` 自身硬编码的链条,以及按机器人拆分的 23 个 `*Kinematics.ts` 文件)此前完全没有自动化测试覆盖。已修复:新增 `tests/`(Vitest)——共 145 个测试,其中大多数是针对 `robotKinematicsDispatch.ts` 自身分发表的一套通用参数化测试,而不是 23 个几乎重复的测试文件,这样以后往表里新增一款机器人也会自动被覆盖到。另外:`npm run typecheck` 本身此前也一直是个悄无声息的空操作——单独的 `tsc --noEmit` 针对本仓库自身"解决方案式"的根 `tsconfig.json`(`"files": []`,只有项目 `"references"`)运行时其实什么都没检查;真正的修复需要项目构建模式(`tsc -b --noEmit`),它一运行就立刻暴露出 8 个真实存在、此前已经悄悄积累下来的类型错误(现已修复)——因为 `vite build` 自身的 esbuild/SWC 转译从不做类型检查。完整细节见 [`CHANGELOG.md`](CHANGELOG.md)。
 
 ### 生产构建
 
