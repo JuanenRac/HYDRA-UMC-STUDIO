@@ -182,7 +182,7 @@ def validate_portable_work_catalogue() -> None:
     result = subprocess.run(
         (sys.executable, "tools/generate_portable_works.py", "--check"),
         cwd=ROOT,
-        text=True,
+        text=True, encoding="utf-8", errors="replace",
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         check=False,
@@ -255,7 +255,7 @@ def main() -> int:
     private_references = subprocess.run(
         ("git", "grep", "-n", "-I", "--", private_marker),
         cwd=ROOT,
-        text=True,
+        text=True, encoding="utf-8", errors="replace",
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
         check=False,
@@ -281,7 +281,7 @@ def main() -> int:
     private_prose = subprocess.run(
         tuple(_phrase_cmd),
         cwd=ROOT,
-        text=True,
+        text=True, encoding="utf-8", errors="replace",
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
         check=False,
