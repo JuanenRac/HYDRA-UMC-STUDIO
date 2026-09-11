@@ -6,6 +6,7 @@
 
 import React, { createContext, useContext, useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { apiUrl, wsUrl } from './lib/apiBase';
+import { applyRobotCommandMutation, rollbackRobotCommand } from './robotCommandTransition';
 
 /**
  * Renders the Unthrottled delay component.
@@ -1437,13 +1438,10 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setControllers(prev => {
         const next = prev.map((c) => {
           if (c.id !== activeControllerIdRef.current) return c;
-          const robots = c.robots.map((r) => {
-            if (!ids.includes(r.id)) return r;
-            snapshots[r.id] = r;
-            myGeneration[r.id] = commandGenerationRef.current[r.id] = (commandGenerationRef.current[r.id] || 0) + 1;
-            return { ...r, ...localMutate(r) };
-          });
-          return { ...c, robots };
+          const result = applyRobotCommandMutation(c.robots, ids, localMutate, commandGenerationRef.current);
+          snapshots = { ...snapshots, ...result.snapshots };
+          myGeneration = { ...myGeneration, ...result.myGeneration };
+          return { ...c, robots: result.robots };
         });
         // Same echo-guard flag as applyRobotDelta() above - an optimistic
         // local mutation changes `controllers` just as much as an applied
@@ -1475,11 +1473,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setControllers(prev => {
           const next = prev.map((c) => {
             if (c.id !== activeControllerIdRef.current) return c;
-            const robots = c.robots.map((r) => {
-              if (!(r.id in snapshots)) return r;
-              if (commandGenerationRef.current[r.id] !== myGeneration[r.id]) return r;
-              return snapshots[r.id];
-            });
+            const robots = rollbackRobotCommand(c.robots, snapshots, myGeneration, commandGenerationRef.current);
             return { ...c, robots };
           });
           // Same echo-guard flag as the optimistic mutate above - the
