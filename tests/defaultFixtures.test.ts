@@ -3,7 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 //
-// STUDIO-01 (found in an ecosystem-wide software-improvements audit, P1):
+// STUDIO-01 (P1):
 // createDefaultRobots()/createDefaultCameras() used to seed online/
 // urtcConnected/connected as true (and controllerBoard/urtcHead/
 // urtcExpansion as populated) for a few example entries, presenting

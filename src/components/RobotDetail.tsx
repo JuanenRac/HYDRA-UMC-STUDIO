@@ -832,7 +832,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     }
   };
 
-  // Exports robot.recordedPoints as standard G-code (audit idea:
+  // Exports robot.recordedPoints as standard G-code (review note:
   // "Permitir la exportación de trayectorias a archivos G-Code estándar").
   // Uses each point's own Cartesian pose (x/y/z/a/b/c, deriving it via the
   // same withCartesian() every example/upload already goes through - a

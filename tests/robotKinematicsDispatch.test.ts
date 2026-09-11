@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 //
 // Real, generic tests over robotKinematicsDispatch.ts's own dispatch table -
-// found in an ecosystem-wide software-improvements audit: this single
+// found while auditing the code: this single
 // source of truth (used by both PathVisualizer.tsx and RobotDetail.tsx)
 // fans out to 23 separate per-robot *Kinematics.ts files plus a generic
 // fallback, and NONE of them - the dispatcher itself or any of the 23 real
