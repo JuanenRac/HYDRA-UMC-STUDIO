@@ -3,8 +3,8 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 //
-// Real unit tests for store.tsx's own decodeJwtRole() - found missing during
-// this ecosystem's own C08 pass (private plan checklist): STUDIO, the main
+// Real unit tests for store.tsx's own decodeJwtRole() - found missing while
+// auditing the code: STUDIO, the main
 // client, had zero tests of its own session/credentials handling, unlike
 // IOS-CONTROL/ANDROID/SERVER. This is the one pure, DOM-free piece of that
 // handling (a token that arrived via a ?token= URL param, or a stale/
