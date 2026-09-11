@@ -6,7 +6,7 @@
 // Non-blocking replacement for JS's own confirm()/window.confirm(), which
 // pauses EVERYTHING (React rendering, the WebSocket message queue, any 3D
 // animation loop) on the main thread until the user answers - a real
-// external audit finding, since this app keeps a live WebSocket connection
+// problem, since this app keeps a live WebSocket connection
 // and a WebGL viewport running underneath every dialog. Same
 // centered-card-over-backdrop visual pattern as HelpModal.tsx/Config.tsx
 // (bg-black/60 backdrop-blur-sm + bg-slate-900 border border-slate-700

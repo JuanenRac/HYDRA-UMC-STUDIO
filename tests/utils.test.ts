@@ -3,8 +3,8 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 //
-// Real unit tests for src/examples/utils.ts - found in an ecosystem-wide
-// software-improvements audit: this shared generic-arm FK/IK pair and the
+// Real unit tests for src/examples/utils.ts - found while auditing the
+// code: this shared generic-arm FK/IK pair and the
 // 5 path generators built on it had zero automated test coverage.
 // =============================================================================
 import { describe, expect, it } from 'vitest';

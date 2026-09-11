@@ -549,8 +549,7 @@ export interface SystemSettings {
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
 export const createDefaultRobots = (): RobotState[] => {
-  // STUDIO-01 (found in an ecosystem-wide software-improvements audit,
-  // P1): online/urtcConnected/controllerBoard/urtcHead/urtcExpansion used
+  // STUDIO-01 (P1): online/urtcConnected/controllerBoard/urtcHead/urtcExpansion used
   // to be true/populated for the first 3 example robots, presenting
   // fixture data as evidence of a real hardware connection the very first
   // time this app renders (before any real Server has ever answered) -
