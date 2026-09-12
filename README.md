@@ -83,9 +83,28 @@ Dedicated panels for the machines and accessories that go alongside a robot cell
 
 ### 🧩 Selectable vacuum tables
 
-Choose one of six real STL models in Vacuum Table: 160 × 120, 230 × 210, 230 × 250, 232 × 217, 240 × 240 or 250 × 250 mm. Base thickness is 15 mm; total height with alignment walls is 16.2 mm. Dimensions are fixed. Selection preserves placement, pump and valve state; reset selects 160 × 120 mm and switches pump and valve off. Legacy/unknown model IDs display the first model. STUDIO and both SUITE interfaces use the same catalog and modelId in robot settings.
+Choose one of six real STL models in Vacuum Table: 160 × 120, 230 × 210, 230 × 250, 232 × 217, 240 × 240 or 250 × 250 mm. Base thickness is 15 mm; total height with alignment walls is 16.2 mm. Width and length are editable in 5 mm steps (10–5000 mm). The footprint is scaled; thickness stays unchanged. Selecting a preset restores its original dimensions. Custom sizes synchronize through SERVER; scaled holes/channels are a visual layout, not a regenerated manufacturing STL. Selection preserves placement, pump and valve state; reset selects 160 × 120 mm and switches pump and valve off. Legacy/unknown model IDs display the first model. STUDIO and both SUITE interfaces use the same catalog and modelId in robot settings.
 
 [Model guide, configuration and regeneration](docs/VACUUM_TABLE_MODELS.md).
+
+### 🔥 Heated bed model
+
+Four STL presets: 100×100, 200×100, 200×200 and 255×255 mm, all 5 mm thick. Width/length adjust in 5 mm steps (25–5000 mm); selecting a preset restores its dimensions without changing heating. Visual model only, not an electrical or manufacturing design.
+
+[Heated bed model — STL / OpenSCAD](docs/HEATED_BED_MODELS.md).
+
+### 🗄️ Configurable STL racks
+
+STL rack: width and depth 40–1000 mm in 1 mm steps; 1–24 plates at a fixed 10 mm pitch. Dimensions are visual settings, not robot calibration.
+
+[Configurable STL racks — STL / OpenSCAD](docs/RACK_MODELS.md).
+
+### 🛠️ Independent machine models
+
+Independent STL copies for JuanenPnP, JuanenCNC and JuanenLaser; LumenPnP stays original. Edit each model in its own folder. CAD dimensions are used; legacy size settings do not stretch the model.
+
+[Independent machine models — STL](docs/MACHINE_ASSETS.md).
+
 
 These original JuanenPNP / HYDRA-UMC assets and their SCAD sources use GPL-3.0; they are not Opulo machine CAD.
 
@@ -155,6 +174,19 @@ The same `GET`/`POST /api/settings` contract, plus a discovery endpoint (`GET /a
 ```text
 HYDRA-UMC-STUDIO/
 ├── docs/VACUUM_TABLE_MODELS.md
+├── docs/HEATED_BED_MODELS.md
+├── docs/RACK_MODELS.md
+├── docs/MACHINE_ASSETS.md
+├── public/models/{juanenpnp,juanencnc,juanenlaser}/ # STL + ATTRIBUTION + VARIANT.md
+├── src/machineAssets.ts
+├── tests/machineAssets.test.ts
+├── public/models/racks/        # Rack.scad + base/wall/guide/assembly STL
+├── src/racks.ts
+├── tests/racks.test.ts
+├── public/models/heated-beds/   # catalog.json + HeatedBed.scad + 4 STL
+├── src/heatedBeds.ts
+├── src/components/3d/HeatedBedMesh.tsx
+├── tests/heatedBeds.test.ts
 ├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
 ├── src/vacuumTables.ts
 ├── src/components/3d/VacuumTableMesh.tsx

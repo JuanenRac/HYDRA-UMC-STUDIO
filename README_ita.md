@@ -81,9 +81,28 @@ Pannelli dedicati per le macchine e gli accessori che accompagnano una cella rob
 
 ### 🧩 Tavoli a vuoto selezionabili
 
-Scegli uno dei sei modelli STL reali in Tavolo a Vuoto: 160 × 120, 230 × 210, 230 × 250, 232 × 217, 240 × 240 o 250 × 250 mm. La base è spessa 15 mm; l’altezza totale con le pareti di allineamento è 16,2 mm. Le dimensioni sono fisse. La selezione conserva posizione, pompa e valvola; il ripristino seleziona 160 × 120 mm e spegne pompa e valvola. Gli identificatori precedenti o sconosciuti mostrano il primo modello. STUDIO e le due interfacce di SUITE condividono catalogo e modelId nella configurazione del robot.
+Scegli uno dei sei modelli STL reali in Tavolo a Vuoto: 160 × 120, 230 × 210, 230 × 250, 232 × 217, 240 × 240 o 250 × 250 mm. La base è spessa 15 mm; l’altezza totale con le pareti di allineamento è 16,2 mm. Larghezza e lunghezza sono modificabili a passi di 5 mm (10–5000 mm). La superficie viene ridimensionata, lo spessore resta invariato. Scegliere un modello ripristina le misure originali. Le dimensioni personalizzate si sincronizzano tramite SERVER; fori e canali scalati sono una rappresentazione visiva, non uno STL rigenerato per la fabbricazione. La selezione conserva posizione, pompa e valvola; il ripristino seleziona 160 × 120 mm e spegne pompa e valvola. Gli identificatori precedenti o sconosciuti mostrano il primo modello. STUDIO e le due interfacce di SUITE condividono catalogo e modelId nella configurazione del robot.
 
 [Guida ai modelli, configurazione e rigenerazione](docs/VACUUM_TABLE_MODELS.md).
+
+### 🔥 Modello del piano riscaldato
+
+Quattro modelli STL: 100×100, 200×100, 200×200 e 255×255 mm, tutti spessi 5 mm. Larghezza/lunghezza regolabili a passi di 5 mm (25–5000 mm); selezionare un modello ripristina le dimensioni senza cambiare il riscaldamento. Modello visivo, non un progetto elettrico o di fabbricazione.
+
+[Modello del piano riscaldato — STL / OpenSCAD](docs/HEATED_BED_MODELS.md).
+
+### 🗄️ Rack STL configurabili
+
+Rack STL: larghezza e profondità da 40 a 1000 mm a passi di 1 mm; da 1 a 24 schede con passo fisso di 10 mm. Sono impostazioni visive, non una calibrazione del robot.
+
+[Rack STL configurabili — STL / OpenSCAD](docs/RACK_MODELS.md).
+
+### 🛠️ Modelli macchina indipendenti
+
+Copie STL indipendenti per JuanenPnP, JuanenCNC e JuanenLaser; LumenPnP mantiene l’originale. Modifica ogni modello nella propria cartella. Si usano le dimensioni CAD; le vecchie impostazioni di misura non deformano il modello.
+
+[Modelli macchina indipendenti — STL](docs/MACHINE_ASSETS.md).
+
 
 Questi modelli originali JuanenPNP / HYDRA-UMC e i sorgenti SCAD sono sotto GPL-3.0; non sono il CAD della macchina Opulo.
 
@@ -153,6 +172,19 @@ Lo stesso contratto `GET`/`POST /api/settings`, più un endpoint di discovery (`
 ```text
 HYDRA-UMC-STUDIO/
 ├── docs/VACUUM_TABLE_MODELS.md
+├── docs/HEATED_BED_MODELS.md
+├── docs/RACK_MODELS.md
+├── docs/MACHINE_ASSETS.md
+├── public/models/{juanenpnp,juanencnc,juanenlaser}/ # STL + ATTRIBUTION + VARIANT.md
+├── src/machineAssets.ts
+├── tests/machineAssets.test.ts
+├── public/models/racks/        # Rack.scad + base/wall/guide/assembly STL
+├── src/racks.ts
+├── tests/racks.test.ts
+├── public/models/heated-beds/   # catalog.json + HeatedBed.scad + 4 STL
+├── src/heatedBeds.ts
+├── src/components/3d/HeatedBedMesh.tsx
+├── tests/heatedBeds.test.ts
 ├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
 ├── src/vacuumTables.ts
 ├── src/components/3d/VacuumTableMesh.tsx

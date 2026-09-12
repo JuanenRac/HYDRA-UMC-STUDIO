@@ -83,9 +83,28 @@ HYDRA-UMC マザーボード自身のローカル運動サブシステム——S
 
 ### 🧩 選択可能な真空テーブル
 
-真空テーブルメニューで6種類の実際のSTLモデルから選択できます：160 × 120、230 × 210、230 × 250、232 × 217、240 × 240、250 × 250 mm。ベース厚は15 mm、位置決め壁を含む全高は16.2 mmです。寸法は固定です。モデルの選択は位置、ポンプ、バルブの状態を保持します。リセットは160 × 120 mmを選択し、ポンプとバルブをオフにします。旧設定や不明なモデルIDは最初のモデルで表示されます。STUDIOとSUITEの両インターフェースは同じカタログとロボット設定のmodelIdを使用します。
+真空テーブルメニューで6種類の実際のSTLモデルから選択できます：160 × 120、230 × 210、230 × 250、232 × 217、240 × 240、250 × 250 mm。ベース厚は15 mm、位置決め壁を含む全高は16.2 mmです。幅と長さは5 mm刻みで変更できます（10–5000 mm）。平面寸法のみを拡大・縮小し、厚さは変えません。モデルを選ぶと元の寸法に戻ります。カスタム寸法はSERVER経由で同期されます。拡大・縮小した穴や溝は配置の可視化用であり、製造用STLの再生成ではありません。モデルの選択は位置、ポンプ、バルブの状態を保持します。リセットは160 × 120 mmを選択し、ポンプとバルブをオフにします。旧設定や不明なモデルIDは最初のモデルで表示されます。STUDIOとSUITEの両インターフェースは同じカタログとロボット設定のmodelIdを使用します。
 
 [モデル・設定・再生成ガイド](docs/VACUUM_TABLE_MODELS.md).
+
+### 🔥 ヒートベッドモデル
+
+STLプリセットは100×100、200×100、200×200、255×255 mmの4種類で、厚さはすべて5 mmです。幅と長さは5 mm刻みで変更できます（25–5000 mm）。モデルを選ぶと寸法が戻り、加熱状態は変わりません。可視化用であり、電気設計や製造設計ではありません。
+
+[ヒートベッドモデル — STL / OpenSCAD](docs/HEATED_BED_MODELS.md).
+
+### 🗄️ 設定可能な STL ラック
+
+STL ラック：幅と奥行きは 40～1000 mm、1 mm 刻み。基板数は 1～24 枚、間隔は 10 mm 固定です。表示設定であり、ロボットの校正ではありません。
+
+[設定可能な STL ラック — STL / OpenSCAD](docs/RACK_MODELS.md).
+
+### 🛠️ 独立した機械モデル
+
+JuanenPnP、JuanenCNC、JuanenLaser は独立した STL コピーを使用し、LumenPnP は元のモデルを維持します。各モデルは専用フォルダーで編集してください。CAD 寸法を使用し、従来のサイズ設定ではモデルを引き伸ばしません。
+
+[独立した機械モデル — STL](docs/MACHINE_ASSETS.md).
+
 
 これらのオリジナルJuanenPNP / HYDRA-UMCモデルとSCADソースはGPL-3.0です。Opulo製マシンのCADではありません。
 
@@ -155,6 +174,19 @@ HYDRA-UMC STUDIO 自体は純粋なクライアントです——現在のセッ
 ```text
 HYDRA-UMC-STUDIO/
 ├── docs/VACUUM_TABLE_MODELS.md
+├── docs/HEATED_BED_MODELS.md
+├── docs/RACK_MODELS.md
+├── docs/MACHINE_ASSETS.md
+├── public/models/{juanenpnp,juanencnc,juanenlaser}/ # STL + ATTRIBUTION + VARIANT.md
+├── src/machineAssets.ts
+├── tests/machineAssets.test.ts
+├── public/models/racks/        # Rack.scad + base/wall/guide/assembly STL
+├── src/racks.ts
+├── tests/racks.test.ts
+├── public/models/heated-beds/   # catalog.json + HeatedBed.scad + 4 STL
+├── src/heatedBeds.ts
+├── src/components/3d/HeatedBedMesh.tsx
+├── tests/heatedBeds.test.ts
 ├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
 ├── src/vacuumTables.ts
 ├── src/components/3d/VacuumTableMesh.tsx

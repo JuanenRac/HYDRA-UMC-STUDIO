@@ -81,9 +81,28 @@ Dedizierte Panels für die Maschinen und Zubehörteile, die eine Roboterzelle be
 
 ### 🧩 Auswählbare Vakuumtische
 
-Wähle im Vakuumtisch-Menü eines von sechs echten STL-Modellen: 160 × 120, 230 × 210, 230 × 250, 232 × 217, 240 × 240 oder 250 × 250 mm. Die Basis ist 15 mm dick; die Gesamthöhe mit Ausrichtungswänden beträgt 16,2 mm. Die Abmessungen sind fest. Die Auswahl erhält Position, Pumpen- und Ventilzustand; Zurücksetzen wählt 160 × 120 mm und schaltet Pumpe und Ventil aus. Alte oder unbekannte Modell-IDs zeigen das erste Modell. STUDIO und beide SUITE-Oberflächen verwenden denselben Katalog und modelId in den Robotereinstellungen.
+Wähle im Vakuumtisch-Menü eines von sechs echten STL-Modellen: 160 × 120, 230 × 210, 230 × 250, 232 × 217, 240 × 240 oder 250 × 250 mm. Die Basis ist 15 mm dick; die Gesamthöhe mit Ausrichtungswänden beträgt 16,2 mm. Breite und Länge sind in 5-mm-Schritten einstellbar (10–5000 mm). Die Grundfläche wird skaliert, die Dicke bleibt unverändert. Die Modellauswahl stellt die ursprünglichen Maße wieder her. Benutzerdefinierte Maße werden über SERVER synchronisiert; skalierte Löcher und Kanäle dienen der Visualisierung, nicht als neu erzeugte Fertigungs-STL. Die Auswahl erhält Position, Pumpen- und Ventilzustand; Zurücksetzen wählt 160 × 120 mm und schaltet Pumpe und Ventil aus. Alte oder unbekannte Modell-IDs zeigen das erste Modell. STUDIO und beide SUITE-Oberflächen verwenden denselben Katalog und modelId in den Robotereinstellungen.
 
 [Modellhandbuch, Konfiguration und Neugenerierung](docs/VACUUM_TABLE_MODELS.md).
+
+### 🔥 Heizbettmodell
+
+Vier STL-Modelle: 100×100, 200×100, 200×200 und 255×255 mm, alle 5 mm dick. Breite/Länge in 5-mm-Schritten einstellbar (25–5000 mm); die Modellauswahl stellt die Maße wieder her, ohne die Heizung zu ändern. Nur Visualisierung, kein Elektro- oder Fertigungsentwurf.
+
+[Heizbettmodell — STL / OpenSCAD](docs/HEATED_BED_MODELS.md).
+
+### 🗄️ Konfigurierbare STL-Racks
+
+STL-Rack: Breite und Tiefe 40–1000 mm in 1-mm-Schritten; 1–24 Platinen mit festem 10-mm-Abstand. Visuelle Einstellungen, keine Roboterkalibrierung.
+
+[Konfigurierbare STL-Racks — STL / OpenSCAD](docs/RACK_MODELS.md).
+
+### 🛠️ Unabhängige Maschinenmodelle
+
+Separate STL-Kopien für JuanenPnP, JuanenCNC und JuanenLaser; LumenPnP behält das Original. Jedes Modell wird in seinem eigenen Ordner bearbeitet. Es gelten die CAD-Maße; bisherige Größeneinstellungen verzerren das Modell nicht.
+
+[Unabhängige Maschinenmodelle — STL](docs/MACHINE_ASSETS.md).
+
 
 Diese originalen JuanenPNP-/HYDRA-UMC-Modelle und ihre SCAD-Quellen stehen unter GPL-3.0; sie sind nicht die Maschinen-CAD-Dateien von Opulo.
 
@@ -153,6 +172,19 @@ Derselbe `GET`-/`POST /api/settings`-Vertrag, plus ein Discovery-Endpunkt (`GET 
 ```text
 HYDRA-UMC-STUDIO/
 ├── docs/VACUUM_TABLE_MODELS.md
+├── docs/HEATED_BED_MODELS.md
+├── docs/RACK_MODELS.md
+├── docs/MACHINE_ASSETS.md
+├── public/models/{juanenpnp,juanencnc,juanenlaser}/ # STL + ATTRIBUTION + VARIANT.md
+├── src/machineAssets.ts
+├── tests/machineAssets.test.ts
+├── public/models/racks/        # Rack.scad + base/wall/guide/assembly STL
+├── src/racks.ts
+├── tests/racks.test.ts
+├── public/models/heated-beds/   # catalog.json + HeatedBed.scad + 4 STL
+├── src/heatedBeds.ts
+├── src/components/3d/HeatedBedMesh.tsx
+├── tests/heatedBeds.test.ts
 ├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
 ├── src/vacuumTables.ts
 ├── src/components/3d/VacuumTableMesh.tsx

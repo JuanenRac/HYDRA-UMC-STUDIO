@@ -83,9 +83,28 @@
 
 ### 🧩 可选真空台模型
 
-在真空台菜单中选择六种真实STL模型之一：160 × 120、230 × 210、230 × 250、232 × 217、240 × 240或250 × 250 mm。底座厚15 mm，含定位壁的总高度为16.2 mm。尺寸固定。切换型号保留位置、泵和阀门状态；重置选择160 × 120 mm并关闭泵和阀门。旧型号或未知型号ID显示第一个模型。STUDIO和SUITE的两种界面使用相同目录以及机器人配置中的modelId。
+在真空台菜单中选择六种真实STL模型之一：160 × 120、230 × 210、230 × 250、232 × 217、240 × 240或250 × 250 mm。底座厚15 mm，含定位壁的总高度为16.2 mm。宽度和长度可按5 mm步长调整（10–5000 mm）。仅缩放平面尺寸，厚度保持不变。选择预设模型可恢复原始尺寸。自定义尺寸通过SERVER同步；缩放后的孔和通道仅用于布局显示，并非重新生成的制造用STL。切换型号保留位置、泵和阀门状态；重置选择160 × 120 mm并关闭泵和阀门。旧型号或未知型号ID显示第一个模型。STUDIO和SUITE的两种界面使用相同目录以及机器人配置中的modelId。
 
 [型号、配置与重新生成指南](docs/VACUUM_TABLE_MODELS.md).
+
+### 🔥 加热床模型
+
+四种STL预设：100×100、200×100、200×200和255×255 mm，厚度均为5 mm。宽度和长度可按5 mm步长调整（25–5000 mm）；选择预设会恢复尺寸，但不会改变加热状态。仅供可视化，不是电气或制造设计。
+
+[加热床模型 — STL / OpenSCAD](docs/HEATED_BED_MODELS.md).
+
+### 🗄️ 可配置的 STL 料架
+
+STL 料架：宽度和深度为 40–1000 毫米，以 1 毫米递增；可放置 1–24 块电路板，固定间距为 10 毫米。这些是显示设置，并非机器人标定。
+
+[可配置的 STL 料架 — STL / OpenSCAD](docs/RACK_MODELS.md).
+
+### 🛠️ 独立的机器模型
+
+JuanenPnP、JuanenCNC 和 JuanenLaser 使用独立的 STL 副本，LumenPnP 保留原始模型。请在各自文件夹中编辑模型。显示采用 CAD 尺寸，原有尺寸设置不会拉伸模型。
+
+[独立的机器模型 — STL](docs/MACHINE_ASSETS.md).
+
 
 这些原创JuanenPNP / HYDRA-UMC模型及其SCAD源文件采用GPL-3.0；它们不是Opulo机器的CAD文件。
 
@@ -155,6 +174,19 @@ HYDRA-UMC STUDIO 本身是一个纯客户端——除了当前会话在内存中
 ```text
 HYDRA-UMC-STUDIO/
 ├── docs/VACUUM_TABLE_MODELS.md
+├── docs/HEATED_BED_MODELS.md
+├── docs/RACK_MODELS.md
+├── docs/MACHINE_ASSETS.md
+├── public/models/{juanenpnp,juanencnc,juanenlaser}/ # STL + ATTRIBUTION + VARIANT.md
+├── src/machineAssets.ts
+├── tests/machineAssets.test.ts
+├── public/models/racks/        # Rack.scad + base/wall/guide/assembly STL
+├── src/racks.ts
+├── tests/racks.test.ts
+├── public/models/heated-beds/   # catalog.json + HeatedBed.scad + 4 STL
+├── src/heatedBeds.ts
+├── src/components/3d/HeatedBedMesh.tsx
+├── tests/heatedBeds.test.ts
 ├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
 ├── src/vacuumTables.ts
 ├── src/components/3d/VacuumTableMesh.tsx

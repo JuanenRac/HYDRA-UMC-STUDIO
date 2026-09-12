@@ -179,6 +179,7 @@ export function PickAndPlace() {
                 // PnPModule's own comment in store.tsx), so this is a
                 // manual jog, not a telemetry readout.
                 <div className="space-y-3">
+                  <p className="text-xs text-slate-400">{t('modules.machine_assets_note')}</p>
                   <p className="text-[10px] text-slate-500 uppercase tracking-wider">{t('modules.pnp_pose_preview', 'Pose preview (manual - no live feed yet)')}</p>
                   {([
                     ['axisX', t('modules.pnp_axis_x', 'X axis (mm)'), 0, 433],

@@ -7,7 +7,8 @@
 // lumenpnp/*.glb, see that folder's own ATTRIBUTION.txt - the .stl
 // originals tessellated from Opulo's own official FreeCAD source are kept
 // alongside them as the source-of-truth for regenerating the .glb, but
-// aren't loaded by this component) tessellated directly from Opulo's own
+// are loaded directly for Juanen variants, not the original LumenPnP path)
+// tessellated directly from Opulo's own
 // official FreeCAD source (github.com/opulo-inc/lumenpnp, pnp/cad/
 // assembly.FCStd, GPL-3.0/Apache-licensed per that project's own LICENSE)
 // - the same real assembly their own machine ships with, not a
@@ -53,17 +54,20 @@
 // (mounted to the bridge, not the toolhead). See that investigation's own
 // notes for the full per-part reasoning - this isn't a guessed split.
 //
-// JuanenPnP (the project owner's own LumenPnP) shares this exact rig -
-// per the owner's own confirmation, it's visually and mechanically
-// identical to stock LumenPnP, so no separate mesh set exists for it.
+// JuanenPnP, JuanenCNC and JuanenLaser share the transform hierarchy only.
+// Their independent STL directories start as copies and may now diverge.
+// LumenPnP alone keeps the original GLB path; derivatives load STL directly.
 // =============================================================================
 
-import { useMemo } from 'react';
+import { createContext, useContext, useEffect, useMemo } from 'react';
+import { useLoader } from '@react-three/fiber';
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+import { MACHINE_ASSETS, machineAssetPath, type MachineKind } from '../../machineAssets';
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { PnPModule } from '../../store';
 
-// Loads pre-merged/indexed .glb rather than raw .stl+mergeVertices() at
+// The original LumenPnP path loads pre-merged/indexed .glb rather than raw .stl+mergeVertices() at
 // runtime (every *Arm.tsx in this folder still does the latter - LumenPnP
 // is the one exception). That runtime path was tried first here too, and
 // even after cutting these meshes down to a combined ~86K triangles
@@ -77,7 +81,7 @@ import type { PnPModule } from '../../store';
 // public/models/lumenpnp/ATTRIBUTION.txt for the exact conversion) moves
 // that cost out of the browser entirely - useGLTF hands back
 // already-indexed geometry with nothing left to compute on load.
-const MESH_BASE = '/models/lumenpnp/';
+const MachineContext = createContext<MachineKind>('lumenPnP');
 
 // Real, individually-named CAD parts (public/models/lumenpnp/parts/*.glb -
 // legs, control box, frame extrusions, cameras/lights, feeders, nozzle
@@ -89,7 +93,7 @@ const MESH_BASE = '/models/lumenpnp/';
 // same MeshPart.meshFromShape()+hand-written GLB pipeline as the 7 above).
 // Each part is already in real assembled world-space, so it is rendered
 // with an identity local transform, exactly like the 7 groups it augments.
-const PARTS_BASE = MESH_BASE + 'parts/';
+
 const BASE_STATIC_PARTS = [
   'back-leg', 'back-leg001', 'back-leg-extension_001', 'back-leg-extension_002',
   'front-left-leg', 'front-right-leg', 'front-leg-extension_001', 'front-leg-extension_002',
@@ -197,22 +201,30 @@ const X_CARRIAGE_STATIC_PARTS = [
   'MGN12H001_002', 'cable-splay', 'rotary-pneumatic-adapter_001', 'rotary-pneumatic-adapter_002',
 ];
 
-// Same immediate-parallel-preload treatment as the 7 groups above - none
-// of these 47 parts are merged into those, so each is its own small
-// fetch; queuing all of them at import time (instead of one Suspense
-// retry at a time) keeps total load latency close to the single slowest
-// file, not the sum of all 47.
-[...BASE_STATIC_PARTS, ...Y_CARRIAGE_STATIC_PARTS, ...X_CARRIAGE_STATIC_PARTS].forEach((label) =>
-  useGLTF.preload(PARTS_BASE + label + '.glb')
-);
+// Preloading below is scoped to the selected machine, not all variants at
+// import time. Material rendering is shared; geometry paths remain independent.
 
+
+function GlbCadMesh({ url, material }: { url: string; material: typeof frameMat }) {
+  const geo = useRealScaleGLB(url);
+  return <mesh geometry={geo} castShadow receiveShadow><meshStandardMaterial {...material}/></mesh>;
+}
+function StlCadMesh({ url, material }: { url: string; material: typeof frameMat }) {
+  const source = useLoader(STLLoader, url);
+  const geo = useMemo(() => source.clone().scale(.001, .001, .001), [source]);
+  useEffect(() => () => geo.dispose(), [geo]);
+  // STL is already triangulated. No costly synchronous mergeVertices calls.
+  return <mesh geometry={geo} castShadow receiveShadow><meshStandardMaterial {...material}/></mesh>;
+}
+function CadMesh({ name, material }: {name: string; material: typeof frameMat}) {
+  const type = useContext(MachineContext);
+  const url = machineAssetPath(type, name);
+  return MACHINE_ASSETS[type].format === 'stl'
+    ? <StlCadMesh key={url} url={url} material={material}/>
+    : <GlbCadMesh key={url} url={url} material={material}/>;
+}
 function StaticCadPart({ label, material }: { label: string; material: typeof frameMat }) {
-  const geo = useRealScaleGLB(PARTS_BASE + label + '.glb');
-  return (
-    <mesh geometry={geo} castShadow receiveShadow>
-      <meshStandardMaterial {...material} />
-    </mesh>
-  );
+  return <CadMesh name={'parts/' + label} material={material}/>;
 }
 
 function useRealScaleGLB(url: string): THREE.BufferGeometry {
@@ -237,12 +249,17 @@ function useRealScaleGLB(url: string): THREE.BufferGeometry {
   }, [scene, url]);
 }
 
-const MESH_URLS = ['base.glb', 'x_carriage.glb', 'y_carriage.glb', 'z_carriage_left.glb', 'z_carriage_right.glb', 'nozzle_left.glb', 'nozzle_right.glb'].map((f) => MESH_BASE + f);
-// Kicks off all 5 fetches immediately, in parallel, the moment this
-// module is imported - without this, each of the 5 useGLTF() calls below
-// only starts ITS OWN fetch on the Suspense retry where React reaches it,
-// so they'd load one at a time rather than concurrently.
-MESH_URLS.forEach((url) => useGLTF.preload(url));
+const LINK_NAMES = ['base', 'x_carriage', 'y_carriage', 'z_carriage_left', 'z_carriage_right', 'nozzle_left', 'nozzle_right'];
+const preloaded = new Set<MachineKind>();
+function preloadMachine(type: MachineKind) {
+  if (preloaded.has(type)) return;
+  preloaded.add(type);
+  for (const name of [...LINK_NAMES, ...[...BASE_STATIC_PARTS, ...Y_CARRIAGE_STATIC_PARTS, ...X_CARRIAGE_STATIC_PARTS].map(n=>'parts/'+n)]) {
+    const url = machineAssetPath(type,name);
+    if (MACHINE_ASSETS[type].format === 'stl') useLoader.preload(STLLoader,url);
+    else useGLTF.preload(url);
+  }
+}
 
 // Opulo's own real brand color (their feeder/gantry accent parts are this
 // yellow in every official product photo) picked up on the carriages;
@@ -257,16 +274,8 @@ const frameMat = { color: '#9aa1ab', roughness: 0.55, metalness: 0.35 };
 const carriageMat = { color: '#c7cdd6', roughness: 0.45, metalness: 0.4 };
 const nozzleMat = { color: '#eab308', roughness: 0.4, metalness: 0.3 };
 
-export default function LumenPnPRig({ module }: { module: PnPModule }) {
-  const [baseUrl, xUrl, yUrl, zLeftUrl, zRightUrl, nozzleLeftUrl, nozzleRightUrl] = MESH_URLS;
-  const baseGeo = useRealScaleGLB(baseUrl);
-  const yCarriageGeo = useRealScaleGLB(yUrl);
-  const xCarriageGeo = useRealScaleGLB(xUrl);
-  const zCarriageLeftGeo = useRealScaleGLB(zLeftUrl);
-  const zCarriageRightGeo = useRealScaleGLB(zRightUrl);
-  const nozzleLeftGeo = useRealScaleGLB(nozzleLeftUrl);
-  const nozzleRightGeo = useRealScaleGLB(nozzleRightUrl);
-
+export default function LumenPnPRig({ module, machineType = 'lumenPnP' }: { module: Partial<PnPModule>; machineType?: MachineKind }) {
+  preloadMachine(machineType);
   // Real axis values are millimeters (matching openpnp/machine.xml's own
   // units) - converted to meters here at the one point they're consumed,
   // same convention as every other real-geometry component in this folder.
@@ -289,56 +298,44 @@ export default function LumenPnPRig({ module }: { module: PnPModule }) {
     // real bug: "half the machine hidden below the floor" once the legs
     // existed to make it obvious) - GROUND_OFFSET_M lifts the whole rig
     // so the real lowest point (the legs' own feet) sits at Y=0 instead.
+    <MachineContext.Provider value={machineType}>
     <group rotation={[-Math.PI / 2, 0, 0]} position={[0, GROUND_OFFSET_M, 0]}>
-      <mesh geometry={baseGeo} castShadow receiveShadow>
-        <meshStandardMaterial {...frameMat} />
-      </mesh>
+      <CadMesh name="base" material={frameMat}/>
       {BASE_STATIC_PARTS.map((label) => (
         <StaticCadPart key={label} label={label} material={frameMat} />
       ))}
 
       <group position={[0, y, 0]}>
-        <mesh geometry={yCarriageGeo} castShadow receiveShadow>
-          <meshStandardMaterial {...carriageMat} />
-        </mesh>
+        <CadMesh name="y_carriage" material={carriageMat}/>
         {Y_CARRIAGE_STATIC_PARTS.map((label) => (
           <StaticCadPart key={label} label={label} material={carriageMat} />
         ))}
 
         <group position={[x, 0, 0]}>
-          <mesh geometry={xCarriageGeo} castShadow receiveShadow>
-            <meshStandardMaterial {...carriageMat} />
-          </mesh>
+          <CadMesh name="x_carriage" material={carriageMat}/>
           {X_CARRIAGE_STATIC_PARTS.map((label) => (
             <StaticCadPart key={label} label={label} material={carriageMat} />
           ))}
 
           <group position={[0, 0, z]}>
-            <mesh geometry={zCarriageLeftGeo} castShadow receiveShadow>
-              <meshStandardMaterial {...carriageMat} />
-            </mesh>
+            <CadMesh name="z_carriage_left" material={carriageMat}/>
             {/* Only the nozzle barrel rotates - same joint origin as its
                 z_carriage_left parent, matching joint_c_left's real
                 "0 0 0" origin in lumenpnp_juanenpnp.urdf. */}
             <group rotation={[0, 0, rotA]}>
-              <mesh geometry={nozzleLeftGeo} castShadow receiveShadow>
-                <meshStandardMaterial {...nozzleMat} />
-              </mesh>
+              <CadMesh name="nozzle_left" material={nozzleMat}/>
             </group>
           </group>
 
           <group position={[0, 0, z]}>
-            <mesh geometry={zCarriageRightGeo} castShadow receiveShadow>
-              <meshStandardMaterial {...carriageMat} />
-            </mesh>
+            <CadMesh name="z_carriage_right" material={carriageMat}/>
             <group rotation={[0, 0, rotB]}>
-              <mesh geometry={nozzleRightGeo} castShadow receiveShadow>
-                <meshStandardMaterial {...nozzleMat} />
-              </mesh>
+              <CadMesh name="nozzle_right" material={nozzleMat}/>
             </group>
           </group>
         </group>
       </group>
     </group>
+    </MachineContext.Provider>
   );
 }
