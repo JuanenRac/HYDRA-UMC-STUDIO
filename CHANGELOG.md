@@ -2,29 +2,6 @@
 
 All notable work on **HYDRA-UMC STUDIO** is summarized here, newest first.
 
-## [0.6.2] — table model configuration
-
-- Separate JuanenPnP, JuanenCNC and JuanenLaser into independent editable STL
-  directories (167 meshes each), retaining the untouched LumenPnP source and
-  attribution. Replace CNC/laser primitive previews with the copied CAD assembly.
-- Load variant STL directly, isolate caches by machine and document CAD-size
-  behavior, editing/reloading and retained module settings in seven languages.
-
-- Add configurable rack width/depth (1 mm steps), capacity-driven STL guides
-  and independent color metadata. Preserve pickup poses and the other rack.
-  Ship editable OpenSCAD/components/default assembly, seven-language controls
-  and documentation, geometry regression tests and live rack previews.
-
-- Replace the heated-bed primitive with four detailed STL presets (100x100,
-  200x100, 200x200, 255x255 mm), all exactly 5 mm thick, with matching OpenSCAD.
-- Heated-bed footprint edits step by 5 mm and preserve heater/placement state.
-  Add geometry/contract tests, model guide and seven-language UI/README coverage.
-
-- Edit width/length in 5 mm steps, keeping the original thickness and presets.
-  Explicit customSize settings preserve legacy rendering and synchronize via SERVER.
-- Preview and cell meshes reflect the custom footprint; selecting a model
-  restores its original dimensions. Update all seven UI/README languages and guide.
-
 ## Versioning scheme
 
 `bump_manifest_version.py` (root of the workspace) is the single owner of
@@ -49,6 +26,29 @@ verification runs with nothing changelog-worthy); it's updated by hand when
 a change is actually worth summarizing for a human.
 
 ---
+
+## [0.6.2] — table model configuration
+
+- Separate JuanenPnP, JuanenCNC and JuanenLaser into independent editable STL
+  directories (167 meshes each), retaining the untouched LumenPnP source and
+  attribution. Replace CNC/laser primitive previews with the copied CAD assembly.
+- Load variant STL directly, isolate caches by machine and document CAD-size
+  behavior, editing/reloading and retained module settings in seven languages.
+
+- Add configurable rack width/depth (1 mm steps), capacity-driven STL guides
+  and independent color metadata. Preserve pickup poses and the other rack.
+  Ship editable OpenSCAD/components/default assembly, seven-language controls
+  and documentation, geometry regression tests and live rack previews.
+
+- Replace the heated-bed primitive with four detailed STL presets (100x100,
+  200x100, 200x200, 255x255 mm), all exactly 5 mm thick, with matching OpenSCAD.
+- Heated-bed footprint edits step by 5 mm and preserve heater/placement state.
+  Add geometry/contract tests, model guide and seven-language UI/README coverage.
+
+- Edit width/length in 5 mm steps, keeping the original thickness and presets.
+  Explicit customSize settings preserve legacy rendering and synchronize via SERVER.
+- Preview and cell meshes reflect the custom footprint; selecting a model
+  restores its original dimensions. Update all seven UI/README languages and guide.
 
 ## [0.6.1]
 
