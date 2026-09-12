@@ -10,6 +10,10 @@ import { useHydraStore, type RackConfig } from '../store';
 import { RotateCcw, Layers, MapPin, CheckSquare, Square } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { rackGeometry, validRackDimension } from '../racks';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import Rack3DView from './3d/Rack3DView';
 
 /**
  * Executes the Cnm logic. 
@@ -66,6 +70,8 @@ export function RackConfigView() {
 
   const renderRack = (rackId: 'rack1' | 'rack2', title: string) => {
     const rack = config[rackId];
+    const spec = rackGeometry(rack);
+    const span = Math.max(spec.width + 20, spec.depth + 20, spec.capacity * 10 + 40) / 1000;
     
   const handleReset = () => {
     updateRobot(selectedRobot.id, {
@@ -117,6 +123,29 @@ export function RackConfigView() {
         
         {rack.type !== 'None' && (
           <div className="p-4 space-y-4">
+            <p className="text-xs text-slate-400">{t('modules.rack_geometry_note')}</p>
+            <div className="flex gap-4 text-xs text-sky-400">
+              <a href={import.meta.env.BASE_URL+'models/racks/assembly.stl'} download>STL · 160 × 160 · 24</a>
+              <a href={import.meta.env.BASE_URL+'models/racks/Rack.scad'} download>OpenSCAD</a>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {(['width', 'depth'] as const).map(axis => <label key={axis} className="text-xs text-slate-300">
+                {t('modules.rack_' + axis)}
+                <input type="number" min="40" max="1000" step="1" value={spec[axis]}
+                  className="w-full bg-slate-950 border border-slate-700 rounded p-2"
+                  onChange={e => { const v=e.target.valueAsNumber; if(validRackDimension(v)) updateRack(rackId,{[axis]:v}); }}/>
+              </label>)}
+              <label className="text-xs text-slate-300">{t('modules.rack_color')}
+                <input type="color" value={spec.color} onChange={e=>updateRack(rackId,{color:e.target.value})} className="w-full h-9"/>
+              </label>
+            </div>
+            <div className="h-64 bg-slate-950 rounded">
+              <Canvas camera={{position:[span*1.2,span+(spec.capacity*10+40)/2000,span*1.5], near:.001, far:20}}>
+                <ambientLight intensity={1.5}/><directionalLight position={[2,3,2]} intensity={2}/>
+                <Rack3DView rack={rack} type={rack.type}/>
+                <OrbitControls target={[0,(spec.capacity*10+40)/2000,0]} minDistance={.05} maxDistance={5}/>
+              </Canvas>
+            </div>
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="text-xs font-bold text-slate-400 uppercase">{t('modules.capacity', 'Capacity (Plates)')}</label>

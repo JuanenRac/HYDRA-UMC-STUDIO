@@ -15,5 +15,18 @@ export function vacuumTableModel(id?: string) {
 export function selectVacuumTable(module: VacuumTableModule, id: string): VacuumTableModule {
   const model = VACUUM_TABLE_MODELS.find(item => item.id === id);
   if (!model) return module;
-  return { ...module, modelId: model.id, size: { width: model.width, length: model.length } };
+  return { ...module, customSize: false, modelId: model.id, size: { width: model.width, length: model.length } };
+}
+
+/** Custom footprint in mm; thickness and legacy configurations remain unchanged. */
+export function vacuumTableSize(module?: Partial<VacuumTableModule>) {
+  const model = vacuumTableModel(module?.modelId);
+  const valid = (n: unknown): n is number => typeof n === 'number' && Number.isInteger(n) && n >= 10 && n <= 5000;
+  return { width: module?.customSize === true && valid(module.size?.width) ? module.size.width : model.width,
+    length: module?.customSize === true && valid(module.size?.length) ? module.size.length : model.length };
+}
+
+export function resizeVacuumTable(module: VacuumTableModule, axis: 'width' | 'length', value: number): VacuumTableModule {
+  if (!Number.isInteger(value) || value < 10 || value > 5000) return module;
+  return { ...module, customSize: true, size: { ...vacuumTableSize(module), [axis]: value } };
 }

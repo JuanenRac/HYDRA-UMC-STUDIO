@@ -130,6 +130,9 @@ export type ATCGrid = '1x1' | '1x2' | '2x1' | '2x2' | '2x3' | '3x2' | '3x3' | '3
 
 /** Defines the data structure and expected properties for  rack config entities. */
 export interface RackConfig { renderScale?: number;
+  width?: number; // usable PCB width in mm, integer 40..1000
+  depth?: number; // usable PCB depth in mm, integer 40..1000
+  color?: string; // STL material override, #RRGGBB
   type: 'Input' | 'Output' | 'None';
   capacity: number;
   usableSlots: boolean[];
@@ -168,6 +171,7 @@ export interface SharedModuleGeneric {
 
 /** Defines the data structure and expected properties for  vacuum table module entities. */
 export interface VacuumTableModule extends SharedModuleGeneric {
+  customSize?: boolean; // Explicit opt-in: legacy size fields must not distort catalog meshes.
   modelId?: string; // Stable catalog ID; missing/unknown IDs display the 160x120 model.
   pumpActive: boolean;
   valveActive: boolean;
@@ -175,6 +179,7 @@ export interface VacuumTableModule extends SharedModuleGeneric {
 
 /** Defines the data structure and expected properties for  heated bed module entities. */
 export interface HeatedBedModule extends SharedModuleGeneric {
+  modelId?: string; // 5 mm STL preset; size remains the configured footprint.
   targetTemp: number;
   currentTemp1: number;
   currentTemp2: number;

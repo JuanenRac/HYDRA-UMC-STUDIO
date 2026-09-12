@@ -81,9 +81,28 @@ Panneaux dédiés pour les machines et accessoires qui accompagnent une cellule 
 
 ### 🧩 Tables à vide sélectionnables
 
-Choisissez un des six modèles STL réels dans Table à Vide : 160 × 120, 230 × 210, 230 × 250, 232 × 217, 240 × 240 ou 250 × 250 mm. La base mesure 15 mm ; la hauteur totale avec les parois d’alignement est de 16,2 mm. Les dimensions sont fixes. Le choix conserve la position et les états de la pompe et de la vanne ; la réinitialisation sélectionne 160 × 120 mm et les désactive. Les identifiants anciens ou inconnus affichent le premier modèle. STUDIO et les deux interfaces de SUITE partagent le catalogue et modelId dans la configuration du robot.
+Choisissez un des six modèles STL réels dans Table à Vide : 160 × 120, 230 × 210, 230 × 250, 232 × 217, 240 × 240 ou 250 × 250 mm. La base mesure 15 mm ; la hauteur totale avec les parois d’alignement est de 16,2 mm. La largeur et la longueur sont modifiables par pas de 5 mm (10–5000 mm). La surface est mise à l’échelle, sans changer l’épaisseur. Choisir un modèle rétablit ses dimensions d’origine. Les dimensions personnalisées sont synchronisées via SERVER ; les trous et canaux redimensionnés représentent une disposition visuelle, pas un STL régénéré pour la fabrication. Le choix conserve la position et les états de la pompe et de la vanne ; la réinitialisation sélectionne 160 × 120 mm et les désactive. Les identifiants anciens ou inconnus affichent le premier modèle. STUDIO et les deux interfaces de SUITE partagent le catalogue et modelId dans la configuration du robot.
 
 [Guide des modèles, configuration et régénération](docs/VACUUM_TABLE_MODELS.md).
+
+### 🔥 Modèle de plateau chauffant
+
+Quatre modèles STL : 100×100, 200×100, 200×200 et 255×255 mm, tous de 5 mm d’épaisseur. Largeur/longueur réglables par pas de 5 mm (25–5000 mm) ; choisir un modèle rétablit ses dimensions sans modifier le chauffage. Modèle visuel, pas une conception électrique ou de fabrication.
+
+[Modèle de plateau chauffant — STL / OpenSCAD](docs/HEATED_BED_MODELS.md).
+
+### 🗄️ Racks STL configurables
+
+Rack STL : largeur et profondeur de 40 à 1000 mm par pas de 1 mm ; 1 à 24 cartes avec un pas fixe de 10 mm. Réglages visuels, pas un étalonnage du robot.
+
+[Racks STL configurables — STL / OpenSCAD](docs/RACK_MODELS.md).
+
+### 🛠️ Modèles de machines indépendants
+
+Copies STL indépendantes pour JuanenPnP, JuanenCNC et JuanenLaser ; LumenPnP conserve l’original. Modifiez chaque modèle dans son dossier. Les dimensions CAO sont utilisées ; les anciens réglages de taille ne déforment pas le modèle.
+
+[Modèles de machines indépendants — STL](docs/MACHINE_ASSETS.md).
+
 
 Ces modèles originaux JuanenPNP / HYDRA-UMC et leurs sources SCAD sont sous GPL-3.0 ; ce ne sont pas les fichiers CAO de la machine Opulo.
 
@@ -153,6 +172,19 @@ Le même contrat `GET`/`POST /api/settings`, plus un point de terminaison de dé
 ```text
 HYDRA-UMC-STUDIO/
 ├── docs/VACUUM_TABLE_MODELS.md
+├── docs/HEATED_BED_MODELS.md
+├── docs/RACK_MODELS.md
+├── docs/MACHINE_ASSETS.md
+├── public/models/{juanenpnp,juanencnc,juanenlaser}/ # STL + ATTRIBUTION + VARIANT.md
+├── src/machineAssets.ts
+├── tests/machineAssets.test.ts
+├── public/models/racks/        # Rack.scad + base/wall/guide/assembly STL
+├── src/racks.ts
+├── tests/racks.test.ts
+├── public/models/heated-beds/   # catalog.json + HeatedBed.scad + 4 STL
+├── src/heatedBeds.ts
+├── src/components/3d/HeatedBedMesh.tsx
+├── tests/heatedBeds.test.ts
 ├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
 ├── src/vacuumTables.ts
 ├── src/components/3d/VacuumTableMesh.tsx

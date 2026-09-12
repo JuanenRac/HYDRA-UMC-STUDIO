@@ -17,7 +17,7 @@ class MeshBoundary extends Component<{ children: ReactNode; fallback: ReactNode 
   static getDerivedStateFromError() { return { failed: true }; }
   render() { return this.state.failed ? this.props.fallback : this.props.children; }
 }
-function LoadedMesh({ modelId }: { modelId?: string }) {
+function LoadedMesh({ modelId, width, length }: { modelId?: string; width?: number; length?: number }) {
   const model = vacuumTableModel(modelId);
   const source = useLoader(STLLoader, import.meta.env.BASE_URL + 'models/vacuum-tables/' + model.file);
   // Clone the cached STL before transforming it: mm, CAD Z-up -> meters, Y-up.
@@ -29,14 +29,14 @@ function LoadedMesh({ modelId }: { modelId?: string }) {
     return copy;
   }, [source, model.width, model.length]);
   useEffect(() => () => geometry.dispose(), [geometry]);
-  return <mesh geometry={geometry} castShadow receiveShadow>
+  return <mesh geometry={geometry} scale={[(width ?? model.width) / model.width, 1, (length ?? model.length) / model.length]} castShadow receiveShadow>
     <meshStandardMaterial color="#94a3b8" roughness={0.65} metalness={0.15} />
   </mesh>;
 }
-export default function VacuumTableMesh({ modelId }: { modelId?: string }) {
+export default function VacuumTableMesh({ modelId, width, length }: { modelId?: string; width?: number; length?: number }) {
   const { t } = useTranslation();
   const fallback = <Html center><span className="bg-slate-900 text-rose-300 p-2 rounded">{t('modules.vacuum_model_error')}</span></Html>;
   return <MeshBoundary key={vacuumTableModel(modelId).id} fallback={fallback}>
-    <Suspense fallback={null}><LoadedMesh modelId={modelId} /></Suspense>
+    <Suspense fallback={null}><LoadedMesh modelId={modelId} width={width} length={length} /></Suspense>
   </MeshBoundary>;
 }

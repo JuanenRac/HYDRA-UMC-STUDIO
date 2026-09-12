@@ -5,10 +5,21 @@
 // =============================================================================
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { VACUUM_TABLE_MODELS, vacuumTableModel, selectVacuumTable } from '../src/vacuumTables';
+import { VACUUM_TABLE_MODELS, vacuumTableModel, selectVacuumTable, vacuumTableSize, resizeVacuumTable } from '../src/vacuumTables';
 import type { VacuumTableModule } from '../src/store';
 
 describe('vacuum table catalog', () => {
+  it('resizes independently, preserves controls, restores presets and ignores malformed sizes', () => {
+    const source: VacuumTableModule = { enabled: true, modelId: '232x217x15', size: { width: 999, length: 999 }, pumpActive: true, valveActive: true, worldPos: { x: 4, y: 9 }, worldRot: 1, renderScale: 1 };
+    expect(vacuumTableSize(source)).toEqual({ width: 232, length: 217 });
+    const custom = resizeVacuumTable(resizeVacuumTable(source, 'width', 237), 'length', 150);
+    expect(vacuumTableSize(custom)).toEqual({ width: 237, length: 150 });
+    expect(custom.pumpActive && custom.valveActive).toBe(true);
+    expect(custom.worldPos).toEqual(source.worldPos);
+    expect(source.size.width).toBe(999);
+    for (const bad of [NaN, Infinity, 0, -5, 5001, 12.5]) expect(resizeVacuumTable(custom, 'width', bad)).toBe(custom);
+    expect(vacuumTableSize(selectVacuumTable(custom, '232x217x15'))).toEqual({ width: 232, length: 217 });
+  });
   // Generous timeout + a single finiteness assertion (not one expect() per
   // float): the six real STL files total ~11 MB / hundreds of thousands of
   // triangles, and a per-vertex-component expect() call is millions of

@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { useHydraStore } from '../store';
+import { HEATED_BED_MODELS, heatedBedModel, heatedBedSize, selectHeatedBed, resizeHeatedBed } from '../heatedBeds';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw, Thermometer, Maximize2, Plus, Power } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
@@ -29,6 +30,9 @@ export function HeatedBedConfig() {
 
   const moduleData = selectedRobot.heatedBed as any;
   const isEnabled = moduleData?.enabled || false;
+  const model = heatedBedModel(moduleData?.modelId);
+  const size = heatedBedSize(moduleData);
+  const previewDistance = Math.max(0.15, Math.max(size.width, size.length) / 1000 * 1.3);
 
   const handleToggle = () => {
     updateRobot(selectedRobot.id, {
@@ -38,7 +42,7 @@ export function HeatedBedConfig() {
 
   const handleSizeChange = (axis: 'width' | 'length', value: number) => {
     updateRobot(selectedRobot.id, {
-      heatedBed: { ...moduleData, size: { ...moduleData.size, [axis]: value } }
+      heatedBed: resizeHeatedBed(moduleData, axis, value)
     } as any);
   };
 
@@ -51,7 +55,7 @@ export function HeatedBedConfig() {
   
   const handleReset = () => {
     updateRobot(selectedRobot.id, {
-      heatedBed: { enabled: true, size: { width: 200, length: 200 }, targetTemp: 60, currentTemp1: 25, currentTemp2: 25, ssrActive: false, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
+      heatedBed: { enabled: true, modelId: '200x200x5', size: { width: 200, length: 200 }, targetTemp: 60, currentTemp1: 25, currentTemp2: 25, ssrActive: false, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
     } as any);
   };
   
@@ -108,6 +112,14 @@ export function HeatedBedConfig() {
               </div>
               
               <div className="space-y-4">
+                <label className="block text-sm text-slate-300">
+                  {t('modules.heated_model')}
+                  <select className="mt-2 w-full bg-slate-950 border border-slate-700 rounded px-3 py-2"
+                    value={model.id} onChange={e => updateRobot(selectedRobot.id, { heatedBed: selectHeatedBed(moduleData, e.target.value) })}>
+                    {HEATED_BED_MODELS.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
+                  </select>
+                </label>
+                <p className="text-xs text-slate-400">{t('modules.heated_model_note')}</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
@@ -115,9 +127,9 @@ export function HeatedBedConfig() {
                     </label>
                     <input 
                       type="number"
-                      min="10" max="5000" step="10"
+                      min="25" max="5000" step="5"
                       className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-xs text-slate-200 focus:outline-none focus:border-sky-500"
-                      value={moduleData?.size?.width || 500}
+                      value={size.width}
                       onChange={(e) => handleSizeChange('width', Number(e.target.value))}
                     />
                   </div>
@@ -127,9 +139,9 @@ export function HeatedBedConfig() {
                     </label>
                     <input 
                       type="number"
-                      min="10" max="5000" step="10"
+                      min="25" max="5000" step="5"
                       className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-xs text-slate-200 focus:outline-none focus:border-sky-500"
-                      value={moduleData?.size?.length || 500}
+                      value={size.length}
                       onChange={(e) => handleSizeChange('length', Number(e.target.value))}
                     />
                   </div>
@@ -183,12 +195,12 @@ export function HeatedBedConfig() {
                 {t('modules.live_view_3d', '3D Live View')}
               </span>
             </div>
-            <Canvas camera={{ position: [0.6, 0.6, 0.6], fov: 50 }} shadows className="w-full h-full outline-none">
+            <Canvas camera={{ position: [previewDistance, previewDistance, previewDistance], fov: 50 }} shadows className="w-full h-full outline-none">
               <Shared3DEnvironment />
               
               {moduleData && <SharedModule3DView module={moduleData} type="heatedBed" />}
               
-              <OrbitControls makeDefault maxPolarAngle={Math.PI / 2 + 0.1} minDistance={0.2} maxDistance={3} target={[0, 0, 0]} />
+              <OrbitControls makeDefault maxPolarAngle={Math.PI / 2 + 0.1} minDistance={0.02} maxDistance={20} target={[0, 0, 0]} />
             </Canvas>
           </div>
         </div>

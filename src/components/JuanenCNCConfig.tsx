@@ -5,6 +5,7 @@
 // =============================================================================
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useHydraStore } from '../store';
 import { RotateCcw, PenTool, Maximize2, Plus } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
@@ -19,6 +20,7 @@ import SharedModule3DView from './3d/SharedModule3DView';
  * This function handles the necessary computations and state updates.
  */
 export function JuanenCNCConfig() {
+  const { t } = useTranslation();
   const { robots, updateRobot } = useHydraStore();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const selectedRobot = robots.find(r => r.id === selectedRobotId);
@@ -102,6 +104,7 @@ export function JuanenCNCConfig() {
               </div>
               
               <div className="space-y-4">
+                <p className="text-xs text-slate-400">{t('modules.machine_assets_note')}</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">

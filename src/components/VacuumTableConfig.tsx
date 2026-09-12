@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { useHydraStore } from '../store';
-import { VACUUM_TABLE_MODELS, vacuumTableModel, selectVacuumTable } from '../vacuumTables';
+import { VACUUM_TABLE_MODELS, vacuumTableModel, selectVacuumTable, vacuumTableSize, resizeVacuumTable } from '../vacuumTables';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw, Wind, Maximize2, Plus, Power } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
@@ -30,11 +30,13 @@ export function VacuumTableConfig() {
 
   const moduleData = selectedRobot.vacuumTable;
   const model = vacuumTableModel(moduleData?.modelId);
+  const size = vacuumTableSize(moduleData);
+  const previewDistance = Math.max(0.15, Math.max(size.width, size.length) / 1000 * 1.3);
   const isEnabled = moduleData?.enabled || false;
 
   const handleToggle = () => {
     updateRobot(selectedRobot.id, {
-      vacuumTable: { ...selectVacuumTable(moduleData, model.id), enabled: !isEnabled }
+      vacuumTable: { ...(moduleData?.customSize === true ? moduleData : selectVacuumTable(moduleData, model.id)), enabled: !isEnabled }
     } as any);
   };
 
@@ -51,7 +53,7 @@ export function VacuumTableConfig() {
   
   const handleReset = () => {
     updateRobot(selectedRobot.id, {
-      vacuumTable: { enabled: true, modelId: VACUUM_TABLE_MODELS[0].id, size: { width: 160, length: 120 }, pumpActive: false, valveActive: false, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
+      vacuumTable: { enabled: true, customSize: false, modelId: VACUUM_TABLE_MODELS[0].id, size: { width: 160, length: 120 }, pumpActive: false, valveActive: false, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
     } as any);
   };
   
@@ -123,10 +125,10 @@ export function VacuumTableConfig() {
                     </label>
                     <input 
                       type="number"
-                      min="10" max="5000" step="10"
+                      min="10" max="5000" step="5"
                       className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-xs text-slate-200 focus:outline-none focus:border-sky-500"
-                      value={model.width}
-                      readOnly
+                      value={size.width}
+                      onChange={e => { if (e.target.value !== '') updateRobot(selectedRobot.id, { vacuumTable: resizeVacuumTable(moduleData, 'width', Number(e.target.value)) }); }}
                       
                     />
                   </div>
@@ -136,10 +138,10 @@ export function VacuumTableConfig() {
                     </label>
                     <input 
                       type="number"
-                      min="10" max="5000" step="10"
+                      min="10" max="5000" step="5"
                       className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-xs text-slate-200 focus:outline-none focus:border-sky-500"
-                      value={model.length}
-                      readOnly
+                      value={size.length}
+                      onChange={e => { if (e.target.value !== '') updateRobot(selectedRobot.id, { vacuumTable: resizeVacuumTable(moduleData, 'length', Number(e.target.value)) }); }}
                       
                     />
                   </div>
@@ -173,12 +175,12 @@ export function VacuumTableConfig() {
                 {t('modules.live_view_3d', '3D Live View')}
               </span>
             </div>
-            <Canvas camera={{ position: [0.3, 0.3, 0.3], fov: 50 }} shadows className="w-full h-full outline-none">
+            <Canvas camera={{ position: [previewDistance, previewDistance, previewDistance], fov: 50 }} shadows className="w-full h-full outline-none">
               <Shared3DEnvironment />
               
               {moduleData && <SharedModule3DView module={moduleData} type="vacuumTable" />}
               
-              <OrbitControls makeDefault maxPolarAngle={Math.PI / 2 + 0.1} minDistance={0.2} maxDistance={3} target={[0, 0, 0]} />
+              <OrbitControls makeDefault maxPolarAngle={Math.PI / 2 + 0.1} minDistance={0.02} maxDistance={20} target={[0, 0, 0]} />
             </Canvas>
           </div>
         </div>
