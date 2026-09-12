@@ -2,7 +2,7 @@
 
 All notable work on **HYDRA-UMC STUDIO** is summarized here, newest first.
 
-## [0.6.1] — table model configuration
+## [0.6.2] — table model configuration
 
 - Separate JuanenPnP, JuanenCNC and JuanenLaser into independent editable STL
   directories (167 meshes each), retaining the untouched LumenPnP source and
