@@ -264,7 +264,7 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # 新規チェックアウト用のサンプル設定
 │   └── favicon.svg, icons.svg   # アプリアイコンと共有アイコンスプライト
 ├── images/                       # README バナー
-├── tests/                        # 実際の Vitest スイート(145 件のテスト)—— src/examples/ の FK/IK 数学のみ、React/DOM は不使用
+├── tests/                        # 実際の Vitest スイート(182 件のテスト)—— src/examples/ の FK/IK 数学のみ、React/DOM は不使用
 │   ├── utils.test.ts             # 共有の汎用アーム FK/IK ペアとその 5 つのパスジェネレーター
 │   ├── urKinematicsShared.test.ts  # 実際の DH チェーン FK + Newton-Raphson IK エンジン(実際の UR5e チェーンを通じて検証)
 │   ├── parol6Kinematics.test.ts  # Parol6 自身のハードコードされた実際のチェーン
@@ -312,7 +312,7 @@ Vite 自身の開発サーバー（純粋な `vite`、ポート `5173`）をラ�
 ### 自動テスト
 
 ```bash
-npm test          # vitest run —— src/examples/ に対する 145 件の実際のテスト
+npm test          # vitest run —— src/examples/ に対する 182 件の実際のテスト
 npm run typecheck # tsc -b --noEmit（src/）+ tsc -p tsconfig.test.json --noEmit（tests/）
 ```
 

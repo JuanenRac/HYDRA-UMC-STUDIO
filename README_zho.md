@@ -263,7 +263,7 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # 全新检出时预置的示例设置
 │   └── favicon.svg, icons.svg   # 应用图标与共享图标精灵图
 ├── images/                       # README 横幅
-├── tests/                        # 真实的 Vitest 套件(145 个测试)——只测 src/examples/ 的 FK/IK 数学逻辑,不涉及 React/DOM
+├── tests/                        # 真实的 Vitest 套件(182 个测试)——只测 src/examples/ 的 FK/IK 数学逻辑,不涉及 React/DOM
 │   ├── utils.test.ts             # 共享的通用手臂 FK/IK 组合及其 5 个路径生成器
 │   ├── urKinematicsShared.test.ts  # 真实的 DH 链 FK + 牛顿-拉夫逊 IK 引擎(通过真实的 UR5e 链验证)
 │   ├── parol6Kinematics.test.ts  # Parol6 自身硬编码的真实链条
@@ -311,7 +311,7 @@ npm install
 ### 自动化测试
 
 ```bash
-npm test          # vitest run —— 针对 src/examples/ 的 145 个真实测试
+npm test          # vitest run —— 针对 src/examples/ 的 182 个真实测试
 npm run typecheck # tsc -b --noEmit（src/）+ tsc -p tsconfig.test.json --noEmit（tests/）
 ```
 

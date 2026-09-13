@@ -17,7 +17,7 @@
 // =============================================================================
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Cpu, MemoryStick, HardDrive, Thermometer, ListTree, Gauge, Wifi, Bluetooth, Cable, WifiOff } from 'lucide-react';
+import { Cpu, MemoryStick, HardDrive, Thermometer, ListTree, Gauge, Wifi, Bluetooth, Cable, WifiOff, ArrowDownUp } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { apiUrl } from '../lib/apiBase';
 
@@ -39,7 +39,19 @@ interface Supervisor {
   temps: { cpu: number | null; cpuIsReal: boolean; rp1: number | null };
   processes: { pid: number; name: string; cpuPercent: number; memPercent: number; rssBytes: number }[];
   uptimeSeconds: number;
-  network: { wifi: boolean | null; ethernet: boolean | null; bluetooth: boolean | null };
+  network: {
+    wifi: boolean | null; ethernet: boolean | null; bluetooth: boolean | null;
+    // Cumulative RX/TX byte counters since the interface was brought up
+    // (effectively "since CM5 boot" - see server.ts's own
+    // readNetworkTraffic() header comment) - null for an interface this
+    // host doesn't have, or (always, today) for bluetooth, which has no
+    // sysfs byte-counter equivalent to read.
+    traffic: {
+      wifi: { rxBytes: number; txBytes: number } | null;
+      ethernet: { rxBytes: number; txBytes: number } | null;
+      bluetooth: { rxBytes: number; txBytes: number } | null;
+    };
+  };
 }
 
 // 2 minutes of history at 2s polling - long enough for the shape of a real
@@ -55,6 +67,11 @@ function formatBytes(n: number | null | undefined): string {
   let i = 0;
   while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
   return `${v.toFixed(v >= 100 ? 0 : 1)} ${units[i]}`;
+}
+
+function formatBytesPerSec(n: number | null): string {
+  if (n === null) return '—';
+  return `${formatBytes(n)}/s`;
 }
 
 function formatUptime(seconds: number): string {
@@ -77,6 +94,7 @@ const ACCENTS = {
   disk: { text: 'text-emerald-400', border: 'border-emerald-500/40', glow: 'shadow-[0_0_24px_rgba(52,211,153,0.15)]', fill: '#34d399', bg: 'bg-emerald-500/10' },
   temp: { text: 'text-rose-400', border: 'border-rose-500/40', glow: 'shadow-[0_0_24px_rgba(251,113,133,0.15)]', fill: '#fb7185', bg: 'bg-rose-500/10' },
   proc: { text: 'text-violet-400', border: 'border-violet-500/40', glow: 'shadow-[0_0_24px_rgba(167,139,250,0.15)]', fill: '#a78bfa', bg: 'bg-violet-500/10' },
+  net: { text: 'text-sky-400', border: 'border-sky-500/40', glow: 'shadow-[0_0_24px_rgba(56,189,248,0.15)]', fill: '#38bdf8', bg: 'bg-sky-500/10' },
 } as const;
 
 function StatTile({ icon, label, value, sub, accent }: {
@@ -152,6 +170,30 @@ export function SystemSupervisor() {
     cached: s.memory ? Math.round(((s.memory.cachedBytes + s.memory.buffersBytes) / s.memory.totalBytes) * 1000) / 10 : null,
   }));
   const tempData = history.map(s => ({ x: s.timestamp, cpu: s.temps.cpu, rp1: s.temps.rp1 }));
+  // Cumulative rx/txBytes on their own only ever climb (a flat line at an
+  // ever-growing scale isn't a useful "flow" graph) - the real live
+  // throughput between two polls is the delta divided by the elapsed
+  // time, same technique lastCpuUsage's own busy% sampler already uses
+  // server-side. Needs 2 consecutive real samples for the SAME interface
+  // (a brief null - e.g. the interface flapped, or this is the very first
+  // poll after mount) to produce one point; skipped rather than shown as a
+  // false 0.
+  const netThroughputData: { x: number; wifiRx: number | null; wifiTx: number | null; ethRx: number | null; ethTx: number | null }[] = [];
+  for (let i = 1; i < history.length; i++) {
+    const prev = history[i - 1];
+    const cur = history[i];
+    const dtSec = (cur.timestamp - prev.timestamp) / 1000;
+    const rate = (a: { rxBytes: number; txBytes: number } | null, b: { rxBytes: number; txBytes: number } | null, key: 'rxBytes' | 'txBytes') =>
+      a && b && dtSec > 0 && b[key] >= a[key] ? Math.round((b[key] - a[key]) / dtSec) : null;
+    netThroughputData.push({
+      x: cur.timestamp,
+      wifiRx: rate(prev.network.traffic.wifi, cur.network.traffic.wifi, 'rxBytes'),
+      wifiTx: rate(prev.network.traffic.wifi, cur.network.traffic.wifi, 'txBytes'),
+      ethRx: rate(prev.network.traffic.ethernet, cur.network.traffic.ethernet, 'rxBytes'),
+      ethTx: rate(prev.network.traffic.ethernet, cur.network.traffic.ethernet, 'txBytes'),
+    });
+  }
+  const hasNetworkTraffic = snapshot.network.traffic.wifi !== null || snapshot.network.traffic.ethernet !== null;
 
   const memPercent = snapshot.memory ? Math.round((snapshot.memory.usedBytes / snapshot.memory.totalBytes) * 100) : null;
   const diskPercent = snapshot.disk ? Math.round((snapshot.disk.usedBytes / snapshot.disk.totalBytes) * 100) : null;
@@ -284,6 +326,53 @@ export function SystemSupervisor() {
           </ResponsiveContainer>
         </ChartCard>
       </div>
+
+      {/* Network data-flow: totals accumulated since boot + live throughput
+          per interface. Only rendered when at least one interface reports
+          real traffic (a non-Linux dev host, or one with neither Wi-Fi nor
+          Ethernet exposed via sysfs, shows nothing here rather than an
+          all-N/A panel with no real content). */}
+      {hasNetworkTraffic && (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {snapshot.network.traffic.wifi && (
+              <StatTile
+                accent="net" icon={<Wifi size={13} />}
+                label={t('ecosystem.supervisor_wifi_total', 'Wi-Fi Total')}
+                value={formatBytes(snapshot.network.traffic.wifi.rxBytes + snapshot.network.traffic.wifi.txBytes)}
+                sub={`↓ ${formatBytes(snapshot.network.traffic.wifi.rxBytes)} · ↑ ${formatBytes(snapshot.network.traffic.wifi.txBytes)}`}
+              />
+            )}
+            {snapshot.network.traffic.ethernet && (
+              <StatTile
+                accent="net" icon={<Cable size={13} />}
+                label={t('ecosystem.supervisor_ethernet_total', 'Ethernet Total')}
+                value={formatBytes(snapshot.network.traffic.ethernet.rxBytes + snapshot.network.traffic.ethernet.txBytes)}
+                sub={`↓ ${formatBytes(snapshot.network.traffic.ethernet.rxBytes)} · ↑ ${formatBytes(snapshot.network.traffic.ethernet.txBytes)}`}
+              />
+            )}
+          </div>
+
+          <ChartCard title={t('ecosystem.supervisor_network_throughput', 'Network Throughput')} icon={<ArrowDownUp size={12} />} accent="net">
+            {netThroughputData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={netThroughputData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+                  <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="x" tickFormatter={formatClock} {...axisProps} />
+                  <YAxis width={48} tickFormatter={(v) => formatBytes(v as number)} {...axisProps} />
+                  <Tooltip contentStyle={tooltipStyle} labelFormatter={(v) => formatClock(v as number)} formatter={(v, n) => [formatBytesPerSec(v as number), n]} />
+                  {snapshot.network.traffic.wifi && <Line type="monotone" dataKey="wifiRx" name={t('ecosystem.supervisor_wifi_down', 'Wi-Fi ↓')} stroke={ACCENTS.net.fill} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls />}
+                  {snapshot.network.traffic.wifi && <Line type="monotone" dataKey="wifiTx" name={t('ecosystem.supervisor_wifi_up', 'Wi-Fi ↑')} stroke={ACCENTS.net.fill} strokeWidth={1} strokeDasharray="3 3" dot={false} isAnimationActive={false} connectNulls />}
+                  {snapshot.network.traffic.ethernet && <Line type="monotone" dataKey="ethRx" name={t('ecosystem.supervisor_ethernet_down', 'Ethernet ↓')} stroke={ACCENTS.mem.fill} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls />}
+                  {snapshot.network.traffic.ethernet && <Line type="monotone" dataKey="ethTx" name={t('ecosystem.supervisor_ethernet_up', 'Ethernet ↑')} stroke={ACCENTS.mem.fill} strokeWidth={1} strokeDasharray="3 3" dot={false} isAnimationActive={false} connectNulls />}
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-xs text-slate-600">{t('ecosystem.supervisor_network_warming_up', 'Collecting samples...')}</div>
+            )}
+          </ChartCard>
+        </>
+      )}
 
       {/* Process table */}
       <ChartCard title={t('ecosystem.supervisor_processes', 'Top Processes')} icon={<ListTree size={12} />} accent="proc" height={snapshot.processes.length ? 340 : 80}>
