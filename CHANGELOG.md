@@ -27,6 +27,27 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.6.3] - H060: 2 missing translation keys, and Supervisor network data-flow graphs
+
+- Add the 2 translation keys used by real `t(...)` calls but missing from
+  all 7 locale catalogs (`dashboard.rp1_temp`, `robot_detail.delete_points`)
+  - i18next's own behavior for a key missing everywhere and passed no
+    literal default is to render the raw key string itself in the UI.
+- Add `tests/i18nKeys.test.ts`: statically extracts every literal-string
+  `t(...)` call under `src/` and checks it resolves against the real
+  locale catalogs, plus asserts all 7 catalogs carry the exact same key
+  set - a key added to one language but not the rest is exactly how the
+  bug above happened, and would now fail this test instead of only being
+  found by hand.
+- System Supervisor panel: real per-interface network traffic, consuming
+  the new fields on `GET /api/system/supervisor` (HYDRA-UMC SERVER
+  0.6.7) - cumulative Wi-Fi/Ethernet totals since boot as stat tiles, plus
+  a live throughput graph (RX/TX, computed client-side from consecutive
+  cumulative-byte samples). Bluetooth traffic has no real source on the
+  server side yet and is never shown as a fabricated number. Nothing
+  renders when the host has neither interface, rather than an all-N/A
+  panel with no real content.
+
 ## [0.6.2] — table model configuration
 
 - Separate JuanenPnP, JuanenCNC and JuanenLaser into independent editable STL

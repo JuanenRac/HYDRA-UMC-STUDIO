@@ -263,7 +263,7 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # Settings d'exemple préchargés pour un checkout neuf
 │   └── favicon.svg, icons.svg   # Icône de l'app et sprite d'icônes partagé
 ├── images/                       # Bannière du README
-├── tests/                        # Vraie suite Vitest (145 tests) - uniquement les maths FK/IK de src/examples/, sans React/DOM
+├── tests/                        # Vraie suite Vitest (182 tests) - uniquement les maths FK/IK de src/examples/, sans React/DOM
 │   ├── utils.test.ts             # Paire FK/IK partagee du bras generique + ses 5 generateurs de trajectoires
 │   ├── urKinematicsShared.test.ts  # Vrai moteur de chaine DH + IK Newton-Raphson (via la vraie chaine UR5e)
 │   ├── parol6Kinematics.test.ts  # Propre chaine reelle et codee en dur de Parol6
@@ -311,7 +311,7 @@ Exécute le propre serveur de développement de Vite (`vite` simple, port `5173`
 ### Tests Automatisés
 
 ```bash
-npm test          # vitest run - 145 vrais tests sur src/examples/
+npm test          # vitest run - 182 vrais tests sur src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 
