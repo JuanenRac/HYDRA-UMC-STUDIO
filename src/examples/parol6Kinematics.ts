@@ -50,9 +50,12 @@ const PAROL6_CHAIN: JointStep[] = [
   { pos: [0, 0, 0], rpy: [1.5708, 0, 0], axisSign: -1 },                                        // J6
 ];
 
-// Real limits from PAROL6.urdf's own <limit lower upper> (radians, converted here to degrees).
+// Real limits from PAROL6.urdf's own <limit lower upper> (radians, converted here to degrees),
+// except j1: the owner's own real unit has been recalibrated to a wider
+// physical range than the stock URDF declares (-97.4/+97.4) - it now
+// really travels to +187.4 on the real hardware, confirmed by the owner.
 export const PAROL6_JOINT_LIMITS_DEG: Record<'j1' | 'j2' | 'j3' | 'j4' | 'j5' | 'j6', [number, number]> = {
-  j1: [-97.40, 97.40],
+  j1: [-97.40, 187.40],
   j2: [-56.15, 57.30],
   j3: [-114.59, 74.48],
   j4: [-114.59, 114.59],
