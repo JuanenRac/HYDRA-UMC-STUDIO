@@ -41,17 +41,33 @@ describe('parol6JointsToCartesian / parol6CartesianToJoints', () => {
     expect(cart.c).toBe(30);
   });
 
-  it('j1 is clamped to this model\'s own real +/-97.40 limit', () => {
+  it('j1 stays within this model\'s own real limits for a reachable target', () => {
     const solved = parol6CartesianToJoints(-1, 100, 0, 0, 0, 0); // atan2(100,-1) ~= 90.6deg, within range
     expect(solved.j1).toBeGreaterThanOrEqual(PAROL6_JOINT_LIMITS_DEG.j1[0]);
     expect(solved.j1).toBeLessThanOrEqual(PAROL6_JOINT_LIMITS_DEG.j1[1]);
   });
 
   it('a target requesting j1 outside the real limit is clamped, not passed through unbounded', () => {
-    // A point almost directly "behind" the robot (atan2 close to +/-180deg)
-    // is outside Parol6's real +/-97.40deg j1 range.
-    const solved = parol6CartesianToJoints(-100, 1, 0, 0, 0, 0);
-    expect(solved.j1).toBe(PAROL6_JOINT_LIMITS_DEG.j1[1]);
+    // Math.atan2 can only ever return a raw angle in (-180, 180] here - so
+    // with j1's own real upper limit now 187.40 (wider than the owner's
+    // recalibrated real unit actually allows, see PAROL6_JOINT_LIMITS_DEG's
+    // own comment), a raw atan2 solve can never actually reach that upper
+    // bound to exercise its clamp - only the lower bound (-97.40) is still
+    // reachable this way. A point almost directly "behind" the robot on the
+    // negative-y side (atan2 close to -180deg) is outside that lower limit.
+    const solved = parol6CartesianToJoints(-100, -1, 0, 0, 0, 0);
+    expect(solved.j1).toBe(PAROL6_JOINT_LIMITS_DEG.j1[0]);
+  });
+
+  it('a raw atan2 solve can never exceed j1\'s own real upper limit, so it is never clamped there', () => {
+    // atan2's own (-180, 180] range means the highest raw j1 this solve can
+    // ever produce is 180 - always inside the real, wider [-97.40, 187.40]
+    // range, so this branch of the clamp is only ever reachable from a
+    // direct joint jog (RobotDetail.tsx/GamepadController.tsx), not from
+    // this Cartesian solve.
+    const solved = parol6CartesianToJoints(-100, 1, 0, 0, 0, 0); // atan2(1,-100) ~= 179.4deg
+    expect(solved.j1).toBeCloseTo(179.4, 0);
+    expect(solved.j1).toBeLessThan(PAROL6_JOINT_LIMITS_DEG.j1[1]);
   });
 
   it('every solved joint stays within this model\'s own real limits for a reachable target', () => {

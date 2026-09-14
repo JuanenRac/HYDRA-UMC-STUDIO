@@ -27,6 +27,25 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.6.4] - Parol6's real j1 range widened to match the recalibrated physical unit
+
+- `PAROL6_JOINT_LIMITS_DEG.j1` was `[-97.40, 97.40]`, taken straight from
+  the stock `PAROL6.urdf`. The owner's own real unit has since been
+  recalibrated to a wider physical range - confirmed real j1 travel is
+  now `[-97.40, +187.40]`. This is the single source of truth
+  `jointLimitsFor()` (`robotKinematicsDispatch.ts`) already exposes to
+  both the jog UI (`RobotDetail.tsx`) and gamepad jog clamping
+  (`GamepadController.tsx`), so both pick up the wider real range with
+  this one change.
+- `parol6CartesianToJoints`'s own j1 solve is `Math.atan2(y, x)`, whose
+  range is inherently `(-180, 180]` - it can never actually reach the new
+  187.40 upper bound, only the -97.40 lower one. Updated
+  `tests/parol6Kinematics.test.ts` to test the lower-bound clamp for real
+  (the old test's own Cartesian target no longer needs clamping at all
+  under the wider limit) and added a new test documenting that the upper
+  bound is only ever reachable from a direct joint jog, not from this
+  Cartesian solve.
+
 ## [0.6.3] - H060: 2 missing translation keys, and Supervisor network data-flow graphs
 
 - Add the 2 translation keys used by real `t(...)` calls but missing from
