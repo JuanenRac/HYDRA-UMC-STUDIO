@@ -27,6 +27,17 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.6.5] - Pair a Bluetooth gamepad directly to the CM5 from Config, no SSH needed
+
+Gamepad Config's own "Bluetooth Connection" mode used to be purely informational - it never actually
+paired anything, and `navigator.getGamepads()` only ever sees a controller connected to whichever
+machine is running the browser, not the CM5 itself. Switching Gamepad Controller to Bluetooth mode now
+shows a real pairing panel: **Scan for devices** powers on the CM5's own Bluetooth adapter and runs a
+real ~10-second discovery window on the device itself, listing whatever it actually finds; **Pair**
+runs the real pair/trust/connect handshake against that same device. Everything here is a real,
+admin-gated action against HYDRA-UMC-SERVER's own new `POST /api/system/bluetooth/*` routes - nothing
+here is simulated or client-side-only. Translated in all 7 languages.
+
 ## [0.6.4] - Parol6's real j1 range widened to match the recalibrated physical unit
 
 - `PAROL6_JOINT_LIMITS_DEG.j1` was `[-97.40, 97.40]`, taken straight from

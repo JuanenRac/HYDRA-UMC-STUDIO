@@ -936,6 +936,20 @@
       "AXIS_3_POS": "Stick Derecho Abajo"
     }
   },
+  "bluetooth_pairing": {
+    "title": "Emparejar un dispositivo Bluetooth a esta CM5",
+    "scan": "Buscar dispositivos",
+    "scanning": "Buscando…",
+    "hint": "Pon primero el mando en modo de emparejamiento (mantén pulsado su botón de Bluetooth/sincronización hasta que parpadee) y luego busca. Esto empareja el dispositivo directamente a esta CM5, sin depender del ordenador que esté viendo esta página.",
+    "scan_error": "Falló la búsqueda de dispositivos Bluetooth.",
+    "pair_error": "No se pudo emparejar con {{name}}.",
+    "forget_error": "No se pudo eliminar {{name}}.",
+    "no_devices": "No se encontraron dispositivos - asegúrate de que está en modo de emparejamiento e inténtalo de nuevo.",
+    "connected": "CONECTADO",
+    "pair": "Emparejar",
+    "forget": "Olvidar este dispositivo",
+    "admin_only": "Emparejar un dispositivo Bluetooth a esta CM5 requiere una cuenta de administrador."
+  },
   "errorBoundary": {
     "title": "Algo falló al renderizar este panel.",
     "hint": "Normalmente se soluciona recargando la página, sobre todo justo después de actualizar HYDRA-UMC STUDIO en este servidor.",
