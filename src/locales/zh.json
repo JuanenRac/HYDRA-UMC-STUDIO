@@ -936,6 +936,20 @@
       "AXIS_3_POS": "右摇杆下"
     }
   },
+  "bluetooth_pairing": {
+    "title": "将蓝牙设备与此 CM5 配对",
+    "scan": "搜索设备",
+    "scanning": "搜索中…",
+    "hint": "请先让手柄进入配对模式(按住其蓝牙/同步按钮直到指示灯闪烁),然后再搜索。这会将设备直接与此 CM5 配对,与当前正在查看此页面的电脑无关。",
+    "scan_error": "蓝牙搜索失败。",
+    "pair_error": "无法与 {{name}} 配对。",
+    "forget_error": "无法移除 {{name}}。",
+    "no_devices": "未找到设备 - 请确认设备处于配对模式后重试。",
+    "connected": "已连接",
+    "pair": "配对",
+    "forget": "忘记此设备",
+    "admin_only": "将蓝牙设备与此 CM5 配对需要管理员账户。"
+  },
   "errorBoundary": {
     "title": "渲染此面板时出现错误。",
     "hint": "通常刷新页面即可解决，尤其是在此服务器上刚更新过 HYDRA-UMC STUDIO 之后。",

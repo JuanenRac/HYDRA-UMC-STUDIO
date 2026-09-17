@@ -936,6 +936,20 @@
       "AXIS_3_POS": "Stick Destro Giù"
     }
   },
+  "bluetooth_pairing": {
+    "title": "Accoppia un dispositivo Bluetooth a questo CM5",
+    "scan": "Cerca dispositivi",
+    "scanning": "Ricerca in corso…",
+    "hint": "Metti prima il gamepad in modalità di accoppiamento (tieni premuto il pulsante Bluetooth/sync finché non lampeggia), poi cerca. Questo accoppia il dispositivo direttamente a questo CM5, indipendentemente dal computer che sta visualizzando questa pagina.",
+    "scan_error": "Ricerca Bluetooth non riuscita.",
+    "pair_error": "Impossibile accoppiarsi con {{name}}.",
+    "forget_error": "Impossibile rimuovere {{name}}.",
+    "no_devices": "Nessun dispositivo trovato - assicurati che sia in modalità di accoppiamento e riprova.",
+    "connected": "CONNESSO",
+    "pair": "Accoppia",
+    "forget": "Dimentica questo dispositivo",
+    "admin_only": "Accoppiare un dispositivo Bluetooth a questo CM5 richiede un account amministratore."
+  },
   "errorBoundary": {
     "title": "Si è verificato un errore durante il rendering di questo pannello.",
     "hint": "Di solito si risolve ricaricando la pagina, soprattutto subito dopo un aggiornamento di HYDRA-UMC STUDIO su questo server.",

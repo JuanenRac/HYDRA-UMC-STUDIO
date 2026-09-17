@@ -8,6 +8,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
 import { Gamepad2 } from 'lucide-react';
+import { BluetoothPairing } from './BluetoothPairing';
 
 /**
  * Executes the  gamepad config logic.
@@ -191,6 +192,10 @@ export function GamepadConfig() {
           </button>
         </div>
       </div>
+
+      {gamepadEnabled && (settings.gamepadConnectionType || 'USB') === 'Bluetooth' && (
+        <BluetoothPairing />
+      )}
 
       {gamepadEnabled && (
         <div className="text-xs rounded-lg border p-3 flex items-center justify-between gap-3 border-slate-800 bg-slate-900">

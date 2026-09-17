@@ -936,6 +936,20 @@
       "AXIS_3_POS": "Right Stick Down"
     }
   },
+  "bluetooth_pairing": {
+    "title": "Pair a Bluetooth device to this CM5",
+    "scan": "Scan for devices",
+    "scanning": "Scanning…",
+    "hint": "Put your gamepad in pairing mode first (hold its Bluetooth/sync button until it flashes), then scan. This pairs the device directly to this CM5, independent of whichever computer is viewing this page.",
+    "scan_error": "Bluetooth scan failed.",
+    "pair_error": "Could not pair with {{name}}.",
+    "forget_error": "Could not remove {{name}}.",
+    "no_devices": "No devices found - make sure the device is in pairing mode and try again.",
+    "connected": "CONNECTED",
+    "pair": "Pair",
+    "forget": "Forget this device",
+    "admin_only": "Pairing a Bluetooth device to this CM5 requires an administrator account."
+  },
   "errorBoundary": {
     "title": "Something went wrong rendering this panel.",
     "hint": "This usually clears up after a reload - especially right after HYDRA-UMC STUDIO itself was just updated on this server.",

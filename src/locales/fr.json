@@ -936,6 +936,20 @@
       "AXIS_3_POS": "Stick Droit en Bas"
     }
   },
+  "bluetooth_pairing": {
+    "title": "Associer un appareil Bluetooth à ce CM5",
+    "scan": "Rechercher des appareils",
+    "scanning": "Recherche…",
+    "hint": "Mettez d'abord votre manette en mode d'appairage (maintenez son bouton Bluetooth/sync jusqu'à ce qu'il clignote), puis lancez la recherche. Ceci associe l'appareil directement à ce CM5, indépendamment de l'ordinateur affichant cette page.",
+    "scan_error": "Échec de la recherche Bluetooth.",
+    "pair_error": "Impossible de s'associer à {{name}}.",
+    "forget_error": "Impossible de supprimer {{name}}.",
+    "no_devices": "Aucun appareil trouvé - vérifiez qu'il est en mode d'appairage et réessayez.",
+    "connected": "CONNECTÉ",
+    "pair": "Associer",
+    "forget": "Oublier cet appareil",
+    "admin_only": "Associer un appareil Bluetooth à ce CM5 nécessite un compte administrateur."
+  },
   "errorBoundary": {
     "title": "Une erreur est survenue lors de l'affichage de ce panneau.",
     "hint": "Cela se résout généralement en rechargeant la page, surtout juste après une mise à jour de HYDRA-UMC STUDIO sur ce serveur.",
