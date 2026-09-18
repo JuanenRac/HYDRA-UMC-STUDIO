@@ -82,7 +82,7 @@ here is simulated or client-side-only. Translated in all 7 languages.
   bound is only ever reachable from a direct joint jog, not from this
   Cartesian solve.
 
-## [0.6.3] - H060: 2 missing translation keys, and Supervisor network data-flow graphs
+## [0.6.3] - 2 missing translation keys, and Supervisor network data-flow graphs
 
 - Add the 2 translation keys used by real `t(...)` calls but missing from
   all 7 locale catalogs (`dashboard.rp1_temp`, `robot_detail.delete_points`)
