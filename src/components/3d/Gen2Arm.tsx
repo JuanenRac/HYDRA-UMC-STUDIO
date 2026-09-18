@@ -21,7 +21,7 @@ export default function Gen2Arm({ robot }: { robot: RobotState }) {
   return (
     <URArm
       robot={robot}
-      config={{ meshBase: '/models/gen2/', chain: GEN2_CHAIN, meshOffsets: GEN2_MESH_OFFSETS, meshFiles: GEN2_MESH_FILES }}
+      config={{ meshBase: '/models/robots-6-dof/gen2/', chain: GEN2_CHAIN, meshOffsets: GEN2_MESH_OFFSETS, meshFiles: GEN2_MESH_FILES }}
     />
   );
 }

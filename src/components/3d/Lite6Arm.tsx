@@ -21,7 +21,7 @@ export default function Lite6Arm({ robot }: { robot: RobotState }) {
   return (
     <URArm
       robot={robot}
-      config={{ meshBase: '/models/lite6/', chain: LITE6_CHAIN, meshOffsets: LITE6_MESH_OFFSETS, meshFiles: LITE6_MESH_FILES }}
+      config={{ meshBase: '/models/robots-6-dof/lite6/', chain: LITE6_CHAIN, meshOffsets: LITE6_MESH_OFFSETS, meshFiles: LITE6_MESH_FILES }}
     />
   );
 }

@@ -17,7 +17,7 @@ class Boundary extends Component<{children: ReactNode; fallback: ReactNode}, {fa
   render() { return this.state.failed ? this.props.fallback : this.props.children; }
 }
 function Assembly({ rack }: {rack: RackConfig}) {
-  const sources = useLoader(STLLoader, ['base','wall','guide'].map(p => import.meta.env.BASE_URL + 'models/racks/' + p + '.stl'));
+  const sources = useLoader(STLLoader, ['base','wall','guide'].map(p => import.meta.env.BASE_URL + 'models/racks/default/' + p + '.stl'));
   const meshes = useMemo(() => sources.map(source => {
     const g = source.clone();
     g.center(); g.rotateX(-Math.PI / 2); g.scale(.001,.001,.001);

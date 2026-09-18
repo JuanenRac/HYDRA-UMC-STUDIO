@@ -19,7 +19,7 @@ class MeshBoundary extends Component<{ children: ReactNode; fallback: ReactNode 
 }
 function LoadedMesh({ modelId, width, length }: { modelId?: string; width?: number; length?: number }) {
   const model = vacuumTableModel(modelId);
-  const source = useLoader(STLLoader, import.meta.env.BASE_URL + 'models/vacuum-tables/' + model.file);
+  const source = useLoader(STLLoader, import.meta.env.BASE_URL + 'models/vacuum-tables/default/' + model.file);
   // Clone the cached STL before transforming it: mm, CAD Z-up -> meters, Y-up.
   const geometry = useMemo(() => {
     const copy = source.clone();

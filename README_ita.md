@@ -175,17 +175,17 @@ HYDRA-UMC-STUDIO/
 ├── docs/HEATED_BED_MODELS.md
 ├── docs/RACK_MODELS.md
 ├── docs/MACHINE_ASSETS.md
-├── public/models/{juanenpnp,juanencnc,juanenlaser}/ # STL + ATTRIBUTION + VARIANT.md
+├── public/models/machine-pnp/{juanenpnp}, machine-cnc/juanencnc, machine-laser/juanenlaser/ # STL + ATTRIBUTION + VARIANT.md
 ├── src/machineAssets.ts
 ├── tests/machineAssets.test.ts
-├── public/models/racks/        # Rack.scad + base/wall/guide/assembly STL
+├── public/models/racks/default/        # Rack.scad + base/wall/guide/assembly STL
 ├── src/racks.ts
 ├── tests/racks.test.ts
-├── public/models/heated-beds/   # catalog.json + HeatedBed.scad + 4 STL
+├── public/models/heatedbeds/default/   # catalog.json + HeatedBed.scad + 4 STL
 ├── src/heatedBeds.ts
 ├── src/components/3d/HeatedBedMesh.tsx
 ├── tests/heatedBeds.test.ts
-├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
+├── public/models/vacuum-tables/default/  # catalog.json + 6 STL + 6 SCAD
 ├── src/vacuumTables.ts
 ├── src/components/3d/VacuumTableMesh.tsx
 ├── tests/vacuumTables.test.ts
@@ -473,7 +473,7 @@ La documentazione (questo README e le proprie traduzioni - `README_spa.md`, `REA
 | Universal Robots (classic) | UR3, UR5, UR10 | BSD-3-Clause |
 | Opulo | LumenPnP v4 (usato anche per JuanenPnP) | CERN-OHL-W v2 |
 
-Il riferimento esatto al repository sorgente, al percorso, e al testo di licenza di ciascun modello vive nel proprio `public/models/<slug>/ATTRIBUTION.txt` di quel modello - consulta quel file prima di ridistribuire uno specifico set di mesh, invece di assumere che la tabella sopra lo sostituisca. Vale la pena leggere per intero il proprio `ATTRIBUTION.txt` di LumenPnP - a differenza di ogni braccio robotico sopra (file STL prefabbricati propri del produttore, scaricati verbatim), quei 5 file mesh sono stati generati internamente a partire dalla sorgente FreeCAD reale di Opulo, non ridistribuiti così come sono.
+Il riferimento esatto al repository sorgente, al percorso, e al testo di licenza di ciascun modello vive nel proprio `public/models/<category>/<slug>/ATTRIBUTION.txt` di quel modello - consulta quel file prima di ridistribuire uno specifico set di mesh, invece di assumere che la tabella sopra lo sostituisca. Vale la pena leggere per intero il proprio `ATTRIBUTION.txt` di LumenPnP - a differenza di ogni braccio robotico sopra (file STL prefabbricati propri del produttore, scaricati verbatim), quei 5 file mesh sono stati generati internamente a partire dalla sorgente FreeCAD reale di Opulo, non ridistribuiti così come sono.
 
 Questo dashboard è il pannello di controllo web per il progetto scheda madre [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) - vedi quel repository per il licenziamento proprio del suo hardware (CERN-OHL-S v2) e firmware (GPL-3.0), a cui la licenza propria di questo repository non si estende, e viceversa. Implementa inoltre strumenti CAN-OTA contro il protocollo [URTC](https://github.com/JuanenRac/URTC) - vedi il repository proprio di quel progetto per la sua licenza separata.
 

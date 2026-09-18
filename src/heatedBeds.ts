@@ -3,7 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================
-import catalog from '../public/models/heated-beds/catalog.json';
+import catalog from '../public/models/heatedbeds/default/catalog.json';
 import type { HeatedBedModule } from './store';
 
 export const HEATED_BED_MODELS = catalog.models;

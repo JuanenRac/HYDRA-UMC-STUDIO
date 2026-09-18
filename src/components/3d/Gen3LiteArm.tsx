@@ -23,7 +23,7 @@ export default function Gen3LiteArm({ robot }: { robot: RobotState }) {
   return (
     <URArm
       robot={robot}
-      config={{ meshBase: '/models/gen3lite/', chain: GEN3LITE_CHAIN, meshOffsets: GEN3LITE_MESH_OFFSETS, meshFiles: GEN3LITE_MESH_FILES }}
+      config={{ meshBase: '/models/robots-6-dof/gen3lite/', chain: GEN3LITE_CHAIN, meshOffsets: GEN3LITE_MESH_OFFSETS, meshFiles: GEN3LITE_MESH_FILES }}
     />
   );
 }

@@ -23,7 +23,7 @@ export default function XArm6Arm({ robot }: { robot: RobotState }) {
   return (
     <URArm
       robot={robot}
-      config={{ meshBase: '/models/xarm6/', chain: XARM6_CHAIN, meshOffsets: XARM6_MESH_OFFSETS, meshFiles: XARM6_MESH_FILES }}
+      config={{ meshBase: '/models/robots-6-dof/xarm6/', chain: XARM6_CHAIN, meshOffsets: XARM6_MESH_OFFSETS, meshFiles: XARM6_MESH_FILES }}
     />
   );
 }

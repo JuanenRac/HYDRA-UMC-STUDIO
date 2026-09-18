@@ -13,5 +13,5 @@ import URArm from './URArm';
 import { UR3E_CHAIN, UR3E_MESH_OFFSETS } from '../../examples/ur3eKinematics';
 
 export default function UR3eArm({ robot }: { robot: RobotState }) {
-  return <URArm robot={robot} config={{ meshBase: '/models/ur3e/', chain: UR3E_CHAIN, meshOffsets: UR3E_MESH_OFFSETS }} />;
+  return <URArm robot={robot} config={{ meshBase: '/models/robots-6-dof/ur3e/', chain: UR3E_CHAIN, meshOffsets: UR3E_MESH_OFFSETS }} />;
 }

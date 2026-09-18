@@ -17,5 +17,5 @@ import URArm from './URArm';
 import { UR16E_CHAIN, UR16E_MESH_OFFSETS } from '../../examples/ur16eKinematics';
 
 export default function UR16eArm({ robot }: { robot: RobotState }) {
-  return <URArm robot={robot} config={{ meshBase: '/models/ur16e/', chain: UR16E_CHAIN, meshOffsets: UR16E_MESH_OFFSETS }} />;
+  return <URArm robot={robot} config={{ meshBase: '/models/robots-6-dof/ur16e/', chain: UR16E_CHAIN, meshOffsets: UR16E_MESH_OFFSETS }} />;
 }

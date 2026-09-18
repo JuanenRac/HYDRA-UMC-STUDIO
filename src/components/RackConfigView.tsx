@@ -125,8 +125,8 @@ export function RackConfigView() {
           <div className="p-4 space-y-4">
             <p className="text-xs text-slate-400">{t('modules.rack_geometry_note')}</p>
             <div className="flex gap-4 text-xs text-sky-400">
-              <a href={import.meta.env.BASE_URL+'models/racks/assembly.stl'} download>STL · 160 × 160 · 24</a>
-              <a href={import.meta.env.BASE_URL+'models/racks/Rack.scad'} download>OpenSCAD</a>
+              <a href={import.meta.env.BASE_URL+'models/racks/default/assembly.stl'} download>STL · 160 × 160 · 24</a>
+              <a href={import.meta.env.BASE_URL+'models/racks/default/Rack.scad'} download>OpenSCAD</a>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {(['width', 'depth'] as const).map(axis => <label key={axis} className="text-xs text-slate-300">

@@ -4,10 +4,10 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 export const MACHINE_ASSETS = {
-  lumenPnP: { directory: 'lumenpnp', format: 'glb' },
-  juanenPnP: { directory: 'juanenpnp', format: 'stl' },
-  juanenCNC: { directory: 'juanencnc', format: 'stl' },
-  juanenLaser: { directory: 'juanenlaser', format: 'stl' },
+  lumenPnP: { directory: 'machine-pnp/lumenpnp', format: 'glb' },
+  juanenPnP: { directory: 'machine-pnp/juanenpnp', format: 'stl' },
+  juanenCNC: { directory: 'machine-cnc/juanencnc', format: 'stl' },
+  juanenLaser: { directory: 'machine-laser/juanenlaser', format: 'stl' },
 } as const;
 export type MachineKind = keyof typeof MACHINE_ASSETS;
 export function machineAssetPath(type: MachineKind, name: string) {

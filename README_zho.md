@@ -177,17 +177,17 @@ HYDRA-UMC-STUDIO/
 ├── docs/HEATED_BED_MODELS.md
 ├── docs/RACK_MODELS.md
 ├── docs/MACHINE_ASSETS.md
-├── public/models/{juanenpnp,juanencnc,juanenlaser}/ # STL + ATTRIBUTION + VARIANT.md
+├── public/models/machine-pnp/{juanenpnp}, machine-cnc/juanencnc, machine-laser/juanenlaser/ # STL + ATTRIBUTION + VARIANT.md
 ├── src/machineAssets.ts
 ├── tests/machineAssets.test.ts
-├── public/models/racks/        # Rack.scad + base/wall/guide/assembly STL
+├── public/models/racks/default/        # Rack.scad + base/wall/guide/assembly STL
 ├── src/racks.ts
 ├── tests/racks.test.ts
-├── public/models/heated-beds/   # catalog.json + HeatedBed.scad + 4 STL
+├── public/models/heatedbeds/default/   # catalog.json + HeatedBed.scad + 4 STL
 ├── src/heatedBeds.ts
 ├── src/components/3d/HeatedBedMesh.tsx
 ├── tests/heatedBeds.test.ts
-├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
+├── public/models/vacuum-tables/default/  # catalog.json + 6 STL + 6 SCAD
 ├── src/vacuumTables.ts
 ├── src/components/3d/VacuumTableMesh.tsx
 ├── tests/vacuumTables.test.ts
@@ -473,7 +473,7 @@ HYDRA-UMC STUDIO 版权所有 (c) 2026 JuanenRac（Electro Hobby 3D）。分发�
 | Universal Robots (classic) | UR3, UR5, UR10 | BSD-3-Clause |
 | Opulo | LumenPnP v4（也用于 JuanenPnP） | CERN-OHL-W v2 |
 
-每个型号自身确切的源仓库、路径和许可证文本参考，均记录在该型号自身的 `public/models/<slug>/ATTRIBUTION.txt` 中——在重新分发某一特定网格集之前请查阅该文件，而不要假定上表可以替代它。LumenPnP 自身的 `ATTRIBUTION.txt` 值得完整阅读一遍——与上面每一个机器人手臂（制造商自身预制的 STL 文件，逐字下载）不同，那 5 个网格文件是从 Opulo 真实的 FreeCAD 源文件在内部生成的，而非按原样重新分发。
+每个型号自身确切的源仓库、路径和许可证文本参考，均记录在该型号自身的 `public/models/<category>/<slug>/ATTRIBUTION.txt` 中——在重新分发某一特定网格集之前请查阅该文件，而不要假定上表可以替代它。LumenPnP 自身的 `ATTRIBUTION.txt` 值得完整阅读一遍——与上面每一个机器人手臂（制造商自身预制的 STL 文件，逐字下载）不同，那 5 个网格文件是从 Opulo 真实的 FreeCAD 源文件在内部生成的，而非按原样重新分发。
 
 本仪表盘是 [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) 主板项目的网页控制面板——其自身的硬件（CERN-OHL-S v2）和固件（GPL-3.0）许可证参见该仓库，本仓库自身的许可证并不延伸至该仓库,反之亦然。它还针对 [URTC](https://github.com/JuanenRac/URTC) 协议实现了 CAN-OTA 工具——其自身独立的许可证参见该项目自身的仓库。
 
