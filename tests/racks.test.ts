@@ -29,7 +29,7 @@ it('assembles real STL guides without stretching slot pitch',()=>{
 it('ships nonempty finite binary STL components with documented reference dimensions',()=>{
   const reference={base:[180,180,20],wall:[10,160,10],guide:[4,160,3]};
   for(const [name,size] of Object.entries(reference)){
-    const b=readFileSync(new URL('../public/models/racks/'+name+'.stl',import.meta.url));
+    const b=readFileSync(new URL('../public/models/racks/default/'+name+'.stl',import.meta.url));
     const n=b.readUInt32LE(80);
     expect(n).toBeGreaterThan(10); expect(b.length).toBe(84+n*50);
     const lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];

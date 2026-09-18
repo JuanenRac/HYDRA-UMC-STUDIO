@@ -175,17 +175,17 @@ HYDRA-UMC-STUDIO/
 ├── docs/HEATED_BED_MODELS.md
 ├── docs/RACK_MODELS.md
 ├── docs/MACHINE_ASSETS.md
-├── public/models/{juanenpnp,juanencnc,juanenlaser}/ # STL + ATTRIBUTION + VARIANT.md
+├── public/models/machine-pnp/{juanenpnp}, machine-cnc/juanencnc, machine-laser/juanenlaser/ # STL + ATTRIBUTION + VARIANT.md
 ├── src/machineAssets.ts
 ├── tests/machineAssets.test.ts
-├── public/models/racks/        # Rack.scad + base/wall/guide/assembly STL
+├── public/models/racks/default/        # Rack.scad + base/wall/guide/assembly STL
 ├── src/racks.ts
 ├── tests/racks.test.ts
-├── public/models/heated-beds/   # catalog.json + HeatedBed.scad + 4 STL
+├── public/models/heatedbeds/default/   # catalog.json + HeatedBed.scad + 4 STL
 ├── src/heatedBeds.ts
 ├── src/components/3d/HeatedBedMesh.tsx
 ├── tests/heatedBeds.test.ts
-├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
+├── public/models/vacuum-tables/default/  # catalog.json + 6 STL + 6 SCAD
 ├── src/vacuumTables.ts
 ├── src/components/3d/VacuumTableMesh.tsx
 ├── tests/vacuumTables.test.ts
@@ -473,7 +473,7 @@ Die Dokumentation (dieses README und seine eigenen Übersetzungen - `README_spa.
 | Universal Robots (classic) | UR3, UR5, UR10 | BSD-3-Clause |
 | Opulo | LumenPnP v4 (auch für JuanenPnP verwendet) | CERN-OHL-W v2 |
 
-Die exakte Referenz auf das Quell-Repository, den Pfad, und den Lizenztext jedes Modells befindet sich in der eigenen `public/models/<slug>/ATTRIBUTION.txt` dieses Modells - konsultieren Sie diese Datei, bevor Sie einen bestimmten Mesh-Satz weiterverbreiten, statt anzunehmen, dass die obige Tabelle sie ersetzt. Es lohnt sich, die eigene `ATTRIBUTION.txt` von LumenPnP vollständig zu lesen - im Gegensatz zu jedem Roboterarm oben (vom Hersteller selbst vorgefertigte STL-Dateien, unverändert heruntergeladen), wurden diese 5 Mesh-Dateien intern aus Opulos echter FreeCAD-Quelle erzeugt und nicht unverändert weiterverbreitet.
+Die exakte Referenz auf das Quell-Repository, den Pfad, und den Lizenztext jedes Modells befindet sich in der eigenen `public/models/<category>/<slug>/ATTRIBUTION.txt` dieses Modells - konsultieren Sie diese Datei, bevor Sie einen bestimmten Mesh-Satz weiterverbreiten, statt anzunehmen, dass die obige Tabelle sie ersetzt. Es lohnt sich, die eigene `ATTRIBUTION.txt` von LumenPnP vollständig zu lesen - im Gegensatz zu jedem Roboterarm oben (vom Hersteller selbst vorgefertigte STL-Dateien, unverändert heruntergeladen), wurden diese 5 Mesh-Dateien intern aus Opulos echter FreeCAD-Quelle erzeugt und nicht unverändert weiterverbreitet.
 
 Dieses Dashboard ist das Web-Steuerungspanel für das Hauptplatinen-Projekt [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) - siehe dieses Repository für die eigene Lizenzierung seiner Hardware (CERN-OHL-S v2) und Firmware (GPL-3.0), auf die sich die eigene Lizenz dieses Repositorys nicht erstreckt, und umgekehrt. Es implementiert außerdem CAN-OTA-Tools gegen das [URTC](https://github.com/JuanenRac/URTC)-Protokoll - siehe das eigene Repository dieses Projekts für dessen eigene separate Lizenz.
 

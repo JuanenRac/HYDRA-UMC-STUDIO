@@ -58,7 +58,7 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
 import Toolhead, { toolheadMountOffset } from './Toolhead';
 
-const MESH_BASE = '/models/parol6/';
+const MESH_BASE = '/models/robots-6-dof/parol6/';
 
 // ROS URDF <origin rpy="r p y"/> composes as R = Rz(yaw)*Ry(pitch)*Rx(roll) - that's
 // three.js's intrinsic 'ZYX' Euler order, NOT the default 'XYZ' a plain rotation={[r,p,y]}

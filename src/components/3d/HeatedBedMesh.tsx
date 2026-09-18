@@ -19,7 +19,7 @@ class MeshBoundary extends Component<{ children: ReactNode; fallback: ReactNode 
 type Props = { modelId?: string; width: number; length: number };
 function LoadedMesh({ modelId, width, length }: Props) {
   const model = heatedBedModel(modelId);
-  const source = useLoader(STLLoader, import.meta.env.BASE_URL + 'models/heated-beds/' + model.file);
+  const source = useLoader(STLLoader, import.meta.env.BASE_URL + 'models/heatedbeds/default/' + model.file);
   const geometry = useMemo(() => {
     // Never mutate the cached STL. Convert CAD mm/Z-up to centered meters/Y-up.
     const copy = source.clone();

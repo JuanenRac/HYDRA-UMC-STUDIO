@@ -21,7 +21,7 @@ export default function PiperArm({ robot }: { robot: RobotState }) {
   return (
     <URArm
       robot={robot}
-      config={{ meshBase: '/models/piper/', chain: PIPER_CHAIN, meshOffsets: PIPER_MESH_OFFSETS, meshFiles: PIPER_MESH_FILES }}
+      config={{ meshBase: '/models/robots-6-dof/piper/', chain: PIPER_CHAIN, meshOffsets: PIPER_MESH_OFFSETS, meshFiles: PIPER_MESH_FILES }}
     />
   );
 }

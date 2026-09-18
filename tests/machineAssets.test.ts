@@ -18,10 +18,10 @@ it('routes all four machines to independent roots and the editable copies to STL
 });
 it('ships a complete editable STL set for each derivative, without stale GLB copies', () => {
   const root=new URL('../public/models/',import.meta.url);
-  const original=readdirSync(new URL('lumenpnp/',root),{recursive:true}).filter(f=>String(f).endsWith('.stl')).map(String);
+  const original=readdirSync(new URL('machine-pnp/lumenpnp/',root),{recursive:true}).filter(f=>String(f).endsWith('.stl')).map(String);
   expect(original.length).toBe(167);
-  for(const directory of ['juanenpnp','juanencnc','juanenlaser']){
-    const base=new URL(directory+'/',root);
+  for(const relDir of ['machine-pnp/juanenpnp','machine-cnc/juanencnc','machine-laser/juanenlaser']){
+    const base=new URL(relDir+'/',root);
     expect(existsSync(new URL('ATTRIBUTION.txt',base))).toBe(true);
     expect(readdirSync(base,{recursive:true}).some(f=>String(f).endsWith('.glb'))).toBe(false);
     for(const relative of original){

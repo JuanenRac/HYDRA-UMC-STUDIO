@@ -175,17 +175,17 @@ HYDRA-UMC-STUDIO/
 ├── docs/HEATED_BED_MODELS.md
 ├── docs/RACK_MODELS.md
 ├── docs/MACHINE_ASSETS.md
-├── public/models/{juanenpnp,juanencnc,juanenlaser}/ # STL + ATTRIBUTION + VARIANT.md
+├── public/models/machine-pnp/{juanenpnp}, machine-cnc/juanencnc, machine-laser/juanenlaser/ # STL + ATTRIBUTION + VARIANT.md
 ├── src/machineAssets.ts
 ├── tests/machineAssets.test.ts
-├── public/models/racks/        # Rack.scad + base/wall/guide/assembly STL
+├── public/models/racks/default/        # Rack.scad + base/wall/guide/assembly STL
 ├── src/racks.ts
 ├── tests/racks.test.ts
-├── public/models/heated-beds/   # catalog.json + HeatedBed.scad + 4 STL
+├── public/models/heatedbeds/default/   # catalog.json + HeatedBed.scad + 4 STL
 ├── src/heatedBeds.ts
 ├── src/components/3d/HeatedBedMesh.tsx
 ├── tests/heatedBeds.test.ts
-├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
+├── public/models/vacuum-tables/default/  # catalog.json + 6 STL + 6 SCAD
 ├── src/vacuumTables.ts
 ├── src/components/3d/VacuumTableMesh.tsx
 ├── tests/vacuumTables.test.ts
@@ -473,7 +473,7 @@ La documentation (ce README et ses propres traductions - `README_spa.md`, `READM
 | Universal Robots (classic) | UR3, UR5, UR10 | BSD-3-Clause |
 | Opulo | LumenPnP v4 (également utilisé pour JuanenPnP) | CERN-OHL-W v2 |
 
-La référence exacte au dépôt source, au chemin, et au texte de licence de chaque modèle se trouve dans le propre `public/models/<slug>/ATTRIBUTION.txt` de ce modèle - consultez ce fichier avant de redistribuer un ensemble de maillages spécifique, plutôt que de supposer que le tableau ci-dessus s'y substitue. Le propre `ATTRIBUTION.txt` de LumenPnP vaut la peine d'être lu en entier - contrairement à chaque bras robotique ci-dessus (fichiers STL préfabriqués propres au fabricant, téléchargés tels quels), ces 5 fichiers de maillage ont été générés en interne à partir de la source FreeCAD réelle d'Opulo, et non redistribués tels quels.
+La référence exacte au dépôt source, au chemin, et au texte de licence de chaque modèle se trouve dans le propre `public/models/<category>/<slug>/ATTRIBUTION.txt` de ce modèle - consultez ce fichier avant de redistribuer un ensemble de maillages spécifique, plutôt que de supposer que le tableau ci-dessus s'y substitue. Le propre `ATTRIBUTION.txt` de LumenPnP vaut la peine d'être lu en entier - contrairement à chaque bras robotique ci-dessus (fichiers STL préfabriqués propres au fabricant, téléchargés tels quels), ces 5 fichiers de maillage ont été générés en interne à partir de la source FreeCAD réelle d'Opulo, et non redistribués tels quels.
 
 Ce tableau de bord est le panneau de contrôle web du projet de carte mère [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) - voir ce dépôt pour le licenciement propre de son matériel (CERN-OHL-S v2) et de son firmware (GPL-3.0), auquel la licence propre de ce dépôt ne s'étend pas, et vice versa. Il implémente également des outils CAN-OTA contre le protocole [URTC](https://github.com/JuanenRac/URTC) - voir le propre dépôt de ce projet pour sa propre licence séparée.
 

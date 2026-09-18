@@ -3,7 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================
-import catalog from '../public/models/vacuum-tables/catalog.json';
+import catalog from '../public/models/vacuum-tables/default/catalog.json';
 import type { VacuumTableModule } from './store';
 
 export const VACUUM_TABLE_MODELS = catalog.models;

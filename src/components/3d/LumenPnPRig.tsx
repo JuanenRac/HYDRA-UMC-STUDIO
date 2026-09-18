@@ -78,12 +78,12 @@ import type { PnPModule } from '../../store';
 // in the same React commit right as all 5 STL fetches resolved together,
 // blocking the main thread long enough in one burst to trip the browser's
 // own GPU-hang watchdog. Pre-merging offline (see
-// public/models/lumenpnp/ATTRIBUTION.txt for the exact conversion) moves
+// public/models/machine-pnp/lumenpnp/ATTRIBUTION.txt for the exact conversion) moves
 // that cost out of the browser entirely - useGLTF hands back
 // already-indexed geometry with nothing left to compute on load.
 const MachineContext = createContext<MachineKind>('lumenPnP');
 
-// Real, individually-named CAD parts (public/models/lumenpnp/parts/*.glb -
+// Real, individually-named CAD parts (public/models/machine-pnp/lumenpnp/parts/*.glb -
 // legs, control box, frame extrusions, cameras/lights, feeders, nozzle
 // hardware, X/Y gantry brackets) added 2026-09-08 alongside the 7 rigid-
 // body groups above, so the rig is no longer just those 7 silhouettes -

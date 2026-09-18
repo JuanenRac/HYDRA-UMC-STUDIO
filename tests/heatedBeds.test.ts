@@ -12,7 +12,7 @@ describe('heated bed STL catalog', () => {
   it('contains the four requested footprints, all exactly 5 mm high', () => {
     expect(HEATED_BED_MODELS.map(m => m.id)).toEqual(['100x100x5', '200x100x5', '200x200x5', '255x255x5']);
     for (const m of HEATED_BED_MODELS) {
-      const data = readFileSync(new URL('../public/models/heated-beds/' + m.file, import.meta.url));
+      const data = readFileSync(new URL('../public/models/heatedbeds/default/' + m.file, import.meta.url));
       const count = data.readUInt32LE(80);
       expect(count).toBeGreaterThan(100);
       expect(data.length).toBe(84 + count * 50);

@@ -65,7 +65,7 @@ valve and extension fields; it does not reset renderScale.
 
 ## Assets and coordinate system
 
-public/models/vacuum-tables contains catalog.json plus the six STL files and their matching SCAD
+public/models/vacuum-tables/default contains catalog.json plus the six STL files and their matching SCAD
 sources. STL files use **millimeters**, with a corner origin and CAD Z pointing up.
 The renderers convert to meters, center the XY footprint, then rotate -90 degrees
 about X into the applications' Y-up world. The table bottom stays at world Y=0.
@@ -90,13 +90,13 @@ Install OpenSCAD separately for CAD work; users only viewing a table do not need
 From the repository root (OpenSCAD on PATH):
 
 ~~~sh
-openscad --export-format binstl -o public/models/vacuum-tables/VacuumTable232x217x15mm.stl public/models/vacuum-tables/VacuumTable232x217x15mm.scad
+openscad --export-format binstl -o public/models/vacuum-tables/default/VacuumTable232x217x15mm.stl public/models/vacuum-tables/default/VacuumTable232x217x15mm.scad
 ~~~
 
 On Windows, invoke the installed executable with PowerShell's call operator:
 
 ~~~powershell
-& "C:/Program Files/OpenSCAD/openscad.com" --export-format binstl -o "public/models/vacuum-tables/VacuumTable232x217x15mm.stl" "public/models/vacuum-tables/VacuumTable232x217x15mm.scad"
+& "C:/Program Files/OpenSCAD/openscad.com" --export-format binstl -o "public/models/vacuum-tables/default/VacuumTable232x217x15mm.stl" "public/models/vacuum-tables/default/VacuumTable232x217x15mm.scad"
 ~~~
 
 When a design changes, regenerate its mesh and update the corresponding assets in

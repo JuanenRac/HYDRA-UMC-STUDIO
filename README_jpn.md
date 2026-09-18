@@ -177,17 +177,17 @@ HYDRA-UMC-STUDIO/
 ├── docs/HEATED_BED_MODELS.md
 ├── docs/RACK_MODELS.md
 ├── docs/MACHINE_ASSETS.md
-├── public/models/{juanenpnp,juanencnc,juanenlaser}/ # STL + ATTRIBUTION + VARIANT.md
+├── public/models/machine-pnp/{juanenpnp}, machine-cnc/juanencnc, machine-laser/juanenlaser/ # STL + ATTRIBUTION + VARIANT.md
 ├── src/machineAssets.ts
 ├── tests/machineAssets.test.ts
-├── public/models/racks/        # Rack.scad + base/wall/guide/assembly STL
+├── public/models/racks/default/        # Rack.scad + base/wall/guide/assembly STL
 ├── src/racks.ts
 ├── tests/racks.test.ts
-├── public/models/heated-beds/   # catalog.json + HeatedBed.scad + 4 STL
+├── public/models/heatedbeds/default/   # catalog.json + HeatedBed.scad + 4 STL
 ├── src/heatedBeds.ts
 ├── src/components/3d/HeatedBedMesh.tsx
 ├── tests/heatedBeds.test.ts
-├── public/models/vacuum-tables/  # catalog.json + 6 STL + 6 SCAD
+├── public/models/vacuum-tables/default/  # catalog.json + 6 STL + 6 SCAD
 ├── src/vacuumTables.ts
 ├── src/components/3d/VacuumTableMesh.tsx
 ├── tests/vacuumTables.test.ts
@@ -474,7 +474,7 @@ HYDRA-UMC STUDIO の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰�
 | Universal Robots (classic) | UR3, UR5, UR10 | BSD-3-Clause |
 | Opulo | LumenPnP v4（JuanenPnP でも使用） | CERN-OHL-W v2 |
 
-各モデル自身の正確な参照元リポジトリ、パス、ライセンス条文は、そのモデル自身の `public/models/<slug>/ATTRIBUTION.txt` に記載されています——特定のメッシュセットを再配布する前に、上記の表がその代わりになると想定せず、必ずそのファイルを確認してください。LumenPnP 自身の `ATTRIBUTION.txt` は全文を読む価値があります——上記の他のすべてのロボットアーム（メーカー自身が用意した既製の STL ファイルを、そのままダウンロードしたもの）とは異なり、その 5 つのメッシュファイルは Opulo の実際の FreeCAD ソースから社内で生成されたものであり、そのまま再配布されたものではありません。
+各モデル自身の正確な参照元リポジトリ、パス、ライセンス条文は、そのモデル自身の `public/models/<category>/<slug>/ATTRIBUTION.txt` に記載されています——特定のメッシュセットを再配布する前に、上記の表がその代わりになると想定せず、必ずそのファイルを確認してください。LumenPnP 自身の `ATTRIBUTION.txt` は全文を読む価値があります——上記の他のすべてのロボットアーム（メーカー自身が用意した既製の STL ファイルを、そのままダウンロードしたもの）とは異なり、その 5 つのメッシュファイルは Opulo の実際の FreeCAD ソースから社内で生成されたものであり、そのまま再配布されたものではありません。
 
 本ダッシュボードは [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) マザーボードプロジェクトの Web 制御パネルです——その自身のハードウェア（CERN-OHL-S v2）およびファームウェア（GPL-3.0）のライセンスは同リポジトリを参照してください。本リポジトリ自身のライセンスはそちらには及ばず、その逆も同様です。また、[URTC](https://github.com/JuanenRac/URTC) プロトコルに対する CAN-OTA ツールも実装しています——その自身の独立したライセンスは同プロジェクト自身のリポジトリを参照してください。
 

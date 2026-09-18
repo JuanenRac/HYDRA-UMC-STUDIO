@@ -28,7 +28,7 @@ describe('vacuum table catalog', () => {
   it('ships six valid binary STL files with fixed millimeter dimensions', () => {
     expect(new Set(VACUUM_TABLE_MODELS.map(m => m.id)).size).toBe(6);
     for (const model of VACUUM_TABLE_MODELS) {
-      const data = readFileSync(new URL('../public/models/vacuum-tables/' + model.file, import.meta.url));
+      const data = readFileSync(new URL('../public/models/vacuum-tables/default/' + model.file, import.meta.url));
       const count = data.readUInt32LE(80);
       expect(count).toBeGreaterThan(0);
       expect(data.length).toBe(84 + count * 50);

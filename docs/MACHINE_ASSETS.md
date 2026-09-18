@@ -12,10 +12,10 @@ GPL-3.0 - see LICENSE
 
 | Module key | Asset folder | STUDIO format | SUITE format |
 | --- | --- | --- | --- |
-| lumenPnP | lumenpnp | Original GLB | Original STL |
-| juanenPnP | juanenpnp | STL | STL |
-| juanenCNC | juanencnc | STL | STL |
-| juanenLaser | juanenlaser | STL | STL |
+| lumenPnP | machine-pnp/lumenpnp | Original GLB | Original STL |
+| juanenPnP | machine-pnp/juanenpnp | STL | STL |
+| juanenCNC | machine-cnc/juanencnc | STL | STL |
+| juanenLaser | machine-laser/juanenlaser | STL | STL |
 
 Asset root in this project: public/models/.
 

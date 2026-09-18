@@ -27,6 +27,28 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.6.7] - Model library reorganized into category folders
+
+- `public/models/` was one flat folder mixing 24 robot arms, 4 independent
+  PnP/CNC/laser machine copies, heated beds, racks and vacuum tables. Split
+  into `robots-5-dof/`, `robots-6-dof/` (plus a reserved, currently-empty
+  `robots-7-dof/` - no 7-DOF model exists in `robotKinematicsDispatch.ts`
+  yet), `machine-pnp/{lumenpnp,juanenpnp}/`, `machine-cnc/juanencnc/`,
+  `machine-laser/juanenlaser/`, and `heatedbeds/default/`,
+  `racks/default/`, `vacuum-tables/default/` (a `default/` variant
+  subfolder under each, room for future alternates without another
+  reshuffle). DOF classification per robot comes straight from
+  `robotKinematicsDispatch.ts`'s own model-name strings (e.g. `(5-DOF)`),
+  not guessed from STL file/joint counts. Every `*Arm.tsx`'s `MESH_BASE`/
+  `meshBase`, `machineAssets.ts`'s per-machine `directory`, and the rack/
+  heated-bed/vacuum-table mesh loaders were updated to the new paths; all
+  183 existing tests plus a full production build were re-run to confirm
+  nothing broke. Added a `metadata.json` (id/model/manufacturer/dof/
+  category, or id/name/manufacturer/category for machines) next to each
+  model folder alongside its existing `ATTRIBUTION.txt` - the
+  heated-bed/rack/vacuum-table `catalog.json` files already carried
+  equivalent per-variant metadata and were left as-is.
+
 ## [0.6.6] - Geometry disposal on every robot arm's own STL scaling hook
 
 - Real gap found while auditing the code: `useRealScaleSTL()` (duplicated

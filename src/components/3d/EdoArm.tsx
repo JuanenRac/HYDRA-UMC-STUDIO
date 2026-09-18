@@ -33,7 +33,7 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
 import Toolhead, { toolheadMountOffset } from './Toolhead';
 
-const MESH_BASE = '/models/edo/';
+const MESH_BASE = '/models/robots-6-dof/edo/';
 
 function useRealScaleSTL(fileName: string): THREE.BufferGeometry {
   const raw = useLoader(STLLoader, MESH_BASE + fileName);

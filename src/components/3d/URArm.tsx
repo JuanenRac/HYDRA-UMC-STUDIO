@@ -44,7 +44,7 @@ import Toolhead, { toolheadMountOffset } from './Toolhead';
 export type UrMeshOffsets = [UrJointStep, UrJointStep, UrJointStep, UrJointStep, UrJointStep, UrJointStep, UrJointStep];
 
 export interface UrArmConfig {
-  /** e.g. '/models/ur5e/' */
+  /** e.g. '/models/robots-6-dof/ur5e/' */
   meshBase: string;
   chain: UrChain;
   meshOffsets: UrMeshOffsets;

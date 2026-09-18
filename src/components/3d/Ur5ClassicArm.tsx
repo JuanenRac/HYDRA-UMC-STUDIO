@@ -14,5 +14,5 @@ import UrClassicArm from './UrClassicArm';
 import { UR5CLASSIC_CHAIN } from '../../examples/ur5ClassicKinematics';
 
 export default function Ur5ClassicArm({ robot }: { robot: RobotState }) {
-  return <UrClassicArm robot={robot} config={{ meshBase: '/models/ur5classic/', chain: UR5CLASSIC_CHAIN }} />;
+  return <UrClassicArm robot={robot} config={{ meshBase: '/models/robots-6-dof/ur5classic/', chain: UR5CLASSIC_CHAIN }} />;
 }

@@ -26,7 +26,7 @@ import type { UrClassicChain, UrClassicJointStep } from '../../examples/urClassi
 import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 export interface UrClassicArmConfig {
-  /** e.g. '/models/ur5classic/' */
+  /** e.g. '/models/robots-6-dof/ur5classic/' */
   meshBase: string;
   chain: UrClassicChain;
 }
