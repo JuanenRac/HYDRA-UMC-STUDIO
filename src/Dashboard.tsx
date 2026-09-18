@@ -74,6 +74,7 @@ const ROBOT_DETAIL_BY_ID: Record<number, typeof A1RobotDetail> = {
   5: A5RobotDetail, 6: A6RobotDetail, 7: A7RobotDetail, 8: A8RobotDetail,
 };
 const CamerasView = React.lazy(() => import('./components/CamerasView').then(m => ({ default: m.CamerasView })));
+const CameraMediaView = React.lazy(() => import('./components/CameraMediaView').then(m => ({ default: m.CameraMediaView })));
 const XYTableConfig = React.lazy(() => import('./components/XYTableConfig').then(m => ({ default: m.XYTableConfig })));
 const PickAndPlace = React.lazy(() => import('./components/PickAndPlace').then(m => ({ default: m.PickAndPlace })));
 const CNC = React.lazy(() => import('./components/CNC').then(m => ({ default: m.CNC })));
@@ -315,6 +316,7 @@ export default function Dashboard() {
                   <button onClick={() => setActiveTab('hydraFlasher')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'hydraFlasher' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Firmware Update</button>
                   <button onClick={() => setActiveTab('hydraTester')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'hydraTester' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Hardware Tester</button>
                   <button onClick={() => setActiveTab('kinematicBrainStage')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'kinematicBrainStage' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Kinematic Brain</button>
+                  <button onClick={() => setActiveTab('cameraMedia')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'cameraMedia' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('cameraMedia.menu_label', 'Camera Media')}</button>
 
                   <div className="mt-6 mb-2 px-4 text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1">{t('ecosystem.menu_section')}</div>
                   <button onClick={() => setActiveTab('ecosystemServices')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemServices' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_services')}</button>
@@ -364,6 +366,7 @@ export default function Dashboard() {
                {activeTab === 'hydraFlasher' && <Flasher tiers={HYDRA_BRAIN_TIERS} />}
                {activeTab === 'hydraTester' && <Tester tiers={HYDRA_BRAIN_TIERS} />}
                {activeTab === 'kinematicBrainStage' && <KinematicBrainStage />}
+               {activeTab === 'cameraMedia' && <CameraMediaView />}
                {activeTab === 'ecosystemServices' && <EcosystemServices />}
                {activeTab === 'ecosystemTelemetry' && <EcosystemTelemetry />}
                {activeTab === 'aiFamilyStatus' && <AiFamilyStatus />}

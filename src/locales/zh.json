@@ -370,6 +370,16 @@
     "source_usb": "USB",
     "source_ip": "IP"
   },
+  "cameraMedia": {
+    "menu_label": "摄像头媒体",
+    "title": "摄像头媒体库",
+    "refresh": "刷新",
+    "all_cameras": "所有摄像头",
+    "empty": "尚未保存任何照片或录像。请使用视觉中心的拍照和录制按钮。",
+    "select_hint": "在左侧选择一张照片或一段录像即可在此查看。",
+    "download": "下载",
+    "load_failed": "无法从服务器加载摄像头媒体。"
+  },
   "modules": {
     "atc_title": "ATC 换刀装置",
     "heated_bed_title": "热床",

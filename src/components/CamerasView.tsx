@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHydraStore, ipStreamLabels } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { useTranslation } from 'react-i18next';
@@ -51,18 +51,62 @@ export function CamerasView() {
   const [connectingIds, setConnectingIds] = useState<Set<number>>(new Set());
   const [flashId, setFlashId] = useState<number | null>(null);
 
-  const toggleRecording = (id: number) => {
-    setRecordingIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  // Real backend calls, matching sendPtz()'s own auth-header pattern below -
+  // recordingIds now mirrors server truth instead of being purely local
+  // component state. Real bug fixed: this used to just flip a client-side
+  // Set with no backend call at all, so nothing was ever actually saved
+  // (the user could "record" for an hour and have nothing to show for it),
+  // and navigating away and back always reset to "not recording" even if a
+  // capture happened to be running server-side - a stale UI state, not the
+  // recording itself, silently disagreeing with reality either way.
+  function authHeaders(json = true): Record<string, string> {
+    const headers: Record<string, string> = json ? { 'Content-Type': 'application/json' } : {};
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+    return headers;
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(apiUrl('/api/camera/media'), { headers: authHeaders(false) });
+        if (!res.ok || cancelled) return;
+        const body = await res.json();
+        const active = new Set<number>((body.items || []).filter((item: { recording?: boolean }) => item.recording).map((item: { cameraId: number }) => item.cameraId));
+        setRecordingIds(active);
+      } catch {
+        // Best-effort sync - an unreachable server just leaves recordingIds at its previous value.
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authToken]);
+
+  const toggleRecording = async (id: number) => {
+    const isRecording = recordingIds.has(id);
+    try {
+      const res = await fetch(apiUrl(`/api/camera/${id}/recording/${isRecording ? 'stop' : 'start'}`), {
+        method: 'POST', headers: authHeaders(),
+      });
+      if (!res.ok) return;
+      setRecordingIds(prev => {
+        const next = new Set(prev);
+        if (isRecording) next.delete(id); else next.add(id);
+        return next;
+      });
+    } catch {
+      // Leave recordingIds unchanged on a network failure - matches "state only changes on real confirmed success".
+    }
   };
 
-  const takePhoto = (id: number) => {
+  const takePhoto = async (id: number) => {
     setFlashId(id);
     setTimeout(() => setFlashId(null), 150);
+    try {
+      await fetch(apiUrl(`/api/camera/${id}/snapshot`), { method: 'POST', headers: authHeaders() });
+    } catch {
+      // The flash still plays even if the save failed - CameraMediaView's own empty state is the honest signal either way.
+    }
   };
 
   const retryConnection = (id: number) => {
