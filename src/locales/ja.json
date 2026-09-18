@@ -370,6 +370,16 @@
     "source_usb": "USB",
     "source_ip": "IP"
   },
+  "cameraMedia": {
+    "menu_label": "カメラメディア",
+    "title": "カメラメディアライブラリ",
+    "refresh": "更新",
+    "all_cameras": "すべてのカメラ",
+    "empty": "まだ写真や録画は保存されていません。Vision Center のカメラボタンと録画ボタンを使用してください。",
+    "select_hint": "左側で写真または録画を選択するとここに表示されます。",
+    "download": "ダウンロード",
+    "load_failed": "サーバーからカメラメディアを読み込めませんでした。"
+  },
   "modules": {
     "atc_title": "ATC 自動工具交換装置",
     "heated_bed_title": "ヒートベッド",

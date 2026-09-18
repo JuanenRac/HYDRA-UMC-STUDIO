@@ -370,6 +370,16 @@
     "source_usb": "USB",
     "source_ip": "IP"
   },
+  "cameraMedia": {
+    "menu_label": "Médias Caméra",
+    "title": "Bibliothèque des Médias Caméra",
+    "refresh": "Actualiser",
+    "all_cameras": "Toutes les caméras",
+    "empty": "Aucune photo ni enregistrement sauvegardé pour l'instant. Utilisez les boutons photo et enregistrement du Centre de Vision.",
+    "select_hint": "Sélectionnez une photo ou un enregistrement à gauche pour l'afficher ici.",
+    "download": "Télécharger",
+    "load_failed": "Impossible de charger les médias caméra depuis le serveur."
+  },
   "modules": {
     "atc_title": "Changeur d'outil ATC",
     "heated_bed_title": "Lit Chauffant",

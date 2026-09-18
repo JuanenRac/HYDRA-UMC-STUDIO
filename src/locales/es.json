@@ -370,6 +370,16 @@
     "source_usb": "USB",
     "source_ip": "IP"
   },
+  "cameraMedia": {
+    "menu_label": "Medios de Cámaras",
+    "title": "Biblioteca de Medios de Cámaras",
+    "refresh": "Actualizar",
+    "all_cameras": "Todas las cámaras",
+    "empty": "Aún no hay fotos ni grabaciones guardadas. Usa los botones de cámara y grabar en Centro de Visión.",
+    "select_hint": "Selecciona una foto o grabación a la izquierda para verla aquí.",
+    "download": "Descargar",
+    "load_failed": "No se pudieron cargar los medios de las cámaras desde el servidor."
+  },
   "modules": {
     "atc_title": "Cambiador de Herramientas ATC",
     "heated_bed_title": "Cama Caliente",

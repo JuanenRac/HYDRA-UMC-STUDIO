@@ -370,6 +370,16 @@
     "source_usb": "USB",
     "source_ip": "IP"
   },
+  "cameraMedia": {
+    "menu_label": "Media Telecamere",
+    "title": "Libreria Media Telecamere",
+    "refresh": "Aggiorna",
+    "all_cameras": "Tutte le telecamere",
+    "empty": "Nessuna foto o registrazione salvata ancora. Usa i pulsanti foto e registrazione nel Centro Visione.",
+    "select_hint": "Seleziona una foto o registrazione a sinistra per visualizzarla qui.",
+    "download": "Scarica",
+    "load_failed": "Impossibile caricare i media delle telecamere dal server."
+  },
   "modules": {
     "atc_title": "Cambio Utensili ATC",
     "heated_bed_title": "Piatto Riscaldato",

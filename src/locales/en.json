@@ -370,6 +370,16 @@
     "source_usb": "USB",
     "source_ip": "IP"
   },
+  "cameraMedia": {
+    "menu_label": "Camera Media",
+    "title": "Camera Media Library",
+    "refresh": "Refresh",
+    "all_cameras": "All cameras",
+    "empty": "No photos or recordings saved yet. Use the camera and record buttons on Vision Center.",
+    "select_hint": "Select a photo or recording on the left to view it here.",
+    "download": "Download",
+    "load_failed": "Couldn't load camera media from the server."
+  },
   "modules": {
     "atc_title": "ATC Tool Changer",
     "heated_bed_title": "Heated Bed",

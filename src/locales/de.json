@@ -370,6 +370,16 @@
     "source_usb": "USB",
     "source_ip": "IP"
   },
+  "cameraMedia": {
+    "menu_label": "Kamera-Medien",
+    "title": "Kamera-Medienbibliothek",
+    "refresh": "Aktualisieren",
+    "all_cameras": "Alle Kameras",
+    "empty": "Noch keine Fotos oder Aufnahmen gespeichert. Verwenden Sie die Kamera- und Aufnahmeschaltflächen im Vision Center.",
+    "select_hint": "Wählen Sie links ein Foto oder eine Aufnahme aus, um es hier anzuzeigen.",
+    "download": "Herunterladen",
+    "load_failed": "Kameramedien konnten nicht vom Server geladen werden."
+  },
   "modules": {
     "atc_title": "ATC Werkzeugwechsler",
     "heated_bed_title": "Heizbett",

@@ -27,6 +27,28 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.6.8] - Real camera snapshots/recordings, and a new Camera Media library menu
+
+- Vision Center's photo/record buttons only ever flipped local UI state
+  (a flash animation, a red REC dot) with no backend call behind either -
+  nothing was ever actually saved, and navigating away from Vision Center
+  reset that local state regardless of what a real recording would have
+  been doing server-side. `toggleRecording`/`takePhoto` in `CamerasView.tsx`
+  now call HYDRA-UMC-SERVER's new `POST /api/camera/:id/snapshot` and
+  `POST /api/camera/:id/recording/{start,stop}`, and `recordingIds` syncs
+  from the server's own real `GET /api/camera/media` on mount instead of
+  starting empty every time - since the recording itself now lives
+  server-side, it survives navigating away and back (closes the reported
+  "recording stops when I leave Vision Center" bug, which was really "there
+  was never a real recording to stop").
+- New **Camera Media** menu (HYDRA-UMC section) - `CameraMediaView.tsx`
+  lists every saved snapshot/recording via `GET /api/camera/media`, grouped
+  and filterable by camera, with a viewer pane and a download link. A saved
+  recording plays back through a plain `<img>` the same way a live camera
+  stream already does, since the server serves it with the identical
+  `multipart/x-mixed-replace` framing.
+- All 7 languages: new `cameraMedia.*` keys.
+
 ## [0.6.7] - Model library reorganized into category folders
 
 - `public/models/` was one flat folder mixing 24 robot arms, 4 independent
