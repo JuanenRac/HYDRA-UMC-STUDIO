@@ -17,7 +17,7 @@
 // layer is needed here.
 // =============================================================================
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
@@ -35,7 +35,7 @@ const MESH_FILES = ['base.stl', 'shoulder.stl', 'upperarm.stl', 'forearm.stl', '
 
 function useRealScaleSTL(url: string): THREE.BufferGeometry {
   const raw = useLoader(STLLoader, url);
-  return useMemo(() => {
+  const geometry = useMemo(() => {
     const geometry = raw.clone();
     geometry.computeBoundingBox();
     const box = geometry.boundingBox;
@@ -43,6 +43,16 @@ function useRealScaleSTL(url: string): THREE.BufferGeometry {
     if (maxDim > 5) geometry.scale(0.001, 0.001, 0.001);
     return geometry;
   }, [raw]);
+  // Real gap found while auditing the code: this clone is exclusively
+  // owned by this hook instance (never the shared useLoader cache `raw`
+  // itself, which stays cached/reused across mounts on purpose) -
+  // dispose it when a new one replaces it or this component unmounts,
+  // releasing its real GPU-side VBO/IBO buffers instead of leaving them
+  // allocated until an arbitrary future GC pass.
+  useEffect(() => {
+    return () => geometry.dispose();
+  }, [geometry]);
+  return geometry;
 }
 
 function jointQuaternion(joint: UrClassicJointStep, angleDeg: number): THREE.Quaternion {

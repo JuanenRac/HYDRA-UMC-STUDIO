@@ -32,7 +32,7 @@
 // centering constant is needed here.
 // =============================================================================
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
@@ -76,7 +76,7 @@ function rosEuler(rpy: [number, number, number]): THREE.Euler {
 // but this costs nothing to keep consistent with the established pattern.
 function useRealScaleSTL(url: string): THREE.BufferGeometry {
   const raw = useLoader(STLLoader, url);
-  return useMemo(() => {
+  const geometry = useMemo(() => {
     const geometry = raw.clone();
     geometry.computeBoundingBox();
     const box = geometry.boundingBox;
@@ -86,6 +86,16 @@ function useRealScaleSTL(url: string): THREE.BufferGeometry {
     }
     return geometry;
   }, [raw]);
+  // Real gap found while auditing the code: this clone is exclusively
+  // owned by this hook instance (never the shared useLoader cache `raw`
+  // itself, which stays cached/reused across mounts on purpose) -
+  // dispose it when a new one replaces it or this component unmounts,
+  // releasing its real GPU-side VBO/IBO buffers instead of leaving them
+  // allocated until an arbitrary future GC pass.
+  useEffect(() => {
+    return () => geometry.dispose();
+  }, [geometry]);
+  return geometry;
 }
 
 const bodyMat = { color: '#d0d3d8', roughness: 0.45, metalness: 0.4 };

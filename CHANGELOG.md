@@ -27,6 +27,31 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.6.6] - Geometry disposal on every robot arm's own STL scaling hook
+
+- Real gap found while auditing the code: `useRealScaleSTL()` (duplicated
+  verbatim across 13 `*Arm.tsx` files - AR3, AR4, Edo, Faze4, Koch,
+  M-710iC, Parol6, SO-ARM100, UR e-Series/classic, ViperX 300, WidowX
+  250, Z1) clones the shared, cached STL geometry `useLoader` returns and
+  scales it, but never disposed that clone - a real WebGL-side VBO/IBO
+  leak (not a JS heap one; the shared `raw` cache itself is deliberately
+  never touched or disposed, only each hook's own private clone) every
+  time a model switch unmounts/remounts one of these components. Each
+  hook now disposes its own clone via a `useEffect` cleanup when a new
+  one replaces it or the component unmounts.
+- **Investigated, not implemented this pass:** whether joint pose
+  interpolation could be decoupled from telemetry arrival rate so the
+  viewport stays visually smooth at 60fps even when telemetry updates
+  slower. Found this is genuinely more involved than a drop-in fix - the
+  correct implementation needs each joint's `Object3D` mutated
+  imperatively inside `useFrame` via a direct ref (an R3F-idiomatic
+  requirement, not stylistic), which means restructuring 6 levels of
+  nested JSX per robot model across ~24 files; a simpler approach that
+  only forces a React re-render every frame would trade the current
+  jerkiness for a real render-performance regression instead. Left for a
+  dedicated pass with live visual verification rather than a wide,
+  unverified change across every robot model.
+
 ## [0.6.5] - Pair a Bluetooth gamepad directly to the CM5 from Config, no SSH needed
 
 Gamepad Config's own "Bluetooth Connection" mode used to be purely informational - it never actually
