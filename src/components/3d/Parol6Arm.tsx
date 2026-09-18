@@ -51,7 +51,7 @@
 // requires parameterizing the shared formula per robot and is currently out of scope.
 // =============================================================================
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
@@ -79,7 +79,7 @@ function rosEuler(roll: number, pitch: number, yaw: number): THREE.Euler {
 // robot whose real links are all well under half a metre.
 function useRealScaleSTL(fileName: string): THREE.BufferGeometry {
   const raw = useLoader(STLLoader, MESH_BASE + fileName);
-  return useMemo(() => {
+  const geometry = useMemo(() => {
     const geometry = raw.clone();
     geometry.computeBoundingBox();
     const box = geometry.boundingBox;
@@ -89,6 +89,16 @@ function useRealScaleSTL(fileName: string): THREE.BufferGeometry {
     }
     return geometry;
   }, [raw]);
+  // Real gap found while auditing the code: this clone is exclusively
+  // owned by this hook instance (never the shared useLoader cache `raw`
+  // itself, which stays cached/reused across mounts on purpose) -
+  // dispose it when a new one replaces it or this component unmounts,
+  // releasing its real GPU-side VBO/IBO buffers instead of leaving them
+  // allocated until an arbitrary future GC pass.
+  useEffect(() => {
+    return () => geometry.dispose();
+  }, [geometry]);
+  return geometry;
 }
 
 const bodyMat = { color: '#c7ccd3', roughness: 0.5, metalness: 0.35 };
