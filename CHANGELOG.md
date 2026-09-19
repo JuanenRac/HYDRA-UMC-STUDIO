@@ -27,6 +27,26 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.6.9] - About dialog shows both real versions; Config dialog made taller
+
+- The About dialog's single "Version" row only ever showed
+  HYDRA-UMC-SERVER's own `appVersion` (from `GET /api/hydra-info`),
+  generically labeled enough to look like this app's own version - a
+  STUDIO/SERVER version mismatch after deploying one without the other
+  was invisible. Now shows both, separately labeled: **Studio Version**
+  (this build's own real `package.json` version, imported directly - the
+  same value `bump_manifest_version.py` keeps in sync with
+  `hydra-umc.project.json`) and **Server Version** (unchanged, still from
+  `GET /api/hydra-info`).
+- The Config dialog was a fixed 750px tall - real bug on the Gamepad tab,
+  where `BluetoothPairing`'s own scan/pairing list routinely had more
+  entries than that height could show without scrolling mid-list,
+  clipping/hiding real device rows. Grown to 1000px (capped at 95vh on
+  shorter screens) - `BluetoothPairing.tsx` itself needed no change,
+  since its content already lives in the dialog's own scrollable body.
+- All 7 languages: `about_version` split into `about_version_studio`/
+  `about_version_server`.
+
 ## [0.6.8] - Real camera snapshots/recordings, and a new Camera Media library menu
 
 - Vision Center's photo/record buttons only ever flipped local UI state

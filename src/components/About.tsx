@@ -12,22 +12,34 @@ import { Info, Mail, LogOut } from 'lucide-react';
 import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import HydraIcon from '../assets/HYDRA_UMC_ICON.svg';
+import studioPackage from '../../package.json';
 
 const AUTHOR_NAME = 'JuanenRac (Electro Hobby 3D)';
 const AUTHOR_EMAIL = 'electrohobby3d@gmail.com';
 const LICENSE_NAME = 'GNU General Public License v3.0 (GPL-3.0)';
+// This dashboard's own real, build-time version (package.json's own
+// "version" field, bumped by bump_manifest_version.py the same way every
+// other repo in this ecosystem is) - independent of appVersion below,
+// which is HYDRA-UMC-SERVER's own version, not this app's.
+const STUDIO_VERSION = studioPackage.version;
 
 export function About({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const { authToken, logout } = useHydraStore();
-  const [version, setVersion] = useState<string | null>(null);
+  // Real bug fixed: this used to be a single "Version" row showing only
+  // HYDRA-UMC-SERVER's own appVersion (from GET /api/hydra-info),
+  // labeled generically enough that it looked like STUDIO's own version -
+  // a mismatch was invisible (e.g. after deploying a new STUDIO build
+  // without restarting SERVER, or vice versa). Now shows both,
+  // separately labeled.
+  const [serverVersion, setServerVersion] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     fetch(apiUrl('/api/hydra-info'))
       .then(r => (r.ok ? r.json() : null))
       .then(data => {
-        if (!cancelled && data?.appVersion) setVersion(String(data.appVersion));
+        if (!cancelled && data?.appVersion) setServerVersion(String(data.appVersion));
       })
       .catch(() => {
         // Discovery disabled or server unreachable - fall back to the "unknown" placeholder below.
@@ -49,7 +61,8 @@ export function About({ onClose }: { onClose: () => void }) {
           <p className="text-center text-slate-500 text-xs max-w-sm leading-relaxed">{t('dashboard.about_description')}</p>
 
           <div className="w-full grid grid-cols-1 gap-2 pt-2 border-t border-slate-800">
-            <InfoRow label={t('dashboard.about_version')} value={version || t('dashboard.no_version_short')} />
+            <InfoRow label={t('dashboard.about_version_studio', 'Studio Version')} value={STUDIO_VERSION} />
+            <InfoRow label={t('dashboard.about_version_server', 'Server Version')} value={serverVersion || t('dashboard.no_version_short')} />
             <InfoRow label={t('dashboard.about_author')} value={AUTHOR_NAME} />
             <InfoRow
               label={t('dashboard.about_email')}
