@@ -27,6 +27,21 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.7.3] - Robot joint rotations now smoothly interpolate at 60fps, decoupled from telemetry rate
+
+Every 3D robot model's joint rotations (all ~26 model-specific
+components, via the shared `RobotArm.tsx` dispatcher) used to bind
+directly to the raw telemetry-driven `robot.joints` value with zero
+interpolation - a robot updated at whatever rate telemetry actually
+arrives (well under 60fps) visibly snapped between poses instead of
+moving smoothly. `RobotArm.tsx` now owns one smoothed copy of `joints`,
+advanced toward the real target every render frame via a genuine
+`useFrame` loop (decoupled from telemetry's own update rate), with
+shortest-path angle interpolation (`lerpAngleDeg`, 5 new tests) so a
+wrap-around like 350°→10° takes the real 20° step, never the long way
+around. Snaps immediately, no slide, the moment `robot.id` changes
+(a genuinely different robot, not the same one moving).
+
 ## [0.7.2] - A real recording player (play/pause/stop/seek), permanent delete, and a manual live-stream retry
 
 - Camera Media Library used to render a saved recording with a plain
