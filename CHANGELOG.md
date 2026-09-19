@@ -27,6 +27,27 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.7.2] - A real recording player (play/pause/stop/seek), permanent delete, and a manual live-stream retry
+
+- Camera Media Library used to render a saved recording with a plain
+  `<img>` - since a recording is raw multipart/x-mixed-replace bytes,
+  not a real video container, that "played" automatically with zero
+  controls (no pause, no seek). New `MjpegRecordingPlayer.tsx` fetches
+  the whole file once, parses it into real per-frame JPEG Blobs
+  (`lib/mjpegParser.ts`, 4 new tests), and steps through them under its
+  own control - real Play/Pause/Stop and a real seek bar, showing real
+  elapsed time when the server's own new recording metadata
+  (durationMs/frameCount) is present, honestly falling back to "frame
+  N / M" for an older recording saved before that metadata existed.
+- New Delete button (with a confirmation prompt) permanently removes a
+  selected snapshot or recording via HYDRA-UMC-SERVER's own new `DELETE
+  /api/camera/media/:cameraId/:kind/:filename`.
+- Vision Center: a live stream stuck retrying after 3+ consecutive
+  failures (e.g. from a server restart the tab was already open for)
+  now shows a real "No image - retry now" button that forces an
+  immediate fresh attempt instead of only ever waiting out the backoff
+  timer or needing a full page reload.
+
 ## [0.7.1] - Real bugs found via live testing: recording indicator could get stuck, Robots catalog layout swapped
 
 - `toggleRecording()`'s own `recordingIds` could show a camera as

@@ -362,6 +362,7 @@
     "ptz_toggle": "Panoramica / Inclinazione / Zoom",
     "ptz_failed": "Comando PTZ non riuscito",
     "recording_failed": "Comando di registrazione non riuscito",
+    "stream_retry_now": "Nessuna immagine - riprova ora",
     "thermal_mlx90640": "Termica (MLX90640)",
     "thermal_mlx90641": "Termica (MLX90641)",
     "thermal_mlx90642": "Termica (MLX90642)",
@@ -380,7 +381,16 @@
     "empty": "Nessuna foto o registrazione salvata ancora. Usa i pulsanti foto e registrazione nel Centro Visione.",
     "select_hint": "Seleziona una foto o registrazione a sinistra per visualizzarla qui.",
     "download": "Scarica",
-    "load_failed": "Impossibile caricare i media delle telecamere dal server."
+    "load_failed": "Impossibile caricare i media delle telecamere dal server.",
+    "play": "Riproduci",
+    "pause": "Pausa",
+    "stop": "Ferma",
+    "delete": "Elimina",
+    "delete_confirm": "Eliminare definitivamente questo file? Non può essere annullato.",
+    "delete_failed": "Eliminazione non riuscita.",
+    "player_loading": "Caricamento registrazione...",
+    "player_load_failed": "Impossibile caricare questa registrazione.",
+    "player_empty": "Questa registrazione non ha fotogrammi riproducibili."
   },
   "modules": {
     "atc_title": "Cambio Utensili ATC",

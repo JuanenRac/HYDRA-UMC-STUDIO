@@ -15,9 +15,10 @@ import { useEffect, useState } from 'react';
 import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { useTranslation } from 'react-i18next';
-import { Camera as CameraIcon, Video, Image as ImageIcon, RefreshCw, Download } from 'lucide-react';
+import { Camera as CameraIcon, Video, Image as ImageIcon, RefreshCw, Download, Trash2 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { MjpegRecordingPlayer } from './MjpegRecordingPlayer';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -30,6 +31,8 @@ interface MediaItem {
   sizeBytes: number;
   capturedAt: string;
   recording: boolean;
+  durationMs?: number;
+  frameCount?: number;
 }
 
 function formatSize(bytes: number): string {
@@ -46,6 +49,8 @@ export function CameraMediaView() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCameraId, setSelectedCameraId] = useState<number | 'all'>('all');
   const [selected, setSelected] = useState<MediaItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -73,6 +78,28 @@ export function CameraMediaView() {
   const visible = items.filter(i => selectedCameraId === 'all' || i.cameraId === selectedCameraId);
 
   const mediaUrl = (item: MediaItem) => apiUrl(`/api/camera/media/${item.cameraId}/${item.kind}/${encodeURIComponent(item.filename)}`);
+
+  const deleteSelected = async () => {
+    if (!selected) return;
+    if (!window.confirm(t('cameraMedia.delete_confirm', 'Permanently delete this file? This cannot be undone.'))) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const headers: Record<string, string> = {};
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+      const res = await fetch(mediaUrl(selected), { method: 'DELETE', headers });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
+      setSelected(null);
+      await load();
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : t('cameraMedia.delete_failed', 'Delete failed.'));
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="w-full h-full flex flex-col gap-4">
@@ -136,20 +163,31 @@ export function CameraMediaView() {
             <img src={mediaUrl(selected)} alt={selected.filename} className="max-w-full max-h-full object-contain" />
           )}
           {selected && selected.kind === 'recordings' && (
-            // Same real multipart/x-mixed-replace body a live camera stream
-            // uses (see CamerasView.tsx's own <img> for /api/camera/:id/stream)
-            // - the server serves a saved recording with the exact same
-            // framing, so a plain <img> plays it back frame by frame.
-            <img key={selected.filename} src={mediaUrl(selected)} alt={selected.filename} className="max-w-full max-h-full object-contain" />
+            // Real play/pause/stop + a real seek bar - see
+            // MjpegRecordingPlayer.tsx's own header comment for why a
+            // plain <img> (the old approach here) could never offer this:
+            // a saved recording is raw multipart/x-mixed-replace bytes,
+            // not a real video container any <video> element could parse.
+            <MjpegRecordingPlayer key={selected.filename} url={mediaUrl(selected)} durationMs={selected.durationMs} frameCount={selected.frameCount} />
           )}
           {selected && (
-            <a
-              href={mediaUrl(selected)}
-              download={selected.filename}
-              className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700 text-xs font-bold text-slate-300 hover:text-slate-100 hover:border-slate-500 transition-colors"
-            >
-              <Download size={14} /> {t('cameraMedia.download', 'Download')}
-            </a>
+            <div className="absolute bottom-3 right-3 flex items-center gap-2">
+              {deleteError && <span className="text-[10px] text-rose-400 max-w-[180px]">{deleteError}</span>}
+              <button
+                onClick={deleteSelected}
+                disabled={deleting}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700 text-xs font-bold text-rose-400 hover:text-rose-300 hover:border-rose-500 transition-colors disabled:opacity-50"
+              >
+                <Trash2 size={14} /> {t('cameraMedia.delete', 'Delete')}
+              </button>
+              <a
+                href={mediaUrl(selected)}
+                download={selected.filename}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700 text-xs font-bold text-slate-300 hover:text-slate-100 hover:border-slate-500 transition-colors"
+              >
+                <Download size={14} /> {t('cameraMedia.download', 'Download')}
+              </a>
+            </div>
           )}
         </div>
       </div>

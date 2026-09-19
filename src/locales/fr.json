@@ -362,6 +362,7 @@
     "ptz_toggle": "Panoramique / Inclinaison / Zoom",
     "ptz_failed": "La commande PTZ a échoué",
     "recording_failed": "La commande d'enregistrement a échoué",
+    "stream_retry_now": "Pas d'image - réessayer maintenant",
     "thermal_mlx90640": "Thermique (MLX90640)",
     "thermal_mlx90641": "Thermique (MLX90641)",
     "thermal_mlx90642": "Thermique (MLX90642)",
@@ -380,7 +381,16 @@
     "empty": "Aucune photo ni enregistrement sauvegardé pour l'instant. Utilisez les boutons photo et enregistrement du Centre de Vision.",
     "select_hint": "Sélectionnez une photo ou un enregistrement à gauche pour l'afficher ici.",
     "download": "Télécharger",
-    "load_failed": "Impossible de charger les médias caméra depuis le serveur."
+    "load_failed": "Impossible de charger les médias caméra depuis le serveur.",
+    "play": "Lecture",
+    "pause": "Pause",
+    "stop": "Arrêter",
+    "delete": "Supprimer",
+    "delete_confirm": "Supprimer définitivement ce fichier ? Cette action est irréversible.",
+    "delete_failed": "Échec de la suppression.",
+    "player_loading": "Chargement de l'enregistrement...",
+    "player_load_failed": "Impossible de charger cet enregistrement.",
+    "player_empty": "Cet enregistrement n'a aucune image lisible."
   },
   "modules": {
     "atc_title": "Changeur d'outil ATC",

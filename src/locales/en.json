@@ -362,6 +362,7 @@
     "ptz_toggle": "Pan / Tilt / Zoom",
     "ptz_failed": "PTZ command failed",
     "recording_failed": "Recording command failed",
+    "stream_retry_now": "No image - retry now",
     "thermal_mlx90640": "Thermal (MLX90640)",
     "thermal_mlx90641": "Thermal (MLX90641)",
     "thermal_mlx90642": "Thermal (MLX90642)",
@@ -380,7 +381,16 @@
     "empty": "No photos or recordings saved yet. Use the camera and record buttons on Vision Center.",
     "select_hint": "Select a photo or recording on the left to view it here.",
     "download": "Download",
-    "load_failed": "Couldn't load camera media from the server."
+    "load_failed": "Couldn't load camera media from the server.",
+    "play": "Play",
+    "pause": "Pause",
+    "stop": "Stop",
+    "delete": "Delete",
+    "delete_confirm": "Permanently delete this file? This cannot be undone.",
+    "delete_failed": "Delete failed.",
+    "player_loading": "Loading recording...",
+    "player_load_failed": "Couldn't load this recording.",
+    "player_empty": "This recording has no playable frames."
   },
   "modules": {
     "atc_title": "ATC Tool Changer",

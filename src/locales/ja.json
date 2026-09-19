@@ -362,6 +362,7 @@
     "ptz_toggle": "パン / チルト / ズーム",
     "ptz_failed": "PTZコマンドが失敗しました",
     "recording_failed": "録画コマンドが失敗しました",
+    "stream_retry_now": "画像なし - 今すぐ再試行",
     "thermal_mlx90640": "サーマル（MLX90640）",
     "thermal_mlx90641": "サーマル（MLX90641）",
     "thermal_mlx90642": "サーマル（MLX90642）",
@@ -380,7 +381,16 @@
     "empty": "まだ写真や録画は保存されていません。Vision Center のカメラボタンと録画ボタンを使用してください。",
     "select_hint": "左側で写真または録画を選択するとここに表示されます。",
     "download": "ダウンロード",
-    "load_failed": "サーバーからカメラメディアを読み込めませんでした。"
+    "load_failed": "サーバーからカメラメディアを読み込めませんでした。",
+    "play": "再生",
+    "pause": "一時停止",
+    "stop": "停止",
+    "delete": "削除",
+    "delete_confirm": "このファイルを完全に削除しますか？元に戻せません。",
+    "delete_failed": "削除に失敗しました。",
+    "player_loading": "録画を読み込み中...",
+    "player_load_failed": "この録画を読み込めませんでした。",
+    "player_empty": "この録画には再生可能なフレームがありません。"
   },
   "modules": {
     "atc_title": "ATC 自動工具交換装置",
