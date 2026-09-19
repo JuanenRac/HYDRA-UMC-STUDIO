@@ -65,37 +65,61 @@ export function CamerasView() {
     return headers;
   }
 
+  const [recordingError, setRecordingError] = useState<string | null>(null);
+
+  // Pulled out of the mount effect so a toggle can also call it directly -
+  // real bug fixed (found via live testing): a recording can stop itself
+  // server-side with no user action at all (the local mjpeg stream
+  // dropping/restarting, see server.ts's own recording loop) and this tab
+  // never learned about it until the whole panel remounted, so clicking
+  // "stop" on an already-dead recording got a 404 that silently did
+  // nothing - the red REC indicator stayed on even though nothing was
+  // actually recording anymore. Re-syncing from the server's own real
+  // GET /api/camera/media after EVERY toggle attempt (success or failure)
+  // means the indicator can never drift from reality for more than one
+  // round trip, regardless of why the mismatch happened.
+  const syncRecordingIds = async () => {
+    try {
+      const res = await fetch(apiUrl('/api/camera/media'), { headers: authHeaders(false) });
+      if (!res.ok) return;
+      const body = await res.json();
+      const active = new Set<number>((body.items || []).filter((item: { recording?: boolean }) => item.recording).map((item: { cameraId: number }) => item.cameraId));
+      setRecordingIds(active);
+    } catch {
+      // Best-effort sync - an unreachable server just leaves recordingIds at its previous value.
+    }
+  };
+
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(apiUrl('/api/camera/media'), { headers: authHeaders(false) });
-        if (!res.ok || cancelled) return;
-        const body = await res.json();
-        const active = new Set<number>((body.items || []).filter((item: { recording?: boolean }) => item.recording).map((item: { cameraId: number }) => item.cameraId));
-        setRecordingIds(active);
-      } catch {
-        // Best-effort sync - an unreachable server just leaves recordingIds at its previous value.
-      }
-    })();
-    return () => { cancelled = true; };
+    syncRecordingIds();
+    // Periodic re-sync while this panel is open - the only way this tab
+    // can ever learn about a recording that stopped itself server-side
+    // without the operator touching this same tab.
+    const interval = setInterval(syncRecordingIds, 10000);
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authToken]);
 
   const toggleRecording = async (id: number) => {
     const isRecording = recordingIds.has(id);
+    setRecordingError(null);
     try {
       const res = await fetch(apiUrl(`/api/camera/${id}/recording/${isRecording ? 'stop' : 'start'}`), {
         method: 'POST', headers: authHeaders(),
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setRecordingError(body.error || t('cameras.recording_failed', 'Recording command failed'));
+        await syncRecordingIds(); // the server's own state may disagree with our local guess - trust it, not the failed request
+        return;
+      }
       setRecordingIds(prev => {
         const next = new Set(prev);
         if (isRecording) next.delete(id); else next.add(id);
         return next;
       });
     } catch {
-      // Leave recordingIds unchanged on a network failure - matches "state only changes on real confirmed success".
+      setRecordingError(t('cameras.recording_failed', 'Recording command failed'));
     }
   };
 
@@ -202,6 +226,13 @@ export function CamerasView() {
           </div>
         </div>
       </div>
+
+      {recordingError && (
+        <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+          <span>{recordingError}</span>
+          <button onClick={() => setRecordingError(null)} className="text-rose-400 hover:text-rose-300 font-bold px-2">&times;</button>
+        </div>
+      )}
 
       <div className="flex-1 min-h-0 pb-4">
         <div className={cn("grid h-full", fullScreenId ? "grid-cols-1 gap-0" : "grid-cols-2 lg:grid-cols-4 grid-rows-4 lg:grid-rows-2 gap-2")}>

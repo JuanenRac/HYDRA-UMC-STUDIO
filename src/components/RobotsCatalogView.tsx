@@ -93,20 +93,7 @@ export function RobotsCatalogView() {
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0">
-        <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden relative h-[400px] md:h-auto min-h-[400px]">
-          <div className="absolute top-3 left-3 z-10 pointer-events-none">
-            <span className="bg-slate-950/80 backdrop-blur text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-800">
-              {selected}
-            </span>
-          </div>
-          <Canvas camera={{ position: [0.8, 0.8, 0.8], fov: 50 }} shadows className="w-full h-full outline-none">
-            <Shared3DEnvironment />
-            <RobotArm robot={previewRobotState(selected)} />
-            <OrbitControls makeDefault target={[0, 0.2, 0]} />
-          </Canvas>
-        </div>
-
-        <div className="flex flex-col gap-3 min-h-0">
+        <div className="flex flex-col gap-3 min-h-0 order-2 md:order-1">
           <div className="flex items-center gap-2 flex-wrap">
             <select
               value={manufacturerFilter}
@@ -161,6 +148,19 @@ export function RobotsCatalogView() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden relative h-100 md:h-auto min-h-100 order-1 md:order-2">
+          <div className="absolute top-3 left-3 z-10 pointer-events-none">
+            <span className="bg-slate-950/80 backdrop-blur text-slate-300 text-[10px] px-2 py-1 rounded border border-slate-800">
+              {selected}
+            </span>
+          </div>
+          <Canvas camera={{ position: [0.8, 0.8, 0.8], fov: 50 }} shadows className="w-full h-full outline-none">
+            <Shared3DEnvironment />
+            <RobotArm robot={previewRobotState(selected)} />
+            <OrbitControls makeDefault target={[0, 0.2, 0]} />
+          </Canvas>
         </div>
       </div>
     </div>

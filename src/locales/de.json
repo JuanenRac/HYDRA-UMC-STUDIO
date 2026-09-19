@@ -361,6 +361,7 @@
     "ip_vision_sub_n": "IP-Vision-Kamera Nebenstream {{n}}",
     "ptz_toggle": "Schwenken / Neigen / Zoom",
     "ptz_failed": "PTZ-Befehl fehlgeschlagen",
+    "recording_failed": "Aufnahmebefehl fehlgeschlagen",
     "thermal_mlx90640": "Wärmebild (MLX90640)",
     "thermal_mlx90641": "Wärmebild (MLX90641)",
     "thermal_mlx90642": "Wärmebild (MLX90642)",
