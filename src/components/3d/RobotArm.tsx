@@ -4,7 +4,8 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useRef, useState } from 'react';
+import { useFrame } from '@react-three/fiber';
 import type { RobotState } from '../../store';
 import GenericRobotArm from './GenericRobotArm';
 import Parol6Arm from './Parol6Arm';
@@ -32,12 +33,74 @@ import Ur3ClassicArm from './Ur3ClassicArm';
 import Ur5ClassicArm from './Ur5ClassicArm';
 import Ur10ClassicArm from './Ur10ClassicArm';
 
+type Joints = RobotState['joints'];
+const JOINT_KEYS: (keyof Joints)[] = ['j1', 'j2', 'j3', 'j4', 'j5', 'j6'];
+
+// Shortest-path angle interpolation in degrees - a naive linear lerp
+// between e.g. 350deg and 10deg would visibly spin the joint the LONG
+// way around (340deg of travel) instead of the real 20deg it should
+// take.
+export function lerpAngleDeg(current: number, target: number, t: number): number {
+    const diff = (((target - current + 180) % 360) + 360) % 360 - 180;
+    return current + diff * t;
+}
+
+// Real gap closed: every joint rotation across all ~26 model-specific
+// Arm components below used to bind directly to the raw
+// telemetry-driven robot.joints value with zero interpolation - a robot
+// updated at whatever rate telemetry actually arrives (well under
+// 60fps) visibly snapped between poses instead of moving smoothly. This
+// hook owns one smoothed copy of `joints`, advanced toward the real
+// target every render frame (useFrame - genuinely decoupled from
+// telemetry's own update rate, not driven by it) - a single point of
+// change here covers every model, instead of repeating this in each of
+// the ~26 files. Snaps immediately (no slide) the moment `robot.id`
+// changes, since that means a genuinely different robot is now being
+// shown, not the same one moving.
+function useSmoothedJoints(joints: Joints, robotId: number): Joints {
+    const [smoothed, setSmoothed] = useState<Joints>(joints);
+    const smoothedRef = useRef(smoothed);
+    smoothedRef.current = smoothed;
+    const targetRef = useRef(joints);
+    targetRef.current = joints;
+    const lastIdRef = useRef(robotId);
+
+    useFrame((_state, delta) => {
+        if (lastIdRef.current !== robotId) {
+            lastIdRef.current = robotId;
+            setSmoothed(targetRef.current);
+            return;
+        }
+        // A fixed, framerate-independent convergence rate - proportional
+        // approach toward the target (never overshoots), just faster
+        // when further behind.
+        const t = Math.min(1, delta * 8);
+        let changed = false;
+        const next = { ...smoothedRef.current };
+        for (const key of JOINT_KEYS) {
+            const cur = smoothedRef.current[key];
+            const tgt = targetRef.current[key];
+            if (Math.abs(cur - tgt) < 0.01) {
+                if (cur !== tgt) { next[key] = tgt; changed = true; }
+                continue;
+            }
+            next[key] = lerpAngleDeg(cur, tgt, t);
+            changed = true;
+        }
+        if (changed) setSmoothed(next);
+    });
+
+    return smoothed;
+}
+
 /**
  * Robot Arm component that dispatches rendering to specific model implementations.
  * Uses Suspense boundaries for models that load external assets.
  * No-HTML version for maximum WebView compatibility.
  */
-export default function RobotArm({ robot }: { robot: RobotState }) {
+export default function RobotArm({ robot: rawRobot }: { robot: RobotState }) {
+    const smoothedJoints = useSmoothedJoints(rawRobot.joints, rawRobot.id);
+    const robot = smoothedJoints === rawRobot.joints ? rawRobot : { ...rawRobot, joints: smoothedJoints };
     switch (robot.model) {
         case 'Parol6 (6-DOF)':
             return (
