@@ -362,6 +362,7 @@
     "ptz_toggle": "Panorámica / Inclinación / Zoom",
     "ptz_failed": "El comando PTZ ha fallado",
     "recording_failed": "El comando de grabación ha fallado",
+    "stream_retry_now": "Sin imagen - reintentar ahora",
     "thermal_mlx90640": "Térmica (MLX90640)",
     "thermal_mlx90641": "Térmica (MLX90641)",
     "thermal_mlx90642": "Térmica (MLX90642)",
@@ -380,7 +381,16 @@
     "empty": "Aún no hay fotos ni grabaciones guardadas. Usa los botones de cámara y grabar en Centro de Visión.",
     "select_hint": "Selecciona una foto o grabación a la izquierda para verla aquí.",
     "download": "Descargar",
-    "load_failed": "No se pudieron cargar los medios de las cámaras desde el servidor."
+    "load_failed": "No se pudieron cargar los medios de las cámaras desde el servidor.",
+    "play": "Reproducir",
+    "pause": "Pausar",
+    "stop": "Detener",
+    "delete": "Borrar",
+    "delete_confirm": "¿Borrar este archivo definitivamente? No se puede deshacer.",
+    "delete_failed": "Error al borrar.",
+    "player_loading": "Cargando grabación...",
+    "player_load_failed": "No se pudo cargar esta grabación.",
+    "player_empty": "Esta grabación no tiene fotogramas reproducibles."
   },
   "modules": {
     "atc_title": "Cambiador de Herramientas ATC",

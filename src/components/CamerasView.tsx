@@ -434,6 +434,29 @@ export function CamerasView() {
                           />
                         );
                       })()}
+                      {/* Real gap closed: a stream stuck on its backoff
+                          retry loop (e.g. after a server restart the
+                          browser tab was already open for) looked
+                          identical to one still starting up for the
+                          first time - just the decorative camera icon,
+                          no explanation, no way to force a fresh attempt
+                          without reloading the whole page. After a few
+                          consecutive failures, offer a real manual retry
+                          that bypasses the remaining backoff wait by
+                          bumping the attempt counter immediately. */}
+                      {(() => {
+                        const identity = c.rtspPath || c.hardwareSource || 'default';
+                        const retryInfo = streamRetryState[c.id];
+                        if (!retryInfo || retryInfo.identity !== identity || retryInfo.attempt < 3) return null;
+                        return (
+                          <button
+                            onClick={() => setStreamRetryState(prev => ({ ...prev, [c.id]: { identity, attempt: retryInfo.attempt + 1 } }))}
+                            className="absolute z-10 bottom-2 right-2 px-2 py-1 rounded text-[10px] font-bold bg-slate-900/80 border border-slate-700 text-slate-300 hover:text-white hover:border-sky-500 transition-colors"
+                          >
+                            {t('cameras.stream_retry_now', 'No image - retry now')}
+                          </button>
+                        );
+                      })()}
                       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-900/10 via-transparent to-transparent opacity-50" />
                       
                       {/* Grid overlay */}

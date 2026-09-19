@@ -362,6 +362,7 @@
     "ptz_toggle": "Schwenken / Neigen / Zoom",
     "ptz_failed": "PTZ-Befehl fehlgeschlagen",
     "recording_failed": "Aufnahmebefehl fehlgeschlagen",
+    "stream_retry_now": "Kein Bild - jetzt erneut versuchen",
     "thermal_mlx90640": "Wärmebild (MLX90640)",
     "thermal_mlx90641": "Wärmebild (MLX90641)",
     "thermal_mlx90642": "Wärmebild (MLX90642)",
@@ -380,7 +381,16 @@
     "empty": "Noch keine Fotos oder Aufnahmen gespeichert. Verwenden Sie die Kamera- und Aufnahmeschaltflächen im Vision Center.",
     "select_hint": "Wählen Sie links ein Foto oder eine Aufnahme aus, um es hier anzuzeigen.",
     "download": "Herunterladen",
-    "load_failed": "Kameramedien konnten nicht vom Server geladen werden."
+    "load_failed": "Kameramedien konnten nicht vom Server geladen werden.",
+    "play": "Abspielen",
+    "pause": "Pause",
+    "stop": "Stopp",
+    "delete": "Löschen",
+    "delete_confirm": "Diese Datei endgültig löschen? Dies kann nicht rückgängig gemacht werden.",
+    "delete_failed": "Löschen fehlgeschlagen.",
+    "player_loading": "Aufnahme wird geladen...",
+    "player_load_failed": "Diese Aufnahme konnte nicht geladen werden.",
+    "player_empty": "Diese Aufnahme enthält keine abspielbaren Bilder."
   },
   "modules": {
     "atc_title": "ATC Werkzeugwechsler",

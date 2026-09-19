@@ -362,6 +362,7 @@
     "ptz_toggle": "云台 / 变焦控制",
     "ptz_failed": "PTZ 指令失败",
     "recording_failed": "录制指令失败",
+    "stream_retry_now": "无图像 - 立即重试",
     "thermal_mlx90640": "热成像（MLX90640）",
     "thermal_mlx90641": "热成像（MLX90641）",
     "thermal_mlx90642": "热成像（MLX90642）",
@@ -380,7 +381,16 @@
     "empty": "尚未保存任何照片或录像。请使用视觉中心的拍照和录制按钮。",
     "select_hint": "在左侧选择一张照片或一段录像即可在此查看。",
     "download": "下载",
-    "load_failed": "无法从服务器加载摄像头媒体。"
+    "load_failed": "无法从服务器加载摄像头媒体。",
+    "play": "播放",
+    "pause": "暂停",
+    "stop": "停止",
+    "delete": "删除",
+    "delete_confirm": "确定要永久删除此文件吗？此操作无法撤销。",
+    "delete_failed": "删除失败。",
+    "player_loading": "正在加载录像...",
+    "player_load_failed": "无法加载此录像。",
+    "player_empty": "此录像没有可播放的帧。"
   },
   "modules": {
     "atc_title": "ATC 换刀装置",
