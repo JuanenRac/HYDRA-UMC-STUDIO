@@ -27,6 +27,23 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.7.1] - Real bugs found via live testing: recording indicator could get stuck, Robots catalog layout swapped
+
+- `toggleRecording()`'s own `recordingIds` could show a camera as
+  recording after clicking Stop with no visible effect, if the
+  recording had actually already ended server-side for an unrelated
+  reason (see HYDRA-UMC-SERVER's own CHANGELOG for the exact stop-race
+  bug this closes on that side too) - a failed stop/start attempt now
+  re-syncs from the server's own real `GET /api/camera/media` instead
+  of silently leaving the stale local guess on screen, and the panel
+  also re-syncs every 10s on its own so a recording that stops itself
+  (camera/stream dropping) is reflected without needing to navigate
+  away and back. Failures now show a real, dismissible error message
+  instead of failing silently.
+- `RobotsCatalogView.tsx`'s 3D preview and filter/list panel are now
+  swapped (3D on the right, filters/list on the left) per the project
+  owner's own preference after seeing the shipped layout.
+
 ## [0.7.0] - New Robots catalog menu, with a real per-model activate/deactivate switch
 
 - New **Robots** menu (first item under Industrial) - `RobotsCatalogView.tsx`

@@ -359,6 +359,7 @@ npm run preview
 
 **子项目**
 - **[HYDRA-UMC-EDITOR-URDF](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF)** —— 通过 `POST /api/models/submit` 将完成的模型推送到本面板自身目录的桌面版图形化 URDF 创建/编辑工具。
+- **[HYDRA-UMC-EDITOR-STL](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-STL)** —— 面向本面板自身 `public/models/` 库（以及 HYDRA-UMC-SUITE 维护的镜像）的桌面 STL 模型编辑器——变换/替换/移除/添加真实部件，绝不永久删除任何内容。
 
 **直接相关**
 - **[HYDRA-UMC-DASHBOARD-AI](https://github.com/JuanenRac/HYDRA-UMC-DASHBOARD-AI)** —— 基于 DATALAKE/ANOMALY-DETECTOR 的智能摘要与异常高亮面板,具备诚实的统计回退机制;为本面板扩展了 AI 驱动的洞察。

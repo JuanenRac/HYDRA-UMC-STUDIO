@@ -360,6 +360,7 @@ npm run preview
 
 **子プロジェクト**
 - **[HYDRA-UMC-EDITOR-URDF](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF)** — `POST /api/models/submit` 経由で完成したモデルを本ダッシュボード自身のカタログへ送信するデスクトップ用グラフィカル URDF 作成/編集ツール。
+- **[HYDRA-UMC-EDITOR-STL](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-STL)** — 本ダッシュボード自身の `public/models/` ライブラリ（および HYDRA-UMC-SUITE が保持するそのミラー）向けのデスクトップ STL モデルエディタ - 実在するパーツを変換/置換/削除/追加し、何かを永久に削除することは決してない。
 
 **直接関連**
 - **[HYDRA-UMC-DASHBOARD-AI](https://github.com/JuanenRac/HYDRA-UMC-DASHBOARD-AI)** — 誠実な統計フォールバックを備えた、DATALAKE/ANOMALY-DETECTOR 上のスマートサマリーと異常ハイライトパネル。この同じダッシュボードを AI による洞察で拡張する。

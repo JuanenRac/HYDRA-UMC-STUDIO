@@ -359,6 +359,7 @@ Ce projet fait partie de l'écosystème robotique HYDRA-UMC du même auteur (Jua
 
 **Projets Enfants**
 - **[HYDRA-UMC-EDITOR-URDF](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF)** — créateur/éditeur graphique de bureau pour URDF qui envoie les modèles terminés vers le propre catalogue de ce tableau de bord via `POST /api/models/submit`.
+- **[HYDRA-UMC-EDITOR-STL](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-STL)** — éditeur de bureau de modèles STL pour la propre bibliothèque `public/models/` de ce tableau de bord (et le miroir qu'en tient HYDRA-UMC-SUITE) - transforme/remplace/retire/ajoute de vraies pièces, sans jamais rien supprimer définitivement.
 
 **Directement Liés**
 - **[HYDRA-UMC-DASHBOARD-AI](https://github.com/JuanenRac/HYDRA-UMC-DASHBOARD-AI)** — panneaux Smart Summaries et Anomaly Highlighting sur DATALAKE/ANOMALY-DETECTOR, avec un repli statistique honnête ; étend ce même tableau de bord avec des informations pilotées par IA.

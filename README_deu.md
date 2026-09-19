@@ -359,6 +359,7 @@ Dieses Projekt ist Teil des HYDRA-UMC-Robotik-Ökosystems desselben Autors (Juan
 
 **Untergeordnete Projekte**
 - **[HYDRA-UMC-EDITOR-URDF](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF)** — grafischer Desktop-URDF-Ersteller/-Editor, der fertige Modelle über `POST /api/models/submit` in den eigenen Katalog dieses Dashboards überträgt.
+- **[HYDRA-UMC-EDITOR-STL](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-STL)** — Desktop-STL-Modelleditor für die eigene `public/models/`-Bibliothek dieses Dashboards (und die von HYDRA-UMC-SUITE gepflegte Spiegelung davon) - transformiert/ersetzt/entfernt/fügt echte Teile hinzu, ohne jemals etwas dauerhaft zu löschen.
 
 **Direkt verwandt**
 - **[HYDRA-UMC-DASHBOARD-AI](https://github.com/JuanenRac/HYDRA-UMC-DASHBOARD-AI)** — Smart-Summaries- und Anomaly-Highlighting-Panels über DATALAKE/ANOMALY-DETECTOR, mit einem ehrlichen statistischen Fallback; erweitert dasselbe Dashboard um KI-gestützte Einblicke.
