@@ -965,5 +965,13 @@
     "title": "Algo falló al renderizar este panel.",
     "hint": "Normalmente se soluciona recargando la página, sobre todo justo después de actualizar HYDRA-UMC STUDIO en este servidor.",
     "reload": "Recargar"
+  },
+  "robotsCatalog": {
+    "title": "Robots",
+    "all_manufacturers": "Todos los fabricantes",
+    "all_dof": "Todos los DOF",
+    "enabled": "Activado",
+    "disabled": "Desactivado",
+    "empty": "Ningún modelo de robot coincide con estos filtros."
   }
 }
