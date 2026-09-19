@@ -27,6 +27,28 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.7.0] - New Robots catalog menu, with a real per-model activate/deactivate switch
+
+- New **Robots** menu (first item under Industrial) - `RobotsCatalogView.tsx`
+  lists every real robot model this ecosystem has kinematics/mesh support
+  for (`REAL_ROBOT_MODELS`, store.tsx - the same 24-model set the Config
+  tab's own model picker already offers), filterable by manufacturer and
+  DOF, with a real 3D preview of the selected model on the left (the same
+  `RobotArm` dispatcher every live robot uses, fed a minimal synthetic
+  preview state at zero joints - never registered or sent to the server).
+- Each model has a real **activate/deactivate** toggle
+  (`settings.enabledRobotModels`), and the Config tab's own model picker
+  now actually respects it via the new `isModelSelectable()` - a
+  deactivated model disappears from the picker's `<option>` list, except
+  it never hides a robot's own CURRENTLY assigned model out from under it
+  just because it was deactivated afterward. An unset/missing
+  `enabledRobotModels` (no visit to the new panel yet, or a settings.json
+  saved before this feature existed) reads as "everything enabled" -
+  matches this ecosystem's own "old settings.json keeps working
+  unchanged" convention for optional settings fields, no migration
+  needed.
+- All 7 languages: new `robotsCatalog.*` keys.
+
 ## [0.6.9] - About dialog shows both real versions; Config dialog made taller
 
 - The About dialog's single "Version" row only ever showed

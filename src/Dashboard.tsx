@@ -97,6 +97,7 @@ const INDUSTRIAL_MENU_LABELS: Record<string, string> = {
   VacuumTable: 'Vacuum Table',
   HeatedBed: 'Heated Bed',
 };
+const RobotsCatalogView = React.lazy(() => import('./components/RobotsCatalogView').then(m => ({ default: m.RobotsCatalogView })));
 const Flasher = React.lazy(() => import('./components/Flasher').then(m => ({ default: m.Flasher })));
 const Tester = React.lazy(() => import('./components/Tester').then(m => ({ default: m.Tester })));
 const KinematicBrainStage = React.lazy(() => import('./components/KinematicBrainStage').then(m => ({ default: m.KinematicBrainStage })));
@@ -296,7 +297,7 @@ export default function Dashboard() {
              {currentMenu === 'industrial' && (
                <div className="flex flex-col gap-1 animate-in slide-in-from-right-4 duration-300">
                   <button onClick={() => setNavStack([])} className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-sky-500 uppercase tracking-widest mb-4 hover:text-sky-400 transition-colors"><ArrowLeft size={14}/> Back to Root</button>
-                  {['XY Table', 'ATC Tools', 'Rack', 'PickAndPlace', 'CNC', 'Laser', 'VacuumTable', 'HeatedBed'].map(m => (
+                  {['Robots', 'XY Table', 'ATC Tools', 'Rack', 'PickAndPlace', 'CNC', 'Laser', 'VacuumTable', 'HeatedBed'].map(m => (
                     <button key={m} onClick={() => setActiveTab(m.toLowerCase().replace(" ",""))} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === m.toLowerCase().replace(" ","") ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{INDUSTRIAL_MENU_LABELS[m] ?? m}</button>
                   ))}
                </div>
@@ -353,6 +354,7 @@ export default function Dashboard() {
                  return <RobotComponent key={activeRobot.id} robot={activeRobot} viewportOnly={hideUI} onNavigateToRobot={(id) => { setSelectedRobotId(id); setActiveTab('robot'); }} />;
                })()}
                {activeTab === 'cameras' && <CamerasView />}
+               {activeTab === 'robots' && <RobotsCatalogView />}
                {activeTab === 'xytable' && <XYTableConfig />}
                {activeTab === 'atctools' && <ATCToolsConfig />}
                {activeTab === 'rack' && <RackConfigView />}

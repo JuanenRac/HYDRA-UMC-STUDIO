@@ -9,7 +9,7 @@ import { RotaryKnob } from "./RotaryKnob";
 import { FuturisticSlider } from "./FuturisticSlider";
 import { motion, useDragControls } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { type RobotState, useHydraStore, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, globalPlaybacks } from '../store';
+import { type RobotState, useHydraStore, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, isModelSelectable, globalPlaybacks } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { RotateCcw, RotateCw, Home, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, Save, Play, Square, Pause, Crosshair, RefreshCw, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat, Download, Grid3x3, Plus } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -2310,52 +2310,52 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                       className="bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
                     >
                       <optgroup label="Source Robotics">
-                        <option value="Parol6 (6-DOF)">Parol6 (6-DOF)</option>
-                        <option value="Faze4 (6-DOF)">Faze4 (6-DOF)</option>
+                        {isModelSelectable("Parol6 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="Parol6 (6-DOF)">Parol6 (6-DOF)</option>}
+                        {isModelSelectable("Faze4 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="Faze4 (6-DOF)">Faze4 (6-DOF)</option>}
                       </optgroup>
                       <optgroup label="Annin Robotics">
-                        <option value="AR3 (6-DOF)">AR3 (6-DOF)</option>
-                        <option value="AR4 (6-DOF)">AR4 (6-DOF)</option>
+                        {isModelSelectable("AR3 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="AR3 (6-DOF)">AR3 (6-DOF)</option>}
+                        {isModelSelectable("AR4 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="AR4 (6-DOF)">AR4 (6-DOF)</option>}
                       </optgroup>
                       <optgroup label="Universal Robots">
-                        <option value="UR3e (6-DOF)">UR3e (6-DOF)</option>
-                        <option value="UR5e (6-DOF)">UR5e (6-DOF)</option>
-                        <option value="UR10e (6-DOF)">UR10e (6-DOF)</option>
-                        <option value="UR16e (6-DOF)">UR16e (6-DOF)</option>
-                        <option value="UR20 (6-DOF)">UR20 (6-DOF)</option>
-                        <option value="UR3 (6-DOF)">UR3 (6-DOF, classic)</option>
-                        <option value="UR5 (6-DOF)">UR5 (6-DOF, classic)</option>
-                        <option value="UR10 (6-DOF)">UR10 (6-DOF, classic)</option>
+                        {isModelSelectable("UR3e (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="UR3e (6-DOF)">UR3e (6-DOF)</option>}
+                        {isModelSelectable("UR5e (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="UR5e (6-DOF)">UR5e (6-DOF)</option>}
+                        {isModelSelectable("UR10e (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="UR10e (6-DOF)">UR10e (6-DOF)</option>}
+                        {isModelSelectable("UR16e (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="UR16e (6-DOF)">UR16e (6-DOF)</option>}
+                        {isModelSelectable("UR20 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="UR20 (6-DOF)">UR20 (6-DOF)</option>}
+                        {isModelSelectable("UR3 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="UR3 (6-DOF)">UR3 (6-DOF, classic)</option>}
+                        {isModelSelectable("UR5 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="UR5 (6-DOF)">UR5 (6-DOF, classic)</option>}
+                        {isModelSelectable("UR10 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="UR10 (6-DOF)">UR10 (6-DOF, classic)</option>}
                       </optgroup>
                       <optgroup label="UFACTORY">
-                        <option value="xArm6 (6-DOF)">xArm6 (6-DOF)</option>
-                        <option value="Lite 6 (6-DOF)">Lite 6 (6-DOF)</option>
+                        {isModelSelectable("xArm6 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="xArm6 (6-DOF)">xArm6 (6-DOF)</option>}
+                        {isModelSelectable("Lite 6 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="Lite 6 (6-DOF)">Lite 6 (6-DOF)</option>}
                       </optgroup>
                       <optgroup label="Comau">
-                        <option value="e.DO (6-DOF)">e.DO (6-DOF)</option>
+                        {isModelSelectable("e.DO (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="e.DO (6-DOF)">e.DO (6-DOF)</option>}
                       </optgroup>
                       <optgroup label="Kinova">
-                        <option value="Gen3 Lite (6-DOF)">Gen3 Lite (6-DOF)</option>
-                        <option value="Gen2 (6-DOF)">Gen2 (6-DOF)</option>
+                        {isModelSelectable("Gen3 Lite (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="Gen3 Lite (6-DOF)">Gen3 Lite (6-DOF)</option>}
+                        {isModelSelectable("Gen2 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="Gen2 (6-DOF)">Gen2 (6-DOF)</option>}
                       </optgroup>
                       <optgroup label="FANUC">
-                        <option value="M-710iC (6-DOF)">M-710iC (6-DOF)</option>
+                        {isModelSelectable("M-710iC (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="M-710iC (6-DOF)">M-710iC (6-DOF)</option>}
                       </optgroup>
                       <optgroup label="The Robot Studio">
-                        <option value="SO-ARM100 (5-DOF)">SO-ARM100 (5-DOF)</option>
+                        {isModelSelectable("SO-ARM100 (5-DOF)", robot.model, settings.enabledRobotModels) && <option value="SO-ARM100 (5-DOF)">SO-ARM100 (5-DOF)</option>}
                       </optgroup>
                       <optgroup label="AgileX">
-                        <option value="PiPER (6-DOF)">PiPER (6-DOF)</option>
+                        {isModelSelectable("PiPER (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="PiPER (6-DOF)">PiPER (6-DOF)</option>}
                       </optgroup>
                       <optgroup label="Unitree">
-                        <option value="Z1 (6-DOF)">Z1 (6-DOF)</option>
+                        {isModelSelectable("Z1 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="Z1 (6-DOF)">Z1 (6-DOF)</option>}
                       </optgroup>
                       <optgroup label="Trossen Robotics">
-                        <option value="ViperX 300 (6-DOF)">ViperX 300 (6-DOF)</option>
-                        <option value="WidowX 250 (6-DOF)">WidowX 250 (6-DOF)</option>
+                        {isModelSelectable("ViperX 300 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="ViperX 300 (6-DOF)">ViperX 300 (6-DOF)</option>}
+                        {isModelSelectable("WidowX 250 (6-DOF)", robot.model, settings.enabledRobotModels) && <option value="WidowX 250 (6-DOF)">WidowX 250 (6-DOF)</option>}
                       </optgroup>
                       <optgroup label="Koch / Low-Cost Robot Arm">
-                        <option value="Koch v1.1 (5-DOF)">Koch v1.1 (5-DOF)</option>
+                        {isModelSelectable("Koch v1.1 (5-DOF)", robot.model, settings.enabledRobotModels) && <option value="Koch v1.1 (5-DOF)">Koch v1.1 (5-DOF)</option>}
                       </optgroup>
                       <optgroup label="Generic">
                         <option value="Generic (6-DOF)">Generic (6-DOF)</option>

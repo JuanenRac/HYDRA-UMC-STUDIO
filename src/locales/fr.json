@@ -965,5 +965,13 @@
     "title": "Une erreur est survenue lors de l'affichage de ce panneau.",
     "hint": "Cela se résout généralement en rechargeant la page, surtout juste après une mise à jour de HYDRA-UMC STUDIO sur ce serveur.",
     "reload": "Recharger"
+  },
+  "robotsCatalog": {
+    "title": "Robots",
+    "all_manufacturers": "Tous les fabricants",
+    "all_dof": "Tous les DDL",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "empty": "Aucun modèle de robot ne correspond à ces filtres."
   }
 }

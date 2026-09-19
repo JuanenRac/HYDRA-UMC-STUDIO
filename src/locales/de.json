@@ -965,5 +965,13 @@
     "title": "Beim Rendern dieses Panels ist ein Fehler aufgetreten.",
     "hint": "Das behebt sich meist durch ein Neuladen der Seite - besonders kurz nachdem HYDRA-UMC STUDIO auf diesem Server aktualisiert wurde.",
     "reload": "Neu laden"
+  },
+  "robotsCatalog": {
+    "title": "Roboter",
+    "all_manufacturers": "Alle Hersteller",
+    "all_dof": "Alle Freiheitsgrade",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert",
+    "empty": "Kein Robotermodell entspricht diesen Filtern."
   }
 }

@@ -91,6 +91,32 @@ export const ROBOT_MANUFACTURERS: Record<RobotModel, string> = {
   'UR5 (6-DOF)': 'Universal Robots (classic)',
   'UR10 (6-DOF)': 'Universal Robots (classic)',
 };
+
+/** Every real robot model this ecosystem has kinematics/mesh support for
+ * (ROBOT_MANUFACTURERS' own keys), excluding the "Generic" placeholder -
+ * used by the Robots catalog panel and the Config tab's own model picker.
+ * DOF is parsed straight out of each model's own name string (every one
+ * already ends in "(N-DOF)") rather than duplicated in a second map. */
+export const REAL_ROBOT_MODELS: RobotModel[] = (Object.keys(ROBOT_MANUFACTURERS) as RobotModel[]).filter(m => m !== 'Generic (6-DOF)');
+
+export function robotModelDof(model: RobotModel): number {
+  const match = model.match(/\((\d+)-DOF\)/);
+  return match ? Number(match[1]) : 6;
+}
+
+/** Whether `model` should appear as a choosable option in the Config
+ * tab's model picker - true if it's the robot's own CURRENT model
+ * (never hide an already-assigned model out from under a robot just
+ * because it was later deactivated in the Robots catalog panel), or if
+ * the Robots catalog panel hasn't deactivated it. Undefined/missing
+ * `enabledRobotModels` (no catalog panel visit yet, or a settings.json
+ * saved before this feature existed) reads as "everything enabled",
+ * matching this ecosystem's own "old settings.json keeps working
+ * unchanged" convention for every other optional settings field. */
+export function isModelSelectable(model: RobotModel, currentModel: RobotModel, enabledRobotModels: Record<string, boolean> | undefined): boolean {
+  if (model === currentModel) return true;
+  return enabledRobotModels?.[model] !== false;
+}
 /** Type definition representing  robot role configurations or states. */
 export type RobotRole = 'Idle' | 'CNC' | 'Laser' | 'Pnp' | '3D printing' | 'Inspection';
 /** Type definition representing  tool type configurations or states. */
@@ -463,6 +489,10 @@ export interface SystemSettings {
     printer3d: { enabled: boolean; software: string; ip: string; port: number };
   };
   customModels: string[];
+  /** Per-model on/off switch for the Robots catalog panel's own
+   * activate/deactivate toggle - a model missing from this map (or the
+   * map itself missing) reads as enabled, see isModelSelectable() above. */
+  enabledRobotModels?: Record<string, boolean>;
   autoConnectRobots: boolean;
   theme: string;
   language: string;

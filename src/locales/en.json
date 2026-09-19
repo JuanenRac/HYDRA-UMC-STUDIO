@@ -965,5 +965,13 @@
     "title": "Something went wrong rendering this panel.",
     "hint": "This usually clears up after a reload - especially right after HYDRA-UMC STUDIO itself was just updated on this server.",
     "reload": "Reload"
+  },
+  "robotsCatalog": {
+    "title": "Robots",
+    "all_manufacturers": "All manufacturers",
+    "all_dof": "All DOF",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "empty": "No robot models match these filters."
   }
 }

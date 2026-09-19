@@ -965,5 +965,13 @@
     "title": "渲染此面板时出现错误。",
     "hint": "通常刷新页面即可解决，尤其是在此服务器上刚更新过 HYDRA-UMC STUDIO 之后。",
     "reload": "刷新"
+  },
+  "robotsCatalog": {
+    "title": "机器人",
+    "all_manufacturers": "所有制造商",
+    "all_dof": "所有自由度",
+    "enabled": "已启用",
+    "disabled": "已禁用",
+    "empty": "没有符合这些筛选条件的机器人型号。"
   }
 }
