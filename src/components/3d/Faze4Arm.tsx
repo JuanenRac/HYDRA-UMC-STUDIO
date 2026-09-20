@@ -44,6 +44,7 @@ import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
+import { usePartColors } from '../../hooks/usePartColors';
 import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 const MESH_BASE = '/models/robots-6-dof/faze4/';
@@ -120,6 +121,7 @@ function jointQuaternion(joint: JointDef, angleDeg: number): THREE.Quaternion {
 const bodyMat = { color: '#dbe4ee', roughness: 0.5, metalness: 0.3 };
 
 export default function Faze4Arm({ robot }: { robot: RobotState }) {
+  const partColors = usePartColors(MESH_BASE);
   const j1 = robot.joints.j1, j2 = robot.joints.j2, j3 = robot.joints.j3;
   const j4 = robot.joints.j4, j5 = robot.joints.j5, j6 = robot.joints.j6;
 
@@ -141,25 +143,25 @@ export default function Faze4Arm({ robot }: { robot: RobotState }) {
   return (
     <group position={FAZE4_BASE_OFFSET}>
     <group quaternion={FAZE4_ROOT_QUAT}>
-      <mesh geometry={baseLinkGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+      <mesh geometry={baseLinkGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['base_link.STL'] ?? bodyMat.color} /></mesh>
 
       <group position={FAZE4_CHAIN[0].pos} quaternion={q1}>
-        <mesh geometry={rotaryBaseGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+        <mesh geometry={rotaryBaseGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['rotary_base.STL'] ?? bodyMat.color} /></mesh>
 
         <group position={FAZE4_CHAIN[1].pos} quaternion={q2}>
-          <mesh geometry={nadlakticaGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+          <mesh geometry={nadlakticaGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['nadlaktica.STL'] ?? bodyMat.color} /></mesh>
 
           <group position={FAZE4_CHAIN[2].pos} quaternion={q3}>
-            <mesh geometry={lakatGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+            <mesh geometry={lakatGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['lakat.STL'] ?? bodyMat.color} /></mesh>
 
             <group position={FAZE4_CHAIN[3].pos} quaternion={q4}>
-              <mesh geometry={podlakticaGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+              <mesh geometry={podlakticaGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['podlaktica.STL'] ?? bodyMat.color} /></mesh>
 
               <group position={FAZE4_CHAIN[4].pos} quaternion={q5}>
-                <mesh geometry={sakaGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+                <mesh geometry={sakaGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['saka.STL'] ?? bodyMat.color} /></mesh>
 
                 <group position={FAZE4_CHAIN[5].pos} quaternion={q6}>
-                  <mesh geometry={hvataljkaGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+                  <mesh geometry={hvataljkaGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['hvataljka.STL'] ?? bodyMat.color} /></mesh>
                   <group position={toolheadMountOffset(hvataljkaGeo)}>
                     <Toolhead tool={robot.tool} />
                   </group>

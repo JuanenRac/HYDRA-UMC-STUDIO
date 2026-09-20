@@ -56,6 +56,7 @@ import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
+import { usePartColors } from '../../hooks/usePartColors';
 import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 const MESH_BASE = '/models/robots-6-dof/parol6/';
@@ -113,6 +114,7 @@ const PAROL6_BASE_OFFSET: [number, number, number] = [0.0637, 0, -0.0035];
  * Executes the parol6 arm logic - real mesh geometry, real URDF-driven FK chain.
  */
 export default function Parol6Arm({ robot }: { robot: RobotState }) {
+  const partColors = usePartColors(MESH_BASE);
   const j1 = robot.joints.j1 * Math.PI / 180;
   const j2 = robot.joints.j2 * Math.PI / 180;
   const j3 = robot.joints.j3 * Math.PI / 180;
@@ -132,49 +134,49 @@ export default function Parol6Arm({ robot }: { robot: RobotState }) {
     <group position={PAROL6_BASE_OFFSET}>
     <group rotation={[-Math.PI / 2, 0, 0]}>
       <mesh geometry={baseLinkGeo} castShadow receiveShadow>
-        <meshStandardMaterial {...bodyMat} />
+        <meshStandardMaterial {...bodyMat} color={partColors['base_link.STL'] ?? bodyMat.color} />
       </mesh>
 
       {/* Joint L1: base_link -> L1, axis (0,0,1) */}
       <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
         <group rotation={[0, 0, j1]}>
           <mesh geometry={l1Geo} castShadow receiveShadow>
-            <meshStandardMaterial {...bodyMat} />
+            <meshStandardMaterial {...bodyMat} color={partColors['L1.STL'] ?? bodyMat.color} />
           </mesh>
 
           {/* Joint L2: L1 -> L2, axis (0,0,1) */}
           <group position={[0.0234207210610375, 0, 0.1105]} rotation={[-1.5707963267949, 0, 0]}>
             <group rotation={[0, 0, j2]}>
               <mesh geometry={l2Geo} castShadow receiveShadow>
-                <meshStandardMaterial {...bodyMat} />
+                <meshStandardMaterial {...bodyMat} color={partColors['L2.STL'] ?? bodyMat.color} />
               </mesh>
 
               {/* Joint L3: L2 -> L3, axis (0,0,-1) */}
               <group position={[0, -0.18, 0]} rotation={rosEuler(3.1416, 0, -1.5708)}>
                 <group rotation={[0, 0, -j3]}>
                   <mesh geometry={l3Geo} castShadow receiveShadow>
-                    <meshStandardMaterial {...bodyMat} />
+                    <meshStandardMaterial {...bodyMat} color={partColors['L3.STL'] ?? bodyMat.color} />
                   </mesh>
 
                   {/* Joint L4: L3 -> L4, axis (0,0,-1) */}
                   <group position={[0.0435, 0, 0]} rotation={rosEuler(1.5707963267949, 0, 3.14159265358979)}>
                     <group rotation={[0, 0, -j4]}>
                       <mesh geometry={l4Geo} castShadow receiveShadow>
-                        <meshStandardMaterial {...bodyMat} />
+                        <meshStandardMaterial {...bodyMat} color={partColors['L4.STL'] ?? bodyMat.color} />
                       </mesh>
 
                       {/* Joint L5: L4 -> L5, axis (0,0,-1) */}
                       <group position={[0, 0, -0.17635]} rotation={[-1.5708, 0, 0]}>
                         <group rotation={[0, 0, -j5]}>
                           <mesh geometry={l5Geo} castShadow receiveShadow>
-                            <meshStandardMaterial {...bodyMat} />
+                            <meshStandardMaterial {...bodyMat} color={partColors['L5.STL'] ?? bodyMat.color} />
                           </mesh>
 
                           {/* Joint L6: L5 -> L6, axis (0,0,-1) */}
                           <group position={[0, 0, 0]} rotation={[1.5708, 0, 0]}>
                             <group rotation={[0, 0, -j6]}>
                               <mesh geometry={l6Geo} castShadow receiveShadow>
-                                <meshStandardMaterial {...bodyMat} />
+                                <meshStandardMaterial {...bodyMat} color={partColors['L6.STL'] ?? bodyMat.color} />
                               </mesh>
                               <group position={toolheadMountOffset(l6Geo)}>
                                 <Toolhead tool={robot.tool} />

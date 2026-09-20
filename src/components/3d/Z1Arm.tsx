@@ -26,6 +26,7 @@ import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
+import { usePartColors } from '../../hooks/usePartColors';
 import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 const MESH_BASE = '/models/robots-6-dof/z1/';
@@ -86,6 +87,7 @@ function jointQuaternion(joint: JointDef, angleDeg: number): THREE.Quaternion {
 const bodyMat = { color: '#2b2f36', roughness: 0.45, metalness: 0.4 };
 
 export default function Z1Arm({ robot }: { robot: RobotState }) {
+  const partColors = usePartColors(MESH_BASE);
   const j1 = robot.joints.j1, j2 = robot.joints.j2, j3 = robot.joints.j3;
   const j4 = robot.joints.j4, j5 = robot.joints.j5, j6 = robot.joints.j6;
 
@@ -107,25 +109,25 @@ export default function Z1Arm({ robot }: { robot: RobotState }) {
   return (
     <group position={Z1_BASE_OFFSET}>
     <group quaternion={Z1_ROOT_QUAT}>
-      <mesh geometry={link00Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+      <mesh geometry={link00Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['z1_Link00.stl'] ?? bodyMat.color} /></mesh>
 
       <group position={Z1_CHAIN[0].pos} quaternion={q1}>
-        <mesh geometry={link01Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+        <mesh geometry={link01Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['z1_Link01.stl'] ?? bodyMat.color} /></mesh>
 
         <group position={Z1_CHAIN[1].pos} quaternion={q2}>
-          <mesh geometry={link02Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+          <mesh geometry={link02Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['z1_Link02.stl'] ?? bodyMat.color} /></mesh>
 
           <group position={Z1_CHAIN[2].pos} quaternion={q3}>
-            <mesh geometry={link03Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+            <mesh geometry={link03Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['z1_Link03.stl'] ?? bodyMat.color} /></mesh>
 
             <group position={Z1_CHAIN[3].pos} quaternion={q4}>
-              <mesh geometry={link04Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+              <mesh geometry={link04Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['z1_Link04.stl'] ?? bodyMat.color} /></mesh>
 
               <group position={Z1_CHAIN[4].pos} quaternion={q5}>
-                <mesh geometry={link05Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+                <mesh geometry={link05Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['z1_Link05.stl'] ?? bodyMat.color} /></mesh>
 
                 <group position={Z1_CHAIN[5].pos} quaternion={q6}>
-                  <mesh geometry={link06Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+                  <mesh geometry={link06Geo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['z1_Link06.stl'] ?? bodyMat.color} /></mesh>
                   <group position={toolheadMountOffset(link06Geo)}>
                     <Toolhead tool={robot.tool} />
                   </group>

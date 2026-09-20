@@ -10,14 +10,17 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { useTranslation } from 'react-i18next';
 import { rackGeometry, rackParts } from '../../racks';
 import type { RackConfig } from '../../store';
+import { usePartColors } from '../../hooks/usePartColors';
 
 class Boundary extends Component<{children: ReactNode; fallback: ReactNode}, {failed: boolean}> {
   state = {failed: false};
   static getDerivedStateFromError() { return {failed: true}; }
   render() { return this.state.failed ? this.props.fallback : this.props.children; }
 }
+const MESH_BASE = 'models/racks/default/';
 function Assembly({ rack }: {rack: RackConfig}) {
-  const sources = useLoader(STLLoader, ['base','wall','guide'].map(p => import.meta.env.BASE_URL + 'models/racks/default/' + p + '.stl'));
+  const partColors = usePartColors(import.meta.env.BASE_URL + MESH_BASE);
+  const sources = useLoader(STLLoader, ['base','wall','guide'].map(p => import.meta.env.BASE_URL + MESH_BASE + p + '.stl'));
   const meshes = useMemo(() => sources.map(source => {
     const g = source.clone();
     g.center(); g.rotateX(-Math.PI / 2); g.scale(.001,.001,.001);
@@ -30,7 +33,7 @@ function Assembly({ rack }: {rack: RackConfig}) {
     {rackParts(rack).map((p,i) => <mesh key={i} geometry={meshes[['base','wall','guide'].indexOf(p.part)]}
       position={p.position.map(v=>v/1000) as [number,number,number]}
       scale={p.size.map((v,a)=>v/reference[p.part][a]) as [number,number,number]} castShadow receiveShadow>
-      <meshStandardMaterial color={spec.color} roughness={.55} metalness={.25}/>
+      <meshStandardMaterial color={partColors[`${p.part}.stl`] ?? spec.color} roughness={.55} metalness={.25}/>
     </mesh>)}
     {Array.from({length:spec.capacity},(_,i) => {
       const valid = rack.usableSlots?.[i] ?? false;

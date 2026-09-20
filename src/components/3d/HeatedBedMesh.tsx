@@ -10,6 +10,7 @@ import { Html } from '@react-three/drei';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { useTranslation } from 'react-i18next';
 import { heatedBedModel } from '../../heatedBeds';
+import { usePartColors } from '../../hooks/usePartColors';
 
 class MeshBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -17,9 +18,11 @@ class MeshBoundary extends Component<{ children: ReactNode; fallback: ReactNode 
   render() { return this.state.failed ? this.props.fallback : this.props.children; }
 }
 type Props = { modelId?: string; width: number; length: number };
+const MESH_BASE = 'models/heatedbeds/default/';
 function LoadedMesh({ modelId, width, length }: Props) {
   const model = heatedBedModel(modelId);
-  const source = useLoader(STLLoader, import.meta.env.BASE_URL + 'models/heatedbeds/default/' + model.file);
+  const partColors = usePartColors(import.meta.env.BASE_URL + MESH_BASE);
+  const source = useLoader(STLLoader, import.meta.env.BASE_URL + MESH_BASE + model.file);
   const geometry = useMemo(() => {
     // Never mutate the cached STL. Convert CAD mm/Z-up to centered meters/Y-up.
     const copy = source.clone();
@@ -30,7 +33,7 @@ function LoadedMesh({ modelId, width, length }: Props) {
   }, [source, model.width, model.length]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   return <mesh geometry={geometry} scale={[width / model.width, 1, length / model.length]} castShadow receiveShadow>
-    <meshStandardMaterial color="#b87345" roughness={0.48} metalness={0.55} />
+    <meshStandardMaterial color={partColors[model.file] ?? '#b87345'} roughness={0.48} metalness={0.55} />
   </mesh>;
 }
 export default function HeatedBedMesh(props: Props) {

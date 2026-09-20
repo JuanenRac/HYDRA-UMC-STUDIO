@@ -10,6 +10,7 @@ import { Html } from '@react-three/drei';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { useTranslation } from 'react-i18next';
 import { vacuumTableModel } from '../../vacuumTables';
+import { usePartColors } from '../../hooks/usePartColors';
 
 /** An unavailable asset must not crash the whole robot viewport. */
 class MeshBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
@@ -17,9 +18,11 @@ class MeshBoundary extends Component<{ children: ReactNode; fallback: ReactNode 
   static getDerivedStateFromError() { return { failed: true }; }
   render() { return this.state.failed ? this.props.fallback : this.props.children; }
 }
+const MESH_BASE = 'models/vacuum-tables/default/';
 function LoadedMesh({ modelId, width, length }: { modelId?: string; width?: number; length?: number }) {
   const model = vacuumTableModel(modelId);
-  const source = useLoader(STLLoader, import.meta.env.BASE_URL + 'models/vacuum-tables/default/' + model.file);
+  const partColors = usePartColors(import.meta.env.BASE_URL + MESH_BASE);
+  const source = useLoader(STLLoader, import.meta.env.BASE_URL + MESH_BASE + model.file);
   // Clone the cached STL before transforming it: mm, CAD Z-up -> meters, Y-up.
   const geometry = useMemo(() => {
     const copy = source.clone();
@@ -30,7 +33,7 @@ function LoadedMesh({ modelId, width, length }: { modelId?: string; width?: numb
   }, [source, model.width, model.length]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   return <mesh geometry={geometry} scale={[(width ?? model.width) / model.width, 1, (length ?? model.length) / model.length]} castShadow receiveShadow>
-    <meshStandardMaterial color="#94a3b8" roughness={0.65} metalness={0.15} />
+    <meshStandardMaterial color={partColors[model.file] ?? '#94a3b8'} roughness={0.65} metalness={0.15} />
   </mesh>;
 }
 export default function VacuumTableMesh({ modelId, width, length }: { modelId?: string; width?: number; length?: number }) {
