@@ -27,6 +27,18 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.7.4] - A saved per-part color now reaches the live 3D viewers, not just HYDRA-UMC-EDITOR-STL's own preview
+
+The separate HYDRA-UMC-EDITOR-STL tool already saved a real per-part
+color annotation (`part_colors.json`, one sidecar per model folder) next
+to a model's own STL parts, but nothing here ever read it back - a color
+picked there never appeared in this app's own robot/heated-bed/vacuum-
+table/rack/LumenPnP 3D views. Every real STL-loading component across
+those 5 categories (17 files) now fetches that same sidecar (a new
+`hooks/usePartColors.ts`) and overrides its own per-part material color
+when one is saved - never a synthetic default when the sidecar simply
+doesn't exist yet.
+
 ## [0.7.3] - Robot joint rotations now smoothly interpolate at 60fps, decoupled from telemetry rate
 
 Every 3D robot model's joint rotations (all ~26 model-specific

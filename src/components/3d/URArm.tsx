@@ -38,6 +38,7 @@ import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
 import type { UrChain, UrJointStep } from '../../examples/urKinematicsShared';
+import { usePartColors } from '../../hooks/usePartColors';
 import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 /** meshOffsets order: base, shoulder, upper_arm, forearm, wrist_1, wrist_2, wrist_3 - 7 entries. */
@@ -101,6 +102,7 @@ function useRealScaleSTL(url: string): THREE.BufferGeometry {
 const bodyMat = { color: '#d0d3d8', roughness: 0.45, metalness: 0.4 };
 
 export default function URArm({ robot, config }: { robot: RobotState; config: UrArmConfig }) {
+  const partColors = usePartColors(config.meshBase);
   const MESH_FILES = config.meshFiles ?? DEFAULT_UR_MESH_FILES;
   const joints = [
     robot.joints.j1 * Math.PI / 180,
@@ -128,7 +130,7 @@ export default function URArm({ robot, config }: { robot: RobotState; config: Ur
     const meshNode = (
       <group position={off.pos} rotation={rosEuler(off.rpy)}>
         <mesh geometry={geos[depth]} castShadow receiveShadow>
-          <meshStandardMaterial {...bodyMat} />
+          <meshStandardMaterial {...bodyMat} color={partColors[MESH_FILES[depth]] ?? bodyMat.color} />
         </mesh>
       </group>
     );

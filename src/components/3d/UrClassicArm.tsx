@@ -23,6 +23,7 @@ import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
 import type { UrClassicChain, UrClassicJointStep } from '../../examples/urClassicKinematics';
+import { usePartColors } from '../../hooks/usePartColors';
 import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 export interface UrClassicArmConfig {
@@ -65,6 +66,7 @@ function jointQuaternion(joint: UrClassicJointStep, angleDeg: number): THREE.Qua
 const bodyMat = { color: '#b8bcc2', roughness: 0.45, metalness: 0.35 };
 
 export default function UrClassicArm({ robot, config }: { robot: RobotState; config: UrClassicArmConfig }) {
+  const partColors = usePartColors(config.meshBase);
   const j1 = robot.joints.j1, j2 = robot.joints.j2, j3 = robot.joints.j3;
   const j4 = robot.joints.j4, j5 = robot.joints.j5, j6 = robot.joints.j6;
 
@@ -98,7 +100,7 @@ export default function UrClassicArm({ robot, config }: { robot: RobotState; con
   function renderLink(depth: number): React.ReactNode {
     const meshNode = (
       <mesh geometry={geos[depth]} castShadow receiveShadow>
-        <meshStandardMaterial {...bodyMat} />
+        <meshStandardMaterial {...bodyMat} color={partColors[MESH_FILES[depth]] ?? bodyMat.color} />
       </mesh>
     );
 

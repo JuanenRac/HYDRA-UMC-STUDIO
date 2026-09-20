@@ -26,6 +26,7 @@ import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
+import { usePartColors } from '../../hooks/usePartColors';
 import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 const MESH_BASE = '/models/robots-5-dof/koch/';
@@ -92,6 +93,7 @@ function jointQuaternion(joint: JointDef, angleDeg: number): THREE.Quaternion {
 const bodyMat = { color: '#e5e5e5', roughness: 0.5, metalness: 0.15 };
 
 export default function KochArm({ robot }: { robot: RobotState }) {
+  const partColors = usePartColors(MESH_BASE);
   const j1 = robot.joints.j1, j2 = robot.joints.j2, j3 = robot.joints.j3;
   const j4 = robot.joints.j4, j5 = robot.joints.j5;
 
@@ -111,22 +113,22 @@ export default function KochArm({ robot }: { robot: RobotState }) {
   return (
     <group position={KOCH_BASE_OFFSET}>
     <group quaternion={KOCH_ROOT_QUAT}>
-      <mesh geometry={baseGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+      <mesh geometry={baseGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['base_link.stl'] ?? bodyMat.color} /></mesh>
 
       <group position={KOCH_CHAIN[0].pos} quaternion={q1}>
-        <mesh geometry={shoulderGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+        <mesh geometry={shoulderGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['shoulder_rotation.stl'] ?? bodyMat.color} /></mesh>
 
         <group position={KOCH_CHAIN[1].pos} quaternion={q2}>
-          <mesh geometry={upperGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+          <mesh geometry={upperGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['shoulder_to_elbow.stl'] ?? bodyMat.color} /></mesh>
 
           <group position={KOCH_CHAIN[2].pos} quaternion={q3}>
-            <mesh geometry={forearmGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+            <mesh geometry={forearmGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['elbow_to_wrist_extension.stl'] ?? bodyMat.color} /></mesh>
 
             <group position={KOCH_CHAIN[3].pos} quaternion={q4}>
-              <mesh geometry={wristGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+              <mesh geometry={wristGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['elbow_to_wrist.stl'] ?? bodyMat.color} /></mesh>
 
               <group position={KOCH_CHAIN[4].pos} quaternion={q5}>
-                <mesh geometry={gripperGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+                <mesh geometry={gripperGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['gripper_static_finger.stl'] ?? bodyMat.color} /></mesh>
                 <group position={toolheadMountOffset(gripperGeo)}>
                   <Toolhead tool={robot.tool} />
                 </group>

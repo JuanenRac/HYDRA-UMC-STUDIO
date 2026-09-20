@@ -66,6 +66,7 @@ import { MACHINE_ASSETS, machineAssetPath, type MachineKind } from '../../machin
 import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { PnPModule } from '../../store';
+import { usePartColors } from '../../hooks/usePartColors';
 
 // The original LumenPnP path loads pre-merged/indexed .glb rather than raw .stl+mergeVertices() at
 // runtime (every *Arm.tsx in this folder still does the latter - LumenPnP
@@ -82,6 +83,14 @@ import type { PnPModule } from '../../store';
 // that cost out of the browser entirely - useGLTF hands back
 // already-indexed geometry with nothing left to compute on load.
 const MachineContext = createContext<MachineKind>('lumenPnP');
+
+// Real per-part color overrides (see hooks/usePartColors.ts's own header) -
+// keyed by the exact same `<name>.<format>` string machineAssetPath()
+// already builds (e.g. 'base.stl', 'parts/back-leg.stl'), so CadMesh below
+// can look one up with zero extra bookkeeping. Provided once per machine
+// type by LumenPnPRig itself (one real fetch of that machine's own
+// part_colors.json, not one per rendered part).
+const PartColorsContext = createContext<Record<string, string>>({});
 
 // Real, individually-named CAD parts (public/models/machine-pnp/lumenpnp/parts/*.glb -
 // legs, control box, frame extrusions, cameras/lights, feeders, nozzle
@@ -205,23 +214,25 @@ const X_CARRIAGE_STATIC_PARTS = [
 // import time. Material rendering is shared; geometry paths remain independent.
 
 
-function GlbCadMesh({ url, material }: { url: string; material: typeof frameMat }) {
+function GlbCadMesh({ url, material, colorOverride }: { url: string; material: typeof frameMat; colorOverride?: string }) {
   const geo = useRealScaleGLB(url);
-  return <mesh geometry={geo} castShadow receiveShadow><meshStandardMaterial {...material}/></mesh>;
+  return <mesh geometry={geo} castShadow receiveShadow><meshStandardMaterial {...material} color={colorOverride ?? material.color}/></mesh>;
 }
-function StlCadMesh({ url, material }: { url: string; material: typeof frameMat }) {
+function StlCadMesh({ url, material, colorOverride }: { url: string; material: typeof frameMat; colorOverride?: string }) {
   const source = useLoader(STLLoader, url);
   const geo = useMemo(() => source.clone().scale(.001, .001, .001), [source]);
   useEffect(() => () => geo.dispose(), [geo]);
   // STL is already triangulated. No costly synchronous mergeVertices calls.
-  return <mesh geometry={geo} castShadow receiveShadow><meshStandardMaterial {...material}/></mesh>;
+  return <mesh geometry={geo} castShadow receiveShadow><meshStandardMaterial {...material} color={colorOverride ?? material.color}/></mesh>;
 }
 function CadMesh({ name, material }: {name: string; material: typeof frameMat}) {
   const type = useContext(MachineContext);
+  const partColors = useContext(PartColorsContext);
   const url = machineAssetPath(type, name);
+  const colorOverride = partColors[`${name}.${MACHINE_ASSETS[type].format}`];
   return MACHINE_ASSETS[type].format === 'stl'
-    ? <StlCadMesh key={url} url={url} material={material}/>
-    : <GlbCadMesh key={url} url={url} material={material}/>;
+    ? <StlCadMesh key={url} url={url} material={material} colorOverride={colorOverride}/>
+    : <GlbCadMesh key={url} url={url} material={material} colorOverride={colorOverride}/>;
 }
 function StaticCadPart({ label, material }: { label: string; material: typeof frameMat }) {
   return <CadMesh name={'parts/' + label} material={material}/>;
@@ -276,6 +287,7 @@ const nozzleMat = { color: '#eab308', roughness: 0.4, metalness: 0.3 };
 
 export default function LumenPnPRig({ module, machineType = 'lumenPnP' }: { module: Partial<PnPModule>; machineType?: MachineKind }) {
   preloadMachine(machineType);
+  const partColors = usePartColors(import.meta.env.BASE_URL + 'models/' + MACHINE_ASSETS[machineType].directory + '/');
   // Real axis values are millimeters (matching openpnp/machine.xml's own
   // units) - converted to meters here at the one point they're consumed,
   // same convention as every other real-geometry component in this folder.
@@ -299,6 +311,7 @@ export default function LumenPnPRig({ module, machineType = 'lumenPnP' }: { modu
     // existed to make it obvious) - GROUND_OFFSET_M lifts the whole rig
     // so the real lowest point (the legs' own feet) sits at Y=0 instead.
     <MachineContext.Provider value={machineType}>
+    <PartColorsContext.Provider value={partColors}>
     <group rotation={[-Math.PI / 2, 0, 0]} position={[0, GROUND_OFFSET_M, 0]}>
       <CadMesh name="base" material={frameMat}/>
       {BASE_STATIC_PARTS.map((label) => (
@@ -336,6 +349,7 @@ export default function LumenPnPRig({ module, machineType = 'lumenPnP' }: { modu
         </group>
       </group>
     </group>
+    </PartColorsContext.Provider>
     </MachineContext.Provider>
   );
 }

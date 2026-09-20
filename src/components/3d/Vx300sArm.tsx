@@ -30,6 +30,7 @@ import * as THREE from 'three';
 import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
+import { usePartColors } from '../../hooks/usePartColors';
 import Toolhead, { toolheadMountOffset } from './Toolhead';
 
 const MESH_BASE = '/models/robots-6-dof/vx300s/';
@@ -105,6 +106,7 @@ function jointQuaternion(joint: JointDef, angleDeg: number): THREE.Quaternion {
 const bodyMat = { color: '#1a1a1a', roughness: 0.5, metalness: 0.2 };
 
 export default function Vx300sArm({ robot }: { robot: RobotState }) {
+  const partColors = usePartColors(MESH_BASE);
   const j1 = robot.joints.j1, j2 = robot.joints.j2, j3 = robot.joints.j3;
   const j4 = robot.joints.j4, j5 = robot.joints.j5, j6 = robot.joints.j6;
 
@@ -129,32 +131,32 @@ export default function Vx300sArm({ robot }: { robot: RobotState }) {
     <group position={VX300S_BASE_OFFSET}>
     <group quaternion={VX300S_ROOT_QUAT}>
       <group position={off[0].pos} rotation={off[0].rpy}>
-        <mesh geometry={baseGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+        <mesh geometry={baseGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['vx300s_1_base.stl'] ?? bodyMat.color} /></mesh>
       </group>
 
       <group position={VX300S_CHAIN[0].pos} quaternion={q1}>
         <group position={off[1].pos} rotation={off[1].rpy}>
-          <mesh geometry={shoulderGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+          <mesh geometry={shoulderGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['vx300s_2_shoulder.stl'] ?? bodyMat.color} /></mesh>
         </group>
 
         <group position={VX300S_CHAIN[1].pos} quaternion={q2}>
           <group position={off[2].pos} rotation={off[2].rpy}>
-            <mesh geometry={upperArmGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+            <mesh geometry={upperArmGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['vx300s_3_upper_arm.stl'] ?? bodyMat.color} /></mesh>
           </group>
 
           <group position={VX300S_CHAIN[2].pos} quaternion={q3}>
             <group position={off[3].pos} rotation={off[3].rpy}>
-              <mesh geometry={upperForearmGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+              <mesh geometry={upperForearmGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['vx300s_4_upper_forearm.stl'] ?? bodyMat.color} /></mesh>
             </group>
 
             <group position={VX300S_CHAIN[3].pos} quaternion={q4}>
               <group position={off[4].pos} rotation={off[4].rpy}>
-                <mesh geometry={lowerForearmGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+                <mesh geometry={lowerForearmGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['vx300s_5_lower_forearm.stl'] ?? bodyMat.color} /></mesh>
               </group>
 
               <group position={VX300S_CHAIN[4].pos} quaternion={q5}>
                 <group position={off[5].pos} rotation={off[5].rpy}>
-                  <mesh geometry={wristGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+                  <mesh geometry={wristGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['vx300s_6_wrist.stl'] ?? bodyMat.color} /></mesh>
                 </group>
 
                 <group position={VX300S_CHAIN[5].pos} quaternion={q6}>
@@ -167,7 +169,7 @@ export default function Vx300sArm({ robot }: { robot: RobotState }) {
                       that - verified against the real STL: the tool landed exactly on the mesh's
                       own bounding-box corner instead of just past its tip. */}
                   <group position={off[6].pos} rotation={off[6].rpy}>
-                    <mesh geometry={gripperGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} /></mesh>
+                    <mesh geometry={gripperGeo} castShadow receiveShadow><meshStandardMaterial {...bodyMat} color={partColors['vx300s_7_gripper.stl'] ?? bodyMat.color} /></mesh>
                     <group position={toolheadMountOffset(gripperGeo)}>
                       <Toolhead tool={robot.tool} />
                     </group>
