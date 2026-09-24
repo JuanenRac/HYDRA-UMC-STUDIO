@@ -3,6 +3,11 @@
     "confirm": "确认",
     "cancel": "取消"
   },
+  "motion_source": {
+    "offline": "离线",
+    "simulated": "模拟 - 不会移动机器",
+    "live": "实时"
+  },
   "dashboard": {
     "title": "HYDRA STUDIO",
     "subtitle": "多机器人控制",

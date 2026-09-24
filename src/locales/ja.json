@@ -3,6 +3,11 @@
     "confirm": "確認",
     "cancel": "キャンセル"
   },
+  "motion_source": {
+    "offline": "オフライン",
+    "simulated": "シミュレーション - 実機は動きません",
+    "live": "ライブ"
+  },
   "dashboard": {
     "title": "HYDRA STUDIO",
     "subtitle": "マルチロボット制御",
