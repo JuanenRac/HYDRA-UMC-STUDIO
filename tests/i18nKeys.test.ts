@@ -3,7 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 //
-// Found while auditing the code (H060): dashboard.rp1_temp and
+// Found while auditing the code: dashboard.rp1_temp and
 // robot_detail.delete_points were both referenced by real t(...) calls in
 // src/ but missing from all 7 locale catalogs - i18next's own behavior for
 // a key missing everywhere (no resource has it, and no literal default was
@@ -13,7 +13,7 @@
 // every literal-string t('...') call under src/ and checks it against the
 // real locale catalogs instead, plus checks the 7 catalogs never drift from
 // each other (a key added to one language but not the rest is exactly how
-// H060 happened) - so a future missing/orphaned key fails CI instead of
+// happened) - so a future missing/orphaned key fails CI instead of
 // only being found by hand.
 // =============================================================================
 import { describe, expect, it } from 'vitest';

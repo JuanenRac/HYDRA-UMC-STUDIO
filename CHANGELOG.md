@@ -498,7 +498,7 @@ happens and lets an operator retry with one click
 (`flushSettingsSave()`) instead of guessing why a camera, robot or
 setting change never actually applied.
 
-## [0.4.9] - Example data can no longer look like a live connection (STUDIO-01)
+## [0.4.9] - Example data can no longer look like a live connection
 
 Found while auditing the code (P1): the example
 robots/cameras this app seeds on a fresh install had `online`/

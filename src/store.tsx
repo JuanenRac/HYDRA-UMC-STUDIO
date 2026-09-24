@@ -585,7 +585,7 @@ export interface SystemSettings {
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
 export const createDefaultRobots = (): RobotState[] => {
-  // STUDIO-01 (P1): online/urtcConnected/controllerBoard/urtcHead/urtcExpansion used
+  // online/urtcConnected/controllerBoard/urtcHead/urtcExpansion used
   // to be true/populated for the first 3 example robots, presenting
   // fixture data as evidence of a real hardware connection the very first
   // time this app renders (before any real Server has ever answered) -
@@ -661,7 +661,7 @@ export const createDefaultRobots = (): RobotState[] => {
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
 export const createDefaultCameras = (): CameraState[] => {
-  // STUDIO-01: same reasoning as createDefaultRobots() above - `connected`
+  // same reasoning as createDefaultRobots above - `connected`
   // used to default to true for the first 2 example cameras, a fixture
   // value indistinguishable from a real detected camera.
   return Array.from({ length: 8 }, (_, i) => ({
@@ -679,7 +679,7 @@ export const createDefaultCameras = (): CameraState[] => {
 };
 
 /** Stores the Default controllers configuration or state data.
- * STUDIO-01: `status` starts 'offline' - it used to start 'online' before
+ * `status` starts 'offline' - it used to start 'online' before
  * this app had ever actually heard from a real Server, and this field is
  * itself part of the `controllers` array the debounced save effect POSTs
  * back to settings.json, so that fake 'online' claim could persist
@@ -787,7 +787,7 @@ interface HydraStoreContextType {
   /** Real feedback from live testing: AdminLogs.tsx (Server Logs) is conditionally mounted (`{activeTab === 'adminLogs' && <AdminLogs />}` in Dashboard.tsx), so its own local state was wiped every time the operator navigated away and back - clicking Clear, then leaving and returning, showed everything again. Lifted here so it survives navigation for the life of this session. `anchor` is the newest log line at the moment Clear was pressed (or null if the log was empty then) - AdminLogs.tsx only displays what comes after it in each later poll. Null (the default) means "never cleared this session". */
   logsClearedAt: { anchor: string | null } | null;
   setLogsClearedAt: (value: { anchor: string | null } | null) => void;
-  /** STUDIO-01: real, live "has a real Server actually answered/is the
+  /** real, live "has a real Server actually answered/is the
    * WebSocket actually open right now" signal - never a fixture default,
    * never persisted into settings.json. Drives the "System Online/
    * Offline" badge; see its own useState comment in HydraProvider. */
@@ -856,7 +856,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     serverName: "HYDRA-UMC TEST",
   });
   const [isLoaded, setIsLoaded] = useState(false);
-  // STUDIO-01: the real, live "have we actually heard from a real Server"
+  // the real, live "have we actually heard from a real Server"
   // signal - starts false (honest: nothing confirmed yet) and is set from
   // the actual fetch/WebSocket lifecycle below, never from a fixture
   // default and never written into `settings`/`controllers` (so it can
@@ -932,7 +932,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return false;
       }
       localStorage.setItem('hydra_token', data.token);
-      // C08: server.ts's own POST /api/login now also returns a real
+      // server.ts's own POST /api/login now also returns a real
       // opaque refresh token alongside the access token (see
       // refresh_tokens.ts) - stashed here so a later WS 1008 close can
       // silently recover a fresh access token via attemptTokenRefresh()
@@ -951,7 +951,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
-  // C08: called only when the WS reconnect effect below sees a real 1008
+  // called only when the WS reconnect effect below sees a real 1008
   // close - tries to recover silently (no visible interruption, no lost
   // view/robot selection) before falling back to logout()'s own full
   // reload. Deliberately NOT attempted for "no token"/never-logged-in
@@ -997,7 +997,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // future screen might introduce) rather than trying to track down and
   // individually clear every local flag anything could ever gate on.
   const logout = useCallback(() => {
-    // C08: revoke the refresh token server-side too (best-effort - a
+    // revoke the refresh token server-side too (best-effort - a
     // failed/slow request here must never block or delay the reload below,
     // this tab is logging out either way), not just discard it client-side,
     // which would otherwise leave it silently valid for the rest of its
@@ -1239,7 +1239,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const headers: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
 
     fetch(apiUrl('/api/settings'), { headers }).then(r => r.json()).then(data => {
-      // STUDIO-01: this fetch actually succeeding IS the real evidence a
+      // this fetch actually succeeding IS the real evidence a
       // live Server answered - set before applyServerData so even the
       // "server answered but has no saved controllers yet" branch (a
       // genuinely fresh install) still shows System Online, honestly.
@@ -1328,7 +1328,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         socket.onclose = (ev) => {
           console.log(`[WS] closed code=${ev.code} reason=${ev.reason || '(none)'}`);
           if (ws === socket) ws = null;
-          // STUDIO-01: a dropped socket is real, live evidence the Server
+          // a dropped socket is real, live evidence the Server
           // connection is no longer confirmed - reflect that immediately
           // rather than leaving the badge stuck on the last known-good
           // state until (or unless) a reconnect happens to succeed.

@@ -220,7 +220,7 @@ export default function Dashboard() {
             <IconButton onClick={() => setIsAboutOpen(true)} icon={<Info size={18}/>} label="About" />
             <div className="w-px h-6 bg-slate-800 mx-2"></div>
             <div className="flex items-center gap-3">
-              {/* STUDIO-01: reads the real, live serverReachable signal,
+              {/* reads the real, live serverReachable signal,
                   never activeController.status - see that field's own
                   header comment in store.tsx for why. */}
               <span className={cn("w-4 h-4 rounded-full animate-pulse", serverReachable ? "bg-emerald-500 shadow-[0_0_10px_#10b981]" : "bg-rose-500 shadow-[0_0_10px_#f43f5e]")} />
