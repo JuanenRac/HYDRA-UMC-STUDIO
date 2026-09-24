@@ -97,7 +97,7 @@ function extractUsedKeys(): Set<string> {
   return used;
 }
 
-describe('i18n key coverage - H060', () => {
+describe('i18n key coverage', () => {
   it('every real t(...) call in src/ resolves against the English (base) catalog', () => {
     const used = extractUsedKeys();
     const base = catalogKeys(en);
@@ -105,7 +105,7 @@ describe('i18n key coverage - H060', () => {
     expect(missing, `key(s) used in code but absent from en.json: ${missing.join(', ')}`).toEqual([]);
   });
 
-  it('specifically covers the two H060 keys (dashboard.rp1_temp, robot_detail.delete_points)', () => {
+  it('specifically covers the two keys (dashboard.rp1_temp, robot_detail.delete_points)', () => {
     const used = extractUsedKeys();
     expect(used.has('dashboard.rp1_temp')).toBe(true);
     expect(used.has('robot_detail.delete_points')).toBe(true);
