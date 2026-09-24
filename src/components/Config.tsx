@@ -265,7 +265,7 @@ export function Config({ onClose }: { onClose: () => void }) {
                     </thead>
                     <tbody>
                       {controllers.map(c => {
-                        // STUDIO-01: this table's `status` cell used to
+                        // this table's `status` cell used to
                         // render c.status verbatim - a saved config value
                         // with no live check behind it - as if it were a
                         // real reachability check. This app only ever
