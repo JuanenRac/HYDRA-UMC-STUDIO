@@ -27,6 +27,10 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.7.5] - Motion source badge
+
+- The robot detail header now says whether the drawn pose is offline, simulated (no tool controller connected, the machine does not move) or live, in all seven languages.
+
 ## [0.7.4] - A saved per-part color now reaches the live 3D viewers, not just HYDRA-UMC-EDITOR-STL's own preview
 
 The separate HYDRA-UMC-EDITOR-STL tool already saved a real per-part

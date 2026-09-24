@@ -3,6 +3,11 @@
     "confirm": "Confirmer",
     "cancel": "Annuler"
   },
+  "motion_source": {
+    "offline": "Hors ligne",
+    "simulated": "Simulé - ne déplace pas la machine",
+    "live": "En direct"
+  },
   "dashboard": {
     "title": "HYDRA STUDIO",
     "subtitle": "CONTRÔLE MULTI-ROBOTS",

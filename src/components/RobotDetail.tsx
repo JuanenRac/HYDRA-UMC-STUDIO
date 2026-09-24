@@ -9,6 +9,7 @@ import { RotaryKnob } from "./RotaryKnob";
 import { FuturisticSlider } from "./FuturisticSlider";
 import { motion, useDragControls } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { motionSource } from '../motionSource';
 import { type RobotState, useHydraStore, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, isModelSelectable, globalPlaybacks } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { RotateCcw, RotateCw, Home, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, Save, Play, Square, Pause, Crosshair, RefreshCw, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat, Download, Grid3x3, Plus } from 'lucide-react';
@@ -1518,6 +1519,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
             <div className="flex items-center gap-2">
               <span className="text-xs px-2 py-1 bg-slate-800 text-slate-400 rounded-md uppercase font-bold tracking-wider">{robot.model}</span>
               <span className="text-xs px-2 py-1 bg-slate-800 text-slate-400 rounded-md uppercase font-bold tracking-wider">{robot.tool}</span>
+              <span data-testid="motion-source" className={cn("text-xs px-2 py-1 rounded-md uppercase font-bold tracking-wider", motionSource(robot) === 'live' ? "bg-emerald-950 text-emerald-400" : motionSource(robot) === 'simulated' ? "bg-amber-950 text-amber-400" : "bg-rose-950 text-rose-400")}>{t(`motion_source.${motionSource(robot)}`)}</span>
             </div>
           </div>
         </div>

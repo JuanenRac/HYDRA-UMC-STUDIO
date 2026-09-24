@@ -3,6 +3,11 @@
     "confirm": "Bestätigen",
     "cancel": "Abbrechen"
   },
+  "motion_source": {
+    "offline": "Offline",
+    "simulated": "Simuliert - bewegt die Maschine nicht",
+    "live": "Live"
+  },
   "dashboard": {
     "title": "HYDRA STUDIO",
     "subtitle": "MULTI-ROBOTER-STEUERUNG",
