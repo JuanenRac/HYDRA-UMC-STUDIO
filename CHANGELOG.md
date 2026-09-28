@@ -27,6 +27,10 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.7.6] - A TLS-enabled server would have been mixed-content-blocked
+
+- **Real bug, found reviewing this app for the same TLS rollout that fixed HYDRA-UMC-ANDROID-CONTROL:** in STUDIO's own default same-origin deployment (this app's static files served BY HYDRA-UMC-SERVER itself), `apiBase.ts`'s production fallback hardcoded `http://` for every `fetch()`/WebSocket call regardless of the scheme this exact page was loaded over. HYDRA-UMC-SERVER's optional `TLS_CERT_PATH`/`TLS_KEY_PATH` (server.ts) makes that page load over `https:` - every one of those calls would then be a browser-blocked mixed-content request, not just a wrong-looking URL. `defaultProdBase()` now matches `window.location.protocol`; a plain-HTTP deployment (today's default) is unaffected. `wsUrl()` already derived `ws:`/`wss:` correctly from `API_BASE` - only the API origin itself was wrong. 2 new tests (`tests/apiBase.test.ts`).
+
 ## [0.7.5] - Motion source badge
 
 - The robot detail header now says whether the drawn pose is offline, simulated (no tool controller connected, the machine does not move) or live, in all seven languages.

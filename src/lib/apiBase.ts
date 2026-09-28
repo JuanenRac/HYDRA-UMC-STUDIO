@@ -53,7 +53,16 @@ function defaultProdBase(): string {
   // fallback for the case a real reverse proxy strips it (port 80/443,
   // window.location.port === "").
   const port = typeof window !== 'undefined' && window.location.port ? window.location.port : '3000';
-  return `http://${hostname}:${port}`;
+  // Second real bug, same "everything on the CM5" default deployment: this
+  // used to hardcode http: too, regardless of the scheme this exact page
+  // was itself loaded over. In the default same-origin deployment (STUDIO's
+  // own static files served BY HYDRA-UMC-SERVER - see this file's own
+  // header comment) that server's optional TLS_CERT_PATH/TLS_KEY_PATH
+  // (server.ts) makes this page load over https: - every fetch() computed
+  // from a hardcoded http: origin is then a cross-origin, mixed-content
+  // request a browser refuses outright, not just a wrong-looking URL.
+  const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https:' : 'http:';
+  return `${protocol}//${hostname}:${port}`;
 }
 
 /** '' in dev (relative paths, proxied by vite.config.ts's own server.proxy)
