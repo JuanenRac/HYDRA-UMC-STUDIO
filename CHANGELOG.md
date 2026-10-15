@@ -188,7 +188,7 @@ around. Snaps immediately, no slide, the moment `robot.id` changes
 
 ## [0.6.6] - Geometry disposal on every robot arm's own STL scaling hook
 
-- Real gap found while auditing the code: `useRealScaleSTL()` (duplicated
+- Real gap found on code review: `useRealScaleSTL()` (duplicated
   verbatim across 13 `*Arm.tsx` files - AR3, AR4, Edo, Faze4, Koch,
   M-710iC, Parol6, SO-ARM100, UR e-Series/classic, ViperX 300, WidowX
   250, Z1) clones the shared, cached STL geometry `useLoader` returns and
@@ -458,13 +458,9 @@ and the new triangle counts. Same fix ported to HYDRA-UMC-SUITE's
 `render/pnp_rig.py`/`viewport.py` and mirrored into HYDRA-UMC-SERVER's
 own copy of these public assets.
 
-## [0.5.2]
-
-- Build version synchronized with `hydra-umc.project.json` and the repository-native version source.
-
 ## [0.5.1]
 
-- Removed 2 real dead-code lint warnings surfaced while auditing the code:
+- Removed 2 real dead-code lint warnings surfaced on code review:
   an unused `SKY_SOFT` color constant in
   `EcosystemTelemetry.tsx`, and `activeController` destructured from
   `useHydraStore()` in `Dashboard.tsx` but never read (only mentioned inside
@@ -508,7 +504,7 @@ setting change never actually applied.
 
 ## [0.4.9] - Example data can no longer look like a live connection
 
-Found while auditing the code (P1): the example
+Found on code review (P1): the example
 robots/cameras this app seeds on a fresh install had `online`/
 `urtcConnected`/`connected: true` (and populated firmware/hardware-ID
 fields) for a few entries, and the example controller's own `status`
@@ -598,7 +594,7 @@ effect POSTs to `settings.json`, so that fake claim could persist.
 
 ## [0.4.7]
 
-- **Fixed a real remote-access gap found while auditing the code:
+- **Fixed a real remote-access gap found on code review:
   HYDRA-UMC-DSI's own client already sent `X-Hydra-Client: dsi` on every
   request, but there was no toggle for it in Config > Remote Access, and
   the server-side gate didn't recognize "dsi" at all - a DSI request fell
@@ -1511,7 +1507,7 @@ oldest first.
 
 ### Real 3D foundations
 
-Read-only audit of the initial scaffold, followed by several passes of real
+Read-only review of the initial scaffold, followed by several passes of real
 robot geometry: swapping a placeholder figure for Parol6's actual mesh and
 proportions (sourced from real reference links), wiring its real
 kinematics, and extending the same "real mesh + real kinematics" treatment
@@ -1562,7 +1558,7 @@ Translated `README.md` into Spanish, Italian, French, and German
 
 ### Line-by-line audit and backlog pass
 
-A full line-by-line (not sampled) audit of the backend and `src/` root plus
+A full line-by-line (not sampled) review of the backend and `src/` root plus
 `components/` (excluding `3d/`), followed by two passes over the
 accumulated known-issues backlog. Notable real fix: AR4's inverse
 kinematics solver clamped j1/j2/j3 only *after* an unconstrained
