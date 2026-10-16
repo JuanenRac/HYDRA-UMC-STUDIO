@@ -37,6 +37,7 @@ a change is actually worth summarizing for a human.
 - The session token passed as `?token=` is removed from the address bar after it is read, and the WebSocket sends it as the `hydra.bearer` subprotocol (falling back to the query string against a server that does not answer the subprotocol).
 - The live camera streams and the saved photos and recordings carry a short-lived `?ticket=` (`POST /api/camera/ticket`, renewed before it expires), so they keep working on a server that demands one (`HYDRA_UMC_CAMERA_AUTH=required`); a recording being played is not restarted by a renewal.
 - The kiosk power buttons of the login screen and the deletion of a camera file ask through the in-app confirmation dialog instead of `window.confirm()`, which a kiosk browser or a WebView can disable.
+- The assistant floats below the modal windows (Help, Config, About), so its bubble never covers their buttons.
 - Tests: the assistant (all 8 languages of every task, every sample question finds its own task, steps numbered alike in every language, bubble placement), the ticket helper, and the locale catalogs now include Portuguese (212 tests).
 
 ## [0.7.6] - A TLS-enabled server would have been mixed-content-blocked
