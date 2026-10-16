@@ -243,8 +243,8 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
         pushLog(t(`flasher.progress.${progress.messageKey}`, { page: progress.pagesSent, total: progress.pagesTotal }), progress.phase === 'error' ? 'error' : 'info');
       }
       if (lastPhase !== 'error') {
-        pushLog(t('flasher.log.flash_done'), 'ok');
-        applyBoardPatch({ firmwareVersion: file.name.replace(/\.bin$/i, ''), bootloaderVersion: boardState?.bootloaderVersion || '0.0.0', hardwareId: boardState?.hardwareId, lastSeen: Date.now() });
+        // A simulated flash sent nothing to the board: the version that is saved and shown to every client is never changed by it.
+        pushLog(t('flasher.log.flash_simulated'), 'ok');
       }
     } finally {
       setFlashing(false);
@@ -284,6 +284,11 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
             <p className="text-xs text-slate-400">{t('flasher.subtitle', 'CAN-OTA Firmware Flashing (no JTAG/SWD, no USB-CAN)')}</p>
           </div>
         </div>
+        {!isHardwareTransport && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-400 text-xs font-semibold">
+            <AlertTriangle size={14} /> {t('flasher.simulation_banner')}
+          </div>
+        )}
         {hardwareTargetUnreachable && (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-400 text-xs font-semibold">
             <AlertTriangle size={14} /> {t('flasher.hardware_target_unreachable')}

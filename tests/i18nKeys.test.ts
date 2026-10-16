@@ -28,8 +28,9 @@ import fr from '../src/locales/fr.json';
 import itLocale from '../src/locales/it.json';
 import ja from '../src/locales/ja.json';
 import zh from '../src/locales/zh.json';
+import pt from '../src/locales/pt.json';
 
-const CATALOGS: Record<string, unknown> = { en, de, es, fr, it: itLocale, ja, zh };
+const CATALOGS: Record<string, unknown> = { en, de, es, fr, it: itLocale, ja, zh, pt };
 const SRC_ROOT = path.resolve(__dirname, '../src');
 
 // Every t('a.b.c', ...) resolves via i18next's default '.' keySeparator -

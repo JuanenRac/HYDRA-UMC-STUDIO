@@ -147,8 +147,8 @@
     "can_ota_desc": "Impostazioni per i moduli Flasher/Tester (Shared Resources > URTC): flashing del firmware e diagnostica lungo la catena CM5 -> SPI -> STM32H745 -> FDCAN1 -> scheda controller robot -> CAN -> testa utensile URTC. Vedi docs/architecture.md in HYDRA-UMC per lo schema di indirizzamento completo.",
     "can_ota_transport": "Trasporto",
     "can_ota_transport_mock": "Simulato (mock) - nessun hardware necessario",
-    "can_ota_transport_hardware": "Hardware reale (SPI verso STM32H745) - non ancora implementato",
-    "can_ota_transport_desc": "Il modo simulato riproduce l'intero protocollo CAN-OTA cosicché Flasher/Tester siano già pienamente utilizzabili. Passa a hardware quando esisterà firmware CM5<->STM32H745 con cui comunicare.",
+    "can_ota_transport_hardware": "Hardware reale (SPI verso lo STM32H745)",
+    "can_ota_transport_desc": "Mock simula l'intero protocollo CAN-OTA, non invia nulla a nessuna scheda e non cambia mai una versione firmware salvata. Hardware invia alle schede reali tramite il collegamento CM5 <-> STM32H745.",
     "can_ota_mcu": "MCU della scheda controller robot",
     "can_ota_mcu_placeholder": "STM32G474RET6",
     "can_ota_mcu_desc": "Confermato: STM32G474RET6 (Cortex-M4 a 170 MHz, LQFP-64, 512 KB di flash) - usa 2 delle sue 3 periferiche FDCAN integrate (una in salita verso lo STM32H745, una in discesa verso la testa URTC). Vedi docs/architecture.md di HYDRA-UMC, sezione 1/4. Resta modificabile nel caso una futura revisione della scheda lo cambi.",
@@ -273,7 +273,8 @@
     "ai_hailo_cognitive_desc": "Un acceleratore separato, pianificato per il lavoro LLM/VLA/voce (HYDRA-UMC-COGNITIVE-NODE, VLA-ENGINE, SEMANTIC-PLANNER, VOICE-UI) - predefinito su Nessuno, poiché questo hardware non esiste ancora su nessun deployment reale.",
     "ai_hailo_registry_path": "Percorso del registro modelli",
     "ai_hailo_registry_desc": "Dove risiedono i modelli .hef compilati - rispecchia il proprio models_dir di HYDRA-UMC-DETECTION-HEF (il suo vero registro con verifica del checksum sha256).",
-    "ai_hailo_none": "Nessuno (non installato)"
+    "ai_hailo_none": "Nessuno (non installato)",
+    "language_pt": "Portoghese"
   },
   "robot_detail": {
     "back": "Torna alla Dashboard",
@@ -566,7 +567,7 @@
         "paragraphs": [
           "Flasher e Tester (Shared Resources > URTC) raggiungono la scheda controller propria di un robot, e la sua testa utensile URTC oltre essa, solo via CAN-OTA - nessuna sonda JTAG/SWD, nessun adattatore USB-CAN. Flasher carica un'immagine firmware .bin ed esegue lo stesso trasferimento pagina per pagina, verifica CRC32/HMAC e controlli anti-rollback già implementati dal bootloader di URTC; Tester interroga informazioni di versione dal vivo, stato della F-RAM e telemetria per utensile, oltre a un autotest sicuro che non aziona mai a potenza reale.",
           "Config (barra superiore) apre la Configurazione di Sistema: gestisci i Controller (nome, IP, aggiungi/auto-ricerca), UI e Temi (tema, lingua - questo menu di Aiuto segue la stessa lingua), Nomi dei Robot e Modelli Personalizzati, Integrazioni Software, Percorsi di Lavoro (dove vengono salvati i Works di ogni robot), e la mappatura del Gamepad.",
-          "Config > CAN-OTA permette di scegliere il trasporto (una simulazione integrata completa finché non esisterà firmware STM32H745 reale, oppure hardware reale in seguito), di annotare l'MCU proprio della scheda controller robot una volta confermato, e di impostare i percorsi dei file firmware in cui Flasher cerca.",
+          "Config > CAN-OTA permette di scegliere il trasporto (una simulazione integrata completa, o hardware reale), registrare l'MCU della scheda controller del robot una volta confermato e impostare i percorsi dei file firmware in cui cerca Flasher. Finché il trasporto è quello simulato, Flasher mostra un avviso SIMULAZIONE, non invia nulla alle schede e non cambia mai la versione salvata.",
           "Factory Reset, dentro Config, azzera tutta la configurazione salvata riportandola ai valori di fabbrica - usalo con cautela, non può essere annullato."
         ]
       },
@@ -574,7 +575,7 @@
         "label": "Account e Accesso",
         "heading": "Accesso, account utente e accesso remoto",
         "paragraphs": [
-          "Ogni server crea un account predefinito al suo primissimo avvio: nome utente admin, password admin. Cambia questa password il prima possibile da Config > Utenti - altrimenti chiunque sulla rete la conosca potrà accedere con accesso completo.",
+          "Ogni server crea un account al suo primissimo avvio. In un'installazione di sviluppo è admin / admin; in produzione il primo amministratore proviene dalle impostazioni di avvio della distribuzione (vedi la guida all'avvio in produzione) e il server rifiuta i valori di esempio. Cambia quella password appena puoi da Config > Utenti - altrimenti chiunque in rete la conosca entra con accesso completo.",
           "Config > Utenti consente a un account Amministratore di creare account aggiuntivi con il ruolo Operatore: un Operatore può accedere, visualizzare lo stato in tempo reale e inviare comandi robot (jog/play/pausa/stop/utensile/valvola/pompa/velocità), ma non può modificare le impostazioni globali né gestire altri account. Usalo per dare il controllo del robot a un collega senza dargli anche le chiavi dell'intera configurazione.",
           "Non è necessario accedere per dare un'occhiata - \"Continua in sola lettura\" nella schermata di accesso ti permette di sfogliare tutti i pannelli e la vista 3D in tempo reale, semplicemente non puoi salvare modifiche né inviare comandi da quella sessione.",
           "Config > Accesso Remoto ha un interruttore per ciascun client remoto - HYDRA-UMC SUITE, l'app di controllo Android e l'app di controllo iOS - così puoi consentirne uno e bloccarne un altro in modo indipendente. Disattivarne uno impedisce solo alla scansione \"trova il mio server\" di quell'app di vedere questo server; da solo non protegge l'API con una password, poiché chi conosce già l'indirizzo IP di questo server può comunque raggiungerlo direttamente."
@@ -590,6 +591,27 @@
           "App connesse, Log del server e Admin server (menu HYDRA-UMC, solo account admin) rispecchiano la stessa API di amministrazione già usata dal pannello admin di riferimento di questo server: ogni connessione attiva in questo momento, un tail del log del server stesso, e la sua porta di ascolto più un riavvio controllato."
         ]
       }
+    },
+    "guides": {
+      "label": "Guide passo passo",
+      "heading": "Guide passo passo",
+      "intro": "Una guida per compito, dalle basi ai dettagli tecnici. Aprine una per leggere i passi, oppure chiedi all'assistente (il piccolo robot nell'angolo) e ti accompagnerà.",
+      "search": "Cerca una guida...",
+      "level_all": "Tutte",
+      "level_basic": "Base",
+      "level_advanced": "Avanzato",
+      "level_technical": "Tecnico",
+      "none": "Nessuna guida corrisponde.",
+      "go": "Portami lì",
+      "assistant_heading": "Assistente",
+      "assistant_show": "Mostra l'assistente",
+      "assistant_auto": "Apri il suo fumetto in ogni schermata",
+      "assistant_speak": "Leggi le risposte ad alta voce",
+      "assistant_size": "Dimensione",
+      "size_small": "Piccolo",
+      "size_normal": "Normale",
+      "size_large": "Grande",
+      "assistant_reset": "Rimettilo nell'angolo"
     }
   },
   "flasher": {
@@ -627,7 +649,8 @@
       "github_error": "Errore GitHub: {{error}}",
       "github_downloading": "Download di {{name}} da GitHub...",
       "hardware_target_unreachable": "Questo target non è ancora raggiungibile via hardware reale",
-      "flash_hardware_failed": "Flash hardware fallito: {{reason}}"
+      "flash_hardware_failed": "Flash hardware fallito: {{reason}}",
+      "flash_simulated": "Flashing simulato terminato - nessun firmware inviato, la versione salvata della scheda non cambia"
     },
     "progress": {
       "connecting": "Connessione...",
@@ -643,7 +666,8 @@
     "target_urtc_expansion": "Scheda di Espansione Avanzata",
     "expansion_not_present": "nessuna espansione Avanzata rilevata su questo robot",
     "download_github": "Scarica da GitHub",
-    "no_releases": "Nessuna release .bin pubblicata finora."
+    "no_releases": "Nessuna release .bin pubblicata finora.",
+    "simulation_banner": "SIMULAZIONE - nulla viene inviato alle schede (imposta il trasporto CAN-OTA su hardware per flashare davvero)"
   },
   "tester": {
     "title": "Tester",
@@ -989,5 +1013,35 @@
     "enabled": "Attivo",
     "disabled": "Disattivo",
     "empty": "Nessun modello di robot corrisponde a questi filtri."
+  },
+  "assistant": {
+    "name": "Hydri, l'assistente",
+    "hello": "Ciao! Posso spiegare questa schermata, guidarti passo passo in un compito o rispondere a una domanda.",
+    "hi": "Ciao! Chiedimi come fare qualcosa.",
+    "thanks": "Prego!",
+    "none": "Non l'ho trovato. Prova con altre parole o apri la Guida.",
+    "show": "Mostrami passo passo",
+    "more": "Altro",
+    "help": "Guida",
+    "hide": "Nascondi",
+    "call": "Chiama l'assistente",
+    "quiet": "Silenzio",
+    "drag_hint": "trascina per spostarlo",
+    "pin": "Fissalo qui",
+    "unpin": "Sblocca",
+    "home": "Torna nell'angolo",
+    "speak_on": "Lettura ad alta voce: premi per fermare",
+    "speak_off": "Leggi ad alta voce",
+    "ask_ph": "Chiedimi qualcosa...",
+    "ask_send": "Chiedi",
+    "you": "Tu",
+    "goto": "Portami lì",
+    "back": "Indietro",
+    "see_also": "Vedi anche",
+    "try": "Prova a chiedere",
+    "step_of": "Passo {{step}} di {{total}}",
+    "prev": "Precedente",
+    "next": "Avanti",
+    "done": "Fatto"
   }
 }

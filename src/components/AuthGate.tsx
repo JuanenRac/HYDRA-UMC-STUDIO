@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { Lock, User, LogIn, Power, RotateCcw, LayoutDashboard } from 'lucide-react';
 import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
+import { ConfirmDialog } from './ConfirmDialog';
 import HydraIcon from '../assets/HYDRA_UMC_ICON.svg';
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
@@ -30,6 +31,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   // shutdown/restart hit a different endpoint entirely and should disable
   // themselves without touching the login form.
   const [powerAction, setPowerAction] = useState<'shutdown' | 'restart' | null>(null);
+  const [askPower, setAskPower] = useState<'shutdown' | 'restart' | null>(null);
 
   if (authToken || readOnly) return <>{children}</>;
 
@@ -47,11 +49,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   // power button. Server only accepts these 2 calls from its own
   // loopback, so the same request from anywhere else on the LAN is
   // refused regardless of what this button sends.
+  // The question is a ConfirmDialog, not window.confirm(): a kiosk browser or a WebView may have native dialogs disabled.
   const handlePower = async (action: 'shutdown' | 'restart') => {
-    const confirmed = window.confirm(
-      action === 'shutdown' ? t('auth.confirm_shutdown') : t('auth.confirm_restart')
-    );
-    if (!confirmed) return;
+    setAskPower(null);
     setPowerAction(action);
     try {
       await fetch(apiUrl(action === 'shutdown' ? '/api/system/shutdown' : '/api/system/reboot'), { method: 'POST' });
@@ -125,7 +125,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       <div className="fixed bottom-4 left-4 flex gap-2">
         <button
           type="button"
-          onClick={() => handlePower('shutdown')}
+          onClick={() => setAskPower('shutdown')}
           disabled={powerAction !== null}
           title={t('auth.shutdown')}
           className="flex items-center gap-1.5 px-3 py-2 text-xs bg-slate-900/80 hover:bg-rose-950 disabled:opacity-50 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-800 rounded-lg backdrop-blur-sm transition-colors"
@@ -134,7 +134,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         </button>
         <button
           type="button"
-          onClick={() => handlePower('restart')}
+          onClick={() => setAskPower('restart')}
           disabled={powerAction !== null}
           title={t('auth.restart')}
           className="flex items-center gap-1.5 px-3 py-2 text-xs bg-slate-900/80 hover:bg-amber-950 disabled:opacity-50 text-slate-400 hover:text-amber-300 border border-slate-800 hover:border-amber-800 rounded-lg backdrop-blur-sm transition-colors"
@@ -149,6 +149,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       >
         <LayoutDashboard size={14} /> {t('auth.server_admin')}
       </a>
+
+      <ConfirmDialog
+        open={askPower !== null}
+        message={askPower === 'shutdown' ? t('auth.confirm_shutdown') : t('auth.confirm_restart')}
+        onConfirm={() => askPower && handlePower(askPower)}
+        onCancel={() => setAskPower(null)}
+      />
     </div>
   );
 }

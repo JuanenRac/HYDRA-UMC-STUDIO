@@ -139,7 +139,13 @@ USB および Bluetooth コントローラーの統合、ボタン／軸ごと�
 
 ## 🌐 多言語インターフェース
 
-**英語、スペイン語、ドイツ語、フランス語、イタリア語、簡体字中国語、日本語**（`src/locales/`）にわたる完全なインターフェース翻訳。アプリ内のヘルプメニュー、About ダイアログ（バージョン／作者／ライセンス）、システム設定ダイアログのすべてのタブを含みます。カバレッジはまだすべての画面の 100% には達していません——一部の独立したアクセサリパネルは、まだ翻訳作業が及んでおらず、ハードコードされた英語のままです。
+**英語、スペイン語、ドイツ語、フランス語、イタリア語、簡体字中国語、日本語、ポルトガル語**でインターフェース全体を翻訳しています（`src/locales/`）。アプリ内のヘルプメニューとそのステップ別ガイド、アシスタント、バージョン情報ダイアログ（バージョン／作者／ライセンス）、システム設定ダイアログの各タブを含みます。すべての画面を100%網羅しているわけではなく、いくつかの独立したアクセサリパネルはまだ英語固定です。
+
+---
+
+## 🤖 ヘルプ、ガイド、アシスタント
+
+ヘルプ画面には**ステップ別ガイド**タブがあります。作業ごとに1つのガイド（コントローラの追加、ロボットの移動、軌道の記録、カメラの利用、ファームウェアの書き込み、ユーザー管理、リモートアクセス、セキュリティなど）があり、それぞれにレベル（基本・上級・技術）、検索ボックス、作業を行う画面へ移動するボタンが付いています。アシスタントの**Hydri**は、ダッシュボードの上に浮かぶ小さなアニメーションのマスコットです。今いる画面を説明し、作業を手順ごとに案内し、サーバーもAIモデルも使わずに言葉で入力した質問に（8言語のどれでも）答え、ブラウザ自身の音声で回答を読み上げ、好きな場所へドラッグして固定でき、ヘルプ画面でオン／オフを切り替えられます。設定はブラウザに保存されます（`src/assistant/`）。
 
 ---
 
@@ -153,7 +159,7 @@ USB および Bluetooth コントローラーの統合、ボタン／軸ごと�
 
 ## 🔐 アカウントとアクセス
 
-各バックエンドは、自身の初回起動時に 1 つのアカウントを準備します——ユーザー名 `admin`、パスワード `admin`——サーバーが完全に信頼された LAN の外からアクセス可能になったら、すぐに **Config > Users** から変更してください。同じタブでは、管理者アカウントが追加の**オペレーター**アカウントを作成できます：オペレーターはログインし、リアルタイムの状態を確認し、ロボットを駆動できます（ジョグ／再生／一時停止／停止／ツール／バルブ／ポンプ／速度）が、グローバル設定を上書きしたり他のアカウントを管理したりすることはできません。見て回るだけならアカウントは一切不要です——ログイン画面自身の「読み取り専用で続行」を選ぶと、書き込みが無効化された状態でダッシュボードに直接進みます。完全な契約（役割、トークン、`/api/users` ルート）は [HYDRA-UMC-SERVER 自身の `docs/REMOTE_API.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md) の第 2a/2b 節に記載されています。
+各バックエンドは、自身の初回起動時に 1 つのアカウントを準備します——ユーザー名 `admin`、パスワード `admin`——サーバーが完全に信頼された LAN の外からアクセス可能になったら、すぐに **Config > Users** から変更してください。同じタブでは、管理者アカウントが追加の**オペレーター**アカウントを作成できます：オペレーターはログインし、リアルタイムの状態を確認し、ロボットを駆動できます（ジョグ／再生／一時停止／停止／ツール／バルブ／ポンプ／速度）が、グローバル設定を上書きしたり他のアカウントを管理したりすることはできません。見て回るだけならアカウントは一切不要です——ログイン画面自身の「読み取り専用で続行」を選ぶと、書き込みが無効化された状態でダッシュボードに直接進みます。完全な契約（役割、トークン、`/api/users` ルート）は [HYDRA-UMC-SERVER 自身の `docs/REMOTE_API.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md) の第 2a/2b 節に記載されています。 本番では、最初の管理者はデプロイのブートストラップ設定から作られ、サーバーは例のシークレットを拒否します（[HYDRA-UMC-SERVER の `docs/PRODUCTION_BOOTSTRAP.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/PRODUCTION_BOOTSTRAP.md) を参照）。
 
 3 つのリモートクライアント（SUITE、Android、iOS）はそれぞれ `X-Hydra-Client` リクエストヘッダーで自己識別するため、**Config > Remote Access** は、3 つすべてに対する 1 つの結合スイッチではなく、それぞれを独立して許可またはブロックできます。
 
@@ -196,6 +202,7 @@ HYDRA-UMC-STUDIO/
 │   ├── store.tsx                # グローバル状態：RobotModel/RobotState/HydraController/SystemSettings ——
 │   │                             # REST + WebSocket 経由で別個の HYDRA-UMC-SERVER バックエンドと通信
 │   ├── i18n.ts                  # react-i18next の設定——src/locales/*.json を読み込み
+│   ├── assistant/               # Hydri アシスタント：回答エンジン、知識ベース（8言語）、マスコット、設定
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # システム設定と About ダイアログ——同じグローバルストアを読み取る
 │   │   │                       # 独立したコンポーネント、ダッシュボードシェルにはインライン化されていない
@@ -256,6 +263,7 @@ HYDRA-UMC-STUDIO/
 │   │   └── list/                # 26 個の既定サンプル軌道（円、螺旋、XY テーブルパターン、ピック＆プレースなど）
 │   ├── lib/canOta.ts            # CAN-OTA シミュレーション/プロトコル層、GitHub ファームウェアダウンロード
 │   ├── lib/apiBase.ts           # バックエンド URL の解決——開発環境では相対パス+プロキシ、本番環境では VITE_API_BASE_URL
+│   ├── lib/mediaTicket.ts       # カメラ映像用の短寿命チケット
 │   └── locales/                 # en/es/de/fr/it/zh/ja 翻訳ファイル（react-i18next）
 ├── public/
 │   ├── models/                  # 実際の 3D メッシュアセット——ロボットごとに 1 フォルダ（計 24）、
@@ -283,7 +291,7 @@ HYDRA-UMC-STUDIO/
 ├── tsconfig.test.json            # tests/ 用の独立した型チェックプロジェクト(app/node の参照とは分離)
 ├── .env.example                  # VITE_API_BASE_URL テンプレート——src/lib/apiBase.ts を参照
 ├── README.md                     # 本ファイル
-└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  # 翻訳
+└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md / README_por.md  # 翻訳
 ```
 
 本アプリが通信するバックエンド（設定の永続化、REST/WebSocket API、`docs/REMOTE_API.md`）は、本リポジトリではなく別個の **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** リポジトリにあります——その構成と実行方法は同プロジェクト自身の README を参照してください。

@@ -27,6 +27,18 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.7.7] - Help with step-by-step guides, the Hydri assistant, Portuguese, and safer camera, token and flasher behavior
+
+- New **Step-by-step guides** tab in the Help window: 14 guides (controllers, robots, jog, emergency stop, trajectories, tools, cameras, flashing, gamepad, users, language, remote access, server, security), each with a level (basic, advanced, technical), a search box and a button that goes to the screen where the task is done.
+- New assistant **Hydri** (`src/assistant/`): an animated mascot that explains the current screen, walks through a task one step at a time, answers typed questions in any of the 8 languages with no server and no model, can read answers aloud with the browser's voice, can be dragged anywhere, pinned and put away; its preferences are kept in the browser and edited from the Help window.
+- **Portuguese** added: `src/locales/pt.json` with every key of the other languages, a language option in Config > UI & Themes, and a `README_por.md`.
+- The Help text about the default account and the CAN-OTA transport matches what the server does now (development `admin`/`admin`, production bootstrap with no example values; the hardware transport exists).
+- The Flasher no longer hides that it is simulating: while the CAN-OTA transport is the simulated one it shows a fixed SIMULATION banner, and a simulated flash never writes the new firmware version into the board's saved state or into what every other client sees.
+- The session token passed as `?token=` is removed from the address bar after it is read, and the WebSocket sends it as the `hydra.bearer` subprotocol (falling back to the query string against a server that does not answer the subprotocol).
+- The live camera streams and the saved photos and recordings carry a short-lived `?ticket=` (`POST /api/camera/ticket`, renewed before it expires), so they keep working on a server that demands one (`HYDRA_UMC_CAMERA_AUTH=required`); a recording being played is not restarted by a renewal.
+- The kiosk power buttons of the login screen and the deletion of a camera file ask through the in-app confirmation dialog instead of `window.confirm()`, which a kiosk browser or a WebView can disable.
+- Tests: the assistant (all 8 languages of every task, every sample question finds its own task, steps numbered alike in every language, bubble placement), the ticket helper, and the locale catalogs now include Portuguese (212 tests).
+
 ## [0.7.6] - A TLS-enabled server would have been mixed-content-blocked
 
 - **Real bug, found reviewing this app for the same TLS rollout that fixed HYDRA-UMC-ANDROID-CONTROL:** in STUDIO's own default same-origin deployment (this app's static files served BY HYDRA-UMC-SERVER itself), `apiBase.ts`'s production fallback hardcoded `http://` for every `fetch()`/WebSocket call regardless of the scheme this exact page was loaded over. HYDRA-UMC-SERVER's optional `TLS_CERT_PATH`/`TLS_KEY_PATH` (server.ts) makes that page load over `https:` - every one of those calls would then be a browser-blocked mixed-content request, not just a wrong-looking URL. `defaultProdBase()` now matches `window.location.protocol`; a plain-HTTP deployment (today's default) is unaffected. `wsUrl()` already derived `ws:`/`wss:` correctly from `API_BASE` - only the API origin itself was wrong. 2 new tests (`tests/apiBase.test.ts`).

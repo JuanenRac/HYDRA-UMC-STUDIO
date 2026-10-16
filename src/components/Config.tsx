@@ -323,7 +323,7 @@ export function Config({ onClose }: { onClose: () => void }) {
                 <div className="space-y-4">
                   <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">{t('config.system_localization')}</h3>
                   <select className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 outline-none focus:border-sky-400" value={settings.language} onChange={e => { updateSettings({ language: e.target.value }); i18n.changeLanguage(e.target.value); }}>
-                    <option value="en">{t('config.language_en')} (US)</option><option value="es">{t('config.language_es')} (ES)</option><option value="de">{t('config.language_de')} (DE)</option><option value="fr">{t('config.language_fr')} (FR)</option><option value="it">{t('config.language_it')} (IT)</option><option value="zh">{t('config.language_zh')} (ZH)</option><option value="ja">{t('config.language_ja')} (JA)</option>
+                    <option value="en">{t('config.language_en')} (US)</option><option value="es">{t('config.language_es')} (ES)</option><option value="de">{t('config.language_de')} (DE)</option><option value="fr">{t('config.language_fr')} (FR)</option><option value="it">{t('config.language_it')} (IT)</option><option value="zh">{t('config.language_zh')} (ZH)</option><option value="ja">{t('config.language_ja')} (JA)</option><option value="pt">{t('config.language_pt')} (PT)</option>
                   </select>
                 </div>
                 <div className="space-y-4">

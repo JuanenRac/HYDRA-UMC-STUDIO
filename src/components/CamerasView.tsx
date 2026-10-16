@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { useHydraStore, ipStreamLabels } from '../store';
 import { apiUrl } from '../lib/apiBase';
+import { useMediaTicket, withTicket } from '../lib/mediaTicket';
 import { useTranslation } from 'react-i18next';
 import { Video, Maximize2, Minimize2, Camera as CameraIcon, Power, ScanLine, CircleDot, RefreshCw, Move, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -26,6 +27,7 @@ function cn(...inputs: ClassValue[]) {
  */
 export function CamerasView() {
   const { cameras, updateCamera, updateRobot, authToken } = useHydraStore();
+  const mediaTicket = useMediaTicket(authToken);
   const { t } = useTranslation();
   const [fullScreenId, setFullScreenId] = useState<number | null>(null);
   // Real retry state per camera, keyed to WHICH stream it's for - see
@@ -398,7 +400,7 @@ export function CamerasView() {
                         return (
                           <img
                             key={`${identity}-${attempt}`}
-                            src={apiUrl(`/api/camera/${c.id}/stream`)}
+                            src={withTicket(apiUrl(`/api/camera/${c.id}/stream`), mediaTicket)}
                             alt={`${c.type} camera feed`}
                             className="absolute inset-0 w-full h-full object-cover"
                             onLoad={(e) => {

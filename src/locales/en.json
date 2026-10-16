@@ -147,8 +147,8 @@
     "can_ota_desc": "Settings shared by BOTH Flasher/Tester pairs: Shared Resources > URTC (Tool Head + its Advanced Expansion Board only) and Shared Resources > HYDRA-UMC (Kinematic Brain + Robot Controller Board only). Same underlying transport for the full chain: CM5 -> SPI -> STM32H745 -> FDCAN1 -> Robot Controller Board -> CAN -> URTC Tool Head -> I2C -> Advanced Expansion Board. See HYDRA-UMC's own docs/architecture.md, docs/CANBUS_STM32H745.TXT and docs/CANBUS_STM32G474.TXT.",
     "can_ota_transport": "Transport",
     "can_ota_transport_mock": "Simulated (mock) - no hardware needed",
-    "can_ota_transport_hardware": "Real hardware (SPI to STM32H745) - not implemented yet",
-    "can_ota_transport_desc": "Mock simulates the whole CAN-OTA protocol so Flasher/Tester are fully usable now. Switch to hardware once CM5<->STM32H745 firmware exists to talk to.",
+    "can_ota_transport_hardware": "Real hardware (SPI to STM32H745)",
+    "can_ota_transport_desc": "Mock simulates the whole CAN-OTA protocol, sends nothing to any board and never changes a saved firmware version. Hardware sends to the real boards through the CM5 <-> STM32H745 link.",
     "can_ota_mcu": "Robot Controller Board MCU",
     "can_ota_mcu_placeholder": "STM32G474RET6",
     "can_ota_mcu_desc": "Confirmed: STM32G474RET6 (Cortex-M4 @ 170 MHz, LQFP-64, 512 KB flash) - uses 2 of its 3 onboard FDCAN peripherals (one uplink to the STM32H745, one downlink to the URTC head). See HYDRA-UMC docs/architecture.md section 1/4. Kept editable here in case a future board revision changes it.",
@@ -273,7 +273,8 @@
     "ai_hailo_cognitive_desc": "A separate, planned accelerator for LLM/VLA/voice work (HYDRA-UMC-COGNITIVE-NODE, VLA-ENGINE, SEMANTIC-PLANNER, VOICE-UI) - defaults to None since this hardware doesn't exist on any real deployment yet.",
     "ai_hailo_registry_path": "Model registry path",
     "ai_hailo_registry_desc": "Where compiled .hef models live - mirrors HYDRA-UMC-DETECTION-HEF's own models_dir (its real registry with sha256 checksum verification).",
-    "ai_hailo_none": "None (not installed)"
+    "ai_hailo_none": "None (not installed)",
+    "language_pt": "Portuguese"
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -566,7 +567,7 @@
         "paragraphs": [
           "Flasher and Tester (Shared Resources > URTC) reach a robot's own Controller Board, and its URTC Tool Head beyond it, over CAN-OTA only - no JTAG/SWD probe, no USB-CAN dongle. Flasher uploads a .bin firmware image and runs the same page-by-page transfer, CRC32/HMAC verify, and anti-rollback checks the URTC bootloader already implements; Tester queries live version info, F-RAM state, and per-tool telemetry, plus a safe self-test that never actuates at meaningful power.",
           "Config (top bar) opens System Configuration: manage Controllers (name, IP, add/auto-search), UI & Themes (theme, language - this Help menu follows the same language), Robot Names and Custom Models, Software Integrations, Work Paths (where each robot's Works are stored), and Gamepad mapping.",
-          "Config > CAN-OTA lets you pick the transport (a full built-in simulation until real STM32H745 firmware exists, or real hardware later), record the Robot Controller Board's own MCU once it's confirmed, and set the firmware-file paths Flasher looks in.",
+          "Config > CAN-OTA lets you pick the transport (a full built-in simulation, or real hardware), record the Robot Controller Board's own MCU once it's confirmed, and set the firmware-file paths Flasher looks in. While the transport is the simulated one, Flasher shows a SIMULATION banner, sends nothing to the boards and never changes the saved version.",
           "Factory Reset, inside Config, wipes all saved configuration back to defaults - use with care, it cannot be undone."
         ]
       },
@@ -574,7 +575,7 @@
         "label": "Accounts & Access",
         "heading": "Logging in, user accounts, and remote access",
         "paragraphs": [
-          "Every server seeds one default account on its own first-ever start: username admin, password admin. Change that password as soon as you can from Config > Users - anyone on the network who knows it can sign in with full access otherwise.",
+          "Every server seeds one account on its own first-ever start. On a development install it is admin / admin; in production the first administrator comes from the deployment's bootstrap settings (see the production bootstrap guide) and the server refuses example values. Change that password as soon as you can from Config > Users - otherwise anyone on the network who knows it can sign in with full access.",
           "Config > Users lets an Administrator account create additional accounts with the Operator role: an Operator can sign in, view live state, and send robot commands (jog/play/pause/stop/tool/valve/pump/speed), but can't change global settings or manage other accounts. Use it to hand a coworker robot control without also handing them the keys to the whole configuration.",
           "You don't have to sign in at all to look around - \"Continue read-only\" on the login screen lets you browse every panel and the live 3D view, you just can't save changes or send commands from that session.",
           "Config > Remote Access has one switch per remote client - HYDRA-UMC SUITE, the Android control app, and the iOS control app - so you can allow one and block another independently. Turning one off only stops that app's own \"find my server\" scan from seeing this one; it doesn't password-protect the API by itself, since anyone who already has this server's IP address can still reach it directly."
@@ -590,6 +591,27 @@
           "Connected Apps, Server Logs and Server Admin (HYDRA-UMC menu, admin accounts only) mirror the same admin API this Server's own reference admin panel uses: every live connection right now, a tail of the Server's own log file, and its listen port plus a graceful restart."
         ]
       }
+    },
+    "guides": {
+      "label": "Step-by-step guides",
+      "heading": "Step-by-step guides",
+      "intro": "One guide per task, from the basics to the technical details. Open one to read its steps, or ask the assistant (the little robot in the corner) and it will walk you through it.",
+      "search": "Search a guide...",
+      "level_all": "All",
+      "level_basic": "Basic",
+      "level_advanced": "Advanced",
+      "level_technical": "Technical",
+      "none": "No guide matches.",
+      "go": "Take me there",
+      "assistant_heading": "Assistant",
+      "assistant_show": "Show the assistant",
+      "assistant_auto": "Open its bubble on every screen",
+      "assistant_speak": "Read answers aloud",
+      "assistant_size": "Size",
+      "size_small": "Small",
+      "size_normal": "Normal",
+      "size_large": "Large",
+      "assistant_reset": "Put it back in the corner"
     }
   },
   "flasher": {
@@ -627,7 +649,8 @@
       "github_error": "GitHub error: {{error}}",
       "github_downloading": "Downloading {{name}} from GitHub...",
       "hardware_target_unreachable": "This target is not reachable over real hardware yet",
-      "flash_hardware_failed": "Hardware flash failed: {{reason}}"
+      "flash_hardware_failed": "Hardware flash failed: {{reason}}",
+      "flash_simulated": "Simulated flash finished - no firmware was sent and the saved board version is unchanged"
     },
     "progress": {
       "connecting": "Connecting...",
@@ -643,7 +666,8 @@
     "target_urtc_expansion": "Advanced Expansion Board",
     "expansion_not_present": "no Advanced expansion detected on this robot",
     "download_github": "Download from GitHub",
-    "no_releases": "No .bin releases published yet."
+    "no_releases": "No .bin releases published yet.",
+    "simulation_banner": "SIMULATION - nothing is sent to the boards (set the CAN-OTA transport to hardware to flash for real)"
   },
   "tester": {
     "title": "Tester",
@@ -989,5 +1013,35 @@
     "enabled": "Enabled",
     "disabled": "Disabled",
     "empty": "No robot models match these filters."
+  },
+  "assistant": {
+    "name": "Hydri, the assistant",
+    "hello": "Hi! I can explain this screen, walk you through a task step by step, or answer a question.",
+    "hi": "Hi! Ask me how to do something.",
+    "thanks": "You're welcome!",
+    "none": "I did not find that. Try other words, or open the Help.",
+    "show": "Show me step by step",
+    "more": "More",
+    "help": "Help",
+    "hide": "Hide",
+    "call": "Call the assistant",
+    "quiet": "Quiet",
+    "drag_hint": "drag to move it",
+    "pin": "Pin it here",
+    "unpin": "Unpin",
+    "home": "Back to the corner",
+    "speak_on": "Reading aloud: press to stop",
+    "speak_off": "Read aloud",
+    "ask_ph": "Ask me something...",
+    "ask_send": "Ask",
+    "you": "You",
+    "goto": "Take me there",
+    "back": "Back",
+    "see_also": "See also",
+    "try": "Try asking",
+    "step_of": "Step {{step}} of {{total}}",
+    "prev": "Previous",
+    "next": "Next",
+    "done": "Done"
   }
 }

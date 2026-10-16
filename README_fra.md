@@ -137,7 +137,13 @@ Jusqu'à 8 flux en direct simultanés (vision USB ou capteurs thermiques de la f
 
 ## 🌐 Interface Multi-Langue
 
-Traduction complète de l'interface en **anglais, espagnol, allemand, français, italien, chinois simplifié et japonais** (`src/locales/`), incluant le menu Aide intégré à l'application, la boîte de dialogue À propos (version/auteur/licence), et chaque onglet de la boîte de dialogue de Configuration Système. La couverture n'est pas encore de 100 % de chaque écran - une poignée de panneaux d'accessoires autonomes reste codée en dur en anglais, pas encore atteinte par le travail de traduction.
+Traduction complète de l'interface en **anglais, espagnol, allemand, français, italien, chinois simplifié, japonais et portugais** (`src/locales/`), y compris le menu d'Aide de l'application avec ses guides pas à pas, l'assistant, la boîte À propos (version/auteur/licence) et chaque onglet de la boîte de Configuration Système. La couverture n'est pas encore de 100 % de chaque écran : quelques panneaux accessoires autonomes restent en anglais figé dans le code.
+
+---
+
+## 🤖 Aide, guides et assistant
+
+La fenêtre d'Aide a un onglet **Guides pas à pas** : un guide par tâche (ajouter un contrôleur, déplacer un robot, enregistrer une trajectoire, utiliser les caméras, flasher un firmware, gérer les utilisateurs, accès à distance, sécurité...), chacun avec un niveau (basique, avancé, technique), une zone de recherche et un bouton qui mène à l'écran où la tâche se fait. **Hydri**, l'assistant, est une petite mascotte animée qui flotte au-dessus du tableau de bord : il explique l'écran où vous êtes, vous guide pas à pas dans une tâche, répond aux questions tapées en mots sans serveur ni modèle d'IA (dans les 8 langues), peut lire les réponses à voix haute avec la voix du navigateur, se déplace n'importe où et s'y épingle, et s'active ou se désactive depuis la fenêtre d'Aide. Ses préférences restent dans le navigateur (`src/assistant/`).
 
 ---
 
@@ -151,7 +157,7 @@ L'app se protège contre deux classes distinctes de défaillance à l'exécution
 
 ## 🔐 Comptes et Accès
 
-Chaque serveur crée un compte lors de son tout premier démarrage - identifiant `admin`, mot de passe `admin` - changez-le depuis **Config > Users** dès que le serveur est accessible au-delà d'un réseau local totalement de confiance. Ce même onglet permet à un compte admin de créer des comptes **operator** supplémentaires : un operator peut se connecter, observer l'état en direct, et piloter les robots (jog/lecture/pause/arrêt/outil/vanne/pompe/vitesse), mais ne peut pas écraser les paramètres globaux ni gérer d'autres comptes. Aucun compte n'est requis simplement pour regarder - le propre bouton "Continue read-only" de l'écran de connexion saute directement au tableau de bord avec les écritures désactivées. Contrat complet (rôles, jetons, les routes `/api/users`) documenté dans le propre [`docs/REMOTE_API.md` de HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md), sections 2a/2b.
+Chaque serveur crée un compte lors de son tout premier démarrage - identifiant `admin`, mot de passe `admin` - changez-le depuis **Config > Users** dès que le serveur est accessible au-delà d'un réseau local totalement de confiance. Ce même onglet permet à un compte admin de créer des comptes **operator** supplémentaires : un operator peut se connecter, observer l'état en direct, et piloter les robots (jog/lecture/pause/arrêt/outil/vanne/pompe/vitesse), mais ne peut pas écraser les paramètres globaux ni gérer d'autres comptes. Aucun compte n'est requis simplement pour regarder - le propre bouton "Continue read-only" de l'écran de connexion saute directement au tableau de bord avec les écritures désactivées. Contrat complet (rôles, jetons, les routes `/api/users`) documenté dans le propre [`docs/REMOTE_API.md` de HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md), sections 2a/2b. En production, le premier administrateur vient des réglages d'amorçage du déploiement et le serveur refuse les secrets d'exemple (voir [`docs/PRODUCTION_BOOTSTRAP.md` de HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/PRODUCTION_BOOTSTRAP.md)).
 
 Chacun des 3 clients distants (SUITE, Android, iOS) s'auto-identifie via un en-tête de requête `X-Hydra-Client`, de sorte que **Config > Remote Access** peut autoriser ou bloquer chacun indépendamment plutôt qu'un seul interrupteur combiné pour les trois.
 
@@ -194,6 +200,7 @@ HYDRA-UMC-STUDIO/
 │   ├── store.tsx                # État global : RobotModel/RobotState/HydraController/SystemSettings -
 │   │                             # communique avec le backend séparé HYDRA-UMC-SERVER via REST + WebSocket
 │   ├── i18n.ts                  # Configuration react-i18next - charge src/locales/*.json
+│   ├── assistant/               # Hydri, l'assistant : moteur de réponses, base de connaissances (8 langues), mascotte, préférences
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # Boîtes de dialogue de Configuration Système et À propos - composants autonomes
 │   │   │                       # qui lisent le même store global, non intégrés en ligne dans la coquille du tableau de bord
@@ -255,7 +262,8 @@ HYDRA-UMC-STUDIO/
 │   │   └── list/                # 26 trajectoires d'exemple prédéfinies (cercles, spirales, motifs de table XY, pick-and-place, ...)
 │   ├── lib/canOta.ts            # Couche de simulation/protocole CAN-OTA, téléchargement de firmware depuis GitHub
 │   ├── lib/apiBase.ts           # Résolution de l'URL du backend - relative+proxifiée en dev, VITE_API_BASE_URL en prod
-│   └── locales/                 # Fichiers de traduction en/es/de/fr/it/ja/zh (react-i18next)
+│   ├── lib/mediaTicket.ts       # Tickets de courte durée pour les images des caméras
+│   └── locales/                 # Fichiers de traduction en/es/de/fr/it/ja/zh/pt (react-i18next)
 ├── public/
 │   ├── models/                  # Assets de maillage 3D réels - un dossier par robot (24 au total),
 │   │                             # chacun avec son propre ATTRIBUTION.txt - voir la table des licences plus bas
@@ -282,7 +290,7 @@ HYDRA-UMC-STUDIO/
 ├── tsconfig.test.json            # Projet de verification de types autonome pour tests/ (separe des references app/node)
 ├── .env.example                  # Modèle de VITE_API_BASE_URL - voir src/lib/apiBase.ts
 ├── README.md                     # ce fichier (en anglais)
-└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  # traductions
+└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md / README_por.md  # traductions
 ```
 
 Le backend avec lequel communique cette application (persistance des settings, l'API REST/WebSocket, `docs/REMOTE_API.md`) vit dans le dépôt séparé **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)**, pas dans celui-ci - voir le propre README de ce projet pour sa structure et comment l'exécuter.

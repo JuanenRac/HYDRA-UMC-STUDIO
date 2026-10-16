@@ -139,7 +139,13 @@ JuanenPnP、JuanenCNC 和 JuanenLaser 使用独立的 STL 副本，LumenPnP 保�
 
 ## 🌐 多语言界面
 
-界面在**英语、西班牙语、德语、法语、意大利语、简体中文和日语**（`src/locales/`）之间全面翻译，包括应用内帮助菜单、关于对话框（版本/作者/许可证），以及系统配置对话框的每一个选项卡。目前覆盖率尚未达到每个界面的 100%——少数独立的配件面板仍是硬编码的英语，翻译工作尚未涉及。
+界面完整翻译为**英语、西班牙语、德语、法语、意大利语、简体中文、日语和葡萄牙语**（`src/locales/`），包括应用内带分步指南的帮助菜单、助手、“关于”对话框（版本/作者/许可证）以及系统配置对话框的每个标签页。目前尚未覆盖每个界面的 100%：少数独立的附属面板仍是硬编码的英文。
+
+---
+
+## 🤖 帮助、指南与助手
+
+帮助窗口有一个**分步指南**标签页：每个任务一份指南（添加控制器、移动机器人、记录轨迹、使用摄像头、刷写固件、管理用户、远程访问、安全等），每份都有级别（基础、进阶、技术）、搜索框和一个跳转到执行该任务的界面的按钮。助手**Hydri**是漂浮在仪表板上方的小型动画吉祥物：它讲解你所在的界面，一步步带你完成任务，在不使用服务器和 AI 模型的情况下回答用文字输入的问题（支持全部 8 种语言），可用浏览器自带的语音朗读回答，可拖到任意位置并固定，并可在帮助窗口中开启或关闭。它的偏好保存在浏览器中（`src/assistant/`）。
 
 ---
 
@@ -153,7 +159,7 @@ JuanenPnP、JuanenCNC 和 JuanenLaser 使用独立的 STL 副本，LumenPnP 保�
 
 ## 🔐 账户与访问
 
-每个后端在自身首次启动时都会预置一个账户——用户名 `admin`，密码 `admin`——一旦服务器可从完全受信任的局域网之外访问，请立即从 **Config > Users** 修改它。同一个选项卡还允许管理员账户创建额外的**操作员**账户：操作员可以登录、查看实时状态并驱动机器人（点动/播放/暂停/停止/工具/阀门/泵/速度），但不能覆盖全局设置或管理其他账户。仅仅四处浏览并不需要任何账户——登录界面自身的“以只读方式继续”会直接跳转到仪表盘,写入功能被禁用。完整契约（角色、令牌、`/api/users` 路由）记录于 [HYDRA-UMC-SERVER 自身的 `docs/REMOTE_API.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md) 第 2a/2b 节。
+每个后端在自身首次启动时都会预置一个账户——用户名 `admin`，密码 `admin`——一旦服务器可从完全受信任的局域网之外访问，请立即从 **Config > Users** 修改它。同一个选项卡还允许管理员账户创建额外的**操作员**账户：操作员可以登录、查看实时状态并驱动机器人（点动/播放/暂停/停止/工具/阀门/泵/速度），但不能覆盖全局设置或管理其他账户。仅仅四处浏览并不需要任何账户——登录界面自身的“以只读方式继续”会直接跳转到仪表盘,写入功能被禁用。完整契约（角色、令牌、`/api/users` 路由）记录于 [HYDRA-UMC-SERVER 自身的 `docs/REMOTE_API.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md) 第 2a/2b 节。 在生产环境中，第一个管理员来自部署的引导设置，服务器会拒绝示例密钥（参见 [HYDRA-UMC-SERVER 的 `docs/PRODUCTION_BOOTSTRAP.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/PRODUCTION_BOOTSTRAP.md)）。
 
 3 个远程客户端（SUITE、Android、iOS）中的每一个都通过 `X-Hydra-Client` 请求头自我标识，因此 **Config > Remote Access** 可以独立允许或阻止每一个,而不是所有三者共用一个开关。
 
@@ -196,6 +202,7 @@ HYDRA-UMC-STUDIO/
 │   ├── store.tsx                # 全局状态：RobotModel/RobotState/HydraController/SystemSettings ——
 │   │                             # 通过 REST + WebSocket 与独立的 HYDRA-UMC-SERVER 后端通信
 │   ├── i18n.ts                  # react-i18next 配置——加载 src/locales/*.json
+│   ├── assistant/               # 助手 Hydri：回答引擎、知识库（8 种语言）、吉祥物、偏好设置
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # 系统配置和关于对话框——读取同一全局存储的独立组件，
 │   │   │                       # 并未内联到仪表盘外壳中
@@ -255,6 +262,7 @@ HYDRA-UMC-STUDIO/
 │   │   └── list/                # 26 个预置示例轨迹（圆形、螺旋、XY 工作台图案、拾取放置……）
 │   ├── lib/canOta.ts            # CAN-OTA 仿真/协议层，GitHub 固件下载
 │   ├── lib/apiBase.ts           # 后端 URL 解析——开发环境中相对路径+代理，生产环境使用 VITE_API_BASE_URL
+│   ├── lib/mediaTicket.ts       # 摄像头画面用的短时效票据
 │   └── locales/                 # en/es/de/fr/it/zh/ja 翻译文件（react-i18next）
 ├── public/
 │   ├── models/                  # 真实的 3D 网格资产——每个机器人一个文件夹（共 24 个），
@@ -282,7 +290,7 @@ HYDRA-UMC-STUDIO/
 ├── tsconfig.test.json            # tests/ 独立的类型检查项目(与 app/node 的引用配置分开)
 ├── .env.example                  # VITE_API_BASE_URL 模板——见 src/lib/apiBase.ts
 ├── README.md                     # 本文件
-└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  # 翻译
+└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md / README_por.md  # 翻译
 ```
 
 本应用所通信的后端（设置持久化、REST/WebSocket API、`docs/REMOTE_API.md`）位于独立的 **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** 仓库中，而非本仓库——其结构及运行方式参见该项目自身的 README。

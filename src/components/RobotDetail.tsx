@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { motionSource } from '../motionSource';
 import { type RobotState, useHydraStore, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, isModelSelectable, globalPlaybacks } from '../store';
 import { apiUrl } from '../lib/apiBase';
+import { useMediaTicket, withTicket } from '../lib/mediaTicket';
 import { RotateCcw, RotateCw, Home, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, Save, Play, Square, Pause, Crosshair, RefreshCw, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat, Download, Grid3x3, Plus } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -245,7 +246,8 @@ const URTC_TOOLS: ToolType[] = [
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
 const CameraPIP = ({ bot, initialX, initialY, label, t: _t }: { bot: RobotState, initialX: number, initialY: number, label: string, t: any }) => {
-  const { settings, updateSettings, cameras } = useHydraStore();
+  const { settings, updateSettings, cameras, authToken } = useHydraStore();
+  const mediaTicket = useMediaTicket(authToken);
   // Real gap closed: this panel used to always show a decorative
   // CameraIcon regardless of connection state - HYDRA-UMC-SERVER's own
   // GET /api/camera/:id/stream is a real proxy now (see that repo's own
@@ -417,7 +419,7 @@ const CameraPIP = ({ bot, initialX, initialY, label, t: _t }: { bot: RobotState,
       <div className="flex-1 bg-black relative flex items-center justify-center pointer-events-none">
          {isStreaming && camera ? (
            <img
-             src={apiUrl(`/api/camera/${camera.id}/stream`)}
+             src={withTicket(apiUrl(`/api/camera/${camera.id}/stream`), mediaTicket)}
              alt={`${label} camera`}
              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
            />

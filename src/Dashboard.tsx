@@ -45,6 +45,7 @@ function PanelLoadingFallback() {
 import { HelpModal } from './components/HelpModal';
 import { About } from './components/About';
 import { Config } from './components/Config';
+import { Assistant } from './assistant/Assistant';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Lazy-loaded Panels
@@ -121,6 +122,9 @@ export default function Dashboard() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [helpStart, setHelpStart] = useState<{ tab?: string; topic?: string }>({});
+  const openHelp = (tab?: string, topic?: string) => { setHelpStart({ tab, topic }); setIsHelpOpen(true); };
+  const goToView = (view: string) => { if (view === 'settings') setIsSettingsOpen(true); else setActiveTab(view); };
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showEstopConfirm, setShowEstopConfirm] = useState(false);
   // Real per-corner request: shutdown/restart for this CM5's own kiosk
@@ -202,7 +206,9 @@ export default function Dashboard() {
 
       {isAboutOpen && <About onClose={() => setIsAboutOpen(false)} />}
 
-      {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} />}
+      {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} initialTab={helpStart.tab} initialTopic={helpStart.topic} onGo={goToView} />}
+
+      {!hideUI && <Assistant view={activeTab} go={goToView} openHelp={openHelp} openSettings={() => setIsSettingsOpen(true)} />}
 
       {isSettingsOpen && <Config onClose={() => setIsSettingsOpen(false)} />}
 
@@ -216,7 +222,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-4">
             <IconButton onClick={() => setIsSettingsOpen(true)} icon={<Settings size={18}/>} label="Config" />
-            <IconButton onClick={() => setIsHelpOpen(true)} icon={<HelpCircle size={18}/>} label="Help" />
+            <IconButton onClick={() => openHelp()} icon={<HelpCircle size={18}/>} label="Help" />
             <IconButton onClick={() => setIsAboutOpen(true)} icon={<Info size={18}/>} label="About" />
             <div className="w-px h-6 bg-slate-800 mx-2"></div>
             <div className="flex items-center gap-3">

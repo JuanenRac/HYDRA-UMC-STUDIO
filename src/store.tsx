@@ -897,6 +897,12 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const urlToken = new URLSearchParams(window.location.search).get('token');
     if (urlToken) {
       localStorage.setItem('hydra_token', urlToken);
+      // The token must not stay in the address bar (history, screenshots, a copied link, a proxy log): it is kept in storage and removed from the URL.
+      try {
+        const cleaned = new URL(window.location.href);
+        cleaned.searchParams.delete('token');
+        window.history.replaceState(null, '', cleaned.toString());
+      } catch { /* a WebView without the History API keeps the address as it is */ }
       return urlToken;
     }
     return localStorage.getItem('hydra_token');
@@ -1260,6 +1266,9 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // this app's own tab) - skip opening it at all without one rather than
     // reconnect-loop against a server that will keep rejecting it.
     let ws: WebSocket | null = null;
+    // The token travels as a WebSocket subprotocol (`hydra.bearer`, <token>) so that it stays out of the address that proxies and logs record; a server that
+    // does not answer the subprotocol closes before opening, and the next attempt falls back to the query-string form.
+    let tokenInQuery = false;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     // WS_RECONNECT_MS matches every other client's own fixed 3s reconnect
     // delay (HYDRA-UMC SUITE's own RECONNECT_DELAY_S, the mobile apps' own
@@ -1285,7 +1294,12 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // deployment of this same server (schema field absent or ignored)
         // just never exercises that branch and this still behaves exactly
         // like before.
-        const socket = new WebSocket(wsUrl(`/ws?token=${encodeURIComponent(authToken)}&remoteApiVersion=2`));
+        const socket = tokenInQuery
+          ? new WebSocket(wsUrl(`/ws?token=${encodeURIComponent(authToken)}&remoteApiVersion=2`))
+          : new WebSocket(wsUrl('/ws?remoteApiVersion=2'), ['hydra.bearer', authToken]);
+        let everOpened = false;
+        socket.addEventListener('open', () => { everOpened = true; });
+        socket.addEventListener('close', () => { if (!everOpened && !tokenInQuery) tokenInQuery = true; });
         ws = socket;
         // Real diagnostic for a live-reported bug still under investigation:
         // Android's embedded 3D viewport (ThreeDScreen.kt's WebView, this

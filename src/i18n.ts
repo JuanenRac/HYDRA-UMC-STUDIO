@@ -14,6 +14,7 @@ import fr from './locales/fr.json';
 import it from './locales/it.json';
 import zh from './locales/zh.json';
 import ja from './locales/ja.json';
+import pt from './locales/pt.json';
 
 /** Stores the Resources configuration or state data. */
 const resources = {
@@ -23,7 +24,8 @@ const resources = {
   fr: { translation: fr },
   it: { translation: it },
   zh: { translation: zh },
-  ja: { translation: ja }
+  ja: { translation: ja },
+  pt: { translation: pt }
 };
 
 i18n

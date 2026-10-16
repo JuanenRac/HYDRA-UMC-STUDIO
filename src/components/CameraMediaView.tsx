@@ -11,9 +11,11 @@
 // capture is ever stored client-side.
 // =============================================================================
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
+import { useMediaTicket, withTicket } from '../lib/mediaTicket';
+import { ConfirmDialog } from './ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 import { Camera as CameraIcon, Video, Image as ImageIcon, RefreshCw, Download, Trash2 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -51,6 +53,8 @@ export function CameraMediaView() {
   const [selected, setSelected] = useState<MediaItem | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const mediaTicket = useMediaTicket(authToken);
 
   const load = async () => {
     setLoading(true);
@@ -79,9 +83,14 @@ export function CameraMediaView() {
 
   const mediaUrl = (item: MediaItem) => apiUrl(`/api/camera/media/${item.cameraId}/${item.kind}/${encodeURIComponent(item.filename)}`);
 
+  // The ticket is taken when a file is selected, so that a renewal five minutes later does not restart a recording that is playing.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const viewTicket = useMemo(() => mediaTicket, [selected]);
+  const viewUrl = (item: MediaItem) => withTicket(mediaUrl(item), viewTicket);
+
   const deleteSelected = async () => {
     if (!selected) return;
-    if (!window.confirm(t('cameraMedia.delete_confirm', 'Permanently delete this file? This cannot be undone.'))) return;
+    setConfirmDelete(false);
     setDeleting(true);
     setDeleteError(null);
     try {
@@ -160,7 +169,7 @@ export function CameraMediaView() {
             <div className="text-sm text-slate-600 italic">{t('cameraMedia.select_hint', 'Select a photo or recording on the left to view it here.')}</div>
           )}
           {selected && selected.kind === 'snapshots' && (
-            <img src={mediaUrl(selected)} alt={selected.filename} className="max-w-full max-h-full object-contain" />
+            <img src={viewUrl(selected)} alt={selected.filename} className="max-w-full max-h-full object-contain" />
           )}
           {selected && selected.kind === 'recordings' && (
             // Real play/pause/stop + a real seek bar - see
@@ -168,20 +177,20 @@ export function CameraMediaView() {
             // plain <img> (the old approach here) could never offer this:
             // a saved recording is raw multipart/x-mixed-replace bytes,
             // not a real video container any <video> element could parse.
-            <MjpegRecordingPlayer key={selected.filename} url={mediaUrl(selected)} durationMs={selected.durationMs} frameCount={selected.frameCount} />
+            <MjpegRecordingPlayer key={selected.filename} url={viewUrl(selected)} durationMs={selected.durationMs} frameCount={selected.frameCount} />
           )}
           {selected && (
             <div className="absolute bottom-3 right-3 flex items-center gap-2">
               {deleteError && <span className="text-[10px] text-rose-400 max-w-[180px]">{deleteError}</span>}
               <button
-                onClick={deleteSelected}
+                onClick={() => setConfirmDelete(true)}
                 disabled={deleting}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700 text-xs font-bold text-rose-400 hover:text-rose-300 hover:border-rose-500 transition-colors disabled:opacity-50"
               >
                 <Trash2 size={14} /> {t('cameraMedia.delete', 'Delete')}
               </button>
               <a
-                href={mediaUrl(selected)}
+                href={viewUrl(selected)}
                 download={selected.filename}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700 text-xs font-bold text-slate-300 hover:text-slate-100 hover:border-slate-500 transition-colors"
               >
@@ -191,6 +200,12 @@ export function CameraMediaView() {
           )}
         </div>
       </div>
+      <ConfirmDialog
+        open={confirmDelete}
+        message={t('cameraMedia.delete_confirm', 'Permanently delete this file? This cannot be undone.')}
+        onConfirm={deleteSelected}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </div>
   );
 }
