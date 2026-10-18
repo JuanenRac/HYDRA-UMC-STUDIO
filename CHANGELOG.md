@@ -27,6 +27,11 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.8.0.0]
+
+- Maturity is functional: nothing here has been verified on real hardware yet.
+- The READMEs say, in the eight languages, what is planned and what has only been tested against fakes, emulators or fixtures, and carry a short safety and security status note.
+
 ## [0.7.9] - One-click global STOP
 
 - **Global STOP:** a red **STOP** button in the header (and the footer, the robot panel and the remote-control overlay) stops every robot of every controller, whichever one is selected, and switches every valve and pump off, with one click and no confirmation. It calls `POST /api/stop-all` at once, with the session's bearer token and without waiting for any refresh; any signed-in account (admin or operator) can use it, and a reservation held by another account never blocks it.
