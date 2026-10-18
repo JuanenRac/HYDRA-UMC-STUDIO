@@ -3,6 +3,24 @@
     "confirm": "确认",
     "cancel": "取消"
   },
+  "command_issue": {
+    "title": "命令未送达",
+    "session_expired": "会话已过期且无法续期——发给机器人 {{robots}} 的 {{command}} 命令没有发出。请重新登录。",
+    "forbidden": "此账户无权向机器人 {{robots}} 发送 {{command}} 命令。",
+    "not_found": "服务器不认识机器人 {{robots}}——{{command}} 命令没有发出。",
+    "claimed": "机器人 {{robots}} 被另一位操作员占用——{{command}} 命令被拒绝。{{detail}}",
+    "rejected": "服务器拒绝了发给机器人 {{robots}} 的 {{command}} 命令。{{detail}}",
+    "server": "服务器在处理机器人 {{robots}} 的 {{command}} 命令时出错。",
+    "network": "无法连接服务器——发给机器人 {{robots}} 的 {{command}} 命令没有发出。",
+    "warnings": "机器人 {{robots}} 的 {{command}} 命令已被接受，但有提示：{{detail}}",
+    "jog_jump": "已拒绝点动：这一步会让关节 {{detail}} 一次性大幅转动。没有发送任何内容。",
+    "estop_failed": "紧急停止没有送达机器人 {{robots}}（{{detail}}）。请在其自身面板上停止，或切断电源。",
+    "retry_estop": "再次尝试紧急停止",
+    "dismiss": "关闭",
+    "login_required": "正在显示示例数据：服务器要求先登录才会显示真实系统。",
+    "power_failed": "{{command}} 请求被拒绝（HTTP {{detail}}）。重启和关机只能在设备本机上使用。",
+    "import_invalid": "该文件不是有效的 {{command}}，未导入：{{detail}}。"
+  },
   "motion_source": {
     "offline": "离线",
     "simulated": "模拟 - 不会移动机器",
@@ -274,7 +292,8 @@
     "ai_hailo_registry_path": "模型注册表路径",
     "ai_hailo_registry_desc": "编译后的 .hef 模型存放位置 - 对应 HYDRA-UMC-DETECTION-HEF 自身的 models_dir(其带 sha256 校验和验证的真实注册表)。",
     "ai_hailo_none": "无(未安装)",
-    "language_pt": "葡萄牙语"
+    "language_pt": "葡萄牙语",
+    "confirm_hardware_transport": "将 CAN-OTA 切换到真实硬件？刷写和测试将改为与真实电路板通信，而不是模拟。"
   },
   "robot_detail": {
     "back": "返回仪表盘",
@@ -355,7 +374,10 @@
     "base_rotate_ccw": "底座逆时针旋转",
     "base_rotate_cw": "底座顺时针旋转",
     "base_rotation": "底座 (J1)",
-    "floating_overlay_hint": "速度、加速度、关节及 XYZ 点动已移动到上方 3D 视图中的浮动面板。"
+    "floating_overlay_hint": "速度、加速度、关节及 XYZ 点动已移动到上方 3D 视图中的浮动面板。",
+    "confirm_home": "现在让机器人回到初始姿态？它会一步到位地移动。",
+    "confirm_reset": "停止机器人并立即让它回到初始姿态？它会一步到位地移动。",
+    "confirm_delete_points": "删除此机器人所有已记录的点？此操作无法撤销。"
   },
   "cameras": {
     "title": "八路视觉矩阵",
@@ -513,8 +535,8 @@
         "heading": "什么是 HYDRA-UMC STUDIO？",
         "paragraphs": [
           "HYDRA-UMC STUDIO 是面向机器人、CNC 机床、激光雕刻机、3D 打印机热床和拾取放置工作站的集中控制仪表盘。一个仪表盘，多台机器，全部实时同步。",
-          "首先添加一个控制器（右上角选择器，或“设置 > 控制器”）——每个控制器代表一块可通过以太网/IP 访问的实体 HYDRA-UMC 板卡。使用“自动搜索 HYDRA-UMC”可在本地网络中自动查找板卡。",
-          "选定控制器后，在侧边栏使用“添加机器人”将机器人挂载到该控制器上。点击侧边栏中的某个机器人，即可打开其完整控制面板：点动滑块、示例、已记录的轨迹，以及它自身的实时 3D 视图。",
+          "先添加一个控制器（右上角选择器，或“配置 > 控制器”）：每个控制器代表一块可通过 Ethernet/IP 访问的实体 HYDRA-UMC 主板。点击“添加节点”，输入名称和 IP 地址。",
+          "选中控制器后，它的机器人会列在侧边栏中。点击机器人即可打开完整的控制面板：点动滑块、示例、已录制的轨迹以及它自己的实时 3D 视图。",
           "你所配置的一切——机器人名称、自定义型号、已保存的轨迹、工具分配——都会自动保存到服务器的 data/ 目录中，因此重启后依然保留，并会被所有打开此仪表盘的浏览器共享。"
         ]
       },
@@ -650,7 +672,8 @@
       "github_downloading": "正在从 GitHub 下载 {{name}}…",
       "hardware_target_unreachable": "该目标尚无法通过真实硬件访问",
       "flash_hardware_failed": "硬件烧录失败：{{reason}}",
-      "flash_simulated": "模拟刷写完成 - 未发送任何固件,已保存的板卡版本不变"
+      "flash_simulated": "模拟刷写完成 - 未发送任何固件,已保存的板卡版本不变",
+      "robot_playing": "该机器人正在执行轨迹——刷写其控制器之前请先停止。"
     },
     "progress": {
       "connecting": "连接中…",
@@ -660,14 +683,16 @@
       "verifying": "正在校验（CRC32 + HMAC）…",
       "rebooting": "正在重启至应用程序…",
       "done": "完成",
-      "error_rollback": "已拒绝：防回滚保护（启用“允许降级”以覆盖此限制）"
+      "error_rollback": "已拒绝：防回滚保护（启用“允许降级”以覆盖此限制）",
+      "error": "刷写失败"
     },
     "target_kinematic_brain": "运动大脑",
     "target_urtc_expansion": "高级扩展板",
     "expansion_not_present": "在该机器人上未检测到高级扩展板",
     "download_github": "从 GitHub 下载",
     "no_releases": "尚未发布任何 .bin 版本。",
-    "simulation_banner": "模拟 - 不会向板卡发送任何内容(要真实刷写,请将 CAN-OTA 传输设为硬件)"
+    "simulation_banner": "模拟 - 不会向板卡发送任何内容(要真实刷写,请将 CAN-OTA 传输设为硬件)",
+    "show_bootloaders": "同时列出引导程序镜像（专家）"
   },
   "tester": {
     "title": "Tester 测试工具",
@@ -985,7 +1010,8 @@
       "AXIS_2_POS": "右摇杆右",
       "AXIS_3_NEG": "右摇杆上",
       "AXIS_3_POS": "右摇杆下"
-    }
+    },
+    "controlling": "手柄控制 {{robot}}——列表中选中的机器人"
   },
   "bluetooth_pairing": {
     "title": "将蓝牙设备与此 CM5 配对",

@@ -39,7 +39,8 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
 import type { UrChain, UrJointStep } from '../../examples/urKinematicsShared';
 import { usePartColors } from '../../hooks/usePartColors';
-import Toolhead, { toolheadMountOffset } from './Toolhead';
+import Toolhead from './Toolhead';
+import { toolheadMountOffset } from '../../lib/toolheadMount';
 
 /** meshOffsets order: base, shoulder, upper_arm, forearm, wrist_1, wrist_2, wrist_3 - 7 entries. */
 export type UrMeshOffsets = [UrJointStep, UrJointStep, UrJointStep, UrJointStep, UrJointStep, UrJointStep, UrJointStep];

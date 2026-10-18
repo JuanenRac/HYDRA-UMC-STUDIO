@@ -13,7 +13,7 @@
 
 import { Matrix4, Quaternion, Vector3, Euler } from 'three';
 import type { KinematicsPoint } from './utils';
-import { Z1_CHAIN, Z1_ROOT_QUAT } from '../components/3d/Z1Arm';
+import { Z1_CHAIN, Z1_ROOT_QUAT } from '../components/3d/chains/Z1Chain';
 
 const DEG = Math.PI / 180;
 

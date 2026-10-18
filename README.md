@@ -156,12 +156,13 @@ Two standalone dialogs, both reachable from the header (`Config`/`About` buttons
 ## 🛡️ Reliability
 
 The app protects itself against two different classes of runtime failure, both born from a real production incident (a kiosk display going black after a redeploy). `src/main.tsx` listens for Vite's own `vite:preloadError` event - emitted when a browser tab left open across a redeploy tries to fetch a `React.lazy()`-loaded panel chunk (every `Dashboard.tsx` panel, content-hashed per `vite.config.ts`) that no longer exists under its old hash - and reloads the page once automatically, so a long-lived kiosk tab or a stale background tab self-heals without anyone noticing. A `sessionStorage` guard stops that from reload-looping forever if a chunk is genuinely missing for some other reason. Separately, `src/components/ErrorBoundary.tsx` wraps the `<Suspense>` panel area as a backstop for any other render crash; it's keyed by the active tab, so switching away from a crashed panel actually retries the next one instead of leaving the whole dashboard stuck on a fallback screen.
+Commands never fail silently: every jog, play, power, vision and tool command returns a typed result, an expired session is refreshed once and retried, and anything still refused is shown in a banner. The E-STOP button acts at once, without a confirmation (stop plus valves and pumps off, one retry, and a persistent warning if it could not be delivered). Joystick jogging is a held deadman control (it ends on pointer cancel, window blur, a hidden tab or after 8 seconds), a J1 move stays on the nearest equivalent angle and a jog step above 20 degrees is refused. Gamepad input follows the robot selected in the interface and is rate limited. A release firmware is checked against its sha256 before CAN-OTA flashing, bootloader images are opt-in, and imported trajectories and scenes are validated before they reach the shared state.
 
 ## 🔐 Accounts & Access
 
 Every backend seeds one account on its own first-ever start - username `admin`, password `admin` - change it from **Config > Users** as soon as the server is reachable beyond a fully trusted LAN. That same tab lets an admin account create additional **operator** accounts: an operator can sign in, watch live state, and drive robots (jog/play/pause/stop/tool/valve/pump/speed), but can't overwrite global settings or manage other accounts. No account is required just to look around - the login screen's own "Continue read-only" skips straight to the dashboard with writes disabled. Full contract (roles, tokens, the `/api/users` routes) documented in [HYDRA-UMC-SERVER's own `docs/REMOTE_API.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md) sections 2a/2b. In production the first administrator comes from the deployment's bootstrap settings and the server refuses example secrets (see [HYDRA-UMC-SERVER's `docs/PRODUCTION_BOOTSTRAP.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/PRODUCTION_BOOTSTRAP.md)).
 
-Each of the 3 remote clients (SUITE, Android, iOS) self-identifies via an `X-Hydra-Client` request header, so **Config > Remote Access** can allow or block each one independently instead of one combined switch for all three.
+Each of the 5 remote clients (SUITE, Android, iOS, Watch, DSI) self-identifies via an `X-Hydra-Client` request header, so **Config > Remote Access** can allow or block each one independently instead of one combined switch for all five.
 
 ---
 
@@ -273,7 +274,7 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # Seeded example settings for a fresh checkout
 │   └── favicon.svg, icons.svg   # App icon and shared icon sprite
 ├── images/                       # README banner
-├── tests/                        # Real Vitest suite (182 tests) - src/examples/ FK/IK math only, no React/DOM
+├── tests/                        # Real Vitest suite (273 tests) - src/examples/ FK/IK math only, no React/DOM
 │   ├── utils.test.ts             # Shared generic-arm FK/IK pair + its 5 path generators
 │   ├── urKinematicsShared.test.ts  # Real DH-chain FK + Newton-Raphson IK engine (via the real UR5e chain)
 │   ├── parol6Kinematics.test.ts  # Parol6's own hard-coded real chain
@@ -302,7 +303,7 @@ The backend this app talks to (settings persistence, the REST/WebSocket API, `do
 ## 🛠️ Development Environment
 
 ### Requirements
-- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- [Node.js](https://nodejs.org/) (v22 or higher)
 - npm
 - A running **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** backend (`npm run dev` there too, default port `3000`) - this app is a pure client and has nothing to talk to without it.
 
@@ -321,7 +322,7 @@ Runs Vite's own dev server (plain `vite`, port `5173`) with live-reloading. `vit
 ### Automated Tests
 
 ```bash
-npm test          # vitest run - 182 real tests over src/examples/
+npm test          # vitest run - 273 real tests over src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 
@@ -342,7 +343,7 @@ Deploy the resulting `dist/` folder to any static host. By default the built app
 
 ### Versioning
 
-`bump_manifest_version.py` (repo root) is the single owner of both `hydra-umc.project.json` and `package.json`'s own `version` field - `npm run build` (`vite build`) is deliberately compilation-only so it can never create drift between them by bumping one and not the other. `scripts/bump-version.mjs` is a legacy native-only helper kept for reference; nothing in this repo calls it anymore. The scheme itself is still the ecosystem-wide base-10 "odometer": patch +1 per real bump, rolling over into minor (and minor into major) past 9 rather than ever reaching a two-digit segment (`0.0.9` -> `0.1.0`, not `0.0.10`). The running version is visible live in the **About** dialog (read from `GET /api/hydra-info`, which the Express server reads straight from `package.json` at startup), and the full history is in [`CHANGELOG.md`](CHANGELOG.md).
+`bump_manifest_version.py` (repo root) is the single owner of both `hydra-umc.project.json` and `package.json`'s own `version` field - `npm run build` (`vite build`) is deliberately compilation-only so it can never create drift between them by bumping one and not the other. `scripts/bump-version.mjs` is a legacy native-only helper kept for reference; nothing in this repo calls it anymore. The scheme itself is still the ecosystem-wide base-10 "odometer": patch +1 per real bump, rolling over into minor (and minor into major) past 9 rather than ever reaching a two-digit segment (`0.0.9` -> `0.1.0`, not `0.0.10`). The running version is visible live in the **About** dialog (the Studio version is read from this app's own `package.json`; the server version shown next to it comes from `GET /api/hydra-info`), and the full history is in [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 

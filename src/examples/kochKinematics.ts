@@ -16,7 +16,7 @@
 
 import { Matrix4, Quaternion, Vector3, Euler } from 'three';
 import type { KinematicsPoint } from './utils';
-import { KOCH_CHAIN, KOCH_ROOT_QUAT } from '../components/3d/KochArm';
+import { KOCH_CHAIN, KOCH_ROOT_QUAT } from '../components/3d/chains/KochChain';
 
 const DEG = Math.PI / 180;
 

@@ -29,6 +29,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Boxes, Loader2, Play, RefreshCw, RotateCw, Search, Square, Circle } from 'lucide-react';
 import { apiUrl } from '../lib/apiBase';
+import { authFetch } from '../lib/session';
 import { useHydraStore } from '../store';
 import { ConfirmDialog } from './ConfirmDialog';
 
@@ -168,7 +169,7 @@ export function EcosystemServices() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(apiUrl('/api/ecosystem/status'));
+      const res = await authFetch(apiUrl('/api/ecosystem/status'));
       const data = await res.json();
       setAvailable(!!data.available);
       setProjects(data.projects || []);

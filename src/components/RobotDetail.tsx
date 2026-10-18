@@ -10,7 +10,7 @@ import { FuturisticSlider } from "./FuturisticSlider";
 import { motion, useDragControls } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { motionSource } from '../motionSource';
-import { type RobotState, useHydraStore, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, isModelSelectable, globalPlaybacks } from '../store';
+import { type RobotState, useHydraStore, type ToolType, type RobotModel, ROBOT_MANUFACTURERS, isModelSelectable } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { useMediaTicket, withTicket } from '../lib/mediaTicket';
 import { RotateCcw, RotateCw, Home, AlertOctagon,  Power, Droplets, ArrowUp, ArrowDown, Save, Play, Square, Pause, Crosshair, RefreshCw, Maximize2, Minimize2, Camera as CameraIcon, Trash2, X, FolderOpen, Edit2, Repeat, Download, Grid3x3, Plus } from 'lucide-react';
@@ -45,6 +45,9 @@ import { UR5CLASSIC_HOME_POSE } from '../examples/ur5ClassicKinematics';
 import { UR10CLASSIC_HOME_POSE } from '../examples/ur10ClassicKinematics';
 import { convertToCartesian } from '../examples/utils';
 import { jointsToCartesianForModel, jointLimitsFor, resolveTargetJoints } from '../examples/robotKinematicsDispatch';
+import { excessiveJogStep } from '../examples/jogSafety';
+import { ConfirmDialog } from './ConfirmDialog';
+import { currentPlaybackStep, playbackProgressPercent } from '../lib/playbackStep';
 
 /**
  * Executes the Cn logic. 
@@ -517,14 +520,14 @@ function JointControlsOverlay({
           </div>
           <div className="flex items-center gap-2 bg-slate-900/80 px-2 py-1.5 rounded-lg border border-slate-800">
             <span className="text-[9px] text-slate-400 font-bold uppercase w-14 shrink-0">{t('robot_detail.speed', 'Speed:')}</span>
-            <RotaryKnob min={10} max={500} value={playbackSpeed} onChange={onSpeedChange} size={28} step={jogStep} />
-            <div className="flex-1"><FuturisticSlider min={10} max={500} value={playbackSpeed} onChange={onSpeedChange} step={jogStep} /></div>
+            <RotaryKnob min={10} max={500} value={playbackSpeed} onChange={onSpeedChange} size={28} step={5} />
+            <div className="flex-1"><FuturisticSlider min={10} max={500} value={playbackSpeed} onChange={onSpeedChange} step={5} /></div>
             <span className="text-[9px] font-mono text-sky-400 w-8 text-right shrink-0">{playbackSpeed}%</span>
           </div>
           <div className="flex items-center gap-2 bg-slate-900/80 px-2 py-1.5 rounded-lg border border-slate-800">
             <span className="text-[9px] text-slate-400 font-bold uppercase w-14 shrink-0">{t('robot_detail.acceleration', 'Acceleration:')}</span>
-            <RotaryKnob min={10} max={500} value={playbackAcceleration} onChange={onAccelerationChange} size={28} step={jogStep} />
-            <div className="flex-1"><FuturisticSlider min={10} max={500} value={playbackAcceleration} onChange={onAccelerationChange} step={jogStep} /></div>
+            <RotaryKnob min={10} max={500} value={playbackAcceleration} onChange={onAccelerationChange} size={28} step={5} />
+            <div className="flex-1"><FuturisticSlider min={10} max={500} value={playbackAcceleration} onChange={onAccelerationChange} step={5} /></div>
             <span className="text-[9px] font-mono text-amber-400 w-8 text-right shrink-0">{playbackAcceleration}%</span>
           </div>
 
@@ -689,7 +692,7 @@ function XYTableOverlay({
  */
 export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: { robot: RobotState, viewportOnly?: boolean, onNavigateToRobot?: (robotId: number) => void }) {
   const { t } = useTranslation();
-  const { updateRobot, sendRobotCommand, loadKinematics, settings, robots, updateSettings, authToken, cameras } = useHydraStore();
+  const { updateRobot, sendRobotCommand, emergencyStop, reportCommandIssue, loadKinematics, settings, robots, updateSettings, authToken, cameras } = useHydraStore();
   // Real bug this fixes, reported live: a robot's Camera PIP still showed
   // in the 3D viewport with every camera actually disconnected. `visionEnabled`
   // is a robot-level flag MEANT to mirror its assigned camera's own
@@ -1036,10 +1039,6 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   // the real delta that follows agree, instead of one silently overwriting
   // the other's own isFinished value moments later.
   const handleStop = () => {
-    globalPlaybacks[robot.id] = false;
-    robot.combinedWith?.forEach(id => {
-      globalPlaybacks[id] = false;
-    });
     sendRobotCommand(
       robot.id,
       'stop',
@@ -1049,23 +1048,16 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     );
   };
 
-  const handlePlay = async (playAll: boolean = false) => {
-    // globalPlaybacks is a deliberate module-level escape hatch from React
-    // state, not an oversight: playRobotTrajectory's own while-loop below
-    // polls it on every step to decide whether to keep looping, and a
-    // combined sibling robot's own RobotDetail instance reads the SAME
-    // shared object by id - real React state can't be shared across
-    // sibling component instances or read from a tight async loop without
-    // forcing a re-render per step. Every write site is a real event
-    // handler (onClick) or an effect reacting to playbackState arriving
-    // from elsewhere (never during render), so this mutation is safe.
-    globalPlaybacks[robot.id] = true; // eslint-disable-line -- see comment above; not a render-time write
-    if (playAll) {
-      robot.combinedWith?.forEach(id => {
-        globalPlaybacks[id] = true;
-      });
-    }
+  // The E-STOP button: stops this robot (and, with START ALL selected, the robots combined with it) and switches its
+  // valves and pumps off, checking every answer - a stop the server never received is shown, not swallowed. The
+  // `online` flag is telemetry and is left alone: writing it made a "stopped" robot look disconnected, and the write
+  // itself needed an admin role.
+  const handleEmergencyStop = () => {
+    const ids = [robot.id, ...(isStartAll ? robot.combinedWith ?? [] : [])];
+    void emergencyStop(ids);
+  };
 
+  const handlePlay = async () => {
     if (robot.recordedPoints.length === 0) return;
     // Only THIS robot mutated optimistically here, matching the original
     // scope of this local update - a combined sibling's own playbackState
@@ -1213,8 +1205,9 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   // same as every other client.
 
   useEffect(() => {
-    if (robot.playbackState?.isPlaying && robot.playbackState?.activeStep !== null && robot.playbackState?.activeStep !== -1) {
-      const el = document.getElementById(`step-${robot.id}-${robot.playbackState?.activeStep}`);
+    const current = currentPlaybackStep(robot.playbackState?.activeStep);
+    if (robot.playbackState?.isPlaying && current >= 0) {
+      const el = document.getElementById(`step-${robot.id}-${current}`);
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
       }
@@ -1260,6 +1253,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     const resolved = resolveTargetJoints(
       robot.model, target.x, target.y, target.z,
       target.a ?? 0, target.b ?? 0, target.c ?? 0,
+      robot.joints,
       robot.joints,
     );
     const changed = (['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const).some(
@@ -1331,6 +1325,11 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     const cart = jointsToCartesianForModel(robot.model, robot.joints);
     updateRobot(robot.id, {
       recordedPoints: [...robot.recordedPoints, {
+        // The joints below are this robot's own native joint values, so the point says so: the server plays them
+        // as they are and every client draws the same pose. Without the marker the point was treated as a
+        // Cartesian one and each client re-solved the inverse kinematics on its own, ending in different poses
+        // (and one full settings save per client for every step of the playback).
+        motionType: 'model-joints',
         j1: Number(robot.joints.j1.toFixed(3)),
         j2: Number(robot.joints.j2.toFixed(3)),
         j3: Number(robot.joints.j3.toFixed(3)),
@@ -1374,7 +1373,14 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     const x = cart.x + dx * jogStep;
     const y = cart.y + dy * jogStep;
     const z = cart.z + dz * jogStep;
-    const newJoints = resolveTargetJoints(robot.model, x, y, z, cart.a, cart.b, cart.c, robot.joints);
+    const newJoints = resolveTargetJoints(robot.model, x, y, z, cart.a, cart.b, cart.c, robot.joints, robot.joints);
+    // A single step that would swing any joint a long way (an inverse-kinematics branch change, a target near the
+    // edge of the workspace) is not sent: on a real robot that is a sweep through everything around it.
+    const jump = excessiveJogStep(robot.joints, newJoints);
+    if (jump) {
+      reportCommandIssue({ code: 'jog_jump', command: 'jog', robotIds: [robot.id], detail: `${jump.joint.toUpperCase()} (${jump.deltaDeg.toFixed(0)}°)` });
+      return;
+    }
     const axes: { axis: 'x' | 'y' | 'z'; amount: number; value: number }[] = [
       { axis: 'x' as const, amount: dx * jogStep, value: x },
       { axis: 'y' as const, amount: dy * jogStep, value: y },
@@ -1443,8 +1449,18 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
       (r) => ({ pos: { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0, tx: r.pos?.tx, ty: r.pos?.ty, trz: r.pos?.trz }, joints: newJoints })
     );
   };
-  const handleHome = () => resetPose(false);
-  const handleReset = () => resetPose(true);
+  // HOME and RESET send the robot to an absolute pose in one jump, and "delete points" empties the whole trajectory:
+  // none of them is undone by pressing again, so each asks first.
+  const [pendingAction, setPendingAction] = useState<'home' | 'reset' | 'delete_points' | null>(null);
+  const handleHome = () => setPendingAction('home');
+  const handleReset = () => setPendingAction('reset');
+  const runPendingAction = () => {
+    const action = pendingAction;
+    setPendingAction(null);
+    if (action === 'home') resetPose(false);
+    else if (action === 'reset') resetPose(true);
+    else if (action === 'delete_points') updateRobot(robot.id, { recordedPoints: [] });
+  };
 
   // Same real-broadcast fix as handleReset above, for the XY table's own
   // separate "HOME XY" button - resets only pos.tx/ty + xyTable.pos, not
@@ -1510,7 +1526,14 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-950 text-slate-200">
+    <div className="relative flex flex-col h-full bg-slate-950 text-slate-200">
+      <ConfirmDialog
+        open={pendingAction !== null}
+        message={pendingAction ? t(`robot_detail.confirm_${pendingAction}`) : ''}
+        danger={pendingAction === 'delete_points'}
+        onConfirm={runPendingAction}
+        onCancel={() => setPendingAction(null)}
+      />
       {!viewportOnly && (
         <div className="flex items-center justify-between p-3 border-b border-slate-800 bg-slate-900 shrink-0">
           <div className="flex items-center gap-4">
@@ -1722,13 +1745,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
             {viewportOnly && (
               <div className="absolute z-50 pointer-events-auto bottom-2 left-1/2 -translate-x-1/2 flex flex-wrap items-center justify-center landscape:gap-1 portrait:gap-1.5 bg-slate-950/70 backdrop-blur-md border border-slate-800 rounded-xl landscape:p-1 portrait:p-1.5 max-w-[calc(100%-1rem)]">
                 <button
-                  onClick={() => {
-                    handleStop();
-                    updateRobot(robot.id, { online: false });
-                    if (isStartAll) {
-                      robot.combinedWith?.forEach(id => updateRobot(id, { online: false }));
-                    }
-                  }}
+                  onClick={() => handleEmergencyStop()}
                   className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 hover:bg-red-950 border border-slate-800 hover:border-red-800 text-red-400 rounded-lg transition-colors animate-pulse"
                   title={isStartAll ? t('robot_detail.estop_all', 'E-STOP ALL') : t('robot_detail.estop', 'E-STOP')}
                 >
@@ -1737,7 +1754,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
 
                 {!robot.playbackState?.isPlaying ? (
                   <button
-                    onClick={() => handlePlay(isStartAll)}
+                    onClick={() => handlePlay()}
                     disabled={robot.recordedPoints.length === 0}
                     className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 hover:bg-emerald-950 disabled:opacity-40 border border-slate-800 hover:border-emerald-800 text-emerald-400 rounded-lg transition-colors"
                     title={isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START')}
@@ -1804,7 +1821,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                   <button onClick={handleAddPoint} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-sky-400 rounded-lg transition-colors" title={t('robot_detail.add_point', '+ Add Point')}>
                     <Plus size={16} />
                   </button>
-                  <button onClick={() => updateRobot(robot.id, { recordedPoints: [] })} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-rose-400 rounded-lg transition-colors" title={t('robot_detail.delete_points', 'Delete points')}>
+                  <button onClick={() => setPendingAction('delete_points')} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-rose-400 rounded-lg transition-colors" title={t('robot_detail.delete_points', 'Delete points')}>
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -1828,13 +1845,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
             <div className="flex flex-wrap gap-2 pointer-events-auto shrink-0">
             {/* E-STOP Button (First, Glowing, Blinking) */}
             <button
-              onClick={() => {
-                handleStop();
-                updateRobot(robot.id, { online: false });
-                if (isStartAll) {
-                  robot.combinedWith?.forEach(id => updateRobot(id, { online: false }));
-                }
-              }}
+              onClick={() => handleEmergencyStop()}
               className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-red-600 hover:bg-red-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_20px_rgba(220,38,38,0.8)] border border-red-500 animate-pulse", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
               title={isStartAll ? t('robot_detail.estop_all', 'E-STOP ALL') : t('robot_detail.estop', 'E-STOP')}
             >
@@ -1844,7 +1855,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
             {/* START/STOP Button */}
             {!robot.playbackState?.isPlaying ? (
               <button
-                onClick={() => handlePlay(isStartAll)}
+                onClick={() => handlePlay()}
                 disabled={robot.recordedPoints.length === 0}
                 className={cn("flex-1 flex items-center justify-center gap-2 min-h-[48px] bg-green-500 hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(34,197,94,0.6)] border border-green-400", isAndroidApp ? "px-3 py-2 min-h-[40px] flex-initial" : "px-4 py-3")}
                 title={isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START')}
@@ -1977,7 +1988,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                   {isAndroidApp ? <Plus size={16} /> : t('robot_detail.add_point', '+ Add Point')}
                 </button>
                 <button
-                  onClick={() => updateRobot(robot.id, { recordedPoints: [] })}
+                  onClick={() => setPendingAction('delete_points')}
                   className={cn("flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors", isAndroidApp ? "p-2 min-h-[40px] min-w-[40px]" : "p-2 min-h-[44px] min-w-[44px]")}
                   title={t('robot_detail.delete_points', 'Delete points')}
                 >
@@ -2007,7 +2018,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                     {t('robot_detail.add_point', '+ Add Point')}
                   </button>
                   <button 
-                    onClick={() => updateRobot(robot.id, { recordedPoints: [] })}
+                    onClick={() => setPendingAction('delete_points')}
                     className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors"
                   >
                     <Trash2 size={16} />
@@ -2549,15 +2560,15 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                 {robot.recordedPoints.map((pt, i) => {
                 const ptKey = pointKeyFor(pt);
                 return (
-                  <div id={`step-${robot.id}-${i}`} key={ptKey} className={cn("bg-slate-900 border rounded p-2 text-xs flex flex-col gap-1 transition-colors", robot.playbackState?.activeStep === i ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]" : "border-slate-800")}>
+                  <div id={`step-${robot.id}-${i}`} key={ptKey} className={cn("bg-slate-900 border rounded p-2 text-xs flex flex-col gap-1 transition-colors", (robot.playbackState?.isPlaying && currentPlaybackStep(robot.playbackState?.activeStep) === i) ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]" : "border-slate-800")}>
                     <div className="flex justify-between items-center border-b border-slate-800/50 pb-1 mb-1">
                       <div className="flex items-center gap-2">
-                        {robot.playbackState?.activeStep === i ? (
+                        {(robot.playbackState?.isPlaying && currentPlaybackStep(robot.playbackState?.activeStep) === i) ? (
                           <Play size={12} className="text-emerald-400 animate-pulse fill-emerald-400" />
                         ) : (
                           <span className="w-3" />
                         )}
-                        <span className={cn("font-mono font-bold", robot.playbackState?.activeStep === i ? "text-emerald-400" : "text-slate-400")}>{t('robot_detail.step_upper', 'STEP')} {i}</span>
+                        <span className={cn("font-mono font-bold", (robot.playbackState?.isPlaying && currentPlaybackStep(robot.playbackState?.activeStep) === i) ? "text-emerald-400" : "text-slate-400")}>{t('robot_detail.step_upper', 'STEP')} {i}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <button onClick={() => {
@@ -2696,17 +2707,13 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                 <div className="flex justify-between items-end relative z-10">
                   <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{t('robot_detail.progress', 'Progress')}</span>
                   <span className="text-emerald-400 font-mono font-bold text-sm drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]">
-                    {robot.playbackState?.isFinished 
-                      ? 100 
-                      : (robot.recordedPoints.length > 0 
-                        ? Math.round((Math.max(0, robot.playbackState?.activeStep || 0) / Math.max(1, robot.recordedPoints.length - 1)) * 100) 
-                        : 0)}{'%'}
+                    {Math.round(playbackProgressPercent(robot.playbackState?.activeStep, robot.recordedPoints.length, robot.playbackState?.isFinished))}{'%'}
                   </span>
                 </div>
                 <div className="bg-slate-900/50 rounded-full h-3 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] overflow-hidden relative border border-slate-800 z-10">
                   <div 
                     className="bg-gradient-to-r from-emerald-600 to-emerald-400 h-full rounded-full shadow-[inset_0_2px_4px_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)] transition-all duration-300 ease-out relative"
-                    style={{ width: (robot.playbackState?.isFinished ? '100%' : (robot.recordedPoints.length > 0 ? `${(Math.max(0, robot.playbackState?.activeStep || 0) / Math.max(1, robot.recordedPoints.length - 1)) * 100}%` : '0%')) }}
+                    style={{ width: `${playbackProgressPercent(robot.playbackState?.activeStep, robot.recordedPoints.length, robot.playbackState?.isFinished)}%` }}
                   >
                     <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent rounded-t-full"></div>
                   </div>

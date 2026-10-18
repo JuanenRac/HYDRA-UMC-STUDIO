@@ -18,8 +18,6 @@ echo ========================================
 echo  Installing dependencies...
 echo ========================================
 call npm install
-call npm install-scripts approve --all
-call npm audit fix
 
 echo ========================================
 echo  Starting HYDRA-UMC STUDIO (Dev Mode) 

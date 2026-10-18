@@ -17,7 +17,7 @@
 
 import { Matrix4, Quaternion, Vector3, Euler } from 'three';
 import type { KinematicsPoint } from './utils';
-import { M710IC_CHAIN, M710IC_ROOT_QUAT } from '../components/3d/M710icArm';
+import { M710IC_CHAIN, M710IC_ROOT_QUAT } from '../components/3d/chains/M710icChain';
 
 const DEG = Math.PI / 180;
 

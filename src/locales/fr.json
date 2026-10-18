@@ -3,6 +3,24 @@
     "confirm": "Confirmer",
     "cancel": "Annuler"
   },
+  "command_issue": {
+    "title": "Commande non livrée",
+    "session_expired": "Votre session a expiré et n'a pas pu être renouvelée - la commande {{command}} pour le robot {{robots}} n'a PAS été envoyée. Reconnectez-vous.",
+    "forbidden": "Ce compte n'est pas autorisé à envoyer la commande {{command}} au robot {{robots}}.",
+    "not_found": "Le serveur ne connaît pas le robot {{robots}} - la commande {{command}} n'a pas été envoyée.",
+    "claimed": "Le robot {{robots}} est réservé par un autre opérateur - la commande {{command}} a été refusée. {{detail}}",
+    "rejected": "Le serveur a refusé la commande {{command}} pour le robot {{robots}}. {{detail}}",
+    "server": "Le serveur a échoué en traitant la commande {{command}} du robot {{robots}}.",
+    "network": "Le serveur est injoignable - la commande {{command}} pour le robot {{robots}} n'a PAS été envoyée.",
+    "warnings": "La commande {{command}} du robot {{robots}} a été acceptée avec des remarques : {{detail}}",
+    "jog_jump": "Déplacement refusé : ce pas ferait bouger l'articulation {{detail}} d'un seul coup. Rien n'a été envoyé.",
+    "estop_failed": "L'ARRÊT D'URGENCE N'A PAS ATTEINT le ou les robots {{robots}} ({{detail}}). Arrêtez-les depuis leur propre panneau ou coupez leur alimentation.",
+    "retry_estop": "Réessayer l'arrêt d'urgence",
+    "dismiss": "Fermer",
+    "login_required": "Des données d'exemple sont affichées : le serveur exige une connexion avant de montrer le vrai système.",
+    "power_failed": "La demande {{command}} a été refusée (HTTP {{detail}}). Le redémarrage et l'arrêt ne fonctionnent que sur l'appareil lui-même.",
+    "import_invalid": "Le fichier n'est pas un import valide ({{command}}) et n'a pas été importé : {{detail}}."
+  },
   "motion_source": {
     "offline": "Hors ligne",
     "simulated": "Simulé - ne déplace pas la machine",
@@ -274,7 +292,8 @@
     "ai_hailo_registry_path": "Chemin du registre de modèles",
     "ai_hailo_registry_desc": "Où résident les modèles .hef compilés - reflète le propre models_dir de HYDRA-UMC-DETECTION-HEF (son vrai registre avec vérification de somme de contrôle sha256).",
     "ai_hailo_none": "Aucun (non installé)",
-    "language_pt": "Portugais"
+    "language_pt": "Portugais",
+    "confirm_hardware_transport": "Passer CAN-OTA sur le matériel réel ? Le flashage et les tests parleront alors aux vraies cartes au lieu de la simulation."
   },
   "robot_detail": {
     "back": "Retour au Tableau de Bord",
@@ -355,7 +374,10 @@
     "base_rotate_ccw": "Faire pivoter la base dans le sens antihoraire",
     "base_rotate_cw": "Faire pivoter la base dans le sens horaire",
     "base_rotation": "Base (J1)",
-    "floating_overlay_hint": "Vitesse, accélération, articulations et jog XYZ ont été déplacés vers le panneau flottant sur la vue 3D ci-dessus."
+    "floating_overlay_hint": "Vitesse, accélération, articulations et jog XYZ ont été déplacés vers le panneau flottant sur la vue 3D ci-dessus.",
+    "confirm_home": "Envoyer le robot à sa pose d'origine maintenant ? Il se déplace en un seul mouvement.",
+    "confirm_reset": "Arrêter le robot et l'envoyer à sa pose d'origine maintenant ? Il se déplace en un seul mouvement.",
+    "confirm_delete_points": "Supprimer tous les points enregistrés de ce robot ? Cette action est irréversible."
   },
   "cameras": {
     "title": "Matrice de Vision Octale",
@@ -513,8 +535,8 @@
         "heading": "Qu'est-ce que HYDRA-UMC STUDIO ?",
         "paragraphs": [
           "HYDRA-UMC STUDIO est un tableau de bord de contrôle centralisé pour robots, machines CNC, graveurs laser, plateaux d'imprimante 3D et postes de pick-and-place. Un seul tableau de bord, plusieurs machines, toutes synchronisées en temps réel.",
-          "Commencez par ajouter un Contrôleur (sélecteur en haut à droite, ou Config > Controllers) - chaque contrôleur représente une carte HYDRA-UMC physique, accessible via Ethernet/IP. Utilisez \"Auto-Search HYDRA-UMC\" pour trouver automatiquement les cartes sur votre réseau local.",
-          "Une fois un contrôleur sélectionné, utilisez \"Add Robot\" dans la barre latérale pour lui rattacher des robots. Cliquez sur un robot dans la barre latérale pour ouvrir son panneau de contrôle complet : curseurs de jog, exemples, trajectoires enregistrées, et sa propre vue 3D en direct.",
+          "Commencez par ajouter un Contrôleur (sélecteur en haut à droite, ou Config > Contrôleurs) : chaque contrôleur représente une carte HYDRA-UMC physique, joignable en Ethernet/IP. Appuyez sur « Ajouter un Nœud » et saisissez son nom et son adresse IP.",
+          "Une fois un contrôleur sélectionné, ses robots sont listés dans la barre latérale. Cliquez sur un robot pour ouvrir son panneau complet : curseurs de jog, exemples, trajectoires enregistrées et sa propre vue 3D en direct.",
           "Tout ce que vous configurez - noms des robots, modèles personnalisés, trajectoires enregistrées, outils assignés - est sauvegardé automatiquement dans le répertoire data/ du serveur, ce qui survit aux redémarrages et est partagé par tout navigateur qui ouvre le tableau de bord."
         ]
       },
@@ -650,7 +672,8 @@
       "github_downloading": "Téléchargement de {{name}} depuis GitHub...",
       "hardware_target_unreachable": "Cette cible n'est pas encore accessible sur matériel réel",
       "flash_hardware_failed": "Échec du flash matériel : {{reason}}",
-      "flash_simulated": "Flashage simulé terminé - aucun firmware envoyé, la version enregistrée de la carte reste inchangée"
+      "flash_simulated": "Flashage simulé terminé - aucun firmware envoyé, la version enregistrée de la carte reste inchangée",
+      "robot_playing": "Ce robot exécute une trajectoire : arrêtez-le avant de flasher son contrôleur."
     },
     "progress": {
       "connecting": "Connexion...",
@@ -660,14 +683,16 @@
       "verifying": "Vérification (CRC32 + HMAC)...",
       "rebooting": "Redémarrage vers l'application...",
       "done": "Terminé",
-      "error_rollback": "Rejeté : anti-rollback (activez « autoriser le downgrade » pour contourner)"
+      "error_rollback": "Rejeté : anti-rollback (activez « autoriser le downgrade » pour contourner)",
+      "error": "Le flashage a échoué"
     },
     "target_kinematic_brain": "Cerveau Cinématique",
     "target_urtc_expansion": "Carte d'Extension Avancée",
     "expansion_not_present": "aucune extension Avancée détectée sur ce robot",
     "download_github": "Télécharger depuis GitHub",
     "no_releases": "Aucune release .bin publiée pour le moment.",
-    "simulation_banner": "SIMULATION - rien n'est envoyé aux cartes (passez le transport CAN-OTA sur matériel pour flasher réellement)"
+    "simulation_banner": "SIMULATION - rien n'est envoyé aux cartes (passez le transport CAN-OTA sur matériel pour flasher réellement)",
+    "show_bootloaders": "Lister aussi les images de bootloader (expert)"
   },
   "tester": {
     "title": "Tester",
@@ -985,7 +1010,8 @@
       "AXIS_2_POS": "Stick Droit à Droite",
       "AXIS_3_NEG": "Stick Droit en Haut",
       "AXIS_3_POS": "Stick Droit en Bas"
-    }
+    },
+    "controlling": "La manette déplace {{robot}}, le robot sélectionné dans la liste"
   },
   "bluetooth_pairing": {
     "title": "Associer un appareil Bluetooth à ce CM5",

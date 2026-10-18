@@ -223,7 +223,7 @@ export function VirtualKinematics({ robot, controlMode, onSelectRobot, lowPower 
         
         {robot.juanenPnP?.enabled && (
           <DraggableGizmo
-            position={[(robot.juanenPnP.worldPos?.x || -100) / 1000, 0, (robot.juanenPnP.worldPos?.y || -100) / 1000]}
+            position={[(robot.juanenPnP.worldPos?.x ?? -100) / 1000, 0, (robot.juanenPnP.worldPos?.y ?? -100) / 1000]}
             scale={[robot.juanenPnP.renderScale || 1, robot.juanenPnP.renderScale || 1, robot.juanenPnP.renderScale || 1]}
             controlMode={controlMode}
             initialRotation={robot.juanenPnP.worldRot || 0}
@@ -239,7 +239,7 @@ export function VirtualKinematics({ robot, controlMode, onSelectRobot, lowPower 
         
         {robot.lumenPnP?.enabled && (
           <DraggableGizmo
-            position={[(robot.lumenPnP.worldPos?.x || 100) / 1000, 0, (robot.lumenPnP.worldPos?.y || -100) / 1000]}
+            position={[(robot.lumenPnP.worldPos?.x ?? 100) / 1000, 0, (robot.lumenPnP.worldPos?.y ?? -100) / 1000]}
             scale={[robot.lumenPnP.renderScale || 1, robot.lumenPnP.renderScale || 1, robot.lumenPnP.renderScale || 1]}
             controlMode={controlMode}
             initialRotation={robot.lumenPnP.worldRot || 0}
@@ -255,7 +255,7 @@ export function VirtualKinematics({ robot, controlMode, onSelectRobot, lowPower 
 
         {robot.juanenCNC?.enabled && (
           <DraggableGizmo
-            position={[(robot.juanenCNC.worldPos?.x || 200) / 1000, 0, (robot.juanenCNC.worldPos?.y || 200) / 1000]}
+            position={[(robot.juanenCNC.worldPos?.x ?? 200) / 1000, 0, (robot.juanenCNC.worldPos?.y ?? 200) / 1000]}
             scale={[robot.juanenCNC.renderScale || 1, robot.juanenCNC.renderScale || 1, robot.juanenCNC.renderScale || 1]}
             controlMode={controlMode}
             initialRotation={robot.juanenCNC.worldRot || 0}
@@ -271,7 +271,7 @@ export function VirtualKinematics({ robot, controlMode, onSelectRobot, lowPower 
 
         {robot.juanenLaser?.enabled && (
           <DraggableGizmo
-            position={[(robot.juanenLaser.worldPos?.x || -200) / 1000, 0, (robot.juanenLaser.worldPos?.y || 200) / 1000]}
+            position={[(robot.juanenLaser.worldPos?.x ?? -200) / 1000, 0, (robot.juanenLaser.worldPos?.y ?? 200) / 1000]}
             scale={[robot.juanenLaser.renderScale || 1, robot.juanenLaser.renderScale || 1, robot.juanenLaser.renderScale || 1]}
             controlMode={controlMode}
             initialRotation={robot.juanenLaser.worldRot || 0}
@@ -287,7 +287,7 @@ export function VirtualKinematics({ robot, controlMode, onSelectRobot, lowPower 
 
         {robot.vacuumTable?.enabled && (
           <DraggableGizmo
-            position={[(robot.vacuumTable.worldPos?.x || -300) / 1000, 0, (robot.vacuumTable.worldPos?.y || 0) / 1000]}
+            position={[(robot.vacuumTable.worldPos?.x ?? -300) / 1000, 0, (robot.vacuumTable.worldPos?.y ?? 0) / 1000]}
             scale={[robot.vacuumTable.renderScale || 1, robot.vacuumTable.renderScale || 1, robot.vacuumTable.renderScale || 1]}
             controlMode={controlMode}
             initialRotation={robot.vacuumTable.worldRot || 0}
@@ -303,7 +303,7 @@ export function VirtualKinematics({ robot, controlMode, onSelectRobot, lowPower 
 
         {robot.heatedBed?.enabled && (
           <DraggableGizmo
-            position={[(robot.heatedBed.worldPos?.x || 300) / 1000, 0, (robot.heatedBed.worldPos?.y || 0) / 1000]}
+            position={[(robot.heatedBed.worldPos?.x ?? 300) / 1000, 0, (robot.heatedBed.worldPos?.y ?? 0) / 1000]}
             scale={[robot.heatedBed.renderScale || 1, robot.heatedBed.renderScale || 1, robot.heatedBed.renderScale || 1]}
             controlMode={controlMode}
             initialRotation={robot.heatedBed.worldRot || 0}
@@ -430,7 +430,7 @@ export function VirtualKinematics({ robot, controlMode, onSelectRobot, lowPower 
 
         {hasXYTable ? (
           <DraggableGizmo
-            position={[(robot.xyTable?.worldPos?.x || -tableW * 500) / 1000, 0, (robot.xyTable?.worldPos?.y || -tableL * 500) / 1000]}
+            position={[(robot.xyTable?.worldPos?.x ?? -tableW * 500) / 1000, 0, (robot.xyTable?.worldPos?.y ?? -tableL * 500) / 1000]}
             scale={[robot.xyTable?.renderScale || 1, robot.xyTable?.renderScale || 1, robot.xyTable?.renderScale || 1]}
             controlMode={controlMode}
             initialRotation={robot.xyTable?.worldRot || 0}

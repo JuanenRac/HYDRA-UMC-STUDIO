@@ -67,6 +67,8 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   const [ghAssets, setGhAssets] = useState<GithubFirmwareAsset[] | null>(null);
   const [ghLoading, setGhLoading] = useState(false);
   const [showFlashConfirm, setShowFlashConfirm] = useState(false);
+  // Bootloader images are not offered unless asked for (see canOta.ts).
+  const [showBootloaders, setShowBootloaders] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const robot = robots.find(r => r.id === robotId);
@@ -152,7 +154,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
     setGhLoading(true);
     setGhAssets(null);
     try {
-      const assets = await fetchGithubFirmwareReleases(githubRepo, tier);
+      const assets = await fetchGithubFirmwareReleases(githubRepo, tier, 'main', { includeBootloaders: showBootloaders });
       if (targetKeyRef.current !== requestKey) return; // tier/robot changed mid-flight - drop stale result
       setGhAssets(assets);
       pushLog(t('flasher.log.github_found', { count: assets.length, repo: githubRepo }));
@@ -187,6 +189,8 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
       return;
     }
     pushLog(t('flasher.log.version_found', { fw: res.firmwareVersion, bl: res.bootloaderVersion }), 'ok');
+    // The simulation invents these numbers: they are shown in the log but not written into the shared state.
+    if (!isHardwareTransport) return;
     const patch: Record<string, any> = { firmwareVersion: res.firmwareVersion, bootloaderVersion: res.bootloaderVersion, hardwareId: res.hardwareId, lastSeen: Date.now() };
     if (tier === 'urtcHead' && res.expansionBoardType !== undefined) patch.expansionBoardType = res.expansionBoardType;
     applyBoardPatch(patch);
@@ -199,6 +203,11 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
 
   async function doFlash() {
     if (!target || !file) return;
+    // A robot that is running a trajectory must not have its controller reflashed under it.
+    if (isHardwareTransport && robot?.playbackState?.isPlaying && tier !== 'kinematicBrain') {
+      pushLog(t('flasher.log.robot_playing'), 'error');
+      return;
+    }
     if (isHardwareTransport) {
       const resolved = resolveHardwareTarget(target);
       if (!resolved) {
@@ -219,7 +228,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
           setPhase('done');
           setPercent(100);
           pushLog(t('flasher.log.flash_done'), 'ok');
-          applyBoardPatch({ firmwareVersion: file.name.replace(/\.bin$/i, ''), bootloaderVersion: boardState?.bootloaderVersion || '0.0.0', hardwareId: boardState?.hardwareId, lastSeen: Date.now() });
+          applyBoardPatch({ firmwareVersion: file.versionTag || file.name.replace(/\.bin$/i, ''), bootloaderVersion: boardState?.bootloaderVersion || '0.0.0', hardwareId: boardState?.hardwareId, lastSeen: Date.now() });
         } else {
           setPhase('error');
           pushLog(t('flasher.log.flash_hardware_failed', { reason: result.reason }), 'error');
@@ -267,7 +276,12 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
       setPages({ sent: progress.pages_sent, total: progress.pages_total });
     }
     if (progress.phase === 'transferring' && progress.pages_sent && progress.pages_total && progress.pages_sent % 5 !== 0 && progress.pages_sent !== progress.pages_total) return;
-    pushLog(t(`flasher.progress.${progress.phase}`, { page: progress.pages_sent, total: progress.pages_total }), progress.phase === 'error' ? 'error' : 'info');
+    if (progress.phase === 'error') {
+      // The reason the bootloader client reports (a page that was never acknowledged...) is what the operator needs.
+      pushLog(t('flasher.log.flash_hardware_failed', { reason: progress.error || t('flasher.progress.error') }), 'error');
+      return;
+    }
+    pushLog(t(`flasher.progress.${progress.phase}`, { page: progress.pages_sent, total: progress.pages_total }), 'info');
   }, [canotaProgress]); // eslint-disable-line
 
   return (
@@ -379,6 +393,10 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
             <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
               <input type="checkbox" checked={eraseFram} onChange={e => setEraseFram(e.target.checked)} className="accent-sky-500" />
               {t('flasher.erase_fram', 'Erase F-RAM after flash')}
+            </label>
+            <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
+              <input type="checkbox" checked={showBootloaders} onChange={e => { setShowBootloaders(e.target.checked); setGhAssets(null); }} className="accent-sky-500" />
+              {t('flasher.show_bootloaders')}
             </label>
           </div>
         </div>

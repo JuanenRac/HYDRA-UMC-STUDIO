@@ -73,6 +73,7 @@ function TestConnectionButton({ state, onTest }: { state: TestState; onTest: () 
 
 export function Config({ onClose }: { onClose: () => void }) {
   const { t, i18n } = useTranslation();
+  const [confirmHardwareTransport, setConfirmHardwareTransport] = useState(false);
   const { controllers, activeController, activeControllerId, updateController, settings, updateSettings, updateRobot, addController, removeController, factoryReset, updateCamera, flushSettingsSave, authToken, serverReachable } = useHydraStore();
   const [configTab, setConfigTab] = useState<ConfigTab>('identity');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -298,8 +299,16 @@ export function Config({ onClose }: { onClose: () => void }) {
                 <button onClick={() => addController({ id: 'new-' + Date.now(), name: 'New Controller', ip: '192.168.1.xxx', status: 'offline', fdcanBaudrate: 1000, fdcanDataBaudrate: 5000, robots: createDefaultRobots(), cameras: createDefaultCameras() })} className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-sky-400 rounded-lg border border-slate-700 text-xs font-bold uppercase hover:bg-slate-700"><Plus size={14}/> {t('config.add_node')}</button>
 
                 <div className="pt-6 grid grid-cols-2 gap-4 border-t border-slate-800/50">
-                   <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{t('config.fdcan_protocol')}</label><select className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"><option>{t('config.classic_can')} (2.0)</option><option selected>{t('config.fdcan_iso')}</option></select></div>
-                   <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{t('config.data_phase_bitrate')}</label><select className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"><option>500 kbps</option><option>1 Mbps</option><option selected>2 Mbps</option><option>5 Mbps</option><option>10 Mbps</option></select></div>
+                   <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{t('config.fdcan_protocol')}</label><select defaultValue="fdcan" className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"><option value="classic">{t('config.classic_can')} (2.0)</option><option value="fdcan">{t('config.fdcan_iso')}</option></select></div>
+                   <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{t('config.data_phase_bitrate')}</label><select
+                     value={activeController.fdcanDataBaudrate}
+                     onChange={e => updateController(activeController.id, { fdcanDataBaudrate: Number(e.target.value) })}
+                     className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none focus:border-sky-500"
+                   >
+                     {[500, 1000, 2000, 4000, 5000, 8000, 10000].map(kbps => (
+                       <option key={kbps} value={kbps}>{kbps >= 1000 ? `${kbps / 1000} Mbps` : `${kbps} kbps`}</option>
+                     ))}
+                   </select></div>
                 </div>
               </div>
             )}
@@ -438,7 +447,7 @@ export function Config({ onClose }: { onClose: () => void }) {
                                 // rendered options. Thermal stays
                                 // untouched either way - it's a real
                                 // hardware type, not tied to sourceType.
-                                ...(c.type !== 'IP Vision Camera Main Stream' && c.type !== 'IP Vision Camera Sub Stream' ? {} : { type: 'USB Vision Camera' }),
+                                ...(!c.type.startsWith('IP Vision Camera') ? {} : { type: 'USB Vision Camera' }),
                               })}
                               className={cn("flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors", (c.sourceType || 'usb') === 'usb' ? "bg-sky-500/20 text-sky-400 border border-sky-500/40" : "bg-slate-900 text-slate-500 border border-slate-800 hover:text-slate-300")}
                             >
@@ -713,7 +722,7 @@ export function Config({ onClose }: { onClose: () => void }) {
                 <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-2xl relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 blur-3xl" />
                   <div className="flex justify-between items-center border-b border-slate-900 pb-3"><span className="font-black text-sky-400 uppercase tracking-widest text-[11px]">{t('config.openpnp_control')}</span><input type="checkbox" checked={settings.integrations?.openPnP?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-sky-500" /></div>
-                  <div className="grid grid-cols-2 gap-6"><div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">{t('config.server_ip')}</label><input value={settings.integrations?.openPnP?.ip} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, ip: e.target.value } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div><div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">{t('config.port')}</label><input type="number" value={settings.integrations?.openPnP?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div></div>
+                  <div className="grid grid-cols-2 gap-6"><div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">{t('config.server_ip')}</label><input value={settings.integrations?.openPnP?.ip} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, ip: e.target.value } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div><div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">{t('config.port')}</label><input type="number" value={settings.integrations?.openPnP?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, openPnP: { ...settings.integrations?.openPnP, port: parseInt(e.target.value) || 0 } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div></div>
                   <TestConnectionButton state={testStates.openPnP || 'idle'} onTest={() => testConnection('openPnP', settings.integrations?.openPnP?.ip, settings.integrations?.openPnP?.port)} />
                 </div>
                 {/* CNC */}
@@ -723,7 +732,7 @@ export function Config({ onClose }: { onClose: () => void }) {
                    <div className="grid grid-cols-3 gap-6">
                       <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">{t('config.software_type')}</label><select className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" value={settings.integrations?.cnc?.software} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, software: e.target.value } } })}><option value="LinuxCNC">LinuxCNC</option><option value="Mach3">Mach3</option><option value="GRBL">GRBL Serial</option></select></div>
                       <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">{t('config.server_ip')}</label><input value={settings.integrations?.cnc?.ip} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, ip: e.target.value } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div>
-                      <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">{t('config.port')}</label><input type="number" value={settings.integrations?.cnc?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div>
+                      <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">{t('config.port')}</label><input type="number" value={settings.integrations?.cnc?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, cnc: { ...settings.integrations?.cnc, port: parseInt(e.target.value) || 0 } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div>
                    </div>
                    <TestConnectionButton state={testStates.cnc || 'idle'} onTest={() => testConnection('cnc', settings.integrations?.cnc?.ip, settings.integrations?.cnc?.port)} />
                 </div>
@@ -734,7 +743,7 @@ export function Config({ onClose }: { onClose: () => void }) {
                    <div className="grid grid-cols-3 gap-6">
                       <select className="bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200" value={settings.integrations?.laser?.software} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, software: e.target.value } } })}><option value="LightBurn">LightBurn</option><option value="LaserGRBL">LaserGRBL</option></select>
                       <input value={settings.integrations?.laser?.ip} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, ip: e.target.value } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" placeholder={t('config.server_ip')} />
-                      <input type="number" value={settings.integrations?.laser?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" />
+                      <input type="number" value={settings.integrations?.laser?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, laser: { ...settings.integrations?.laser, port: parseInt(e.target.value) || 0 } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" />
                    </div>
                    <TestConnectionButton state={testStates.laser || 'idle'} onTest={() => testConnection('laser', settings.integrations?.laser?.ip, settings.integrations?.laser?.port)} />
                 </div>
@@ -744,7 +753,7 @@ export function Config({ onClose }: { onClose: () => void }) {
                    <div className="flex justify-between items-center border-b border-slate-900 pb-3"><span className="font-black text-amber-400 uppercase tracking-widest text-[11px] flex items-center gap-2"><Bot size={14} /> {t('config.ros2_bridge')}</span><input type="checkbox" checked={settings.integrations?.ros2?.enabled} onChange={e => updateSettings({ integrations: { ...settings.integrations, ros2: { ...settings.integrations?.ros2, enabled: e.target.checked } } })} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-amber-500" /></div>
                    <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">{t('config.server_ip')}</label><input value={settings.integrations?.ros2?.ip} onChange={e => updateSettings({ integrations: { ...settings.integrations, ros2: { ...settings.integrations?.ros2, ip: e.target.value } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div>
-                      <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">{t('config.port')}</label><input type="number" value={settings.integrations?.ros2?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, ros2: { ...settings.integrations?.ros2, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div>
+                      <div className="space-y-1"><label className="text-[9px] font-black text-slate-600 uppercase">{t('config.port')}</label><input type="number" value={settings.integrations?.ros2?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, ros2: { ...settings.integrations?.ros2, port: parseInt(e.target.value) || 0 } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" /></div>
                    </div>
                    <TestConnectionButton state={testStates.ros2 || 'idle'} onTest={() => testConnection('ros2', settings.integrations?.ros2?.ip, settings.integrations?.ros2?.port)} />
                 </div>
@@ -761,7 +770,7 @@ export function Config({ onClose }: { onClose: () => void }) {
                         <option value="BambuStudio">Bambu Studio</option>
                       </select>
                       <input value={settings.integrations?.printer3d?.ip} onChange={e => updateSettings({ integrations: { ...settings.integrations, printer3d: { ...settings.integrations?.printer3d, ip: e.target.value } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" placeholder={t('config.server_ip')} />
-                      <input type="number" value={settings.integrations?.printer3d?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, printer3d: { ...settings.integrations?.printer3d, port: parseInt(e.target.value) } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" />
+                      <input type="number" value={settings.integrations?.printer3d?.port} onChange={e => updateSettings({ integrations: { ...settings.integrations, printer3d: { ...settings.integrations?.printer3d, port: parseInt(e.target.value) || 0 } } })} className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 font-mono" />
                    </div>
                    <TestConnectionButton state={testStates.printer3d || 'idle'} onTest={() => testConnection('printer3d', settings.integrations?.printer3d?.ip, settings.integrations?.printer3d?.port)} />
                 </div>
@@ -819,7 +828,15 @@ export function Config({ onClose }: { onClose: () => void }) {
                 <div className="bg-slate-950 p-8 rounded-3xl border border-slate-800 space-y-8 shadow-2xl relative overflow-hidden">
                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-sky-500/20 to-transparent" />
                    <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest flex items-center gap-3"><Cpu size={20}/> {t('config.can_ota')}</h3>
-                   <div className="space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t('config.transport_layer')}</label><select className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 outline-none focus:border-sky-500 shadow-inner transition-all"><option>{t('config.mock_sim')}</option><option>{t('config.hw_direct')}</option><option>{t('config.net_tunnel')}</option></select></div>
+                   <div className="space-y-2"><label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t('config.transport_layer')}</label><select
+                      value={settings.canOta?.transport ?? 'mock'}
+                      onChange={e => {
+                        // Switching to the real boards is confirmed; going back to the simulation is not.
+                        if (e.target.value === 'hardware') setConfirmHardwareTransport(true);
+                        else updateSettings({ canOta: { ...(settings.canOta ?? { transport: 'mock' }), transport: 'mock' } });
+                      }}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 outline-none focus:border-sky-500 shadow-inner transition-all"
+                    ><option value="mock">{t('config.mock_sim')}</option><option value="hardware">{t('config.hw_direct')}</option></select></div>
                    <div className="grid grid-cols-2 gap-8 border-t border-slate-900 pt-8">
                       <div className="space-y-3"><label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t('config.kinematic_brain_fw')}</label><div className="flex items-center gap-3 bg-slate-900 p-3 rounded-xl border border-slate-800 shadow-inner"><Save size={16} className="text-slate-700"/><input className="bg-transparent border-none text-[11px] text-slate-500 font-mono w-full" value="FIRMWARE/KinematicBrain" readOnly /></div></div>
                       <div className="space-y-3"><label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t('config.controller_fw')}</label><div className="flex items-center gap-3 bg-slate-900 p-3 rounded-xl border border-slate-800 shadow-inner"><Save size={16} className="text-slate-700"/><input className="bg-transparent border-none text-[11px] text-slate-500 font-mono w-full" value="FIRMWARE/ControllerBoard" readOnly /></div></div>
@@ -888,6 +905,15 @@ export function Config({ onClose }: { onClose: () => void }) {
           <button onClick={onClose} className="px-12 py-3 text-sm bg-sky-500 text-slate-950 font-black rounded-xl shadow-[0_0_30px_rgba(0,229,255,0.4)] border border-sky-400 uppercase hover:bg-sky-400 transition-all tracking-[0.2em]">{t('config.commit_close')}</button>
         </div>
       </div>
+      <ConfirmDialog
+        open={confirmHardwareTransport}
+        message={t('config.confirm_hardware_transport')}
+        onConfirm={() => {
+          updateSettings({ canOta: { ...(settings.canOta ?? { transport: 'mock' }), transport: 'hardware' } });
+          setConfirmHardwareTransport(false);
+        }}
+        onCancel={() => setConfirmHardwareTransport(false)}
+      />
       <ConfirmDialog
         open={showResetConfirm}
         message={t('config.reset_confirm')}

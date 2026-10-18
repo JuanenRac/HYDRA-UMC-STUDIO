@@ -32,18 +32,10 @@ import KochArm from './KochArm';
 import Ur3ClassicArm from './Ur3ClassicArm';
 import Ur5ClassicArm from './Ur5ClassicArm';
 import Ur10ClassicArm from './Ur10ClassicArm';
+import { lerpAngleDeg } from '../../lib/angles';
 
 type Joints = RobotState['joints'];
 const JOINT_KEYS: (keyof Joints)[] = ['j1', 'j2', 'j3', 'j4', 'j5', 'j6'];
-
-// Shortest-path angle interpolation in degrees - a naive linear lerp
-// between e.g. 350deg and 10deg would visibly spin the joint the LONG
-// way around (340deg of travel) instead of the real 20deg it should
-// take.
-export function lerpAngleDeg(current: number, target: number, t: number): number {
-    const diff = (((target - current + 180) % 360) + 360) % 360 - 180;
-    return current + diff * t;
-}
 
 // Real gap closed: every joint rotation across all ~26 model-specific
 // Arm components below used to bind directly to the raw

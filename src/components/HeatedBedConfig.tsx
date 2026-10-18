@@ -4,6 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
+import { clampBedTarget } from '../lib/heatedBed';
 import { useState } from 'react';
 import { useHydraStore } from '../store';
 import { HEATED_BED_MODELS, heatedBedModel, heatedBedSize, selectHeatedBed, resizeHeatedBed } from '../heatedBeds';
@@ -169,8 +170,8 @@ export function HeatedBedConfig() {
                     type="number"
                     min="0" max="300" step="1"
                     className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-xs text-slate-200 focus:outline-none focus:border-rose-500"
-                    value={moduleData?.targetTemp || 60}
-                    onChange={(e) => handleCustomChange('targetTemp', Number(e.target.value))}
+                    value={moduleData?.targetTemp ?? 60}
+                    onChange={(e) => handleCustomChange('targetTemp', clampBedTarget(Number(e.target.value)))}
                   />
                 </div>
               </div>

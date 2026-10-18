@@ -49,6 +49,7 @@ import { ur3ClassicJointsToCartesian, ur3ClassicCartesianToJoints } from './ur3C
 import { ur5ClassicJointsToCartesian, ur5ClassicCartesianToJoints } from './ur5ClassicKinematics';
 import { ur10ClassicJointsToCartesian, ur10ClassicCartesianToJoints } from './ur10ClassicKinematics';
 import type { KinematicsPoint } from './utils';
+import { withContinuousBase } from './jogSafety';
 
 export function jointsToCartesianForModel(model: RobotModel | undefined, pt: KinematicsPoint): { x: number; y: number; z: number; a: number; b: number; c: number } {
   if (model === 'Parol6 (6-DOF)') return parol6JointsToCartesian(pt);
@@ -133,6 +134,20 @@ export function jointLimitsFor(model: RobotModel, j: 'j1' | 'j2' | 'j3' | 'j4' |
 // `*CartesianToJoints` functions again - same "single source of truth"
 // reasoning as jointsToCartesianForModel/jointLimitsFor above.
 export function resolveTargetJoints(
+  model: RobotModel | undefined,
+  x: number, y: number, z: number, a: number, b: number, c: number,
+  genericJoints: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number },
+  seed?: { j1?: number },
+) {
+  const solved = solveModelJoints(model, x, y, z, a, b, c, genericJoints);
+  // The solvers give the base joint as atan2(y, x), clipped to the limits: right next to the +-180 seam that is a
+  // jump of a whole turn for a robot whose base can turn further. Given the base's present angle, take the angle
+  // that points the same way inside the limits and is closest to it. See jogSafety.ts.
+  if (!model || seed?.j1 === undefined || solved === genericJoints) return solved;
+  return withContinuousBase(solved, { x, y }, seed.j1, jointLimitsFor(model, 'j1'));
+}
+
+function solveModelJoints(
   model: RobotModel | undefined,
   x: number, y: number, z: number, a: number, b: number, c: number,
   genericJoints: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number }

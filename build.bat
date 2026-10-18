@@ -45,13 +45,21 @@ echo ***************************************************************************
 echo.
 echo.
 call npm install
-call npm install-scripts approve --all
+if errorlevel 1 goto :build_failed
 
 echo ========================================
 echo  Compiling HYDRA-UMC STUDIO (Prod Mode) 
 echo ========================================
 call npm run build
+if errorlevel 1 goto :build_failed
 echo.
-echo Build complete! You can now start the production server with:
-echo npm start
+echo Build complete! The static files are in dist/. To look at them locally run:
+echo npm run preview
 pause
+exit /b 0
+
+:build_failed
+echo.
+echo The build FAILED - see the messages above.
+pause
+exit /b 1

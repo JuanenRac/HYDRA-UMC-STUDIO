@@ -33,7 +33,7 @@
 
 import { Matrix4, Quaternion, Vector3, Euler } from 'three';
 import type { KinematicsPoint } from './utils';
-import { FAZE4_CHAIN, FAZE4_ROOT_QUAT } from '../components/3d/Faze4Arm';
+import { FAZE4_CHAIN, FAZE4_ROOT_QUAT } from '../components/3d/chains/Faze4Chain';
 
 const DEG = Math.PI / 180;
 

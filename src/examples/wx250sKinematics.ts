@@ -12,7 +12,7 @@
 
 import { Matrix4, Quaternion, Vector3, Euler } from 'three';
 import type { KinematicsPoint } from './utils';
-import { WX250S_CHAIN, WX250S_ROOT_QUAT } from '../components/3d/Wx250sArm';
+import { WX250S_CHAIN, WX250S_ROOT_QUAT } from '../components/3d/chains/Wx250sChain';
 
 const DEG = Math.PI / 180;
 

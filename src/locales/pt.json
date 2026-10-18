@@ -3,6 +3,24 @@
     "confirm": "Confirmar",
     "cancel": "Cancelar"
   },
+  "command_issue": {
+    "title": "Comando não entregue",
+    "session_expired": "A sua sessão expirou e não foi possível renová-la - o comando {{command}} para o robô {{robots}} NÃO foi enviado. Inicie sessão de novo.",
+    "forbidden": "Esta conta não tem permissão para enviar o comando {{command}} ao robô {{robots}}.",
+    "not_found": "O servidor não conhece o robô {{robots}} - o comando {{command}} não foi enviado.",
+    "claimed": "O robô {{robots}} está reservado por outro operador - o comando {{command}} foi recusado. {{detail}}",
+    "rejected": "O servidor recusou o comando {{command}} para o robô {{robots}}. {{detail}}",
+    "server": "O servidor falhou ao tratar o comando {{command}} do robô {{robots}}.",
+    "network": "Não foi possível contactar o servidor - o comando {{command}} para o robô {{robots}} NÃO foi enviado.",
+    "warnings": "O comando {{command}} do robô {{robots}} foi aceite com observações: {{detail}}",
+    "jog_jump": "Movimento recusado: esse passo moveria a articulação {{detail}} de uma só vez. Não foi enviado nada.",
+    "estop_failed": "A PARAGEM DE EMERGÊNCIA NÃO CHEGOU ao robô {{robots}} ({{detail}}). Pare-o no seu próprio painel ou corte a alimentação.",
+    "retry_estop": "Tentar de novo a paragem de emergência",
+    "dismiss": "Fechar",
+    "login_required": "São mostrados dados de exemplo: o servidor exige que inicie sessão antes de mostrar o sistema real.",
+    "power_failed": "O pedido {{command}} foi recusado (HTTP {{detail}}). Reiniciar e desligar só funcionam no próprio dispositivo.",
+    "import_invalid": "O ficheiro não é um {{command}} válido e não foi importado: {{detail}}."
+  },
   "motion_source": {
     "offline": "Offline",
     "simulated": "Simulado - não move a máquina",
@@ -274,7 +292,8 @@
     "ai_hailo_registry_path": "Caminho do registo de modelos",
     "ai_hailo_registry_desc": "Onde ficam os modelos .hef compilados - espelha o models_dir do HYDRA-UMC-DETECTION-HEF (o seu registo real com verificação de somas sha256).",
     "ai_hailo_none": "Nenhum (não instalado)",
-    "language_pt": "Português"
+    "language_pt": "Português",
+    "confirm_hardware_transport": "Mudar o CAN-OTA para o hardware real? A gravação e os testes passarão a falar com as placas reais em vez da simulação."
   },
   "robot_detail": {
     "back": "Voltar ao painel",
@@ -355,7 +374,10 @@
     "base_rotate_ccw": "Rodar a base no sentido anti-horário",
     "base_rotate_cw": "Rodar a base no sentido horário",
     "base_rotation": "Base (J1)",
-    "floating_overlay_hint": "A velocidade, a aceleração, as articulações e o jog XYZ passaram para o painel flutuante na vista 3D acima."
+    "floating_overlay_hint": "A velocidade, a aceleração, as articulações e o jog XYZ passaram para o painel flutuante na vista 3D acima.",
+    "confirm_home": "Enviar já o robô para a sua pose inicial? Move-se de uma só vez.",
+    "confirm_reset": "Parar o robô e enviá-lo já para a sua pose inicial? Move-se de uma só vez.",
+    "confirm_delete_points": "Apagar todos os pontos gravados deste robô? Não se pode desfazer."
   },
   "cameras": {
     "title": "Matriz de visão octal",
@@ -513,8 +535,8 @@
         "heading": "O que é o HYDRA-UMC STUDIO?",
         "paragraphs": [
           "O HYDRA-UMC STUDIO é um painel de controlo centralizado para robôs, máquinas CNC, gravadores laser, camas de impressora 3D e estações de pick-and-place. Um só painel, várias máquinas, todas sincronizadas em tempo real.",
-          "Comece por adicionar um Controlador (seletor no canto superior direito, ou Config > Controladores) - cada controlador representa uma placa HYDRA-UMC física, acessível por Ethernet/IP. Use \"Pesquisa automática HYDRA-UMC\" para encontrar placas na sua rede local automaticamente.",
-          "Com um controlador selecionado, use \"Adicionar robô\" na barra lateral para lhe associar robôs. Clique num robô na barra lateral para abrir o seu painel de controlo completo: deslizadores de jog, exemplos, trajetórias gravadas e a sua própria vista 3D em direto.",
+          "Comece por adicionar um Controlador (seletor no canto superior direito, ou Config > Controladores): cada controlador representa uma placa HYDRA-UMC física, acessível por Ethernet/IP. Prima \"Adicionar nó\" e introduza o nome e o endereço IP.",
+          "Depois de selecionar um controlador, os seus robôs aparecem na barra lateral. Clique num robô para abrir o seu painel de controlo completo: deslizadores de jog, exemplos, trajetórias gravadas e a sua própria vista 3D em direto.",
           "Tudo o que configurar - nomes de robôs, modelos personalizados, trajetórias guardadas, atribuições de ferramentas - fica guardado automaticamente no diretório data/ do servidor, pelo que sobrevive a reinícios e é partilhado por todos os navegadores que abrirem o painel."
         ]
       },
@@ -650,7 +672,8 @@
       "github_downloading": "A descarregar {{name}} do GitHub...",
       "hardware_target_unreachable": "Este destino ainda não é acessível por hardware real",
       "flash_hardware_failed": "O flash por hardware falhou: {{reason}}",
-      "flash_simulated": "Flash simulado terminado - não foi enviado firmware e a versão guardada da placa não mudou"
+      "flash_simulated": "Flash simulado terminado - não foi enviado firmware e a versão guardada da placa não mudou",
+      "robot_playing": "Este robô está a executar uma trajetória: pare-o antes de gravar o seu controlador."
     },
     "progress": {
       "connecting": "A ligar...",
@@ -660,14 +683,16 @@
       "verifying": "A verificar (CRC32 + HMAC)...",
       "rebooting": "A reiniciar para a aplicação...",
       "done": "Concluído",
-      "error_rollback": "Rejeitado: anti-rollback (ative \"permitir downgrade\" para o ignorar)"
+      "error_rollback": "Rejeitado: anti-rollback (ative \"permitir downgrade\" para o ignorar)",
+      "error": "A gravação falhou"
     },
     "target_kinematic_brain": "Kinematic Brain",
     "target_urtc_expansion": "Placa de expansão avançada",
     "expansion_not_present": "nenhuma expansão avançada detetada neste robô",
     "download_github": "Descarregar do GitHub",
     "no_releases": "Ainda não há versões .bin publicadas.",
-    "simulation_banner": "SIMULAÇÃO - não é enviado nada às placas (mude o transporte CAN-OTA para hardware para flashar a sério)"
+    "simulation_banner": "SIMULAÇÃO - não é enviado nada às placas (mude o transporte CAN-OTA para hardware para flashar a sério)",
+    "show_bootloaders": "Listar também imagens de bootloader (avançado)"
   },
   "tester": {
     "title": "Tester",
@@ -985,7 +1010,8 @@
       "AXIS_2_POS": "Manípulo dir. para a direita",
       "AXIS_3_NEG": "Manípulo dir. para cima",
       "AXIS_3_POS": "Manípulo dir. para baixo"
-    }
+    },
+    "controlling": "O comando move {{robot}}, o robô selecionado na lista"
   },
   "bluetooth_pairing": {
     "title": "Emparelhar um dispositivo Bluetooth com este CM5",

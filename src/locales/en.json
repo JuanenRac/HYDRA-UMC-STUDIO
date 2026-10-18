@@ -3,6 +3,24 @@
     "confirm": "Confirm",
     "cancel": "Cancel"
   },
+  "command_issue": {
+    "title": "Command not delivered",
+    "session_expired": "Your session expired and could not be renewed - the {{command}} command for robot {{robots}} was NOT sent. Sign in again.",
+    "forbidden": "This account is not allowed to send the {{command}} command to robot {{robots}}.",
+    "not_found": "The server does not know robot {{robots}} - the {{command}} command was not sent.",
+    "claimed": "Robot {{robots}} is held by another operator - the {{command}} command was refused. {{detail}}",
+    "rejected": "The server refused the {{command}} command for robot {{robots}}. {{detail}}",
+    "server": "The server failed while handling the {{command}} command for robot {{robots}}.",
+    "network": "The server could not be reached - the {{command}} command for robot {{robots}} was NOT sent.",
+    "warnings": "The {{command}} command for robot {{robots}} was accepted with remarks: {{detail}}",
+    "jog_jump": "Jog refused: that step would move joint {{detail}} in one go. Nothing was sent.",
+    "estop_failed": "EMERGENCY STOP DID NOT REACH robot(s) {{robots}} ({{detail}}). Stop them from their own panel or cut their power.",
+    "retry_estop": "Try the emergency stop again",
+    "dismiss": "Dismiss",
+    "login_required": "Showing sample data: the server needs you to sign in before it shows the real system.",
+    "power_failed": "The {{command}} request was refused (HTTP {{detail}}). Restart and shut down only work on the device itself.",
+    "import_invalid": "The file is not a valid {{command}} and was not imported: {{detail}}."
+  },
   "motion_source": {
     "offline": "Offline",
     "simulated": "Simulated - not moving the machine",
@@ -274,7 +292,8 @@
     "ai_hailo_registry_path": "Model registry path",
     "ai_hailo_registry_desc": "Where compiled .hef models live - mirrors HYDRA-UMC-DETECTION-HEF's own models_dir (its real registry with sha256 checksum verification).",
     "ai_hailo_none": "None (not installed)",
-    "language_pt": "Portuguese"
+    "language_pt": "Portuguese",
+    "confirm_hardware_transport": "Switch CAN-OTA to the real hardware? Flashing and testing will then talk to the real boards instead of the simulation."
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -355,7 +374,10 @@
     "base_rotate_ccw": "Rotate base counter-clockwise",
     "base_rotate_cw": "Rotate base clockwise",
     "base_rotation": "Base (J1)",
-    "floating_overlay_hint": "Speed, acceleration, joints and XYZ jog moved to the floating panel on the 3D view above."
+    "floating_overlay_hint": "Speed, acceleration, joints and XYZ jog moved to the floating panel on the 3D view above.",
+    "confirm_home": "Send the robot to its home pose now? It moves in one step.",
+    "confirm_reset": "Stop the robot and send it to its home pose now? It moves in one step.",
+    "confirm_delete_points": "Delete every recorded point of this robot? This cannot be undone."
   },
   "cameras": {
     "title": "Octal Vision Matrix",
@@ -513,8 +535,8 @@
         "heading": "What is HYDRA-UMC STUDIO?",
         "paragraphs": [
           "HYDRA-UMC STUDIO is a centralized control dashboard for robots, CNC machines, laser engravers, 3D-printer beds, and pick-and-place stations. One dashboard, several machines, all synchronized in real time.",
-          "Start by adding a Controller (top-right selector, or Config > Controllers) - each controller represents one physical HYDRA-UMC board, reachable over Ethernet/IP. Use \"Auto-Search HYDRA-UMC\" to find boards on your local network automatically.",
-          "Once a controller is selected, use \"Add Robot\" in the sidebar to attach robots to it. Click a robot in the sidebar to open its full control panel: jog sliders, examples, recorded trajectories, and its own live 3D view.",
+          "Start by adding a Controller (top-right selector, or Config > Controllers) - each controller represents one physical HYDRA-UMC board, reachable over Ethernet/IP. Press \"Add Node\" and enter its name and IP address.",
+          "Once a controller is selected, its robots are listed in the sidebar. Click a robot to open its full control panel: jog sliders, examples, recorded trajectories, and its own live 3D view.",
           "Everything you configure - robot names, custom models, saved trajectories, tool assignments - is saved automatically to the server's data/ directory, so it survives restarts and is shared by every browser that opens the dashboard."
         ]
       },
@@ -650,7 +672,8 @@
       "github_downloading": "Downloading {{name}} from GitHub...",
       "hardware_target_unreachable": "This target is not reachable over real hardware yet",
       "flash_hardware_failed": "Hardware flash failed: {{reason}}",
-      "flash_simulated": "Simulated flash finished - no firmware was sent and the saved board version is unchanged"
+      "flash_simulated": "Simulated flash finished - no firmware was sent and the saved board version is unchanged",
+      "robot_playing": "This robot is running a trajectory - stop it before flashing its controller."
     },
     "progress": {
       "connecting": "Connecting...",
@@ -660,14 +683,16 @@
       "verifying": "Verifying (CRC32 + HMAC)...",
       "rebooting": "Rebooting to application...",
       "done": "Done",
-      "error_rollback": "Rejected: anti-rollback (enable \"allow downgrade\" to override)"
+      "error_rollback": "Rejected: anti-rollback (enable \"allow downgrade\" to override)",
+      "error": "Flash failed"
     },
     "target_kinematic_brain": "Kinematic Brain",
     "target_urtc_expansion": "Advanced Expansion Board",
     "expansion_not_present": "no Advanced expansion detected on this robot",
     "download_github": "Download from GitHub",
     "no_releases": "No .bin releases published yet.",
-    "simulation_banner": "SIMULATION - nothing is sent to the boards (set the CAN-OTA transport to hardware to flash for real)"
+    "simulation_banner": "SIMULATION - nothing is sent to the boards (set the CAN-OTA transport to hardware to flash for real)",
+    "show_bootloaders": "Also list bootloader images (expert)"
   },
   "tester": {
     "title": "Tester",
@@ -985,7 +1010,8 @@
       "AXIS_2_POS": "Right Stick Right",
       "AXIS_3_NEG": "Right Stick Up",
       "AXIS_3_POS": "Right Stick Down"
-    }
+    },
+    "controlling": "The gamepad moves {{robot}} - the robot selected in the list"
   },
   "bluetooth_pairing": {
     "title": "Pair a Bluetooth device to this CM5",

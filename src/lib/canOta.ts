@@ -38,6 +38,7 @@
 // =============================================================================
 
 import { apiUrl } from './apiBase';
+import { sha256Hex } from './sha256';
 
 export type CanOtaTier = 'kinematicBrain' | 'controllerBoard' | 'urtcHead' | 'urtcExpansion';
 
@@ -320,6 +321,10 @@ export interface GithubFirmwareAsset {
   publishedAt: string;
   /** Present when sourced from a manifest (every real case today) - lets Flasher show/verify against the SAME CRC32 the bootloader itself will compute after transfer. */
   crc32?: string;
+  /** SHA-256 of the image as the manifest states it (lowercase hex). A CRC32 detects a damaged download; only a hash stated by the project can tell that the file is the one it published. */
+  sha256?: string;
+  /** True for a bootloader image: flashing one is a different, riskier act than flashing an application. */
+  isBootloader?: boolean;
   displayName?: string;
   chip?: string;
   /** Present when sourced from a manifest (every real case today) - the real hardware_id (e.g. "0x48374334") the bootloader validates START_UPDATE against; hardwareStartFlash() forwards this so a real device rejects a mismatched image instead of STUDIO guessing one. */
@@ -333,7 +338,12 @@ export interface GithubFirmwareAsset {
  * (TIER_COMPONENTS above). Replaces the old Releases-API-based
  * fetchGithubFirmwareReleases() - see this file's own header for why.
  */
-export async function fetchGithubFirmwareReleases(repo: string, tier: CanOtaTier, branch = 'main'): Promise<GithubFirmwareAsset[]> {
+export async function fetchGithubFirmwareReleases(
+  repo: string,
+  tier: CanOtaTier,
+  branch = 'main',
+  options: { includeBootloaders?: boolean } = {},
+): Promise<GithubFirmwareAsset[]> {
   const dir = MANIFEST_DIR[repo];
   if (!dir) throw new Error(`No known firmware_manifest.json location for ${repo}`);
   const manifestUrl = `https://raw.githubusercontent.com/${repo}/${branch}/${dir}/firmware_manifest.json`;
@@ -353,7 +363,7 @@ export async function fetchGithubFirmwareReleases(repo: string, tier: CanOtaTier
   const manifest = await res.json() as {
     components: Record<string, {
       display_name: string; chip: string; version_string: string; hardware_id?: string;
-      files: { bin: { filename: string; size_bytes: number; crc32: string } };
+      files: { bin: { filename: string; size_bytes: number; crc32: string; sha256?: string } };
     }>
   };
   const keys = TIER_COMPONENTS[tier] || [];
@@ -361,6 +371,10 @@ export async function fetchGithubFirmwareReleases(repo: string, tier: CanOtaTier
   for (const key of keys) {
     const comp = manifest.components[key];
     if (!comp) continue;
+    // A bootloader is offered only when asked for: replacing it through the same path as the application is the
+    // one flash that can leave a board unable to start again.
+    const isBootloader = /bootloader/i.test(key);
+    if (isBootloader && !options.includeBootloaders) continue;
     assets.push({
       name: comp.files.bin.filename,
       url: `https://raw.githubusercontent.com/${repo}/${branch}/${dir}/${comp.files.bin.filename}`,
@@ -368,6 +382,8 @@ export async function fetchGithubFirmwareReleases(repo: string, tier: CanOtaTier
       releaseTag: comp.version_string,
       publishedAt: '',
       crc32: comp.files.bin.crc32,
+      sha256: typeof comp.files.bin.sha256 === 'string' ? comp.files.bin.sha256.toLowerCase() : undefined,
+      isBootloader,
       displayName: comp.display_name,
       chip: comp.chip,
       hardwareId: comp.hardware_id,
@@ -505,15 +521,29 @@ export async function hardwareStartFlash(
   }
 }
 
+/**
+ * Checks a downloaded image against what its manifest says: the CRC32 (a damaged download) and, when the manifest
+ * gives one, the SHA-256 (not the file the project published). Throws with the reason; returns when both agree.
+ */
+export function verifyDownloadedFirmware(bytes: Uint8Array, asset: Pick<GithubFirmwareAsset, 'crc32' | 'sha256' | 'size'>): void {
+  if (asset.crc32) {
+    const actual = `0x${crc32(bytes).toString(16).toUpperCase().padStart(8, '0')}`;
+    if (actual.toUpperCase() !== asset.crc32.toUpperCase()) {
+      throw new Error(`CRC32 mismatch after download: manifest says ${asset.crc32}, got ${actual} - file changed or download corrupted, not flashing this.`);
+    }
+  }
+  if (asset.sha256) {
+    const actual = sha256Hex(bytes);
+    if (actual !== asset.sha256.toLowerCase()) {
+      throw new Error(`SHA-256 mismatch after download: manifest says ${asset.sha256}, got ${actual} - this is not the file the project published, not flashing it.`);
+    }
+  }
+}
+
 export async function downloadGithubFirmware(asset: GithubFirmwareAsset): Promise<Uint8Array> {
   const res = await fetch(asset.url);
   if (!res.ok) throw new Error(`Download failed: ${res.status}`);
   const bytes = new Uint8Array(await res.arrayBuffer());
-  if (asset.crc32) {
-    const actual = `0x${crc32(bytes).toString(16).toUpperCase().padStart(8, '0')}`;
-    if (actual !== asset.crc32) {
-      throw new Error(`CRC32 mismatch after download: manifest says ${asset.crc32}, got ${actual} - file changed or download corrupted, not flashing this.`);
-    }
-  }
+  verifyDownloadedFirmware(bytes, asset);
   return bytes;
 }

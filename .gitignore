@@ -13,8 +13,7 @@ dist-ssr
 *.local
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+.vscode/
 .idea
 .DS_Store
 *.suo
@@ -34,3 +33,11 @@ HYDRA-UMC-STUDIO.zip
 # Python bytecode (generated locally; never source)
 __pycache__/
 *.py[cod]
+
+# Local trash folder the model editors create inside public/models, and their temporary backups
+.trash/
+public/models/**/*.bak
+
+# npm is the package manager of this project (package-lock.json); another manager's lockfile would drift from it
+bun.lock
+bun.lockb

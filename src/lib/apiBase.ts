@@ -52,7 +52,9 @@ function defaultProdBase(): string {
   // this page's own real port (window.location.port); :3000 is now only a
   // fallback for the case a real reverse proxy strips it (port 80/443,
   // window.location.port === "").
-  const port = typeof window !== 'undefined' && window.location.port ? window.location.port : '3000';
+  // Behind a reverse proxy on 80/443 the page has no port of its own, and the API is on that same origin: the port
+  // is left off (it used to be forced to :3000, a port the proxy does not expose).
+  const port = typeof window !== 'undefined' && window.location.port ? window.location.port : '';
   // Second real bug, same "everything on the CM5" default deployment: this
   // used to hardcode http: too, regardless of the scheme this exact page
   // was itself loaded over. In the default same-origin deployment (STUDIO's
@@ -62,7 +64,7 @@ function defaultProdBase(): string {
   // from a hardcoded http: origin is then a cross-origin, mixed-content
   // request a browser refuses outright, not just a wrong-looking URL.
   const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https:' : 'http:';
-  return `${protocol}//${hostname}:${port}`;
+  return port ? `${protocol}//${hostname}:${port}` : `${protocol}//${hostname}`;
 }
 
 /** '' in dev (relative paths, proxied by vite.config.ts's own server.proxy)

@@ -3,6 +3,24 @@
     "confirm": "Conferma",
     "cancel": "Annulla"
   },
+  "command_issue": {
+    "title": "Comando non consegnato",
+    "session_expired": "La sessione è scaduta e non è stato possibile rinnovarla - il comando {{command}} per il robot {{robots}} NON è stato inviato. Accedi di nuovo.",
+    "forbidden": "Questo account non può inviare il comando {{command}} al robot {{robots}}.",
+    "not_found": "Il server non conosce il robot {{robots}} - il comando {{command}} non è stato inviato.",
+    "claimed": "Il robot {{robots}} è riservato da un altro operatore - il comando {{command}} è stato rifiutato. {{detail}}",
+    "rejected": "Il server ha rifiutato il comando {{command}} per il robot {{robots}}. {{detail}}",
+    "server": "Il server ha avuto un errore nel gestire il comando {{command}} del robot {{robots}}.",
+    "network": "Il server non è raggiungibile - il comando {{command}} per il robot {{robots}} NON è stato inviato.",
+    "warnings": "Il comando {{command}} del robot {{robots}} è stato accettato con osservazioni: {{detail}}",
+    "jog_jump": "Movimento rifiutato: quel passo sposterebbe il giunto {{detail}} in un colpo solo. Non è stato inviato nulla.",
+    "estop_failed": "L'ARRESTO DI EMERGENZA NON HA RAGGIUNTO il robot {{robots}} ({{detail}}). Fermalo dal suo pannello o togli l'alimentazione.",
+    "retry_estop": "Riprova l'arresto di emergenza",
+    "dismiss": "Chiudi",
+    "login_required": "Sono mostrati dati di esempio: il server richiede l'accesso prima di mostrare il sistema reale.",
+    "power_failed": "La richiesta {{command}} è stata rifiutata (HTTP {{detail}}). Riavvio e spegnimento funzionano solo sul dispositivo stesso.",
+    "import_invalid": "Il file non è un'importazione valida ({{command}}) e non è stato importato: {{detail}}."
+  },
   "motion_source": {
     "offline": "Offline",
     "simulated": "Simulato - non muove la macchina",
@@ -274,7 +292,8 @@
     "ai_hailo_registry_path": "Percorso del registro modelli",
     "ai_hailo_registry_desc": "Dove risiedono i modelli .hef compilati - rispecchia il proprio models_dir di HYDRA-UMC-DETECTION-HEF (il suo vero registro con verifica del checksum sha256).",
     "ai_hailo_none": "Nessuno (non installato)",
-    "language_pt": "Portoghese"
+    "language_pt": "Portoghese",
+    "confirm_hardware_transport": "Passare CAN-OTA all'hardware reale? Flash e test parleranno con le schede vere invece che con la simulazione."
   },
   "robot_detail": {
     "back": "Torna alla Dashboard",
@@ -355,7 +374,10 @@
     "base_rotate_ccw": "Ruota base in senso antiorario",
     "base_rotate_cw": "Ruota base in senso orario",
     "base_rotation": "Base (J1)",
-    "floating_overlay_hint": "Velocità, accelerazione, articolazioni e jog XYZ sono stati spostati nel pannello flottante sopra la vista 3D."
+    "floating_overlay_hint": "Velocità, accelerazione, articolazioni e jog XYZ sono stati spostati nel pannello flottante sopra la vista 3D.",
+    "confirm_home": "Mandare ora il robot alla posizione iniziale? Si muove in un unico passo.",
+    "confirm_reset": "Fermare il robot e mandarlo ora alla posizione iniziale? Si muove in un unico passo.",
+    "confirm_delete_points": "Eliminare tutti i punti registrati di questo robot? Non si può annullare."
   },
   "cameras": {
     "title": "Matrice di Visione Ottale",
@@ -513,8 +535,8 @@
         "heading": "Cos'è HYDRA-UMC STUDIO?",
         "paragraphs": [
           "HYDRA-UMC STUDIO è una dashboard di controllo centralizzato per robot, macchine CNC, incisori laser, piani di stampanti 3D e stazioni pick-and-place. Un'unica dashboard, più macchine, tutte sincronizzate in tempo reale.",
-          "Inizia aggiungendo un Controller (selettore in alto a destra, oppure Config > Controllers) - ogni controller rappresenta una scheda HYDRA-UMC fisica, raggiungibile via Ethernet/IP. Usa \"Auto-Search HYDRA-UMC\" per trovare automaticamente le schede sulla tua rete locale.",
-          "Una volta selezionato un controller, usa \"Add Robot\" nella barra laterale per collegargli dei robot. Clicca su un robot nella barra laterale per aprire il suo pannello di controllo completo: slider di jog, esempi, traiettorie registrate e una propria vista 3D dal vivo.",
+          "Inizia aggiungendo un Controller (selettore in alto a destra, o Config > Controller): ogni controller rappresenta una scheda HYDRA-UMC fisica, raggiungibile via Ethernet/IP. Premi \"Aggiungi Nodo\" e inserisci nome e indirizzo IP.",
+          "Una volta selezionato un controller, i suoi robot sono elencati nella barra laterale. Fai clic su un robot per aprire il suo pannello completo: cursori di jog, esempi, traiettorie registrate e la sua vista 3D in tempo reale.",
           "Tutto ciò che configuri - nomi dei robot, modelli personalizzati, traiettorie salvate, utensili assegnati - viene salvato automaticamente nella cartella data/ del server, quindi sopravvive ai riavvii ed è condiviso da qualsiasi browser che apra la dashboard."
         ]
       },
@@ -650,7 +672,8 @@
       "github_downloading": "Download di {{name}} da GitHub...",
       "hardware_target_unreachable": "Questo target non è ancora raggiungibile via hardware reale",
       "flash_hardware_failed": "Flash hardware fallito: {{reason}}",
-      "flash_simulated": "Flashing simulato terminato - nessun firmware inviato, la versione salvata della scheda non cambia"
+      "flash_simulated": "Flashing simulato terminato - nessun firmware inviato, la versione salvata della scheda non cambia",
+      "robot_playing": "Questo robot sta eseguendo una traiettoria: fermalo prima di flashare il suo controller."
     },
     "progress": {
       "connecting": "Connessione...",
@@ -660,14 +683,16 @@
       "verifying": "Verifica (CRC32 + HMAC)...",
       "rebooting": "Riavvio nell'applicazione...",
       "done": "Fatto",
-      "error_rollback": "Rifiutato: anti-rollback (attiva \"consenti downgrade\" per bypassare)"
+      "error_rollback": "Rifiutato: anti-rollback (attiva \"consenti downgrade\" per bypassare)",
+      "error": "Flash non riuscito"
     },
     "target_kinematic_brain": "Cervello Cinematico",
     "target_urtc_expansion": "Scheda di Espansione Avanzata",
     "expansion_not_present": "nessuna espansione Avanzata rilevata su questo robot",
     "download_github": "Scarica da GitHub",
     "no_releases": "Nessuna release .bin pubblicata finora.",
-    "simulation_banner": "SIMULAZIONE - nulla viene inviato alle schede (imposta il trasporto CAN-OTA su hardware per flashare davvero)"
+    "simulation_banner": "SIMULAZIONE - nulla viene inviato alle schede (imposta il trasporto CAN-OTA su hardware per flashare davvero)",
+    "show_bootloaders": "Elenca anche le immagini del bootloader (esperto)"
   },
   "tester": {
     "title": "Tester",
@@ -985,7 +1010,8 @@
       "AXIS_2_POS": "Stick Destro a Destra",
       "AXIS_3_NEG": "Stick Destro Su",
       "AXIS_3_POS": "Stick Destro Giù"
-    }
+    },
+    "controlling": "Il gamepad muove {{robot}}, il robot selezionato nell'elenco"
   },
   "bluetooth_pairing": {
     "title": "Accoppia un dispositivo Bluetooth a questo CM5",

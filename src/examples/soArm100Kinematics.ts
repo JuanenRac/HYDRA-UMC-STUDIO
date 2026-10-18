@@ -18,7 +18,7 @@
 
 import { Matrix4, Quaternion, Vector3, Euler } from 'three';
 import type { KinematicsPoint } from './utils';
-import { SOARM100_CHAIN, SOARM100_ROOT_QUAT } from '../components/3d/SoArm100Arm';
+import { SOARM100_CHAIN, SOARM100_ROOT_QUAT } from '../components/3d/chains/SoArm100Chain';
 
 const DEG = Math.PI / 180;
 

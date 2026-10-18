@@ -3,6 +3,24 @@
     "confirm": "Bestätigen",
     "cancel": "Abbrechen"
   },
+  "command_issue": {
+    "title": "Befehl nicht zugestellt",
+    "session_expired": "Ihre Sitzung ist abgelaufen und konnte nicht erneuert werden - der Befehl {{command}} für Roboter {{robots}} wurde NICHT gesendet. Bitte erneut anmelden.",
+    "forbidden": "Dieses Konto darf den Befehl {{command}} nicht an Roboter {{robots}} senden.",
+    "not_found": "Der Server kennt Roboter {{robots}} nicht - der Befehl {{command}} wurde nicht gesendet.",
+    "claimed": "Roboter {{robots}} ist von einem anderen Bediener belegt - der Befehl {{command}} wurde abgelehnt. {{detail}}",
+    "rejected": "Der Server hat den Befehl {{command}} für Roboter {{robots}} abgelehnt. {{detail}}",
+    "server": "Der Server ist bei der Verarbeitung des Befehls {{command}} für Roboter {{robots}} ausgefallen.",
+    "network": "Der Server war nicht erreichbar - der Befehl {{command}} für Roboter {{robots}} wurde NICHT gesendet.",
+    "warnings": "Der Befehl {{command}} für Roboter {{robots}} wurde mit Hinweisen angenommen: {{detail}}",
+    "jog_jump": "Tippbewegung abgelehnt: Dieser Schritt würde Gelenk {{detail}} auf einmal bewegen. Es wurde nichts gesendet.",
+    "estop_failed": "DER NOT-HALT HAT Roboter {{robots}} NICHT ERREICHT ({{detail}}). Am eigenen Bedienfeld stoppen oder die Stromversorgung trennen.",
+    "retry_estop": "Not-Halt erneut versuchen",
+    "dismiss": "Schließen",
+    "login_required": "Es werden Beispieldaten angezeigt: Der Server verlangt eine Anmeldung, bevor er das echte System zeigt.",
+    "power_failed": "Die Anfrage {{command}} wurde abgelehnt (HTTP {{detail}}). Neustart und Herunterfahren funktionieren nur am Gerät selbst.",
+    "import_invalid": "Die Datei ist kein gültiger Import ({{command}}) und wurde nicht übernommen: {{detail}}."
+  },
   "motion_source": {
     "offline": "Offline",
     "simulated": "Simuliert - bewegt die Maschine nicht",
@@ -274,7 +292,8 @@
     "ai_hailo_registry_path": "Modellregister-Pfad",
     "ai_hailo_registry_desc": "Wo kompilierte .hef-Modelle liegen - spiegelt HYDRA-UMC-DETECTION-HEFs eigenes models_dir (dessen echtes Register mit sha256-Prüfsummenverifikation).",
     "ai_hailo_none": "Keins (nicht installiert)",
-    "language_pt": "Portugiesisch"
+    "language_pt": "Portugiesisch",
+    "confirm_hardware_transport": "CAN-OTA auf die echte Hardware umstellen? Flashen und Testen sprechen dann mit den echten Platinen statt mit der Simulation."
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",
@@ -355,7 +374,10 @@
     "base_rotate_ccw": "Basis gegen den Uhrzeigersinn drehen",
     "base_rotate_cw": "Basis im Uhrzeigersinn drehen",
     "base_rotation": "Basis (J1)",
-    "floating_overlay_hint": "Geschwindigkeit, Beschleunigung, Gelenke und XYZ-Jog wurden in das schwebende Panel über der 3D-Ansicht oben verschoben."
+    "floating_overlay_hint": "Geschwindigkeit, Beschleunigung, Gelenke und XYZ-Jog wurden in das schwebende Panel über der 3D-Ansicht oben verschoben.",
+    "confirm_home": "Den Roboter jetzt in seine Grundstellung schicken? Er fährt in einem Schritt.",
+    "confirm_reset": "Den Roboter stoppen und jetzt in seine Grundstellung schicken? Er fährt in einem Schritt.",
+    "confirm_delete_points": "Alle aufgezeichneten Punkte dieses Roboters löschen? Das lässt sich nicht rückgängig machen."
   },
   "cameras": {
     "title": "Oktal Vision Matrix",
@@ -513,8 +535,8 @@
         "heading": "Was ist HYDRA-UMC STUDIO?",
         "paragraphs": [
           "HYDRA-UMC STUDIO ist ein zentrales Bedienpanel für Roboter, CNC-Maschinen, Lasergravierer, 3D-Drucker-Betten und Pick-and-Place-Stationen. Ein Dashboard, mehrere Maschinen, alles in Echtzeit synchronisiert.",
-          "Fügen Sie zunächst einen Controller hinzu (Auswahl oben rechts, oder Config > Controllers) - jeder Controller steht für eine physische HYDRA-UMC-Platine, erreichbar über Ethernet/IP. Mit \"Auto-Search HYDRA-UMC\" finden Sie Platinen automatisch in Ihrem lokalen Netzwerk.",
-          "Sobald ein Controller ausgewählt ist, fügen Sie über \"Add Robot\" in der Seitenleiste Roboter hinzu. Klicken Sie in der Seitenleiste auf einen Roboter, um sein vollständiges Bedienpanel zu öffnen: Jog-Regler, Beispiele, aufgezeichnete Trajektorien und eine eigene Live-3D-Ansicht.",
+          "Beginnen Sie mit dem Hinzufügen eines Controllers (Auswahlfeld oben rechts oder Config > Controller): Jeder Controller steht für eine physische HYDRA-UMC-Platine, erreichbar über Ethernet/IP. \"Knoten Hinzufügen\" drücken und Name und IP-Adresse eingeben.",
+          "Ist ein Controller gewählt, stehen seine Roboter in der Seitenleiste. Einen Roboter anklicken, um sein vollständiges Bedienfeld zu öffnen: Jog-Schieberegler, Beispiele, aufgezeichnete Trajektorien und seine eigene 3D-Live-Ansicht.",
           "Alles, was Sie konfigurieren - Robindernamen, benutzerdefinierte Modelle, gespeicherte Trajektorien, zugewiesene Werkzeuge - wird automatisch im data/-Verzeichnis des Servers gespeichert und bleibt so über Neustarts hinweg erhalten und wird von jedem Browser geteilt, der das Dashboard öffnet."
         ]
       },
@@ -650,7 +672,8 @@
       "github_downloading": "Lade {{name}} von GitHub herunter...",
       "hardware_target_unreachable": "Dieses Ziel ist über echte Hardware noch nicht erreichbar",
       "flash_hardware_failed": "Hardware-Flash fehlgeschlagen: {{reason}}",
-      "flash_simulated": "Simuliertes Flashen beendet - es wurde keine Firmware gesendet, die gespeicherte Platinenversion bleibt unverändert"
+      "flash_simulated": "Simuliertes Flashen beendet - es wurde keine Firmware gesendet, die gespeicherte Platinenversion bleibt unverändert",
+      "robot_playing": "Dieser Roboter fährt gerade eine Trajektorie - stoppen Sie ihn, bevor Sie seinen Controller flashen."
     },
     "progress": {
       "connecting": "Verbinde...",
@@ -660,14 +683,16 @@
       "verifying": "Verifiziere (CRC32 + HMAC)...",
       "rebooting": "Neustart in die Anwendung...",
       "done": "Fertig",
-      "error_rollback": "Abgelehnt: Anti-Rollback (\"Downgrade erlauben\" aktivieren zum Umgehen)"
+      "error_rollback": "Abgelehnt: Anti-Rollback (\"Downgrade erlauben\" aktivieren zum Umgehen)",
+      "error": "Flashen fehlgeschlagen"
     },
     "target_kinematic_brain": "Kinematisches Gehirn",
     "target_urtc_expansion": "Erweiterte Expansion Board",
     "expansion_not_present": "keine erweiterte Expansion an diesem Roboter erkannt",
     "download_github": "Von GitHub herunterladen",
     "no_releases": "Noch keine .bin-Releases veröffentlicht.",
-    "simulation_banner": "SIMULATION - es wird nichts an die Platinen gesendet (CAN-OTA-Transport auf Hardware stellen, um wirklich zu flashen)"
+    "simulation_banner": "SIMULATION - es wird nichts an die Platinen gesendet (CAN-OTA-Transport auf Hardware stellen, um wirklich zu flashen)",
+    "show_bootloaders": "Auch Bootloader-Images auflisten (Experte)"
   },
   "tester": {
     "title": "Tester",
@@ -985,7 +1010,8 @@
       "AXIS_2_POS": "Rechter Stick Rechts",
       "AXIS_3_NEG": "Rechter Stick Hoch",
       "AXIS_3_POS": "Rechter Stick Runter"
-    }
+    },
+    "controlling": "Das Gamepad bewegt {{robot}} - den in der Liste gewählten Roboter"
   },
   "bluetooth_pairing": {
     "title": "Bluetooth-Gerät mit diesem CM5 koppeln",

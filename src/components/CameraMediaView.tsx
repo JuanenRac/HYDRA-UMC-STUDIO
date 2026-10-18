@@ -84,9 +84,14 @@ export function CameraMediaView() {
   const mediaUrl = (item: MediaItem) => apiUrl(`/api/camera/media/${item.cameraId}/${item.kind}/${encodeURIComponent(item.filename)}`);
 
   // The ticket is taken when a file is selected, so that a renewal five minutes later does not restart a recording that is playing.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const viewTicket = useMemo(() => mediaTicket, [selected]);
+  // It is taken again when the first ticket arrives after the selection (the picture was asked for without one and
+  // would be refused by a server that requires it), but not when a later renewal replaces it.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- deliberate: see the comment above
+  // oxlint-disable-next-line react-hooks/exhaustive-deps
+  const viewTicket = useMemo(() => mediaTicket, [selected, mediaTicket === null]);
   const viewUrl = (item: MediaItem) => withTicket(mediaUrl(item), viewTicket);
+  // A download starts when the link is followed, minutes after the page was drawn: it carries the current ticket.
+  const downloadUrl = (item: MediaItem) => withTicket(mediaUrl(item), mediaTicket);
 
   const deleteSelected = async () => {
     if (!selected) return;
@@ -190,7 +195,7 @@ export function CameraMediaView() {
                 <Trash2 size={14} /> {t('cameraMedia.delete', 'Delete')}
               </button>
               <a
-                href={viewUrl(selected)}
+                href={downloadUrl(selected)}
                 download={selected.filename}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700 text-xs font-bold text-slate-300 hover:text-slate-100 hover:border-slate-500 transition-colors"
               >

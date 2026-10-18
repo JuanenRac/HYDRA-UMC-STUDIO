@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 import { describe, expect, it } from 'vitest';
-import { lerpAngleDeg } from '../src/components/3d/RobotArm';
+import { lerpAngleDeg } from '../src/lib/angles';
 
 describe('lerpAngleDeg', () => {
   it('takes the short way around a wrap boundary instead of the long way', () => {

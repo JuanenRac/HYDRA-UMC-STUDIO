@@ -27,7 +27,9 @@ import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
 import { usePartColors } from '../../hooks/usePartColors';
-import Toolhead, { toolheadMountOffset } from './Toolhead';
+import Toolhead from './Toolhead';
+import { toolheadMountOffset } from '../../lib/toolheadMount';
+import { type JointDef, Z1_CHAIN, Z1_ROOT_QUAT, Z1_BASE_OFFSET } from './chains/Z1Chain';
 
 const MESH_BASE = '/models/robots-6-dof/z1/';
 
@@ -53,29 +55,6 @@ function useRealScaleSTL(fileName: string): THREE.BufferGeometry {
   return geometry;
 }
 
-interface JointDef {
-  pos: [number, number, number];
-  rpy: [number, number, number];
-  axis: [number, number, number];
-}
-
-export const Z1_CHAIN: JointDef[] = [
-  { pos: [0, 0, 0.0585], rpy: [0, 0, 0], axis: [0, 0, 1] },
-  { pos: [0, 0, 0.045], rpy: [0, 0, 0], axis: [0, 1, 0] },
-  { pos: [-0.35, 0, 0], rpy: [0, 0, 0], axis: [0, 1, 0] },
-  { pos: [0.218, 0, 0.057], rpy: [0, 0, 0], axis: [0, 1, 0] },
-  { pos: [0.07, 0, 0], rpy: [0, 0, 0], axis: [0, 0, 1] },
-  { pos: [0.0492, 0, 0], rpy: [0, 0, 0], axis: [1, 0, 0] },
-];
-
-export const Z1_ROOT_QUAT = (() => {
-  const j1 = Z1_CHAIN[0];
-  const e = new THREE.Euler(j1.rpy[0], j1.rpy[1], j1.rpy[2], 'ZYX');
-  const axisWorld = new THREE.Vector3(...j1.axis).applyEuler(e).normalize();
-  return new THREE.Quaternion().setFromUnitVectors(axisWorld, new THREE.Vector3(0, 1, 0));
-})();
-
-export const Z1_BASE_OFFSET: [number, number, number] = [0, 0, 0];
 
 function jointQuaternion(joint: JointDef, angleDeg: number): THREE.Quaternion {
   const reorient = new THREE.Quaternion().setFromEuler(new THREE.Euler(joint.rpy[0], joint.rpy[1], joint.rpy[2], 'ZYX'));

@@ -41,4 +41,12 @@ describe('apiUrl/wsUrl in a production build', () => {
     expect(apiUrl('/api/settings')).toBe('http://192.168.0.180:3000/api/settings');
     expect(wsUrl('/ws')).toBe('ws://192.168.0.180:3000/ws');
   });
+
+  it('uses the same origin, with no invented port, behind a reverse proxy on the standard port', async () => {
+    stubLocation({ protocol: 'https:', hostname: 'cell.example.org', port: '' } as Location);
+    vi.stubEnv('DEV', false);
+    const { apiUrl, wsUrl } = await import('../src/lib/apiBase');
+    expect(apiUrl('/api/settings')).toBe('https://cell.example.org/api/settings');
+    expect(wsUrl('/ws')).toBe('wss://cell.example.org/ws');
+  });
 });

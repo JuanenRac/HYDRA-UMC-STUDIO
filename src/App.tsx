@@ -5,7 +5,7 @@
 // =============================================================================
 
 import { useState, useEffect } from 'react';
-import { HydraProvider } from './store';
+import { HydraProvider } from './HydraProvider';
 import Dashboard from './Dashboard';
 import { GamepadController } from './components/GamepadController';
 import { AuthGate } from './components/AuthGate';

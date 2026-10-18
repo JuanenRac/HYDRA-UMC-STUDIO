@@ -18,7 +18,6 @@ echo "========================================"
 echo " Installing dependencies... "
 echo "========================================"
 npm install
-npm install-scripts approve --all
 
 echo "========================================"
 echo " Starting HYDRA-UMC STUDIO (Dev Mode) "

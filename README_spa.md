@@ -155,12 +155,13 @@ Dos diálogos independientes, ambos accesibles desde la cabecera (botones `Confi
 ## 🛡️ Fiabilidad
 
 La app se protege a sí misma contra dos clases distintas de fallo en tiempo de ejecución, ambas nacidas de un incidente real de producción (una pantalla kiosco quedándose en negro tras un redeploy). `src/main.tsx` escucha el propio evento `vite:preloadError` de Vite - emitido cuando una pestaña del navegador dejada abierta a través de un redeploy intenta descargar un chunk de panel cargado con `React.lazy()` (cada panel de `Dashboard.tsx`, con hash de contenido según `vite.config.ts`) que ya no existe bajo su hash antiguo - y recarga la página una vez automáticamente, de modo que una pestaña kiosco de larga duración o una pestaña de fondo obsoleta se autorrepara sin que nadie lo note. Una protección con `sessionStorage` evita que esto entre en un bucle de recarga infinito si un chunk falta genuinamente por alguna otra razón. Por separado, `src/components/ErrorBoundary.tsx` envuelve el área de paneles `<Suspense>` como respaldo ante cualquier otro fallo de renderizado; está indexado por la pestaña activa, así que cambiar de un panel caído realmente reintenta el siguiente en vez de dejar todo el dashboard atascado en una pantalla de fallback.
+Las órdenes nunca fallan en silencio: cada orden de jog, reproducción, alimentación, visión y herramienta devuelve un resultado tipado, una sesión caducada se renueva una vez y se reintenta, y todo lo que siga rechazado se muestra en un aviso. El botón de PARO DE EMERGENCIA actúa al instante, sin confirmación (parada más válvulas y bombas apagadas, un reintento y un aviso persistente si no se pudo entregar). El jog con el joystick es un control de hombre muerto (termina al cancelar el puntero, perder el foco, ocultar la pestaña o a los 8 segundos), un movimiento de J1 se queda en el ángulo equivalente más cercano y se rechaza un paso de jog superior a 20 grados. El mando sigue al robot seleccionado en la interfaz y tiene límite de frecuencia. El firmware de una versión se comprueba con su sha256 antes de flashear por CAN-OTA, las imágenes de bootloader son opcionales y las trayectorias y escenas importadas se validan antes de llegar al estado compartido.
 
 ## 🔐 Cuentas y Acceso
 
 Cada servidor siembra una cuenta en su propio primer arranque - usuario `admin`, contraseña `admin` - cámbiala desde **Config > Users** tan pronto como el servidor sea alcanzable más allá de una LAN totalmente de confianza. Esa misma pestaña permite a una cuenta admin crear cuentas adicionales de **operador**: un operador puede iniciar sesión, observar el estado en vivo, y manejar robots (jog/reproducir/pausar/detener/herramienta/válvula/bomba/velocidad), pero no puede sobrescribir los ajustes globales ni gestionar otras cuentas. No se requiere ninguna cuenta solo para mirar - el propio "Continuar en solo lectura" de la pantalla de inicio de sesión salta directamente al dashboard con las escrituras deshabilitadas. Contrato completo (roles, tokens, las rutas `/api/users`) documentado en el propio [`docs/REMOTE_API.md` de HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md), secciones 2a/2b. En producción el primer administrador sale de los ajustes de arranque de la implantación y el servidor rechaza secretos de ejemplo (ver [`docs/PRODUCTION_BOOTSTRAP.md` de HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/PRODUCTION_BOOTSTRAP.md)).
 
-Cada uno de los 3 clientes remotos (SUITE, Android, iOS) se auto-identifica mediante una cabecera de petición `X-Hydra-Client`, de modo que **Config > Remote Access** puede permitir o bloquear cada uno de forma independiente en vez de un único interruptor combinado para los tres.
+Cada uno de los 5 clientes remotos (SUITE, Android, iOS, Watch, DSI) se auto-identifica mediante una cabecera de petición `X-Hydra-Client`, de modo que **Config > Remote Access** puede permitir o bloquear cada uno de forma independiente en vez de un único interruptor combinado para los cinco.
 
 ---
 
@@ -272,7 +273,7 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # Settings de ejemplo pre-cargados para una copia nueva
 │   └── favicon.svg, icons.svg   # Icono de la app y sprite de iconos compartido
 ├── images/                       # Banner del README
-├── tests/                        # Suite real de Vitest (182 pruebas) - solo la matematica FK/IK de src/examples/, sin React/DOM
+├── tests/                        # Suite real de Vitest (273 pruebas) - solo la matematica FK/IK de src/examples/, sin React/DOM
 │   ├── utils.test.ts             # Par FK/IK compartido del brazo generico + sus 5 generadores de trayectorias
 │   ├── urKinematicsShared.test.ts  # Motor real de cadena DH + IK Newton-Raphson (via la cadena real de UR5e)
 │   ├── parol6Kinematics.test.ts  # Cadena real y fija propia de Parol6
@@ -301,7 +302,7 @@ El backend con el que habla esta app (persistencia de settings, la API REST/WebS
 ## 🛠️ Entorno de Desarrollo
 
 ### Requisitos
-- [Node.js](https://nodejs.org/) (v18 o superior recomendado)
+- [Node.js](https://nodejs.org/) (v22 o superior)
 - npm
 - Un backend **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** en marcha (`npm run dev` también ahí, puerto `3000` por defecto) - esta app es un cliente puro y no tiene con quién hablar sin él.
 
@@ -320,7 +321,7 @@ Ejecuta el propio servidor de desarrollo de Vite (`vite` simple, puerto `5173`) 
 ### Pruebas Automatizadas
 
 ```bash
-npm test          # vitest run - 182 pruebas reales sobre src/examples/
+npm test          # vitest run - 273 pruebas reales sobre src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 
@@ -341,7 +342,7 @@ Despliega la carpeta `dist/` resultante en cualquier host estático. Por defecto
 
 ### Versionado
 
-`bump_manifest_version.py` (raíz del repo) es el único dueño tanto de `hydra-umc.project.json` como del campo `version` de `package.json` - `npm run build` (`vite build`) es deliberadamente solo-compilación para que nunca pueda crear desincronización entre ambos incrementando uno sin el otro. `scripts/bump-version.mjs` es un ayudante nativo heredado que se conserva como referencia; nada en este repo lo llama ya. El esquema en sí sigue siendo el "cuentakilómetros" en base 10 de todo el ecosistema: patch +1 por cada incremento real, con acarreo hacia minor (y de minor hacia major) al superar 9, en vez de llegar nunca a un segmento de dos dígitos (`0.0.9` -> `0.1.0`, no `0.0.10`). La versión en ejecución es visible en vivo en el diálogo **About** (leída desde `GET /api/hydra-info`, que el servidor Express lee directamente de `package.json` al arrancar), y el historial completo está en [`CHANGELOG.md`](CHANGELOG.md).
+`bump_manifest_version.py` (raíz del repo) es el único dueño tanto de `hydra-umc.project.json` como del campo `version` de `package.json` - `npm run build` (`vite build`) es deliberadamente solo-compilación para que nunca pueda crear desincronización entre ambos incrementando uno sin el otro. `scripts/bump-version.mjs` es un ayudante nativo heredado que se conserva como referencia; nada en este repo lo llama ya. El esquema en sí sigue siendo el "cuentakilómetros" en base 10 de todo el ecosistema: patch +1 por cada incremento real, con acarreo hacia minor (y de minor hacia major) al superar 9, en vez de llegar nunca a un segmento de dos dígitos (`0.0.9` -> `0.1.0`, no `0.0.10`). La versión en ejecución es visible en vivo en el diálogo **About** (la versión de Studio se lee del `package.json` de esta propia app; la versión del servidor mostrada al lado viene de `GET /api/hydra-info`), y el historial completo está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 

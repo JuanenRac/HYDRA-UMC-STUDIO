@@ -20,7 +20,7 @@
 
 import { Matrix4, Quaternion, Vector3, Euler } from 'three';
 import type { KinematicsPoint } from './utils';
-import { AR3_CHAIN, AR3_ROOT_QUAT } from '../components/3d/AR3Arm';
+import { AR3_CHAIN, AR3_ROOT_QUAT } from '../components/3d/chains/AR3Chain';
 
 const DEG = Math.PI / 180;
 

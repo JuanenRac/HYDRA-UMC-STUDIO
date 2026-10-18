@@ -10,11 +10,14 @@ import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { useHydraStore, ROBOT_MANUFACTURERS } from './store';
 import { apiUrl } from './lib/apiBase';
 import { ConfirmDialog } from './components/ConfirmDialog';
+import { CommandIssueBanner } from './components/CommandIssueBanner';
+import { authFetch } from './lib/session';
+import { setSelectedRobotId, useSelectedRobotId } from './lib/selectedRobot';
 import type { CanOtaTier } from './lib/canOta';
 import {
   Activity, Layers,
   Video, Settings, Menu, Power
-, Cpu, Zap, Thermometer, RefreshCw, Server, Info, HelpCircle, ChevronRight, ArrowLeft, Wifi, Bluetooth, Cable, LogOut, type LucideIcon } from 'lucide-react';
+, Cpu, Zap, Thermometer, RefreshCw, Server, Info, HelpCircle, ChevronRight, ArrowLeft, Wifi, Bluetooth, Cable, LogOut, Gamepad2, type LucideIcon } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -116,9 +119,10 @@ const SystemSupervisor = React.lazy(() => import('./components/SystemSupervisor'
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
-  const { controllers, activeControllerId, setActiveControllerId, robots, settings, updateRobot, isAdmin, logout, serverReachable, settingsSaveError, flushSettingsSave } = useHydraStore();
+  const { controllers, activeControllerId, setActiveControllerId, robots, settings, isAdmin, logout, serverReachable, settingsSaveError, flushSettingsSave, emergencyStop, reportCommandIssue } = useHydraStore();
   const [activeTab, setActiveTab] = useState<string>('overview');
-  const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
+  // Shared with the gamepad, which moves the robot selected here (it used to be fixed on robot 1).
+  const selectedRobotId = useSelectedRobotId();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -126,7 +130,6 @@ export default function Dashboard() {
   const openHelp = (tab?: string, topic?: string) => { setHelpStart({ tab, topic }); setIsHelpOpen(true); };
   const goToView = (view: string) => { if (view === 'settings') setIsSettingsOpen(true); else setActiveTab(view); };
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showEstopConfirm, setShowEstopConfirm] = useState(false);
   // Real per-corner request: shutdown/restart for this CM5's own kiosk
   // node, next to the existing global E-STOP. Same loopback-only Server
   // endpoints AuthGate.tsx's pre-login power buttons already call (see
@@ -139,9 +142,14 @@ export default function Dashboard() {
   const handlePower = async (action: 'shutdown' | 'restart') => {
     setPowerAction(action);
     try {
-      await fetch(apiUrl(action === 'shutdown' ? '/api/system/shutdown' : '/api/system/reboot'), { method: 'POST' });
-      // No finally-reset here: a successful call means this device is
-      // actually going down - staying disabled/labelled until the page
+      const res = await fetch(apiUrl(action === 'shutdown' ? '/api/system/shutdown' : '/api/system/reboot'), { method: 'POST' });
+      if (!res.ok) {
+        // The server refuses these two calls from anywhere but its own device (a kiosk opened by the LAN address,
+        // another computer): the buttons must recover and say why, not stay on "Shutting down..." for ever.
+        setPowerAction(null);
+        reportCommandIssue({ code: 'power_failed', command: action, robotIds: [], detail: String(res.status) });
+      }
+      // On success no reset: this device is actually going down - staying disabled/labelled until the page
       // itself loses its connection is the correct, honest state.
     } catch {
       setPowerAction(null);
@@ -180,12 +188,6 @@ export default function Dashboard() {
       setActiveTab('robot');
     }
 
-    const tokenParam = params.get('token');
-    if (tokenParam) {
-      console.log(`[Industrial] Session Token Received from Remote`);
-      localStorage.setItem('hydra_token', tokenParam);
-    }
-
     document.body.dataset.theme = settings.theme;
     if (settings.language && i18n.language !== settings.language) {
       i18n.changeLanguage(settings.language);
@@ -203,6 +205,7 @@ export default function Dashboard() {
 
   return (
     <div className="w-full h-screen bg-slate-950 bg-electric-grid text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
+      <CommandIssueBanner />
 
       {isAboutOpen && <About onClose={() => setIsAboutOpen(false)} />}
 
@@ -402,7 +405,12 @@ export default function Dashboard() {
              <SystemMetricsBar />
           </div>
           <div className="flex items-center gap-8 shrink-0">
-            <button onClick={() => setShowEstopConfirm(true)} className="flex items-center gap-3 px-6 py-1 rounded-full bg-rose-600 text-white border border-rose-400 transition-all animate-pulse">{t('config.global_estop')}</button>
+            {settings.gamepadEnabled && (
+              <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-sky-300" title={t('gamepad_config.controlling', { robot: robots.find(r => r.id === selectedRobotId)?.name ?? `#${selectedRobotId}` })}>
+                <Gamepad2 size={14} /> {robots.find(r => r.id === selectedRobotId)?.name ?? `#${selectedRobotId}`}
+              </span>
+            )}
+            <button onClick={() => { void emergencyStop(); }} className="flex items-center gap-3 px-6 py-1 rounded-full bg-rose-600 text-white border border-rose-400 transition-all animate-pulse">{t('config.global_estop')}</button>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowShutdownConfirm(true)}
@@ -436,12 +444,6 @@ export default function Dashboard() {
           </div>
         </footer>
       )}
-      <ConfirmDialog
-        open={showEstopConfirm}
-        message={t('dashboard.global_estop_confirm')}
-        onConfirm={() => { robots.forEach(r => updateRobot(r.id, { online: false })); setShowEstopConfirm(false); }}
-        onCancel={() => setShowEstopConfirm(false)}
-      />
       <ConfirmDialog
         open={showShutdownConfirm}
         message={t('auth.confirm_shutdown')}
@@ -478,7 +480,7 @@ function IconButton({ icon, label, onClick }: { icon: React.ReactNode, label: st
 
 function OverviewPanel() {
   const { t } = useTranslation();
-  const { robots, updateRobot, cameras, updateCamera } = useHydraStore();
+  const { robots, updateRobot, cameras, sendRobotCommand } = useHydraStore();
 
   return (
     <div className="w-full h-full flex flex-col gap-6 overflow-hidden">
@@ -559,9 +561,10 @@ function OverviewPanel() {
                       color="emerald"
                       description={r.visionEnabled || (cam?.connected ?? false) ? t('dashboard.mx_live_stream') : undefined}
                       onClick={() => {
-                         // Sync BOTH robot property and camera state for double safety
-                         updateRobot(r.id, { visionEnabled: !r.visionEnabled });
-                         if (cam) updateCamera(cam.id, { connected: !cam.connected });
+                         // One atomic command sets the robot's flag and its paired camera together from a single
+                         // target value; toggling the two separately kept them out of step once they differed.
+                         const enabled = !(r.visionEnabled || (cam?.connected ?? false));
+                         sendRobotCommand(r.id, 'vision', { enabled }, () => ({ visionEnabled: enabled }));
                       }}
                     />
                     <ModuleRow label={t('dashboard.mx_xygantry')} active={r.hasXYTable} color="amber" description={r.hasXYTable ? t('dashboard.mx_quad_axis') : undefined} />
@@ -642,7 +645,7 @@ function SystemMetricsBar() {
   useEffect(() => {
     let cancelled = false;
     const poll = () => {
-      fetch(apiUrl('/api/system/metrics')).then(r => r.ok ? r.json() : null).then(data => {
+      authFetch(apiUrl('/api/system/metrics')).then(r => r.ok ? r.json() : null).then(data => {
         if (!cancelled && data) setMetrics(data);
       }).catch(() => { /* server unreachable - keep showing the last known reading */ });
     };

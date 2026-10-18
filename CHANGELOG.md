@@ -17,15 +17,31 @@ judgment calls:
 - the same carry cascades into `major` if `minor` would exceed 9
 
 The running version is visible live in the app itself: **About** dialog
-(header `About` button) shows it, read from `GET /api/hydra-info`, which the
-Express server reads straight from `package.json` at startup - no separate
-number to keep in sync by hand.
+(header `About` button) shows it, read from this app's own `package.json` - no
+separate number to keep in sync by hand. The server version shown next to it
+comes from `GET /api/hydra-info`.
 
 This file itself is *not* auto-generated per build (most builds are routine
 verification runs with nothing changelog-worthy); it's updated by hand when
 a change is actually worth summarizing for a human.
 
 ---
+
+## [0.7.8] - Commands that report their result, an E-STOP that acts at once, and safer jogging, flashing and imports
+
+- Every robot command (jog, play, pause, stop, tool, valve, pump, speed, vision, power, trajectory) now returns a typed result. An expired session is refreshed once and the command retried; anything still refused (not signed in, not allowed, robot claimed by another client, server error, no network) appears in a banner instead of failing silently.
+- The **E-STOP** buttons (robot panel, top bar, gamepad) act immediately with no confirmation: they stop the robot, switch its valves and pumps off, retry once on a network failure and keep a persistent warning if the stop could not be delivered. They no longer mark the robot offline.
+- Joystick jogging is a held (deadman) control: it ends on pointer cancel, window blur, a hidden tab or after 8 seconds. A J1 move keeps the nearest equivalent angle, and a jog step above 20 degrees is refused with a message.
+- The gamepad drives the robot selected in the interface (the dashboard shows which one), is rate limited with a cap on unanswered commands, clamps the speed to 10..500 and stops when the tab is hidden.
+- The debounced settings save builds its payload when it fires, so a change made while a save is pending is no longer lost; the session token is kept per tab, and the WebSocket falls back to the query-string token only when the server answers over HTTP.
+- CAN-OTA: the release image is checked against its sha256 before flashing, bootloader images are opt-in, flashing is blocked while the robot is playing, the transport selection is bound to a hardware confirmation, and a failed flash shows its own message. Simulated version queries are never persisted.
+- Imported trajectories and scenes are validated (shape, finite numbers, at most 5000 points and 16 robots, unique ids) before they reach the shared state; a refused file reports why.
+- HOME, RESET and deleting recorded points ask for confirmation; a point added from the panel or the gamepad keeps its motion type; playback speed uses a step of 5; the heated bed target keeps 0 and is limited to one maximum.
+- Camera: the connection retry polls the real status, and the download link of a saved recording carries a fresh ticket. The default cameras no longer seed invented detections.
+- The Help and assistant texts no longer describe buttons that do not exist (Auto-Search, Add Robot, Config > Bluetooth), name the Resources menu correctly, and no longer claim the transfer is verified with an HMAC.
+- Build scripts stop on the first failing step and no longer run `npm audit fix` or approve install scripts; `.vscode/`, local backups and the Bun lockfile are ignored and untracked, and `public/settings.json` is no longer tracked. `package.json` declares Node 22 or newer.
+- Code: the arm joint chains moved to `src/components/3d/chains/`, the provider to `src/HydraProvider.tsx` (state, types and defaults stay in `src/store.ts`), and small helpers to `src/lib/`, which clears every lint warning.
+- Tests: 273 across 26 files (jog safety and continuity, command results, session handling, jog repeater, sha256, CAN-OTA download checks, playback step, import validation, the API base).
 
 ## [0.7.7] - Help with step-by-step guides, the Hydri assistant, Portuguese, and safer camera, token and flasher behavior
 

@@ -157,12 +157,13 @@ Duas caixas de diálogo independentes, ambas acessíveis a partir do cabeçalho 
 ## 🛡️ Fiabilidade
 
 A app protege-se contra duas classes diferentes de falhas em execução, ambas nascidas de um incidente real de produção (um ecrã de quiosque a ficar preto após uma reimplantação). O `src/main.tsx` escuta o evento `vite:preloadError` do próprio Vite - emitido quando um separador do navegador deixado aberto durante uma reimplantação tenta obter um bloco de painel carregado por `React.lazy()` (cada painel de `Dashboard.tsx`, com hash de conteúdo em `vite.config.ts`) que já não existe com o hash antigo - e recarrega a página uma vez automaticamente, pelo que um separador de quiosque de longa duração ou um separador antigo em segundo plano se cura sozinho sem ninguém reparar. Uma guarda em `sessionStorage` impede que isso entre em ciclo infinito de recargas se um bloco faltar de facto por outro motivo. Em separado, o `src/components/ErrorBoundary.tsx` envolve a área de painéis `<Suspense>` como rede de segurança para qualquer outra falha de desenho; está associado ao separador ativo, pelo que ao sair de um painel que falhou se tenta de facto o seguinte em vez de deixar todo o painel preso num ecrã de recurso.
+Os comandos nunca falham em silêncio: cada comando de jog, reprodução, alimentação, visão e ferramenta devolve um resultado tipado, uma sessão expirada é renovada uma vez e o comando é repetido, e tudo o que continuar recusado aparece num aviso. O botão de PARAGEM DE EMERGÊNCIA atua de imediato, sem confirmação (paragem mais válvulas e bombas desligadas, uma nova tentativa e um aviso persistente se não tiver sido entregue). O jog com o joystick é um comando de homem morto (termina ao cancelar o ponteiro, perder o foco, ocultar o separador ou passados 8 segundos), um movimento de J1 fica no ângulo equivalente mais próximo e um passo de jog superior a 20 graus é recusado. O comando de jogo segue o robô selecionado na interface e tem a frequência limitada. O firmware de uma versão é verificado com o seu sha256 antes de ser gravado por CAN-OTA, as imagens de bootloader são opcionais e as trajetórias e cenas importadas são validadas antes de chegarem ao estado partilhado.
 
 ## 🔐 Contas e acesso
 
 Cada back-end cria uma conta no seu primeiríssimo arranque - utilizador `admin`, palavra-passe `admin` - mude-a em **Config > Utilizadores** assim que o servidor for acessível para além de uma LAN totalmente fiável. Esse mesmo separador permite a uma conta de administrador criar contas adicionais de **operador**: um operador pode iniciar sessão, ver o estado em direto e comandar robôs (jog/reproduzir/pausa/parar/ferramenta/válvula/bomba/velocidade), mas não pode substituir as definições globais nem gerir outras contas. Não é preciso conta para espreitar - o "Continuar só de leitura" do próprio ecrã de início de sessão salta direto para o painel com as escritas desativadas. O contrato completo (funções, tokens, as rotas `/api/users`) está documentado nas secções 2a/2b do [`docs/REMOTE_API.md` do próprio HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md). Em produção o primeiro administrador vem das definições de arranque da implantação e o servidor recusa segredos de exemplo (veja o [`docs/PRODUCTION_BOOTSTRAP.md` do HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/PRODUCTION_BOOTSTRAP.md)).
 
-Cada um dos 3 clientes remotos (SUITE, Android, iOS) identifica-se através do cabeçalho de pedido `X-Hydra-Client`, pelo que **Config > Acesso remoto** pode permitir ou bloquear cada um de forma independente em vez de um único interruptor combinado para os três.
+Cada um dos 5 clientes remotos (SUITE, Android, iOS, Watch, DSI) identifica-se através do cabeçalho de pedido `X-Hydra-Client`, pelo que **Config > Acesso remoto** pode permitir ou bloquear cada um de forma independente em vez de um único interruptor combinado para os cinco.
 
 ---
 
@@ -302,7 +303,7 @@ O back-end com que esta app comunica (persistência de definições, a API REST/
 ## 🛠️ Ambiente de desenvolvimento
 
 ### Requisitos
-- [Node.js](https://nodejs.org/) (recomendada a v18 ou superior)
+- [Node.js](https://nodejs.org/) (v22 ou superior)
 - npm
 - Um back-end **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** em execução (`npm run dev` lá também, porta por defeito `3000`) - esta app é um cliente puro e não tem com quem comunicar sem ele.
 
@@ -342,7 +343,7 @@ Implante a pasta `dist/` resultante em qualquer alojamento estático. Por defeit
 
 ### Versionamento
 
-O `bump_manifest_version.py` (raiz do repositório) é o único dono tanto de `hydra-umc.project.json` como do campo `version` do `package.json` - o `npm run build` (`vite build`) é deliberadamente só de compilação, para nunca criar divergência entre eles ao subir um e não o outro. O `scripts/bump-version.mjs` é um auxiliar legado só nativo mantido como referência; nada neste repositório o chama já. O esquema em si continua a ser o "odómetro" de base 10 de todo o ecossistema: patch +1 por cada subida real, transbordando para minor (e minor para major) depois do 9 em vez de chegar alguma vez a um segmento de dois dígitos (`0.0.9` -> `0.1.0`, não `0.0.10`). A versão em execução é visível em direto na caixa **Acerca de** (lida de `GET /api/hydra-info`, que o servidor Express lê diretamente do `package.json` no arranque), e o histórico completo está em [`CHANGELOG.md`](CHANGELOG.md).
+O `bump_manifest_version.py` (raiz do repositório) é o único dono tanto de `hydra-umc.project.json` como do campo `version` do `package.json` - o `npm run build` (`vite build`) é deliberadamente só de compilação, para nunca criar divergência entre eles ao subir um e não o outro. O `scripts/bump-version.mjs` é um auxiliar legado só nativo mantido como referência; nada neste repositório o chama já. O esquema em si continua a ser o "odómetro" de base 10 de todo o ecossistema: patch +1 por cada subida real, transbordando para minor (e minor para major) depois do 9 em vez de chegar alguma vez a um segmento de dois dígitos (`0.0.9` -> `0.1.0`, não `0.0.10`). A versão em execução é visível em direto na caixa **Acerca de** (a versão do Studio é lida do `package.json` da própria app; a versão do servidor mostrada ao lado vem de `GET /api/hydra-info`), e o histórico completo está em [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 

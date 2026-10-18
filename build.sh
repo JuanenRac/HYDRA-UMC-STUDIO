@@ -38,14 +38,16 @@ printf '%s\n' "* v${HYDRA_UMC_VERSION_BEFORE:-unknown} -> v${HYDRA_UMC_VERSION_A
 printf '%s\n' '* Project manifest has been synchronised by the project build flow.'
 printf '%s\n' '*******************************************************************************'
 printf '\n'
+# A failing step stops the script (and says so) instead of printing "Build complete!" after a failed build; the
+# window stays open until Enter is pressed, on success and on failure alike, but only when run from a terminal.
+set -euo pipefail
+trap '[ -t 0 ] && read -r -p "Press Enter to close..." _' EXIT
 npm install
-npm install-scripts approve --all
 
 echo "========================================"
 echo " Compiling HYDRA-UMC STUDIO (Prod Mode) "
 echo "========================================"
 npm run build
 echo ""
-echo "Build complete! You can now start the production server with:"
-echo "npm start"
-read -p "Press Enter to close..."
+echo "Build complete! The static files are in dist/. To look at them locally run:"
+echo "npm run preview"

@@ -135,29 +135,45 @@ export function CamerasView() {
     }
   };
 
+  // Switching a camera on saves the intent (the server then starts its stream process), and the camera counts as
+  // connected only once the server reports that stream running. It used to be declared connected after a fixed
+  // pause whatever happened, which showed a live feed that was not there.
   const retryConnection = (id: number) => {
+    const cam = cameras.find(c => c.id === id);
+    if (!cam || cam.connected) return;
     setConnectingIds(prev => new Set(prev).add(id));
-    setTimeout(() => {
-      setConnectingIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-      const cam = cameras.find(c => c.id === id);
-      if (cam && !cam.connected) {
-        updateCamera(id, { connected: true });
-        // cam.assignedRobotId, NOT id (the camera's own id) - Config.tsx
-        // lets the owner reassign which robot a camera actually serves
-        // (updateCamera(c.id, { assignedRobotId })), and only cameras 1-8
-        // happening to still be assigned to robots 1-8 (the seed default)
-        // ever made `id` a correct stand-in for the robot id here. Any
-        // reassignment (cameras 1/2 reassigned away from robots A1/A2 is
-        // exactly the reported symptom: "cameras 1&2 don't behave like
-        // 3-8") toggled the WRONG robot's visionEnabled - or none at all,
-        // silently, since updateRobot() with a stale id just finds nothing.
+    updateCamera(id, { connected: true });
+    const stopConnecting = () => setConnectingIds(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+    let attempts = 0;
+    const check = async () => {
+      attempts += 1;
+      let running = false;
+      try {
+        const res = await fetch(apiUrl('/api/cameras/status'), { headers: authHeaders(false) });
+        if (res.ok) {
+          const status = await res.json() as Record<string, { status?: string }>;
+          running = Object.entries(status).some(([key, value]) => key.endsWith(`:${id}`) && value?.status === 'running');
+        }
+      } catch { /* the server is unreachable: counted as not running */ }
+      if (running) {
+        stopConnecting();
+        // cam.assignedRobotId, NOT id (the camera's own id): Config.tsx lets the owner reassign which robot a
+        // camera serves, so the camera id is not a stand-in for the robot id.
         if (cam.assignedRobotId) updateRobot(cam.assignedRobotId, { visionEnabled: true });
+        return;
       }
-    }, 1500);
+      if (attempts >= 6) {
+        stopConnecting();
+        updateCamera(id, { connected: false });
+        return;
+      }
+      setTimeout(check, 1000);
+    };
+    setTimeout(check, 1000);
   };
 
   const toggleConnection = (id: number) => {

@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Power, Save, Server as ServerIcon, Settings } from 'lucide-react';
 import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
+import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
 
 interface HydraInfo {
@@ -65,7 +66,7 @@ export function AdminServer() {
       setError(t('ecosystem.admin_server_load_error'));
     }
     try {
-      const res = await fetch(apiUrl('/api/hydra-info'));
+      const res = await authFetch(apiUrl('/api/hydra-info'));
       if (res.ok) setInfo(await res.json());
     } catch {
       // Best-effort overview snapshot - the port form above is the real

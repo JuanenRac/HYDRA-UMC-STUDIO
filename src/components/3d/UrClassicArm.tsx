@@ -24,7 +24,8 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
 import type { UrClassicChain, UrClassicJointStep } from '../../examples/urClassicKinematics';
 import { usePartColors } from '../../hooks/usePartColors';
-import Toolhead, { toolheadMountOffset } from './Toolhead';
+import Toolhead from './Toolhead';
+import { toolheadMountOffset } from '../../lib/toolheadMount';
 
 export interface UrClassicArmConfig {
   /** e.g. '/models/robots-6-dof/ur5classic/' */

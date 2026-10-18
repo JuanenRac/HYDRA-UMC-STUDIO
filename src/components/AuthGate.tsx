@@ -18,11 +18,12 @@ import { Lock, User, LogIn, Power, RotateCcw, LayoutDashboard } from 'lucide-rea
 import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { ConfirmDialog } from './ConfirmDialog';
+import { CommandIssueBanner } from './CommandIssueBanner';
 import HydraIcon from '../assets/HYDRA_UMC_ICON.svg';
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
-  const { authToken, login, loginError } = useHydraStore();
+  const { authToken, login, loginError, reportCommandIssue } = useHydraStore();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,14 +55,14 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     setAskPower(null);
     setPowerAction(action);
     try {
-      await fetch(apiUrl(action === 'shutdown' ? '/api/system/shutdown' : '/api/system/reboot'), { method: 'POST' });
-      // No res.ok check and no finally-reset of powerAction below: a
-      // successful call means this device is now actually going down -
-      // the button staying disabled/labelled "Shutting down..." until the
-      // page itself loses its connection is the correct, honest state,
-      // not a bug to fix. A REAL failure (e.g. run from a browser that
-      // isn't this device's own kiosk, refused with 403) still needs to
-      // recover, which the catch block below handles.
+      const res = await fetch(apiUrl(action === 'shutdown' ? '/api/system/shutdown' : '/api/system/reboot'), { method: 'POST' });
+      // A refusal (403: this is not the device's own kiosk, or the page was opened by the LAN address) must
+      // recover the buttons and say why - they used to stay on "Shutting down..." for ever. A successful call
+      // means the device is going down: staying disabled until the page loses its connection is the honest state.
+      if (!res.ok) {
+        setPowerAction(null);
+        reportCommandIssue({ code: 'power_failed', command: action, robotIds: [], detail: String(res.status) });
+      }
     } catch {
       setPowerAction(null);
     }
@@ -69,6 +70,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="w-full h-screen bg-slate-950 bg-electric-grid flex items-center justify-center p-6">
+      <CommandIssueBanner />
       <form onSubmit={handleSubmit} className="w-[380px] max-w-full bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-5">
         <img src={HydraIcon} alt="Hydra Logo" className="w-16 h-16 object-contain" />
         <div className="text-center space-y-1">

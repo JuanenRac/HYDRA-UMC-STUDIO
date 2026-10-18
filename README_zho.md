@@ -156,12 +156,13 @@ JuanenPnP、JuanenCNC 和 JuanenLaser 使用独立的 STL 副本，LumenPnP 保�
 ## 🛡️ 可靠性
 
 本应用为自身抵御两类不同的运行时故障，二者都源自一次真实的生产事故（一次重新部署后信息亭屏幕变黑）。`src/main.tsx` 监听 Vite 自身的 `vite:preloadError` 事件——当一个跨越重新部署仍保持打开的浏览器标签页，尝试获取一个通过 `React.lazy()` 加载的面板代码块（`Dashboard.tsx` 中的每个面板，按 `vite.config.ts` 做了内容哈希）、而该代码块在其旧哈希下已不复存在时触发——并自动重新加载一次页面，使长期运行的信息亭标签页或过期的后台标签页在无人察觉的情况下自我修复。一个 `sessionStorage` 保护机制可防止在代码块因其他原因确实缺失时陷入无限重载循环。另外，`src/components/ErrorBoundary.tsx` 包裹了 `<Suspense>` 面板区域，作为其他任何渲染崩溃的后备方案；它按当前活动标签页进行索引，因此切换离开一个已崩溃的面板会真正重试下一个面板，而不会让整个仪表盘卡在回退画面上。
+命令不会静默失败:每个点动、播放、电源、视觉和工具命令都会返回带类型的结果,过期的会话会刷新一次并重试,仍被拒绝的内容会显示在横幅中。紧急停止按钮立即生效,无需确认(停止,并关闭阀门和泵,重试一次,若未能送达则持续显示警告)。摇杆点动是按住式的死人开关(指针取消、窗口失焦、标签页隐藏或 8 秒后结束),J1 的移动保持在最接近的等效角度,超过 20 度的点动步长会被拒绝。手柄输入跟随界面中选中的机器人,并限制发送频率。发布版固件在 CAN-OTA 刷写前会用 sha256 校验,引导加载程序镜像为可选项,导入的轨迹和场景在进入共享状态之前会被验证。
 
 ## 🔐 账户与访问
 
 每个后端在自身首次启动时都会预置一个账户——用户名 `admin`，密码 `admin`——一旦服务器可从完全受信任的局域网之外访问，请立即从 **Config > Users** 修改它。同一个选项卡还允许管理员账户创建额外的**操作员**账户：操作员可以登录、查看实时状态并驱动机器人（点动/播放/暂停/停止/工具/阀门/泵/速度），但不能覆盖全局设置或管理其他账户。仅仅四处浏览并不需要任何账户——登录界面自身的“以只读方式继续”会直接跳转到仪表盘,写入功能被禁用。完整契约（角色、令牌、`/api/users` 路由）记录于 [HYDRA-UMC-SERVER 自身的 `docs/REMOTE_API.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md) 第 2a/2b 节。 在生产环境中，第一个管理员来自部署的引导设置，服务器会拒绝示例密钥（参见 [HYDRA-UMC-SERVER 的 `docs/PRODUCTION_BOOTSTRAP.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/PRODUCTION_BOOTSTRAP.md)）。
 
-3 个远程客户端（SUITE、Android、iOS）中的每一个都通过 `X-Hydra-Client` 请求头自我标识，因此 **Config > Remote Access** 可以独立允许或阻止每一个,而不是所有三者共用一个开关。
+5 个远程客户端（SUITE、Android、iOS、Watch、DSI）中的每一个都通过 `X-Hydra-Client` 请求头自我标识，因此 **Config > Remote Access** 可以独立允许或阻止每一个,而不是所有五者共用一个开关。
 
 ---
 
@@ -271,7 +272,7 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # 全新检出时预置的示例设置
 │   └── favicon.svg, icons.svg   # 应用图标与共享图标精灵图
 ├── images/                       # README 横幅
-├── tests/                        # 真实的 Vitest 套件(182 个测试)——只测 src/examples/ 的 FK/IK 数学逻辑,不涉及 React/DOM
+├── tests/                        # 真实的 Vitest 套件(273 个测试)——只测 src/examples/ 的 FK/IK 数学逻辑,不涉及 React/DOM
 │   ├── utils.test.ts             # 共享的通用手臂 FK/IK 组合及其 5 个路径生成器
 │   ├── urKinematicsShared.test.ts  # 真实的 DH 链 FK + 牛顿-拉夫逊 IK 引擎(通过真实的 UR5e 链验证)
 │   ├── parol6Kinematics.test.ts  # Parol6 自身硬编码的真实链条
@@ -300,7 +301,7 @@ HYDRA-UMC-STUDIO/
 ## 🛠️ 开发环境
 
 ### 系统要求
-- [Node.js](https://nodejs.org/)（建议 v18 或更高版本）
+- [Node.js](https://nodejs.org/)（v22 或更高版本）
 - npm
 - 一个正在运行的 **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** 后端（同样运行 `npm run dev`，默认端口 `3000`）——本应用是一个纯客户端，没有它就无法与任何东西通信。
 
@@ -319,7 +320,7 @@ npm install
 ### 自动化测试
 
 ```bash
-npm test          # vitest run —— 针对 src/examples/ 的 182 个真实测试
+npm test          # vitest run —— 针对 src/examples/ 的 273 个真实测试
 npm run typecheck # tsc -b --noEmit（src/）+ tsc -p tsconfig.test.json --noEmit（tests/）
 ```
 
@@ -340,7 +341,7 @@ npm run preview
 
 ### 版本管理
 
-`bump_manifest_version.py`（仓库根目录）是 `hydra-umc.project.json` 和 `package.json` 自身 `version` 字段的唯一所有者——`npm run build`（`vite build`）刻意只负责编译，这样就永远不会因为只递增其中一个而造成两者不同步。`scripts/bump-version.mjs` 是一个遗留的原生辅助脚本，仅作参考保留；本仓库中已没有任何地方调用它。方案本身仍是整个生态系统统一的十进制“里程表”方式：每次真实递增 patch 位 +1，超过 9 后向 minor 位（minor 超过 9 后向 major 位）进位，而不会出现两位数字段（`0.0.9` -> `0.1.0`，而非 `0.0.10`）。当前运行版本可在 **About** 对话框中实时查看（读取自 `GET /api/hydra-info`，该接口由 Express 服务器在启动时直接从 `package.json` 读取），完整历史记录见 [`CHANGELOG.md`](CHANGELOG.md)。
+`bump_manifest_version.py`（仓库根目录）是 `hydra-umc.project.json` 和 `package.json` 自身 `version` 字段的唯一所有者——`npm run build`（`vite build`）刻意只负责编译，这样就永远不会因为只递增其中一个而造成两者不同步。`scripts/bump-version.mjs` 是一个遗留的原生辅助脚本，仅作参考保留；本仓库中已没有任何地方调用它。方案本身仍是整个生态系统统一的十进制“里程表”方式：每次真实递增 patch 位 +1，超过 9 后向 minor 位（minor 超过 9 后向 major 位）进位，而不会出现两位数字段（`0.0.9` -> `0.1.0`，而非 `0.0.10`）。当前运行版本可在 **About** 对话框中实时查看（Studio 版本读取自本应用自己的 `package.json`；旁边显示的服务器版本来自 `GET /api/hydra-info`），完整历史记录见 [`CHANGELOG.md`](CHANGELOG.md)。
 
 ---
 

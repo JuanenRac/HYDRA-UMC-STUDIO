@@ -169,6 +169,9 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
     const res = isHardwareTransport ? await hardwareQueryVersion(target, authToken) : await mockQueryVersion(target);
     setQuerying(false);
     if (!res.online) return;
+    // The simulation invents a version (and a board id) for every query: writing it into the state every client
+    // shares made a made-up number look like the firmware of a real board. Only a real answer is stored.
+    if (!isHardwareTransport) return;
     const patch: Record<string, any> = { firmwareVersion: res.firmwareVersion, bootloaderVersion: res.bootloaderVersion, hardwareId: res.hardwareId, lastSeen: Date.now() };
     if (tier === 'kinematicBrain') {
       if (activeController) updateController(activeController.id, { kinematicBrain: patch });

@@ -18,7 +18,7 @@
 
 import { Matrix4, Quaternion, Vector3, Euler } from 'three';
 import type { KinematicsPoint } from './utils';
-import { EDO_CHAIN, EDO_ROOT_QUAT } from '../components/3d/EdoArm';
+import { EDO_CHAIN, EDO_ROOT_QUAT } from '../components/3d/chains/EdoChain';
 
 const DEG = Math.PI / 180;
 

@@ -57,7 +57,8 @@ import { useLoader } from '@react-three/fiber';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import type { RobotState } from '../../store';
 import { usePartColors } from '../../hooks/usePartColors';
-import Toolhead, { toolheadMountOffset } from './Toolhead';
+import Toolhead from './Toolhead';
+import { toolheadMountOffset } from '../../lib/toolheadMount';
 
 const MESH_BASE = '/models/robots-6-dof/parol6/';
 
