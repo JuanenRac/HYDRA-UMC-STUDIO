@@ -26,6 +26,16 @@
 
 ---
 
+## 📋 Auf einen Blick
+
+| | |
+|---|---|
+| Version | `0.7.9` |
+| Reifegrad | Etabliert |
+| Technik | React 19 / Vite / Three.js / Tailwind CSS |
+| Ziel | Der Raspberry Pi CM5 einer HYDRA-UMC-Zelle |
+| Auf echter Hardware | Noch nicht: für diese Version ist kein Lauf auf echter Hardware vermerkt |
+
 ## 🎯 Überblick
 
 **HYDRA-UMC STUDIO** ist das browserbasierte Steuerungs-Dashboard für [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) - die Hauptplatine der Multi-Roboter-Mikrofabrik (Raspberry-Pi-CM5-Host + Dual-Core-STM32H745-Echtzeit-Coprozessor), die bis zu 8 verteilte Roboterarme über einen einzigen FDCAN-Bus orchestriert. Während das eigene Repository von HYDRA-UMC die Hardware und Firmware abdeckt, ist dieses Repository die dem Menschen zugewandte Seite: eine Single-Page-React-Anwendung, die jeden Roboter in echtem 3D visualisiert, deren Bewegung joggt und aufzeichnet, die Maschinen und Zubehörteile verwaltet, die eine Roboterzelle begleiten, und die gesamte CAN-OTA-Firmware-Kette flasht/testet - alles aus einem einzigen Browser-Tab heraus, ohne native Installation über Node.js hinaus.
