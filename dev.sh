@@ -23,4 +23,4 @@ echo "========================================"
 echo " Starting HYDRA-UMC STUDIO (Dev Mode) "
 echo "========================================"
 npm run dev
-read -p "Press Enter to close..."
+if [ -t 0 ] && [ "${HYDRA_UMC_CI:-}" != "1" ] && [ -z "${CI:-}" ]; then read -r -p "Press Enter to close..." _ || true; fi
