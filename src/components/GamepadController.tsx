@@ -278,14 +278,9 @@ export function GamepadController() {
             if (action.startsWith('select_robot_')) {
               const id = parseInt(action.replace('select_robot_', ''));
               setSelectedRobotId(id);
-            } else if (action === 'E-STOP') {
-              // The same emergency stop as the on-screen button: stops the selected robot (and the ones combined
-              // with it) and switches its valves and pumps off, checking every answer.
-              if (currentRobot) {
-                void emergencyStopRef.current([currentRobot.id, ...(currentRobot.combinedWith || [])]);
-              }
-            } else if (action === 'E-STOP ALL') {
-              // Every robot of every controller, not only the active one.
+            } else if (action === 'E-STOP' || action === 'E-STOP ALL') {
+              // Both actions are the global STOP now (every robot of every controller, one press, no confirmation);
+              // the two names stay so a saved button mapping keeps working.
               void emergencyStopRef.current();
             } else if (action === 'START') {
               if (currentRobot && currentRobot.recordedPoints.length > 0) {

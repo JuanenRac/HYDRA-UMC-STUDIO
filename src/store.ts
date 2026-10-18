@@ -6,6 +6,7 @@
 
 import React, { createContext, useContext } from 'react';
 import type { CommandIssue, CommandResult } from './lib/commandResult';
+import type { StopAllReport } from './lib/stopAll';
 
 /**
  * Reads `role` out of a Server JWT's own payload (server.ts's own
@@ -743,12 +744,18 @@ interface HydraStoreContextType {
     affectedIds?: number[]
   ) => Promise<CommandResult>;
   /**
-   * Stops the given robots (all robots of every controller when omitted) with the atomic 'stop' command and switches
-   * their valves and pumps off. Nothing is hidden behind a confirmation and nothing is written to `online` (that is
-   * telemetry): each robot's answer is checked, a failed one is retried once when the cause was the network, and
-   * whatever still did not stop is put on screen as a persistent issue.
+   * The global STOP: stops EVERY robot of every controller (whichever one is selected) and switches every valve and
+   * pump off with one POST /api/stop-all - any signed-in account, no confirmation, a reservation held by someone
+   * else never blocks it. A network failure is retried once, an expired session is renewed once, a 429 or a 404
+   * falls back to the per-robot stop, and when nothing answers the "stop not confirmed" issue stays on screen until
+   * a later stop gets an answer. Nothing is written to `online` (that is telemetry).
    */
-  emergencyStop: (robotIds?: number[]) => Promise<void>;
+  emergencyStop: () => Promise<void>;
+  /** The newest answer of the global STOP, robot by robot, until it is dismissed; null when there is none. */
+  stopAllReport: StopAllReport | null;
+  dismissStopAllReport: () => void;
+  /** True while a global STOP is on the wire. */
+  stopAllPending: boolean;
   /** The problem the last command (or emergency stop) ran into, until it is dismissed; null when there is none. */
   commandIssue: CommandIssue | null;
   dismissCommandIssue: () => void;

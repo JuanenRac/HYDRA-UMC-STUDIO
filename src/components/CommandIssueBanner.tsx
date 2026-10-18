@@ -64,7 +64,7 @@ export function CommandIssueBanner() {
             {commandIssue.code === 'estop_failed' && (
               <button
                 type="button"
-                onClick={() => { void emergencyStop(commandIssue.robotIds); }}
+                onClick={() => { void emergencyStop(); }}
                 className="mt-2 px-3 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white font-black uppercase tracking-widest"
               >
                 {t('command_issue.retry_estop')}

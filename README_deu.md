@@ -154,7 +154,7 @@ Zwei eigenständige Dialoge, beide über die Kopfzeile erreichbar (Schaltfläche
 ## 🛡️ Zuverlässigkeit
 
 Die App schützt sich selbst gegen zwei verschiedene Klassen von Laufzeitfehlern, beide entstanden aus einem echten Produktionsvorfall (ein Kiosk-Display, das nach einem Redeploy schwarz wurde). `src/main.tsx` hört auf Vites eigenes `vite:preloadError`-Event - ausgelöst, wenn ein über einen Redeploy hinweg offen gelassener Browser-Tab versucht, einen per `React.lazy()` geladenen Panel-Chunk abzurufen (jedes `Dashboard.tsx`-Panel, inhaltsgehasht gemäß `vite.config.ts`), der unter seinem alten Hash nicht mehr existiert - und lädt die Seite einmal automatisch neu, sodass sich ein langlebiger Kiosk-Tab oder ein veralteter Hintergrund-Tab selbst heilt, ohne dass es jemand bemerkt. Ein `sessionStorage`-Schutz verhindert, dass dies endlos in eine Neulade-Schleife gerät, falls ein Chunk aus einem anderen Grund tatsächlich fehlt. Getrennt davon umschließt `src/components/ErrorBoundary.tsx` den `<Suspense>`-Panel-Bereich als Backstop für jeden anderen Render-Absturz; es ist nach dem aktiven Tab indiziert, sodass ein Wechsel von einem abgestürzten Panel tatsächlich das nächste erneut versucht, statt das ganze Dashboard auf einem Fallback-Bildschirm hängen zu lassen.
-Befehle scheitern nie stillschweigend: Jeder Jog-, Wiedergabe-, Strom-, Vision- und Werkzeugbefehl liefert ein typisiertes Ergebnis, eine abgelaufene Sitzung wird einmal erneuert und wiederholt, und alles, was weiterhin abgelehnt wird, erscheint in einer Meldung. Die NOT-AUS-Taste wirkt sofort und ohne Bestätigung (Stopp sowie Ventile und Pumpen aus, ein Wiederholungsversuch und eine dauerhafte Warnung, falls sie nicht zugestellt werden konnte). Das Joystick-Jogging ist eine Totmann-Steuerung (sie endet bei Zeigerabbruch, Fensterfokusverlust, verborgenem Tab oder nach 8 Sekunden), eine J1-Bewegung bleibt beim nächstliegenden äquivalenten Winkel und ein Jog-Schritt über 20 Grad wird abgelehnt. Die Gamepad-Eingabe folgt dem in der Oberfläche gewählten Roboter und ist ratenbegrenzt. Die Firmware eines Releases wird vor dem CAN-OTA-Flashen gegen ihren sha256 geprüft, Bootloader-Images sind nur auf Wunsch wählbar, und importierte Trajektorien und Szenen werden geprüft, bevor sie den gemeinsamen Zustand erreichen.
+Befehle scheitern nie stillschweigend: Jeder Jog-, Wiedergabe-, Strom-, Vision- und Werkzeugbefehl liefert ein typisiertes Ergebnis, eine abgelaufene Sitzung wird einmal erneuert und wiederholt, und alles, was weiterhin abgelehnt wird, erscheint in einer Meldung. Die rote **STOP**-Taste ist global: ein Klick, ohne Bestätigung, sie hält alle Roboter aller Controller an und schaltet alle Ventile und Pumpen in einem Aufruf ab (`POST /api/stop-all`). Sie sitzt in der Kopf- und Fußzeile, im Roboter-Panel und im Fernsteuerungs-Overlay, und Strg+Umschalt+Leertaste drückt sie per Tastatur (eine Tastenkombination, die nicht versehentlich getippt wird und bei gehaltener Taste ignoriert wird). Die Antwort wird Roboter für Roboter aufgelistet (Warnung, wenn ein Roboter nicht anhielt oder der Server den Stopp nicht speichern konnte; von anderen Konten reservierte Roboter sind markiert); ein Netzwerkfehler wird einmal wiederholt, ein Server über seinem Limit (429) oder ohne die Route (404) wird mit dem Stopp je Roboter beantwortet, und eine dauerhafte Warnung „STOP nicht bestätigt“ bleibt, bis ein späterer STOP eine Antwort bekommt. Das Joystick-Jogging ist eine Totmann-Steuerung (sie endet bei Zeigerabbruch, Fensterfokusverlust, verborgenem Tab oder nach 8 Sekunden), eine J1-Bewegung bleibt beim nächstliegenden äquivalenten Winkel und ein Jog-Schritt über 20 Grad wird abgelehnt. Die Gamepad-Eingabe folgt dem in der Oberfläche gewählten Roboter und ist ratenbegrenzt. Die Firmware eines Releases wird vor dem CAN-OTA-Flashen gegen ihren sha256 geprüft, Bootloader-Images sind nur auf Wunsch wählbar, und importierte Trajektorien und Szenen werden geprüft, bevor sie den gemeinsamen Zustand erreichen.
 
 ## 🔐 Konten und Zugriff
 
@@ -272,7 +272,7 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # Vorbelegte Beispiel-Settings für einen frischen Checkout
 │   └── favicon.svg, icons.svg   # App-Icon und geteiltes Icon-Sprite
 ├── images/                       # README-Banner
-├── tests/                        # Echte Vitest-Suite (273 Tests) - nur die FK/IK-Mathematik aus src/examples/, ohne React/DOM
+├── tests/                        # Echte Vitest-Suite (286 Tests) - nur die FK/IK-Mathematik aus src/examples/, ohne React/DOM
 │   ├── utils.test.ts             # Geteiltes generisches Arm-FK/IK-Paar + dessen 5 Pfadgeneratoren
 │   ├── urKinematicsShared.test.ts  # Echte DH-Ketten-FK + Newton-Raphson-IK-Engine (ueber die echte UR5e-Kette)
 │   ├── parol6Kinematics.test.ts  # Parol6s eigene, fest codierte echte Kette
@@ -320,7 +320,7 @@ Führt den eigenen Dev-Server von Vite aus (einfaches `vite`, Port `5173`) mit L
 ### Automatisierte Tests
 
 ```bash
-npm test          # vitest run - 273 echte Tests über src/examples/
+npm test          # vitest run - 286 echte Tests über src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

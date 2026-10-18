@@ -27,6 +27,15 @@ a change is actually worth summarizing for a human.
 
 ---
 
+## [0.7.9] - One-click global STOP
+
+- **Global STOP:** a red **STOP** button in the header (and the footer, the robot panel and the remote-control overlay) stops every robot of every controller, whichever one is selected, and switches every valve and pump off, with one click and no confirmation. It calls `POST /api/stop-all` at once, with the session's bearer token and without waiting for any refresh; any signed-in account (admin or operator) can use it, and a reservation held by another account never blocks it.
+- **Keyboard:** `Ctrl+Shift+Space` presses STOP from anywhere, even with a text field focused. It is a modifier chord that is never typed by accident and is ignored while the key is held down; it is shown in the button's tooltip, the help and the assistant.
+- **The result, robot by robot:** a panel lists each robot (stopped or not, valves and pumps switched off, the reason when it failed, "reserved by ..." when another account holds it), turns into a persistent red warning when a robot did not stop or the server could not save the stop, offers a retry, and fades by itself when everything went well. The settings are read again afterwards.
+- **A stop that gets through:** a network failure is retried once with a short timeout, an expired session is renewed once, and a server over its rate limit (429) or without the route (404) is answered with the per-robot stop of every robot. When nothing answers, the "STOP not confirmed" warning stays on screen until a later STOP gets an answer.
+- **The old E-STOP buttons:** the robot panel's E-STOP (and the overlay one), the gamepad actions `E-STOP` and `E-STOP ALL` (saved mappings keep working) and the retry button of the warning all make the same global call; the per-robot START/STOP control is unchanged.
+- The STOP texts, the help and the assistant's answers in the 8 languages; 13 new tests (286 in all): the request without a body and with the bearer token, the reading of the answer, the 429/404 fall back, the expired session, the single retry, the timeout and the keyboard chord.
+
 ## [0.7.8] - Commands that report their result, an E-STOP that acts at once, and safer jogging, flashing and imports
 
 - Every robot command (jog, play, pause, stop, tool, valve, pump, speed, vision, power, trajectory) now returns a typed result. An expired session is refreshed once and the command retried; anything still refused (not signed in, not allowed, robot claimed by another client, server error, no network) appears in a banner instead of failing silently.

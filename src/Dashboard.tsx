@@ -11,6 +11,7 @@ import { useHydraStore, ROBOT_MANUFACTURERS } from './store';
 import { apiUrl } from './lib/apiBase';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { CommandIssueBanner } from './components/CommandIssueBanner';
+import { StopAllButton, StopAllReportBanner, StopAllShortcut } from './components/StopAll';
 import { authFetch } from './lib/session';
 import { setSelectedRobotId, useSelectedRobotId } from './lib/selectedRobot';
 import type { CanOtaTier } from './lib/canOta';
@@ -119,7 +120,7 @@ const SystemSupervisor = React.lazy(() => import('./components/SystemSupervisor'
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
-  const { controllers, activeControllerId, setActiveControllerId, robots, settings, isAdmin, logout, serverReachable, settingsSaveError, flushSettingsSave, emergencyStop, reportCommandIssue } = useHydraStore();
+  const { controllers, activeControllerId, setActiveControllerId, robots, settings, isAdmin, logout, serverReachable, settingsSaveError, flushSettingsSave, reportCommandIssue } = useHydraStore();
   const [activeTab, setActiveTab] = useState<string>('overview');
   // Shared with the gamepad, which moves the robot selected here (it used to be fixed on robot 1).
   const selectedRobotId = useSelectedRobotId();
@@ -206,6 +207,8 @@ export default function Dashboard() {
   return (
     <div className="w-full h-screen bg-slate-950 bg-electric-grid text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
       <CommandIssueBanner />
+      <StopAllShortcut />
+      <StopAllReportBanner compact={hideUI} />
 
       {isAboutOpen && <About onClose={() => setIsAboutOpen(false)} />}
 
@@ -224,6 +227,8 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold tracking-wider text-slate-100">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span></h1>
           </div>
           <div className="flex items-center gap-4">
+            {/* The global STOP: one click, every robot, always in sight (Ctrl+Shift+Space does the same). */}
+            <StopAllButton variant="header" />
             <IconButton onClick={() => setIsSettingsOpen(true)} icon={<Settings size={18}/>} label="Config" />
             <IconButton onClick={() => openHelp()} icon={<HelpCircle size={18}/>} label="Help" />
             <IconButton onClick={() => setIsAboutOpen(true)} icon={<Info size={18}/>} label="About" />
@@ -410,7 +415,7 @@ export default function Dashboard() {
                 <Gamepad2 size={14} /> {robots.find(r => r.id === selectedRobotId)?.name ?? `#${selectedRobotId}`}
               </span>
             )}
-            <button onClick={() => { void emergencyStop(); }} className="flex items-center gap-3 px-6 py-1 rounded-full bg-rose-600 text-white border border-rose-400 transition-all animate-pulse">{t('config.global_estop')}</button>
+            <StopAllButton variant="footer" />
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowShutdownConfirm(true)}

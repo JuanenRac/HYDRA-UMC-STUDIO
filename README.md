@@ -156,7 +156,7 @@ Two standalone dialogs, both reachable from the header (`Config`/`About` buttons
 ## 🛡️ Reliability
 
 The app protects itself against two different classes of runtime failure, both born from a real production incident (a kiosk display going black after a redeploy). `src/main.tsx` listens for Vite's own `vite:preloadError` event - emitted when a browser tab left open across a redeploy tries to fetch a `React.lazy()`-loaded panel chunk (every `Dashboard.tsx` panel, content-hashed per `vite.config.ts`) that no longer exists under its old hash - and reloads the page once automatically, so a long-lived kiosk tab or a stale background tab self-heals without anyone noticing. A `sessionStorage` guard stops that from reload-looping forever if a chunk is genuinely missing for some other reason. Separately, `src/components/ErrorBoundary.tsx` wraps the `<Suspense>` panel area as a backstop for any other render crash; it's keyed by the active tab, so switching away from a crashed panel actually retries the next one instead of leaving the whole dashboard stuck on a fallback screen.
-Commands never fail silently: every jog, play, power, vision and tool command returns a typed result, an expired session is refreshed once and retried, and anything still refused is shown in a banner. The E-STOP button acts at once, without a confirmation (stop plus valves and pumps off, one retry, and a persistent warning if it could not be delivered). Joystick jogging is a held deadman control (it ends on pointer cancel, window blur, a hidden tab or after 8 seconds), a J1 move stays on the nearest equivalent angle and a jog step above 20 degrees is refused. Gamepad input follows the robot selected in the interface and is rate limited. A release firmware is checked against its sha256 before CAN-OTA flashing, bootloader images are opt-in, and imported trajectories and scenes are validated before they reach the shared state.
+Commands never fail silently: every jog, play, power, vision and tool command returns a typed result, an expired session is refreshed once and retried, and anything still refused is shown in a banner. The red **STOP** button is global: one click, no confirmation, it stops every robot of every controller and switches every valve and pump off in one call (`POST /api/stop-all`). It sits in the header and the footer, in the robot panel and in the remote-control overlay, and Ctrl+Shift+Space presses it from the keyboard (a chord that is not typed by accident, ignored on a held key). The answer is listed robot by robot (a warning when a robot did not stop or the server could not save the stop; robots reserved by someone else are marked); a network failure is retried once, a server over its rate limit (429) or without the route (404) is answered with the per-robot stop, and a persistent "STOP not confirmed" warning stays until a later STOP gets an answer. Joystick jogging is a held deadman control (it ends on pointer cancel, window blur, a hidden tab or after 8 seconds), a J1 move stays on the nearest equivalent angle and a jog step above 20 degrees is refused. Gamepad input follows the robot selected in the interface and is rate limited. A release firmware is checked against its sha256 before CAN-OTA flashing, bootloader images are opt-in, and imported trajectories and scenes are validated before they reach the shared state.
 
 ## 🔐 Accounts & Access
 
@@ -274,7 +274,7 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # Seeded example settings for a fresh checkout
 │   └── favicon.svg, icons.svg   # App icon and shared icon sprite
 ├── images/                       # README banner
-├── tests/                        # Real Vitest suite (273 tests) - src/examples/ FK/IK math only, no React/DOM
+├── tests/                        # Real Vitest suite (286 tests) - src/examples/ FK/IK math only, no React/DOM
 │   ├── utils.test.ts             # Shared generic-arm FK/IK pair + its 5 path generators
 │   ├── urKinematicsShared.test.ts  # Real DH-chain FK + Newton-Raphson IK engine (via the real UR5e chain)
 │   ├── parol6Kinematics.test.ts  # Parol6's own hard-coded real chain
@@ -322,7 +322,7 @@ Runs Vite's own dev server (plain `vite`, port `5173`) with live-reloading. `vit
 ### Automated Tests
 
 ```bash
-npm test          # vitest run - 273 real tests over src/examples/
+npm test          # vitest run - 286 real tests over src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

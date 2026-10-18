@@ -12,7 +12,6 @@ import {
   type CommandResult,
   interpretCommandResponse,
   networkFailure,
-  summarizeBulk,
 } from './lib/commandResult';
 import {
   authHeaders,
@@ -24,6 +23,7 @@ import {
   saveLoginTokens,
 } from './lib/session';
 import { shouldFallBackToQueryToken } from './lib/wsAuth';
+import { type StopAllReport, type StopAllRobot, requestStopAllWithRetry } from './lib/stopAll';
 import { validateSceneRobots, validateTrajectoryPoints } from './lib/importValidation';
 import { type CameraState, HydraContext, type HydraController, type RobotState, type SystemSettings, decodeJwtRole, defaultControllers } from './store';
 
@@ -115,6 +115,12 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCommandIssue({ ...issue, id: issueSequenceRef.current });
   }, []);
   const dismissCommandIssue = useCallback(() => setCommandIssue(null), []);
+
+  // The newest answer of the global STOP, robot by robot (see lib/stopAll.ts), until it is dismissed; and how many
+  // global STOPs are on the wire right now.
+  const [stopAllReport, setStopAllReport] = useState<StopAllReport | null>(null);
+  const [stopAllInFlight, setStopAllInFlight] = useState(0);
+  const dismissStopAllReport = useCallback(() => setStopAllReport(null), []);
 
   // Session token - lazy-initialized synchronously (not in a useEffect) so the
   // very first render already knows whether we're authenticated, avoiding a
@@ -796,36 +802,87 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return result;
   };
 
-  const emergencyStop = async (robotIds?: number[]): Promise<void> => {
-    const everyRobot = controllersRef.current.flatMap((c) => c.robots);
-    const ids = robotIds && robotIds.length > 0
-      ? [...new Set(robotIds)]
-      : [...new Set(everyRobot.map((r) => r.id))];
-    const withOneRetry = async (id: number, command: string, params?: Record<string, unknown>) => {
+  // The per-robot stop of every robot (and its valves and pumps off), used only when the global route is rate
+  // limited (429) or missing (404, an older server). Same report shape as the global answer.
+  const stopEachRobot = async (): Promise<StopAllReport> => {
+    const targets = controllersRef.current.flatMap((c) => c.robots.map((robot) => ({ controllerId: c.id, robot })));
+    const withOneRetry = async (id: number, command: string, params?: Record<string, unknown>): Promise<CommandResult> => {
       let result = await postRobotCommand(id, command, params);
       if (!result.ok && result.code === 'network') {
         await new Promise<void>((resolve) => setTimeout(resolve, 400));
         result = await postRobotCommand(id, command, params);
       }
-      return { robotId: id, result };
+      return result;
     };
-    const pending: Promise<{ robotId: number; result: CommandResult }>[] = ids.map((id) => withOneRetry(id, 'stop'));
-    // Switch the outputs off too: a stopped arm with a pump still running is not a stopped robot.
-    for (const id of ids) {
-      const robot = everyRobot.find((r) => r.id === id);
-      robot?.valves?.forEach((on, index) => { if (on) pending.push(withOneRetry(id, 'valve', { index, state: false })); });
-      robot?.pumps?.forEach((on, index) => { if (on) pending.push(withOneRetry(id, 'pump', { index, state: false })); });
-    }
-    const summary = summarizeBulk(await Promise.all(pending));
-    if (summary.failed.length > 0) {
-      reportCommandIssue({
-        code: 'estop_failed',
-        command: 'stop',
-        robotIds: [...new Set(summary.failed)],
-        detail: [summary.code, summary.detail].filter(Boolean).join(': ') || null,
-      });
-    } else {
+    const robots: StopAllRobot[] = await Promise.all(targets.map(async ({ controllerId, robot }) => {
+      const stop = withOneRetry(robot.id, 'stop');
+      // Switch the outputs off too: a stopped arm with a pump still running is not a stopped robot.
+      const valveJobs: Promise<CommandResult>[] = [];
+      const pumpJobs: Promise<CommandResult>[] = [];
+      robot.valves?.forEach((on, index) => { if (on) valveJobs.push(withOneRetry(robot.id, 'valve', { index, state: false })); });
+      robot.pumps?.forEach((on, index) => { if (on) pumpJobs.push(withOneRetry(robot.id, 'pump', { index, state: false })); });
+      const stopResult = await stop;
+      const valveResults = await Promise.all(valveJobs);
+      const pumpResults = await Promise.all(pumpJobs);
+      const problem = [stopResult, ...valveResults, ...pumpResults].find((r) => !r.ok);
+      return {
+        robotId: robot.id,
+        controllerId,
+        name: robot.name,
+        stopped: stopResult.ok,
+        valvesOff: valveResults.filter((r) => r.ok).length,
+        pumpsOff: pumpResults.filter((r) => r.ok).length,
+        reservedBy: null,
+        error: problem ? [problem.code, problem.detail].filter(Boolean).join(': ') || null : null,
+      };
+    }));
+    const stoppedCount = robots.filter((r) => r.stopped).length;
+    return {
+      success: stoppedCount === robots.length,
+      stoppedCount,
+      failedCount: robots.length - stoppedCount,
+      persisted: true,
+      robots,
+      viaFallback: true,
+    };
+  };
+
+  // The emergency stop is GLOBAL: one call stops every robot of every controller, whichever one is selected, with
+  // no confirmation (POST /api/stop-all; lib/stopAll.ts). It does not wait for any refresh. A network failure is
+  // retried once; an expired session is renewed once; a 429 or a 404 falls back to the per-robot stop; and when
+  // nothing answers the "stop not confirmed" issue stays on screen until a later stop gets an answer.
+  const emergencyStop = async (): Promise<void> => {
+    setStopAllInFlight((n) => n + 1);
+    try {
+      let attempt = await requestStopAllWithRetry();
+      if (attempt.kind === 'failed' && attempt.sessionExpired && (await attemptTokenRefresh())) {
+        attempt = await requestStopAllWithRetry();
+      }
+      const report = attempt.kind === 'report'
+        ? attempt.report
+        : attempt.kind === 'fallback'
+          ? await stopEachRobot()
+          : null;
+      if (!report) {
+        const everyId = [...new Set(controllersRef.current.flatMap((c) => c.robots.map((r) => r.id)))];
+        reportCommandIssue({
+          code: 'estop_failed',
+          command: 'stop',
+          robotIds: everyId,
+          detail: attempt.kind === 'failed' ? [attempt.code, attempt.detail].filter(Boolean).join(': ') || null : null,
+        });
+        return;
+      }
       setCommandIssue((current) => (current?.code === 'estop_failed' ? null : current));
+      setStopAllReport(report);
+      // The socket's per-robot deltas usually arrive first; the settings are read again to be sure.
+      const refreshHeaders = authHeaders();
+      fetch(apiUrl('/api/settings'), { headers: refreshHeaders })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => { if (data) applyServerData(data); })
+        .catch(() => {});
+    } finally {
+      setStopAllInFlight((n) => n - 1);
     }
   };
 
@@ -1004,7 +1061,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <HydraContext.Provider value={{
       controllers, activeControllerId, activeController, setActiveControllerId,
       robots, cameras, settings,
-      updateController, updateRobot, sendRobotCommand, emergencyStop, updateCamera, flushSettingsSave, updateSettings,
+      updateController, updateRobot, sendRobotCommand, emergencyStop, stopAllReport, dismissStopAllReport, stopAllPending: stopAllInFlight > 0, updateCamera, flushSettingsSave, updateSettings,
       commandIssue, dismissCommandIssue, reportCommandIssue,
       saveKinematics, loadKinematics, addController, removeController,
       exportScene, importScene, factoryReset,

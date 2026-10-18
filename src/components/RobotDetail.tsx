@@ -1048,13 +1048,11 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     );
   };
 
-  // The E-STOP button: stops this robot (and, with START ALL selected, the robots combined with it) and switches its
-  // valves and pumps off, checking every answer - a stop the server never received is shown, not swallowed. The
-  // `online` flag is telemetry and is left alone: writing it made a "stopped" robot look disconnected, and the write
-  // itself needed an admin role.
+  // The E-STOP button is the GLOBAL stop (the same as the STOP in the header): every robot of every controller, one
+  // click, no confirmation, valves and pumps off, every answer checked - a stop the server never received is shown,
+  // not swallowed. The `online` flag is telemetry and is left alone. The per-robot STOP/START control is handleStop.
   const handleEmergencyStop = () => {
-    const ids = [robot.id, ...(isStartAll ? robot.combinedWith ?? [] : [])];
-    void emergencyStop(ids);
+    void emergencyStop();
   };
 
   const handlePlay = async () => {
@@ -1747,9 +1745,10 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                 <button
                   onClick={() => handleEmergencyStop()}
                   className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 hover:bg-red-950 border border-slate-800 hover:border-red-800 text-red-400 rounded-lg transition-colors animate-pulse"
-                  title={isStartAll ? t('robot_detail.estop_all', 'E-STOP ALL') : t('robot_detail.estop', 'E-STOP')}
+                  title={t('robot_detail.estop', 'STOP')}
                 >
                   <AlertOctagon size={18} />
+                  <span className="ml-1 text-xs font-black uppercase tracking-widest">{t('robot_detail.estop', 'STOP')}</span>
                 </button>
 
                 {!robot.playbackState?.isPlaying ? (
@@ -1847,9 +1846,9 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
             <button
               onClick={() => handleEmergencyStop()}
               className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-red-600 hover:bg-red-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_20px_rgba(220,38,38,0.8)] border border-red-500 animate-pulse", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
-              title={isStartAll ? t('robot_detail.estop_all', 'E-STOP ALL') : t('robot_detail.estop', 'E-STOP')}
+              title={t('robot_detail.estop', 'STOP')}
             >
-              <AlertOctagon size={16} /> {!isAndroidApp && (isStartAll ? t('robot_detail.estop_all', 'E-STOP ALL') : t('robot_detail.estop', 'E-STOP'))}
+              <AlertOctagon size={16} /> {!isAndroidApp && t('robot_detail.estop', 'STOP')}
             </button>
 
             {/* START/STOP Button */}

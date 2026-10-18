@@ -154,7 +154,7 @@ Deux boîtes de dialogue autonomes, toutes deux accessibles depuis l'en-tête (b
 ## 🛡️ Fiabilité
 
 L'app se protège contre deux classes distinctes de défaillance à l'exécution, toutes deux nées d'un véritable incident de production (un écran kiosque devenu noir après un redéploiement). `src/main.tsx` écoute l'événement propre de Vite `vite:preloadError` - émis lorsqu'un onglet de navigateur laissé ouvert à travers un redéploiement tente de récupérer un chunk de panneau chargé via `React.lazy()` (chaque panneau de `Dashboard.tsx`, avec hachage de contenu selon `vite.config.ts`) qui n'existe plus sous son ancien hash - et recharge la page une fois automatiquement, de sorte qu'un onglet kiosque de longue durée ou un onglet d'arrière-plan obsolète s'auto-répare sans que personne ne le remarque. Une protection `sessionStorage` empêche que cela ne boucle indéfiniment si un chunk est réellement manquant pour une autre raison. Séparément, `src/components/ErrorBoundary.tsx` enveloppe la zone de panneaux `<Suspense>` comme filet de sécurité pour tout autre crash de rendu ; il est indexé par l'onglet actif, donc quitter un panneau planté relance effectivement le suivant au lieu de laisser tout le tableau de bord bloqué sur un écran de secours.
-Les commandes n'échouent jamais en silence : chaque commande de jog, de lecture, d'alimentation, de vision et d'outil renvoie un résultat typé, une session expirée est renouvelée une fois puis la commande est rejouée, et tout ce qui reste refusé s'affiche dans un bandeau. Le bouton d'ARRÊT D'URGENCE agit immédiatement, sans confirmation (arrêt, vannes et pompes coupées, une nouvelle tentative et un avertissement persistant s'il n'a pas pu être transmis). Le jog au joystick est une commande à action maintenue (elle s'arrête à l'annulation du pointeur, à la perte du focus, à l'onglet masqué ou après 8 secondes), un mouvement de J1 reste sur l'angle équivalent le plus proche et un pas de jog supérieur à 20 degrés est refusé. La manette suit le robot sélectionné dans l'interface et sa cadence est limitée. Le firmware d'une version est vérifié par son sha256 avant le flash CAN-OTA, les images de bootloader sont optionnelles et les trajectoires et scènes importées sont validées avant d'atteindre l'état partagé.
+Les commandes n'échouent jamais en silence : chaque commande de jog, de lecture, d'alimentation, de vision et d'outil renvoie un résultat typé, une session expirée est renouvelée une fois puis la commande est rejouée, et tout ce qui reste refusé s'affiche dans un bandeau. Le bouton rouge **STOP** est global : un clic, sans confirmation, il arrête tous les robots de tous les contrôleurs et coupe toutes les vannes et pompes en un seul appel (`POST /api/stop-all`). Il se trouve dans l'en-tête et le pied de page, dans le panneau du robot et dans la superposition de télécommande, et Ctrl+Maj+Espace l'actionne au clavier (une combinaison qu'on ne tape pas par accident, ignorée si la touche reste enfoncée). La réponse est listée robot par robot (avertissement si un robot ne s'est pas arrêté ou si le serveur n'a pas pu enregistrer l'arrêt ; les robots réservés par un autre compte sont signalés) ; une erreur réseau est retentée une fois, un serveur au-delà de sa limite (429) ou sans la route (404) reçoit l'arrêt robot par robot, et un avertissement persistant « STOP non confirmé » reste affiché jusqu'à ce qu'un STOP ultérieur reçoive une réponse. Le jog au joystick est une commande à action maintenue (elle s'arrête à l'annulation du pointeur, à la perte du focus, à l'onglet masqué ou après 8 secondes), un mouvement de J1 reste sur l'angle équivalent le plus proche et un pas de jog supérieur à 20 degrés est refusé. La manette suit le robot sélectionné dans l'interface et sa cadence est limitée. Le firmware d'une version est vérifié par son sha256 avant le flash CAN-OTA, les images de bootloader sont optionnelles et les trajectoires et scènes importées sont validées avant d'atteindre l'état partagé.
 
 ## 🔐 Comptes et Accès
 
@@ -272,7 +272,7 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # Settings d'exemple préchargés pour un checkout neuf
 │   └── favicon.svg, icons.svg   # Icône de l'app et sprite d'icônes partagé
 ├── images/                       # Bannière du README
-├── tests/                        # Vraie suite Vitest (273 tests) - uniquement les maths FK/IK de src/examples/, sans React/DOM
+├── tests/                        # Vraie suite Vitest (286 tests) - uniquement les maths FK/IK de src/examples/, sans React/DOM
 │   ├── utils.test.ts             # Paire FK/IK partagee du bras generique + ses 5 generateurs de trajectoires
 │   ├── urKinematicsShared.test.ts  # Vrai moteur de chaine DH + IK Newton-Raphson (via la vraie chaine UR5e)
 │   ├── parol6Kinematics.test.ts  # Propre chaine reelle et codee en dur de Parol6
@@ -320,7 +320,7 @@ Exécute le propre serveur de développement de Vite (`vite` simple, port `5173`
 ### Tests Automatisés
 
 ```bash
-npm test          # vitest run - 273 vrais tests sur src/examples/
+npm test          # vitest run - 286 vrais tests sur src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 
