@@ -7,9 +7,11 @@
 // Authorization header.
 //
 // - A login typed into this page is kept in localStorage, so a reload or a second tab stays signed in.
-// - A token that arrives in the address (`?token=`, how the Android and iOS apps open their embedded 3D view) is
-//   kept in sessionStorage only: it dies with that view, is not shared with other tabs of the same origin and is
-//   never written to the storage a script of the page can read after the view is gone.
+// - A token that arrives in the address is kept in sessionStorage only: it dies with that view, is not shared with
+//   other tabs of the same origin and is never written to the storage a script of the page can read after the view
+//   is gone. The apps open their embedded 3D view with it in the fragment (`#token=`), which a browser never sends
+//   to a server and no proxy or access log records; the query form (`?token=`) is still read for an app that has
+//   not moved yet. Either way it is removed from the address as soon as it is read.
 // =============================================================================
 
 export const TOKEN_KEY = 'hydra_token';
@@ -51,6 +53,27 @@ export function readToken(stores: Stores = defaultStores()): string | null {
 
 export function readRefreshToken(stores: Stores = defaultStores()): string | null {
   return safeGet(stores.local, REFRESH_TOKEN_KEY);
+}
+
+/**
+ * The token a launch address carries, and the address without it. The fragment form (`#token=...`) wins over the
+ * query form (`?token=...`); other parameters and fragment entries are kept. Null when there is no token or the
+ * address cannot be parsed.
+ */
+export function extractLaunchToken(href: string): { token: string; cleanedUrl: string } | null {
+  let url: URL;
+  try {
+    url = new URL(href);
+  } catch {
+    return null;
+  }
+  const fragment = new URLSearchParams(url.hash.replace(/^#/, ''));
+  const token = fragment.get('token') || url.searchParams.get('token');
+  if (!token) return null;
+  fragment.delete('token');
+  url.searchParams.delete('token');
+  url.hash = fragment.toString();
+  return { token, cleanedUrl: url.toString() };
 }
 
 /** A token received in the address: kept for this view only, and a saved one cannot be mistaken for it later. */

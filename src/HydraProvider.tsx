@@ -20,9 +20,9 @@ import {
   readToken,
   replaceToken,
   saveLaunchToken,
+  extractLaunchToken,
   saveLoginTokens,
 } from './lib/session';
-import { shouldFallBackToQueryToken } from './lib/wsAuth';
 import { type StopAllReport, type StopAllRobot, requestStopAllWithRetry } from './lib/stopAll';
 import { validateSceneRobots, validateTrajectoryPoints } from './lib/importValidation';
 import { type CameraState, HydraContext, type HydraController, type RobotState, type SystemSettings, decodeJwtRole, defaultControllers } from './store';
@@ -132,18 +132,16 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // shows the login screen (or the read-only notice) instead of silently failing.
   const [authToken, setAuthToken] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
-    const urlToken = new URLSearchParams(window.location.search).get('token');
-    if (urlToken) {
+    const launch = extractLaunchToken(window.location.href);
+    if (launch) {
       // A token that came in the address belongs to this view only: it goes to sessionStorage (gone with the
       // view, not shared with other tabs), never to the storage that outlives it - see lib/session.ts.
-      saveLaunchToken(urlToken);
+      saveLaunchToken(launch.token);
       // And it must not stay in the address bar (history, screenshots, a copied link, a proxy log).
       try {
-        const cleaned = new URL(window.location.href);
-        cleaned.searchParams.delete('token');
-        window.history.replaceState(null, '', cleaned.toString());
+        window.history.replaceState(null, '', launch.cleanedUrl);
       } catch { /* a WebView without the History API keeps the address as it is */ }
-      return urlToken;
+      return launch.token;
     }
     return readToken();
   });
@@ -268,7 +266,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // to 3x per single jog tick - see RobotDetail.tsx's own handleXYZJog).
   // Those 3 call sites used to each JSON.stringify the ENTIRE
   // {settings, controllers, ...} tree (recordedPoints included - multiple
-  // MB, see DISEÑO_SYNC_DELTAS.txt's own 3.6MB figure) just to pre-fill
+  // MB, see the delta-sync design) just to pre-fill
   // lastPayloadJsonRef so the save-effect below wouldn't re-POST their own
   // change right back - i.e. every single delta/command was paying the
   // exact full-tree serialization cost Fase 0/3 existed to eliminate,
@@ -422,7 +420,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
    * which stays exactly as-is for the full-tree "settings" message and for
    * a schema-1 "delta" from a client the server hasn't heard declare
    * schema 2 (see server.ts's own per-connection `schema` and
-   * DISEÑO_SYNC_DELTAS.txt section 2).
+   * the delta-sync design).
    *
    * Validates against controllersRef (never React state directly - see
    * that ref's own comment) before touching anything: if the targeted
@@ -500,20 +498,19 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // server.ts's own broadcastSettings(). Without this, two open tabs (or
     // a native remote client and a tab) silently overwrite each other on
     // their own next unrelated save, since neither ever re-fetches after
-    // its initial mount-time load. server.ts's /ws upgrade REQUIRES
-    // ?token= unconditionally (closes with code 1008 otherwise, even for
-    // this app's own tab) - skip opening it at all without one rather than
+    // its initial mount-time load. server.ts's /ws upgrade REQUIRES the
+    // token (the hydra.bearer subprotocol; it closes with code 1008
+    // otherwise, even for this app's own tab) - skip opening it at all without one rather than
     // reconnect-loop against a server that will keep rejecting it.
     let ws: WebSocket | null = null;
-    // The token travels as a WebSocket subprotocol (`hydra.bearer`, <token>) so that it stays out of the address that proxies and logs record; a server that
-    // does not answer the subprotocol closes before opening, and the next attempt falls back to the query-string form.
-    let tokenInQuery = false;
+    // The token travels as a WebSocket subprotocol (`hydra.bearer`, <token>) so that it stays out of the address that proxies and logs record. The server refuses
+    // `/ws?token=` by default, so there is no second form to fall back to.
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     // WS_RECONNECT_MS matches every other client's own fixed 3s reconnect
     // delay (HYDRA-UMC SUITE's own RECONNECT_DELAY_S, the mobile apps' own
     // RECONNECT_DELAY_MS) - this tab previously had NONE at all (a dropped
     // socket - laptop slept, Wi-Fi blipped - just stayed dead until
-    // `authToken` happened to change, per DISEÑO_SYNC_DELTAS.txt section 1's
+    // `authToken` happened to change, per the delta-sync design's
     // own finding). That gap matters more now than it used to: Play/Pause/
     // Stop (see RobotDetail.tsx's own handlePlay/handleStop) stopped
     // optimistically mutating local state as of this same change, relying
@@ -528,26 +525,12 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       try {
         // ?remoteApiVersion=2 declares this connection understands a real
         // targeted delta (see server.ts's own per-connection `schema` and
-        // DISEÑO_SYNC_DELTAS.txt section 3) - the server only ever sends
+        // the delta-sync design) - the server only ever sends
         // schema 2 to a connection that asked for it, so an older/other
         // deployment of this same server (schema field absent or ignored)
         // just never exercises that branch and this still behaves exactly
         // like before.
-        const socket = tokenInQuery
-          ? new WebSocket(wsUrl(`/ws?token=${encodeURIComponent(authToken)}&remoteApiVersion=2`))
-          : new WebSocket(wsUrl('/ws?remoteApiVersion=2'), ['hydra.bearer', authToken]);
-        let everOpened = false;
-        socket.addEventListener('open', () => { everOpened = true; });
-        socket.addEventListener('close', () => {
-          if (everOpened) { tokenInQuery = false; return; } // the next reconnect tries the safe form first
-          if (tokenInQuery) return;
-          // Closed before it ever opened: either the server is down or restarting (the token must NOT go into
-          // the address because of that) or it answers but does not speak the subprotocol (the only case that
-          // justifies the address). Ask over HTTP to tell them apart.
-          fetch(apiUrl('/api/hydra-info'), { signal: AbortSignal.timeout(2500) })
-            .then((r) => { if (shouldFallBackToQueryToken(everOpened, r.status > 0)) tokenInQuery = true; })
-            .catch(() => { /* not reachable: keep the safe form */ });
-        });
+        const socket = new WebSocket(wsUrl('/ws?remoteApiVersion=2'), ['hydra.bearer', authToken]);
         ws = socket;
         // Real diagnostic for a live-reported bug still under investigation:
         // Android's embedded 3D viewport (ThreeDScreen.kt's WebView, this

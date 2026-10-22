@@ -9,6 +9,7 @@ import {
   TOKEN_KEY,
   authHeaders,
   clearTokens,
+  extractLaunchToken,
   readRefreshToken,
   readToken,
   replaceToken,
@@ -53,6 +54,37 @@ describe('the token that arrives in the address', () => {
     expect(s.session.data.get(TOKEN_KEY)).toBe('renewed.jwt');
     expect(s.local.data.has(TOKEN_KEY)).toBe(false);
     expect(readRefreshToken(s.both)).toBe('renewed.refresh');
+  });
+});
+
+describe('extractLaunchToken', () => {
+  const page = 'https://cell.local:3000/';
+  it('reads the token from the fragment and leaves a clean address', () => {
+    expect(extractLaunchToken(`${page}?hideUI=true&robotId=2#token=abc.def.ghi`)).toEqual({
+      token: 'abc.def.ghi',
+      cleanedUrl: `${page}?hideUI=true&robotId=2`,
+    });
+  });
+  it('still reads the query form of an app that has not moved yet, and removes it', () => {
+    expect(extractLaunchToken(`${page}?hideUI=true&token=abc&robotId=2`)).toEqual({
+      token: 'abc',
+      cleanedUrl: `${page}?hideUI=true&robotId=2`,
+    });
+  });
+  it('prefers the fragment when both are present and removes both', () => {
+    expect(extractLaunchToken(`${page}?token=from-query#token=from-fragment`)).toEqual({ token: 'from-fragment', cleanedUrl: page });
+  });
+  it('keeps the other fragment entries', () => {
+    expect(extractLaunchToken(`${page}#view=3d&token=t1`)).toEqual({ token: 't1', cleanedUrl: `${page}#view=3d` });
+  });
+  it('keeps a token that needs percent-decoding intact', () => {
+    expect(extractLaunchToken(`${page}#token=a%2Bb%3D`)?.token).toBe('a+b=');
+  });
+  it('returns null without a token, with an empty one, or for an address that is not a URL', () => {
+    expect(extractLaunchToken(`${page}?hideUI=true`)).toBeNull();
+    expect(extractLaunchToken(`${page}#token=`)).toBeNull();
+    expect(extractLaunchToken(`${page}?token=`)).toBeNull();
+    expect(extractLaunchToken('not a url')).toBeNull();
   });
 });
 

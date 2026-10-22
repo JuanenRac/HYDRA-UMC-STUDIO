@@ -1362,7 +1362,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   // which of the up to 3 calls the server processes last, rather than the
   // server's own calculateJoints() (a single generic formula that would
   // silently diverge from what this same model's real kinematics chain
-  // needs - see server.ts's own jog case comment / DISEÑO_SYNC_DELTAS.txt).
+  // needs - see server.ts's own jog case comment / the delta-sync design).
   // localMutate mirrors the exact same pos+joints locally per axis so the
   // UI moves instantly, rolled back per-axis if that axis's own request
   // fails (see store.tsx's own sendRobotCommand comment).
@@ -1507,7 +1507,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
 
   const toggleValve = (index: number) => {
     // Atomic /api/robot/:id/command instead of updateRobot + the 500ms
-    // debounced full-tree POST /api/settings - see DISEÑO_SYNC_DELTAS.txt
+    // debounced full-tree POST /api/settings - see the delta-sync design
     // CAUSA A / store.tsx's own sendRobotCommand comment. localMutate gives
     // instant optimistic feedback (rolled back if the request fails);
     // every other client's state updates via the WS delta round-trip,

@@ -719,7 +719,7 @@ interface HydraStoreContextType {
    * state + waiting on the 500ms debounced POST /api/settings (see the
    * save-effect below) - for the handful of discrete actions that already
    * have an exact 1:1 case in server.ts's own switch (stop/play/pause/jog/
-   * valve/pump/speed/tool today) - see DISEÑO_SYNC_DELTAS.txt CAUSA A.
+   * valve/pump/speed/tool today) - see the delta-sync design.
    *
    * `localMutate`, when given, applies an OPTIMISTIC local update to every
    * robot in `affectedIds` (defaults to just `id`) immediately, before the

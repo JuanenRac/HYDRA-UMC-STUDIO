@@ -9,7 +9,6 @@
 // =============================================================================
 import { describe, expect, it } from 'vitest';
 import { createInFlightCounter, createRateLimiter } from '../src/lib/inputThrottle';
-import { shouldFallBackToQueryToken } from '../src/lib/wsAuth';
 
 describe('createRateLimiter', () => {
   it('lets the first send through and holds the next ones until the interval has passed', () => {
@@ -91,14 +90,5 @@ describe('createInFlightCounter', () => {
     await pending;
     await Promise.resolve();
     expect(counter.count()).toBe(0);
-  });
-});
-
-describe('shouldFallBackToQueryToken', () => {
-  it('falls back only when the socket never opened although the server answered over HTTP', () => {
-    expect(shouldFallBackToQueryToken(false, true)).toBe(true);
-    expect(shouldFallBackToQueryToken(true, true)).toBe(false);
-    expect(shouldFallBackToQueryToken(false, false)).toBe(false);
-    expect(shouldFallBackToQueryToken(true, false)).toBe(false);
   });
 });
