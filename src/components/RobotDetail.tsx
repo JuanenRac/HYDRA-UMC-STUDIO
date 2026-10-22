@@ -1469,6 +1469,8 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   const [pendingAction, setPendingAction] = useState<'home' | 'reset' | 'delete_points' | null>(null);
   // Changing the tool changes what the robot does with the following moves, so it asks first too.
   const [pendingTool, setPendingTool] = useState<string | null>(null);
+  // Same for the model: kinematics, joint limits and the 3D view all follow it.
+  const [pendingModel, setPendingModel] = useState<string | null>(null);
   // A trajectory with points the arm cannot reach asks first (see src/lib/reachCheck.ts).
   const [pendingReach, setPendingReach] = useState<{ report: ReachReport; send: () => Promise<unknown>; decline: () => void } | null>(null);
   const [reachTolerance, setReachTolerance] = useState<number>(() => loadReachTolerance(browserStorage()));
@@ -1496,6 +1498,11 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     const tool = pendingTool;
     setPendingTool(null);
     if (tool) sendRobotCommand(robot.id, 'tool', { tool }, () => ({ tool: tool as any }));
+  };
+  const runPendingModel = () => {
+    const model = pendingModel;
+    setPendingModel(null);
+    if (model) updateRobot(robot.id, { model: model as any });
   };
   const runPendingAction = () => {
     const action = pendingAction;
@@ -1590,6 +1597,13 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
         danger={false}
         onConfirm={runPendingTool}
         onCancel={() => setPendingTool(null)}
+      />
+      <ConfirmDialog
+        open={pendingModel !== null}
+        message={t('robot_detail.confirm_model', { model: pendingModel ?? '' })}
+        danger={false}
+        onConfirm={runPendingModel}
+        onCancel={() => setPendingModel(null)}
       />
       {!viewportOnly && (
         <div className="flex items-center justify-between p-3 border-b border-slate-800 bg-slate-900 shrink-0">
@@ -1735,7 +1749,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                         });
                       }}
                       className="p-2 rounded bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-emerald-500/50 backdrop-blur-sm transition-colors flex items-center gap-1"
-                      title={`Show ${bot.name} Camera`}
+                      title={t('robot_detail.show_camera', { name: bot.name })}
                     >
                       <CameraIcon size={16} />
                       <span className="text-[10px] font-bold max-w-[60px] truncate">{bot.name}</span>
@@ -1854,21 +1868,21 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                 <div className="hidden landscape:flex items-center gap-1">
                   <div className="w-px h-5 bg-slate-700 mx-0.5" />
 
-                  <button onClick={handleHome} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="HOME" aria-label="HOME">
+                  <button onClick={handleHome} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title={t('robot_detail.home')} aria-label={t('robot_detail.home')}>
                     <Home size={16} />
                   </button>
 
                   {robot.hasXYTable && (
-                    <button onClick={handleResetXY} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="HOME XY" aria-label="HOME XY">
+                    <button onClick={handleResetXY} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title={t('robot_detail.home_xy')} aria-label={t('robot_detail.home_xy')}>
                       <Grid3x3 size={16} />
                     </button>
                   )}
 
-                  <button onClick={handleReset} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="RESET" aria-label="RESET">
+                  <button onClick={handleReset} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title={t('robot_detail.reset_pose')} aria-label={t('robot_detail.reset_pose')}>
                     <RefreshCw size={16} />
                   </button>
 
-                  <button onClick={handleReset3D} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="RESET 3D" aria-label="RESET 3D">
+                  <button onClick={handleReset3D} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title={t('robot_detail.reset_3d')} aria-label={t('robot_detail.reset_3d')}>
                     <RotateCcw size={16} />
                   </button>
 
@@ -1969,9 +1983,9 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
             <button
               onClick={handleHome}
               className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
-              title="HOME"
+              title={t('robot_detail.home')}
             >
-              <Home size={16} /> {!isAndroidApp && "HOME"}
+              <Home size={16} /> {!isAndroidApp && t('robot_detail.home')}
             </button>
 
             {/* HOME XY Button - a distinct Grid3x3 icon from plain HOME
@@ -1983,9 +1997,9 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
               <button
                 onClick={handleResetXY}
                 className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
-                title="HOME XY"
+                title={t('robot_detail.home_xy')}
               >
-                <Grid3x3 size={16} /> {!isAndroidApp && "HOME XY"}
+                <Grid3x3 size={16} /> {!isAndroidApp && t('robot_detail.home_xy')}
               </button>
             )}
 
@@ -1993,9 +2007,9 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
             <button
               onClick={handleReset}
               className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-amber-500 shadow-[0_0_15px_rgba(217,119,6,0.3)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
-              title="RESET"
+              title={t('robot_detail.reset_pose')}
             >
-              <RefreshCw size={16} /> {!isAndroidApp && "RESET"}
+              <RefreshCw size={16} /> {!isAndroidApp && t('robot_detail.reset_pose')}
             </button>
 
             {/* RESET 3D Button - RotateCcw instead of the old Video icon
@@ -2004,9 +2018,9 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
             <button
               onClick={handleReset3D}
               className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-teal-600 hover:bg-teal-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-teal-500 shadow-[0_0_15px_rgba(13,148,136,0.3)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
-              title="RESET 3D"
+              title={t('robot_detail.reset_3d')}
             >
-              <RotateCcw size={16} /> {!isAndroidApp && "RESET 3D"}
+              <RotateCcw size={16} /> {!isAndroidApp && t('robot_detail.reset_3d')}
             </button>
 
             {/* LOAD Button only (EXPORT removed) */}
@@ -2388,7 +2402,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                     </label>
                     <select
                       value={robot.model}
-                      onChange={e => updateRobot(robot.id, { model: e.target.value as any })}
+                      onChange={e => setPendingModel(e.target.value)}
                       className="bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
                     >
                       <optgroup label="Source Robotics">
@@ -2459,12 +2473,12 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                       onChange={e => updateRobot(robot.id, { role: e.target.value as any })}
                       className="bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
                     >
-                      <option value="Idle">Idle</option>
+                      <option value="Idle">{t('robot_detail.role_idle')}</option>
                       <option value="CNC">CNC</option>
-                      <option value="Laser">Laser</option>
+                      <option value="Laser">{t('robot_detail.role_laser')}</option>
                       <option value="Pnp">Pnp</option>
-                      <option value="3D printing">3D printing</option>
-                      <option value="Inspection">Inspection</option>
+                      <option value="3D printing">{t('robot_detail.role_3d_printing')}</option>
+                      <option value="Inspection">{t('robot_detail.role_inspection')}</option>
                     </select>
                   </div>
 
@@ -2511,7 +2525,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                           <span className="text-sm text-slate-300">{r.name} (ID: {r.id})</span>
                         </label>
                       ))}
-                      {robots.length <= 1 && <span className="text-xs text-slate-500">No other robots available.</span>}
+                      {robots.length <= 1 && <span className="text-xs text-slate-500">{t('robot_detail.no_other_robots')}</span>}
                     </div>
 
                   </div>
@@ -2762,7 +2776,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                 })}
                 {robot.recordedPoints.length === 0 && (
                   <div className="text-center text-slate-500 py-4 text-sm">
-                    No points recorded
+                    {t('robot_detail.no_points')}
                   </div>
                 )}
               </div>

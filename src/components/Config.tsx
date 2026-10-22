@@ -9,6 +9,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { setLanguage } from '../i18n';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import {
@@ -27,9 +28,10 @@ function cn(...inputs: ClassValue[]) {
 }
 
 function PanelLoadingFallback() {
+  const { t } = useTranslation();
   return (
     <div className="flex-1 flex items-center justify-center text-slate-600 text-sm">
-      <RefreshCw size={18} className="animate-spin mr-2" /> Loading…
+      <RefreshCw size={18} className="animate-spin mr-2" /> {t('dashboard.loading')}
     </div>
   );
 }
@@ -72,7 +74,7 @@ function TestConnectionButton({ state, onTest }: { state: TestState; onTest: () 
 }
 
 export function Config({ onClose }: { onClose: () => void }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [confirmHardwareTransport, setConfirmHardwareTransport] = useState(false);
   const { controllers, activeController, activeControllerId, updateController, settings, updateSettings, updateRobot, addController, removeController, factoryReset, updateCamera, flushSettingsSave, authToken, serverReachable } = useHydraStore();
   const [configTab, setConfigTab] = useState<ConfigTab>('identity');
@@ -286,7 +288,7 @@ export function Config({ onClose }: { onClose: () => void }) {
                             {isActiveRow ? (
                               <span className={cn("px-2 py-1 rounded text-[10px] font-black uppercase", knownOnline ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500")}>{knownOnline ? t('config.online') : t('config.offline')}</span>
                             ) : (
-                              <span className="px-2 py-1 rounded text-[10px] font-black uppercase bg-slate-700/40 text-slate-400" title="Not the active connection - this app only checks the one it's currently using.">{t('config.unverified')}</span>
+                              <span className="px-2 py-1 rounded text-[10px] font-black uppercase bg-slate-700/40 text-slate-400" title={t('config.not_active_connection')}>{t('config.unverified')}</span>
                             )}
                           </td>
                           <td className="px-4 py-3 text-right"><button onClick={() => removeController(c.id)} className="text-slate-600 hover:text-rose-500 transition-colors"><Trash2 size={16}/></button></td>
@@ -331,7 +333,7 @@ export function Config({ onClose }: { onClose: () => void }) {
                 </div>
                 <div className="space-y-4">
                   <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">{t('config.system_localization')}</h3>
-                  <select className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 outline-none focus:border-sky-400" value={settings.language} onChange={e => { updateSettings({ language: e.target.value }); i18n.changeLanguage(e.target.value); }}>
+                  <select className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 outline-none focus:border-sky-400" value={settings.language} onChange={e => { updateSettings({ language: e.target.value }); void setLanguage(e.target.value); }}>
                     <option value="en">{t('config.language_en')} (US)</option><option value="es">{t('config.language_es')} (ES)</option><option value="de">{t('config.language_de')} (DE)</option><option value="fr">{t('config.language_fr')} (FR)</option><option value="it">{t('config.language_it')} (IT)</option><option value="zh">{t('config.language_zh')} (ZH)</option><option value="ja">{t('config.language_ja')} (JA)</option><option value="pt">{t('config.language_pt')} (PT)</option>
                   </select>
                 </div>

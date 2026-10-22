@@ -239,7 +239,7 @@ export function XYTableConfig() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-950 border border-slate-800 rounded p-3 flex flex-col items-center gap-2">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase">X Axis</div>
+                  <div className="text-[10px] font-bold text-slate-500 uppercase">{t('modules.x_axis')}</div>
                   <div className="text-lg font-mono text-amber-400">{xyTable?.pos.x.toFixed(2) || '0.00'}</div>
                   <div className="flex gap-2 mt-1 w-full justify-center">
                     <button onClick={() => handleJog('x', -1)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded text-slate-300">
@@ -252,7 +252,7 @@ export function XYTableConfig() {
                 </div>
                 
                 <div className="bg-slate-950 border border-slate-800 rounded p-3 flex flex-col items-center gap-2">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase">Y Axis</div>
+                  <div className="text-[10px] font-bold text-slate-500 uppercase">{t('modules.y_axis')}</div>
                   <div className="text-lg font-mono text-amber-400">{xyTable?.pos.y.toFixed(2) || '0.00'}</div>
                   <div className="flex gap-2 mt-1 w-full justify-center">
                     <button onClick={() => handleJog('y', -1)} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all rounded text-slate-300">

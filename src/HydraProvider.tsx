@@ -6,6 +6,7 @@
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { apiUrl, wsUrl } from './lib/apiBase';
+import { loginFailureText, saveFailureText, unreachableText } from './lib/serverErrors';
 import { applyRobotCommandMutation, rollbackRobotCommand } from './robotCommandTransition';
 import {
   type CommandIssue,
@@ -172,7 +173,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.token) {
-        setLoginError(data.error || 'Login failed');
+        setLoginError(loginFailureText(data.error));
         return false;
       }
       // The refresh token returned beside the access token lets a later WS 1008 close (or a 401 on a command)
@@ -181,7 +182,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setAuthToken(data.token);
       return true;
     } catch {
-      setLoginError('Cannot reach server');
+      setLoginError(unreachableText());
       return false;
     }
   }, []);
@@ -662,20 +663,14 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           // Real failure (401 expired session, 403 non-admin role, 5xx) - NOT marked as sent (lastPayloadJsonRef
           // stays behind), so the next real change - or a manual Retry via flushSettingsSave() - tries again
           // instead of silently giving up on it forever.
-          setSettingsSaveError(
-            response.status === 401
-              ? 'Save failed (401): your session has expired - log in again.'
-              : response.status === 403
-                ? 'Save failed (403): this account does not have permission to save settings.'
-                : `Save failed (HTTP ${response.status}).`
-          );
+          setSettingsSaveError(saveFailureText('save', response.status));
           return;
         }
         lastPayloadJsonRef.current = payloadJson;
         setSettingsSaveError(null);
       }).catch(() => {
         // Real network failure - also not marked as sent, same retry reasoning as the non-ok branch above.
-        setSettingsSaveError('Save failed: could not reach the server.');
+        setSettingsSaveError(saveFailureText('save', null));
       });
     }, 500);
   }, [settings, controllers, activeControllerId, isLoaded]);
@@ -894,20 +889,14 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (!response.ok) {
         // Real failure - see the debounced save effect's own comment for
         // why lastPayloadJsonRef is deliberately NOT updated here either.
-        setSettingsSaveError(
-          response.status === 401
-            ? 'Save failed (401): your session has expired - log in again.'
-            : response.status === 403
-              ? 'Save failed (403): this account does not have permission to save settings.'
-              : `Save failed (HTTP ${response.status}).`
-        );
+        setSettingsSaveError(saveFailureText('save', response.status));
         return;
       }
       lastPayloadJsonRef.current = payloadJson;
       setSettingsSaveError(null);
     } catch {
       // Real network failure.
-      setSettingsSaveError('Save failed: could not reach the server.');
+      setSettingsSaveError(saveFailureText('save', null));
     }
   };
 
@@ -1024,17 +1013,11 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const response = await fetch(apiUrl("/api/settings"), { method: "POST", headers, body: "{}" });
       if (!response.ok) {
-        setSettingsSaveError(
-          response.status === 401
-            ? 'Factory reset failed (401): your session has expired - log in again.'
-            : response.status === 403
-              ? 'Factory reset failed (403): this account does not have permission to save settings.'
-              : `Factory reset failed (HTTP ${response.status}).`
-        );
+        setSettingsSaveError(saveFailureText('reset', response.status));
         return;
       }
     } catch {
-      setSettingsSaveError('Factory reset failed: could not reach the server.');
+      setSettingsSaveError(saveFailureText('reset', null));
       return;
     }
     window.location.reload();

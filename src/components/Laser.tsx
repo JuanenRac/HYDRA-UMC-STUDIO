@@ -26,6 +26,7 @@ export function Laser() {
   const selectedRobot = robots.find(r => r.id === selectedRobotId);
   if (!selectedRobot) return null;
   
+  const machineLabel = 'JuanenLaser'; // shown to the operator; machineType is the internal id
   const moduleData = selectedRobot[machineType] as any;
   const isEnabled = moduleData?.enabled || false;
   
@@ -83,7 +84,7 @@ export function Laser() {
       {!isEnabled ? (
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-8 flex flex-col items-center justify-center text-center flex-1">
           <Zap className="text-slate-600 mb-3" size={48} />
-          <h3 className="text-slate-200 font-medium mb-2">{t('modules.no_module_assigned', `No ${machineType} Assigned`, { machineType: machineType })}</h3>
+          <h3 className="text-slate-200 font-medium mb-2">{t('modules.no_module_assigned', `No ${machineLabel} Assigned`, { machineType: machineLabel })}</h3>
           <p className="text-slate-400 text-sm max-w-md mb-6">
             {t('modules.no_module_desc', 'This robot does not currently have this module configured. Add one to enable its features.')}
           </p>
@@ -91,7 +92,7 @@ export function Laser() {
             onClick={handleToggle}
             className="flex items-center gap-2 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/50 text-sky-400 px-4 py-2 rounded-lg font-medium transition-colors"
           >
-            <Plus size={16} /> {t('modules.enable_module', `Enable ${machineType}`, { machineType: machineType })}
+            <Plus size={16} /> {t('modules.enable_module', `Enable ${machineLabel}`, { machineType: machineLabel })}
           </button>
         </div>
       ) : (

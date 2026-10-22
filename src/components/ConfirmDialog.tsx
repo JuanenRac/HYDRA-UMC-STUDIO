@@ -41,6 +41,7 @@ export function ConfirmDialog({
 }) {
   const { t } = useTranslation();
   const titleId = useId();
+  const messageId = useId();
   const cardRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   // Callers pass a new onCancel on every render; the effect must not restart (and steal the focus) each time.
@@ -86,6 +87,7 @@ export function ConfirmDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        aria-describedby={messageId}
         className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[420px] max-w-full overflow-hidden flex flex-col"
       >
         <div className="p-5 flex flex-col gap-3">
@@ -93,7 +95,7 @@ export function ConfirmDialog({
             <AlertTriangle size={18} className={danger ? 'text-rose-400' : 'text-sky-400'} />
             {title || t('common.confirm')}
           </div>
-          <p className="text-sm text-slate-300 leading-relaxed">{message}</p>
+          <p id={messageId} className="text-sm text-slate-300 leading-relaxed">{message}</p>
         </div>
         <div className="p-4 border-t border-slate-800 bg-slate-950 flex justify-end gap-3">
           <button

@@ -123,7 +123,21 @@
     "cpu_load": "CPU-Last",
     "mem_load": "Speicher",
     "network_status": "Netzwerk",
-    "remote_app_access_short": "App-Zugriff"
+    "remote_app_access_short": "App-Zugriff",
+    "loading": "Wird geladen…",
+    "example_data": "Beispieldaten",
+    "example_data_hint": "Es wurde noch keine echte Verbindung zum Server bestätigt - die angezeigten Roboter und Kameras sind Beispielkonfiguration, keine Live-Telemetrie.",
+    "save_failed_retry": "Speichern fehlgeschlagen - Erneut versuchen",
+    "back_to_root": "Zurück zum Start",
+    "resources": "Ressourcen",
+    "industrial": "Industrie",
+    "flasher_studio": "Flasher Studio",
+    "tester_center": "Testzentrum",
+    "firmware_update": "Firmware-Update",
+    "hardware_tester": "Hardware-Tester",
+    "kinematic_brain": "Kinematik-Gehirn",
+    "vision_center": "Vision-Zentrum",
+    "logo_alt": "HYDRA-Logo"
   },
   "config": {
     "title": "Systemkonfiguration",
@@ -304,7 +318,8 @@
     "ai_hailo_registry_desc": "Wo kompilierte .hef-Modelle liegen - spiegelt HYDRA-UMC-DETECTION-HEFs eigenes models_dir (dessen echtes Register mit sha256-Prüfsummenverifikation).",
     "ai_hailo_none": "Keins (nicht installiert)",
     "language_pt": "Portugiesisch",
-    "confirm_hardware_transport": "CAN-OTA auf die echte Hardware umstellen? Flashen und Testen sprechen dann mit den echten Platinen statt mit der Simulation."
+    "confirm_hardware_transport": "CAN-OTA auf die echte Hardware umstellen? Flashen und Testen sprechen dann mit den echten Platinen statt mit der Simulation.",
+    "not_active_connection": "Nicht die aktive Verbindung - diese App prüft nur die gerade verwendete."
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",
@@ -391,7 +406,16 @@
     "confirm_tool": "Werkzeug auf {{tool}} wechseln? Der Roboter verwendet es für die nächsten Bewegungen.",
     "reach_confirm": "{{count}} Punkt(e) dieser Bahn kann dieser Roboter nicht erreichen: Die nächstliegende Pose des Arms ist bis zu {{worst}} mm vom gezeichneten Punkt entfernt (Toleranz {{threshold}} mm). Der Roboter würde einen anderen Weg als den gezeichneten fahren. Trotzdem senden?",
     "reach_tolerance_label": "Reichweitentoleranz (mm)",
-    "reach_tolerance_hint": "Eine Bahn mit einem Punkt, der weiter als diese Distanz von dem entfernt ist, was der Arm erreichen kann, verlangt vor dem Senden eine Bestätigung."
+    "reach_tolerance_hint": "Eine Bahn mit einem Punkt, der weiter als diese Distanz von dem entfernt ist, was der Arm erreichen kann, verlangt vor dem Senden eine Bestätigung.",
+    "show_camera": "Kamera von {{name}} anzeigen",
+    "role_idle": "Leerlauf",
+    "role_laser": "Laser",
+    "role_3d_printing": "3D-Druck",
+    "role_inspection": "Inspektion",
+    "no_other_robots": "Keine anderen Roboter verfügbar.",
+    "reset_pose": "ZURÜCKSETZEN",
+    "reset_3d": "ZURÜCKSETZEN 3D",
+    "confirm_model": "Modell auf {{model}} ändern? Kinematik, Grenzwerte und 3D-Ansicht ändern sich damit."
   },
   "cameras": {
     "title": "Oktal Vision Matrix",
@@ -502,9 +526,9 @@
     "pick_and_place_title": "Pick & Place",
     "machine": "Maschine",
     "reset": "Zurücksetzen",
-    "no_module_assigned": "Kein {machineType} zugewiesen",
+    "no_module_assigned": "Kein {{machineType}} zugewiesen",
     "no_module_desc": "Dieser Roboter hat dieses Modul derzeit nicht konfiguriert. Fügen Sie eines hinzu, um seine Funktionen zu aktivieren.",
-    "enable_module": "{machineType} aktivieren",
+    "enable_module": "{{machineType}} aktivieren",
     "remove_module": "Modul entfernen",
     "module_settings": "Modul-Einstellungen",
     "width_x": "Breite (X mm)",
@@ -539,7 +563,9 @@
     "tool_assignments": "Werkzeugzuweisungen",
     "usable_slots": "Konfig. nutzbarer Slots",
     "vacuum_controls": "Vakuumsteuerung",
-    "vertical": "Vertikal"
+    "vertical": "Vertikal",
+    "x_axis": "X-Achse",
+    "y_axis": "Y-Achse"
   },
   "help": {
     "title": "Hilfe",
@@ -1102,5 +1128,17 @@
     "prev": "Zurück",
     "next": "Weiter",
     "done": "Fertig"
+  },
+  "serverErrors": {
+    "login_failed": "Anmeldung fehlgeschlagen",
+    "cannot_reach_server": "Server nicht erreichbar",
+    "save_401": "Speichern fehlgeschlagen (401): Ihre Sitzung ist abgelaufen - bitte erneut anmelden.",
+    "save_403": "Speichern fehlgeschlagen (403): Dieses Konto darf keine Einstellungen speichern.",
+    "save_http": "Speichern fehlgeschlagen (HTTP {{status}}).",
+    "save_unreachable": "Speichern fehlgeschlagen: Server nicht erreichbar.",
+    "reset_401": "Zurücksetzen auf Werkseinstellungen fehlgeschlagen (401): Ihre Sitzung ist abgelaufen - bitte erneut anmelden.",
+    "reset_403": "Zurücksetzen auf Werkseinstellungen fehlgeschlagen (403): Dieses Konto darf keine Einstellungen speichern.",
+    "reset_http": "Zurücksetzen auf Werkseinstellungen fehlgeschlagen (HTTP {{status}}).",
+    "reset_unreachable": "Zurücksetzen auf Werkseinstellungen fehlgeschlagen: Server nicht erreichbar."
   }
 }

@@ -123,7 +123,21 @@
     "cpu_load": "CPU 負荷",
     "mem_load": "メモリ",
     "network_status": "ネットワーク",
-    "remote_app_access_short": "アプリアクセス"
+    "remote_app_access_short": "アプリアクセス",
+    "loading": "読み込み中…",
+    "example_data": "サンプルデータ",
+    "example_data_hint": "サーバーへの実際の接続はまだ確認されていません。表示中のロボットとカメラはサンプル設定であり、ライブのテレメトリではありません。",
+    "save_failed_retry": "保存に失敗 - 再試行",
+    "back_to_root": "ルートに戻る",
+    "resources": "リソース",
+    "industrial": "産業用",
+    "flasher_studio": "Flasher Studio",
+    "tester_center": "テストセンター",
+    "firmware_update": "ファームウェア更新",
+    "hardware_tester": "ハードウェアテスター",
+    "kinematic_brain": "キネマティック・ブレイン",
+    "vision_center": "ビジョンセンター",
+    "logo_alt": "HYDRA ロゴ"
   },
   "config": {
     "title": "システム設定",
@@ -304,7 +318,8 @@
     "ai_hailo_registry_desc": "コンパイル済みの .hef モデルの保存場所 - HYDRA-UMC-DETECTION-HEF 自身の models_dir(sha256 チェックサム検証付きの実際のレジストリ)に対応します。",
     "ai_hailo_none": "なし(未インストール)",
     "language_pt": "ポルトガル語",
-    "confirm_hardware_transport": "CAN-OTA を実機に切り替えますか？ 書き込みとテストはシミュレーションではなく実際の基板と通信します。"
+    "confirm_hardware_transport": "CAN-OTA を実機に切り替えますか？ 書き込みとテストはシミュレーションではなく実際の基板と通信します。",
+    "not_active_connection": "アクティブな接続ではありません。このアプリは現在使用中の接続のみ確認します。"
   },
   "robot_detail": {
     "back": "ダッシュボードに戻る",
@@ -391,7 +406,16 @@
     "confirm_tool": "ツールを {{tool}} に変更しますか？ロボットは次の動作からそのツールを使います。",
     "reach_confirm": "この軌道の {{count}} 点はこのロボットでは到達できません。アームが取れる最も近い姿勢は、描いた点から最大 {{worst}} mm 離れています（許容 {{threshold}} mm）。ロボットは描いた経路とは別の経路をたどります。それでも送信しますか？",
     "reach_tolerance_label": "到達許容差（mm）",
-    "reach_tolerance_hint": "アームが到達できる位置からこの距離より離れた点を含む軌道は、送信前に確認を求めます。"
+    "reach_tolerance_hint": "アームが到達できる位置からこの距離より離れた点を含む軌道は、送信前に確認を求めます。",
+    "show_camera": "{{name}} のカメラを表示",
+    "role_idle": "待機",
+    "role_laser": "レーザー",
+    "role_3d_printing": "3Dプリント",
+    "role_inspection": "検査",
+    "no_other_robots": "利用できる他のロボットはありません。",
+    "reset_pose": "リセット",
+    "reset_3d": "3D リセット",
+    "confirm_model": "モデルを {{model}} に変更しますか？運動学、リミット、3D 表示も変わります。"
   },
   "cameras": {
     "title": "8 系統ビジョンマトリクス",
@@ -502,9 +526,9 @@
     "pick_and_place_title": "ピック＆プレース",
     "machine": "機械",
     "reset": "リセット",
-    "no_module_assigned": "{machineType} が割り当てられていません",
+    "no_module_assigned": "{{machineType}} が割り当てられていません",
     "no_module_desc": "このロボットには現在このモジュールが設定されていません。機能を有効にするには追加してください。",
-    "enable_module": "{machineType} を有効化",
+    "enable_module": "{{machineType}} を有効化",
     "remove_module": "モジュールを削除",
     "module_settings": "モジュール設定",
     "width_x": "幅（X mm）",
@@ -539,7 +563,9 @@
     "tool_assignments": "ツール割り当て",
     "usable_slots": "使用可能スロット設定",
     "vacuum_controls": "真空制御",
-    "vertical": "垂直"
+    "vertical": "垂直",
+    "x_axis": "X軸",
+    "y_axis": "Y軸"
   },
   "help": {
     "title": "ヘルプ",
@@ -1102,5 +1128,17 @@
     "prev": "前へ",
     "next": "次へ",
     "done": "完了"
+  },
+  "serverErrors": {
+    "login_failed": "ログインに失敗しました",
+    "cannot_reach_server": "サーバーに接続できません",
+    "save_401": "保存に失敗しました (401): セッションの有効期限が切れました。再度ログインしてください。",
+    "save_403": "保存に失敗しました (403): このアカウントには設定を保存する権限がありません。",
+    "save_http": "保存に失敗しました (HTTP {{status}})。",
+    "save_unreachable": "保存に失敗しました: サーバーに接続できませんでした。",
+    "reset_401": "初期化に失敗しました (401): セッションの有効期限が切れました。再度ログインしてください。",
+    "reset_403": "初期化に失敗しました (403): このアカウントには設定を保存する権限がありません。",
+    "reset_http": "初期化に失敗しました (HTTP {{status}})。",
+    "reset_unreachable": "初期化に失敗しました: サーバーに接続できませんでした。"
   }
 }

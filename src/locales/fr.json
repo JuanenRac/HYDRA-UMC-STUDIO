@@ -123,7 +123,21 @@
     "cpu_load": "Charge CPU",
     "mem_load": "Mémoire",
     "network_status": "Réseau",
-    "remote_app_access_short": "Accès App"
+    "remote_app_access_short": "Accès App",
+    "loading": "Chargement…",
+    "example_data": "Données d'exemple",
+    "example_data_hint": "Aucune connexion réelle au serveur n'a encore été confirmée : les robots et caméras affichés sont une configuration d'exemple, pas de la télémétrie en direct.",
+    "save_failed_retry": "Échec de l'enregistrement - Réessayer",
+    "back_to_root": "Retour à l'accueil",
+    "resources": "Ressources",
+    "industrial": "Industriel",
+    "flasher_studio": "Flasher Studio",
+    "tester_center": "Centre de test",
+    "firmware_update": "Mise à jour du firmware",
+    "hardware_tester": "Testeur matériel",
+    "kinematic_brain": "Cerveau cinématique",
+    "vision_center": "Centre de vision",
+    "logo_alt": "Logo HYDRA"
   },
   "config": {
     "title": "Configuration du Système",
@@ -304,7 +318,8 @@
     "ai_hailo_registry_desc": "Où résident les modèles .hef compilés - reflète le propre models_dir de HYDRA-UMC-DETECTION-HEF (son vrai registre avec vérification de somme de contrôle sha256).",
     "ai_hailo_none": "Aucun (non installé)",
     "language_pt": "Portugais",
-    "confirm_hardware_transport": "Passer CAN-OTA sur le matériel réel ? Le flashage et les tests parleront alors aux vraies cartes au lieu de la simulation."
+    "confirm_hardware_transport": "Passer CAN-OTA sur le matériel réel ? Le flashage et les tests parleront alors aux vraies cartes au lieu de la simulation.",
+    "not_active_connection": "Pas la connexion active : cette application ne vérifie que celle qu'elle utilise."
   },
   "robot_detail": {
     "back": "Retour au Tableau de Bord",
@@ -391,7 +406,16 @@
     "confirm_tool": "Changer l'outil pour {{tool}} ? Le robot l'utilisera pour les prochains mouvements.",
     "reach_confirm": "{{count}} point(s) de cette trajectoire ne sont pas atteignables par ce robot : la pose la plus proche que le bras peut prendre est à {{worst}} mm au plus du point dessiné (tolérance {{threshold}} mm). Le robot suivrait un chemin différent de celui dessiné. L'envoyer quand même ?",
     "reach_tolerance_label": "Tolérance de portée (mm)",
-    "reach_tolerance_hint": "Une trajectoire dont un point est plus loin que cette distance de ce que le bras peut atteindre demande une confirmation avant d'être envoyée."
+    "reach_tolerance_hint": "Une trajectoire dont un point est plus loin que cette distance de ce que le bras peut atteindre demande une confirmation avant d'être envoyée.",
+    "show_camera": "Afficher la caméra de {{name}}",
+    "role_idle": "Inactif",
+    "role_laser": "Laser",
+    "role_3d_printing": "Impression 3D",
+    "role_inspection": "Inspection",
+    "no_other_robots": "Aucun autre robot disponible.",
+    "reset_pose": "RÉINITIALISER",
+    "reset_3d": "RÉINITIALISER 3D",
+    "confirm_model": "Changer le modèle en {{model}} ? Sa cinématique, ses limites et sa vue 3D changent avec lui."
   },
   "cameras": {
     "title": "Matrice de Vision Octale",
@@ -502,9 +526,9 @@
     "pick_and_place_title": "Pick & Place",
     "machine": "Machine",
     "reset": "Réinitialiser",
-    "no_module_assigned": "Aucun {machineType} assigné",
+    "no_module_assigned": "Aucun {{machineType}} assigné",
     "no_module_desc": "Ce robot n'a pas actuellement ce module configuré. Ajoutez-en un pour activer ses fonctionnalités.",
-    "enable_module": "Activer {machineType}",
+    "enable_module": "Activer {{machineType}}",
     "remove_module": "Supprimer le module",
     "module_settings": "Paramètres du module",
     "width_x": "Largeur (X mm)",
@@ -539,7 +563,9 @@
     "tool_assignments": "Attribution des Outils",
     "usable_slots": "Config. des Emplacements Utilisables",
     "vacuum_controls": "Commandes de Vide",
-    "vertical": "Vertical"
+    "vertical": "Vertical",
+    "x_axis": "Axe X",
+    "y_axis": "Axe Y"
   },
   "help": {
     "title": "Aide",
@@ -1102,5 +1128,17 @@
     "prev": "Précédent",
     "next": "Suivant",
     "done": "Terminé"
+  },
+  "serverErrors": {
+    "login_failed": "Échec de la connexion",
+    "cannot_reach_server": "Serveur injoignable",
+    "save_401": "Échec de l'enregistrement (401) : votre session a expiré, reconnectez-vous.",
+    "save_403": "Échec de l'enregistrement (403) : ce compte n'a pas le droit d'enregistrer les réglages.",
+    "save_http": "Échec de l'enregistrement (HTTP {{status}}).",
+    "save_unreachable": "Échec de l'enregistrement : serveur injoignable.",
+    "reset_401": "Échec de la réinitialisation d'usine (401) : votre session a expiré, reconnectez-vous.",
+    "reset_403": "Échec de la réinitialisation d'usine (403) : ce compte n'a pas le droit d'enregistrer les réglages.",
+    "reset_http": "Échec de la réinitialisation d'usine (HTTP {{status}}).",
+    "reset_unreachable": "Échec de la réinitialisation d'usine : serveur injoignable."
   }
 }

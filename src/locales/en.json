@@ -123,7 +123,21 @@
     "cpu_load": "CPU Load",
     "mem_load": "Memory",
     "network_status": "Network",
-    "remote_app_access_short": "App Access"
+    "remote_app_access_short": "App Access",
+    "loading": "Loading…",
+    "example_data": "Example data",
+    "example_data_hint": "No real Server connection has been confirmed yet - the robots/cameras shown are example configuration, not live telemetry.",
+    "save_failed_retry": "Save failed - Retry",
+    "back_to_root": "Back to Root",
+    "resources": "Resources",
+    "industrial": "Industrial",
+    "flasher_studio": "Flasher Studio",
+    "tester_center": "Tester Center",
+    "firmware_update": "Firmware Update",
+    "hardware_tester": "Hardware Tester",
+    "kinematic_brain": "Kinematic Brain",
+    "vision_center": "Vision Center",
+    "logo_alt": "HYDRA logo"
   },
   "config": {
     "title": "System Configuration",
@@ -304,7 +318,8 @@
     "ai_hailo_registry_desc": "Where compiled .hef models live - mirrors HYDRA-UMC-DETECTION-HEF's own models_dir (its real registry with sha256 checksum verification).",
     "ai_hailo_none": "None (not installed)",
     "language_pt": "Portuguese",
-    "confirm_hardware_transport": "Switch CAN-OTA to the real hardware? Flashing and testing will then talk to the real boards instead of the simulation."
+    "confirm_hardware_transport": "Switch CAN-OTA to the real hardware? Flashing and testing will then talk to the real boards instead of the simulation.",
+    "not_active_connection": "Not the active connection - this app only checks the one it's currently using."
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -391,7 +406,16 @@
     "confirm_tool": "Change the tool to {{tool}}? The robot will use it for the next moves.",
     "reach_confirm": "{{count}} point(s) of this trajectory cannot be reached by this robot: the closest pose the arm can take is up to {{worst}} mm from the drawn point (tolerance {{threshold}} mm). The robot would follow a different path than the one drawn. Send it anyway?",
     "reach_tolerance_label": "Reach tolerance (mm)",
-    "reach_tolerance_hint": "A trajectory with a point further than this from what the arm can reach asks for confirmation before it is sent."
+    "reach_tolerance_hint": "A trajectory with a point further than this from what the arm can reach asks for confirmation before it is sent.",
+    "show_camera": "Show {{name}} camera",
+    "role_idle": "Idle",
+    "role_laser": "Laser",
+    "role_3d_printing": "3D printing",
+    "role_inspection": "Inspection",
+    "no_other_robots": "No other robots available.",
+    "reset_pose": "RESET",
+    "reset_3d": "RESET 3D",
+    "confirm_model": "Change the model to {{model}}? Its kinematics, limits and 3D view change with it."
   },
   "cameras": {
     "title": "Octal Vision Matrix",
@@ -502,9 +526,9 @@
     "pick_and_place_title": "Pick & Place",
     "machine": "Machine",
     "reset": "Reset",
-    "no_module_assigned": "No {machineType} Assigned",
+    "no_module_assigned": "No {{machineType}} Assigned",
     "no_module_desc": "This robot does not currently have this module configured. Add one to enable its features.",
-    "enable_module": "Enable {machineType}",
+    "enable_module": "Enable {{machineType}}",
     "remove_module": "Remove Module",
     "module_settings": "Module Settings",
     "width_x": "Width (X mm)",
@@ -539,7 +563,9 @@
     "tool_assignments": "Tool Assignments",
     "usable_slots": "Usable Slots Config",
     "vacuum_controls": "Vacuum Controls",
-    "vertical": "Vertical"
+    "vertical": "Vertical",
+    "x_axis": "X Axis",
+    "y_axis": "Y Axis"
   },
   "help": {
     "title": "Help",
@@ -1102,5 +1128,17 @@
     "prev": "Previous",
     "next": "Next",
     "done": "Done"
+  },
+  "serverErrors": {
+    "login_failed": "Login failed",
+    "cannot_reach_server": "Cannot reach server",
+    "save_401": "Save failed (401): your session has expired - log in again.",
+    "save_403": "Save failed (403): this account does not have permission to save settings.",
+    "save_http": "Save failed (HTTP {{status}}).",
+    "save_unreachable": "Save failed: could not reach the server.",
+    "reset_401": "Factory reset failed (401): your session has expired - log in again.",
+    "reset_403": "Factory reset failed (403): this account does not have permission to save settings.",
+    "reset_http": "Factory reset failed (HTTP {{status}}).",
+    "reset_unreachable": "Factory reset failed: could not reach the server."
   }
 }

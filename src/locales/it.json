@@ -123,7 +123,21 @@
     "cpu_load": "Carico CPU",
     "mem_load": "Memoria",
     "network_status": "Rete",
-    "remote_app_access_short": "Accesso App"
+    "remote_app_access_short": "Accesso App",
+    "loading": "Caricamento…",
+    "example_data": "Dati di esempio",
+    "example_data_hint": "Non è ancora stata confermata alcuna connessione reale al server: i robot e le telecamere mostrati sono una configurazione di esempio, non telemetria in tempo reale.",
+    "save_failed_retry": "Salvataggio non riuscito - Riprova",
+    "back_to_root": "Torna all'inizio",
+    "resources": "Risorse",
+    "industrial": "Industriale",
+    "flasher_studio": "Flasher Studio",
+    "tester_center": "Centro di test",
+    "firmware_update": "Aggiornamento firmware",
+    "hardware_tester": "Tester hardware",
+    "kinematic_brain": "Cervello cinematico",
+    "vision_center": "Centro di visione",
+    "logo_alt": "Logo HYDRA"
   },
   "config": {
     "title": "Configurazione di Sistema",
@@ -304,7 +318,8 @@
     "ai_hailo_registry_desc": "Dove risiedono i modelli .hef compilati - rispecchia il proprio models_dir di HYDRA-UMC-DETECTION-HEF (il suo vero registro con verifica del checksum sha256).",
     "ai_hailo_none": "Nessuno (non installato)",
     "language_pt": "Portoghese",
-    "confirm_hardware_transport": "Passare CAN-OTA all'hardware reale? Flash e test parleranno con le schede vere invece che con la simulazione."
+    "confirm_hardware_transport": "Passare CAN-OTA all'hardware reale? Flash e test parleranno con le schede vere invece che con la simulazione.",
+    "not_active_connection": "Non è la connessione attiva: questa app controlla solo quella che sta usando."
   },
   "robot_detail": {
     "back": "Torna alla Dashboard",
@@ -391,7 +406,16 @@
     "confirm_tool": "Cambiare l'utensile in {{tool}}? Il robot lo userà per i prossimi movimenti.",
     "reach_confirm": "{{count}} punto/i di questa traiettoria non sono raggiungibili da questo robot: la posa più vicina che il braccio può assumere dista fino a {{worst}} mm dal punto disegnato (tolleranza {{threshold}} mm). Il robot seguirebbe un percorso diverso da quello disegnato. Inviarla comunque?",
     "reach_tolerance_label": "Tolleranza di portata (mm)",
-    "reach_tolerance_hint": "Una traiettoria con un punto più lontano di questa distanza da ciò che il braccio può raggiungere chiede conferma prima di essere inviata."
+    "reach_tolerance_hint": "Una traiettoria con un punto più lontano di questa distanza da ciò che il braccio può raggiungere chiede conferma prima di essere inviata.",
+    "show_camera": "Mostra la telecamera di {{name}}",
+    "role_idle": "Inattivo",
+    "role_laser": "Laser",
+    "role_3d_printing": "Stampa 3D",
+    "role_inspection": "Ispezione",
+    "no_other_robots": "Nessun altro robot disponibile.",
+    "reset_pose": "RIPRISTINA",
+    "reset_3d": "RIPRISTINA 3D",
+    "confirm_model": "Cambiare il modello in {{model}}? Cinematica, limiti e vista 3D cambiano di conseguenza."
   },
   "cameras": {
     "title": "Matrice di Visione Ottale",
@@ -502,9 +526,9 @@
     "pick_and_place_title": "Pick & Place",
     "machine": "Macchina",
     "reset": "Reimposta",
-    "no_module_assigned": "Nessun {machineType} assegnato",
+    "no_module_assigned": "Nessun {{machineType}} assegnato",
     "no_module_desc": "Questo robot non ha attualmente questo modulo configurato. Aggiungine uno per abilitare le sue funzionalità.",
-    "enable_module": "Abilita {machineType}",
+    "enable_module": "Abilita {{machineType}}",
     "remove_module": "Rimuovi Modulo",
     "module_settings": "Impostazioni Modulo",
     "width_x": "Larghezza (X mm)",
@@ -539,7 +563,9 @@
     "tool_assignments": "Assegnazione Utensili",
     "usable_slots": "Config. Slot Utilizzabili",
     "vacuum_controls": "Controlli del Vuoto",
-    "vertical": "Verticale"
+    "vertical": "Verticale",
+    "x_axis": "Asse X",
+    "y_axis": "Asse Y"
   },
   "help": {
     "title": "Aiuto",
@@ -1102,5 +1128,17 @@
     "prev": "Precedente",
     "next": "Avanti",
     "done": "Fatto"
+  },
+  "serverErrors": {
+    "login_failed": "Accesso non riuscito",
+    "cannot_reach_server": "Server non raggiungibile",
+    "save_401": "Salvataggio non riuscito (401): la sessione è scaduta, accedi di nuovo.",
+    "save_403": "Salvataggio non riuscito (403): questo account non ha il permesso di salvare le impostazioni.",
+    "save_http": "Salvataggio non riuscito (HTTP {{status}}).",
+    "save_unreachable": "Salvataggio non riuscito: server non raggiungibile.",
+    "reset_401": "Ripristino di fabbrica non riuscito (401): la sessione è scaduta, accedi di nuovo.",
+    "reset_403": "Ripristino di fabbrica non riuscito (403): questo account non ha il permesso di salvare le impostazioni.",
+    "reset_http": "Ripristino di fabbrica non riuscito (HTTP {{status}}).",
+    "reset_unreachable": "Ripristino di fabbrica non riuscito: server non raggiungibile."
   }
 }

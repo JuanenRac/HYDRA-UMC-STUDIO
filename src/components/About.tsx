@@ -56,7 +56,7 @@ export function About({ onClose }: { onClose: () => void }) {
           <button onClick={onClose} className="text-slate-400 hover:text-slate-200 p-1">&times;</button>
         </div>
         <div className="p-6 space-y-4 text-slate-300 text-sm flex flex-col items-center">
-          <img src={HydraIcon} alt="Hydra Logo" className="w-24 h-24 object-contain mb-4" />
+          <img src={HydraIcon} alt={t('dashboard.logo_alt')} className="w-24 h-24 object-contain mb-4" />
           <h3 className="text-2xl font-bold text-slate-100 uppercase tracking-widest text-center">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span></h3>
           <p className="text-center text-slate-400 max-w-sm">{t('dashboard.about_tagline')}</p>
           <p className="text-center text-slate-500 text-xs max-w-sm leading-relaxed">{t('dashboard.about_description')}</p>
@@ -79,7 +79,7 @@ export function About({ onClose }: { onClose: () => void }) {
           )}
         </div>
         <div className="p-4 border-t border-slate-800 flex justify-end bg-slate-950 shrink-0">
-          <button onClick={onClose} className="px-6 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded shadow-lg border border-sky-400 uppercase">Close</button>
+          <button onClick={onClose} className="px-6 py-2 text-sm bg-sky-500 text-slate-950 font-bold rounded shadow-lg border border-sky-400 uppercase">{t('dashboard.close')}</button>
         </div>
       </div>
     </div>

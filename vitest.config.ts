@@ -8,7 +8,7 @@
 // the app, not about running tests, and keeping them apart means neither
 // config has to reason about the other's own concerns. Every real test
 // under tests/ is pure logic (kinematics math, no DOM/browser API), so the
-// default 'node' environment is enough - no jsdom dependency needed.
+// default 'node' environment is enough; the few component tests (tests/*.test.tsx) switch to jsdom with a docblock of their own.
 // =============================================================================
 
 import { defineConfig } from 'vitest/config';
@@ -16,6 +16,6 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     environment: 'node',
-    include: ['tests/**/*.test.ts'],
+    include: ['tests/**/*.test.{ts,tsx}'],
   },
 });

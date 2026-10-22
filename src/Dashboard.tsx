@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { setLanguage } from './i18n';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { useHydraStore, ROBOT_MANUFACTURERS } from './store';
 import { apiUrl } from './lib/apiBase';
@@ -38,9 +39,10 @@ const HYDRA_BRAIN_TIERS: CanOtaTier[] = ['kinematicBrain', 'controllerBoard'];
 
 /** Suspense fallback for the lazy-loaded panels below. */
 function PanelLoadingFallback() {
+  const { t } = useTranslation();
   return (
     <div className="flex-1 flex items-center justify-center text-slate-600 text-sm">
-      <RefreshCw size={18} className="animate-spin mr-2" /> Loading…
+      <RefreshCw size={18} className="animate-spin mr-2" /> {t('dashboard.loading')}
     </div>
   );
 }
@@ -191,7 +193,7 @@ export default function Dashboard() {
 
     document.body.dataset.theme = settings.theme;
     if (settings.language && i18n.language !== settings.language) {
-      i18n.changeLanguage(settings.language);
+      void setLanguage(settings.language);
     }
   }, [settings.theme, settings.language, i18n]);
 
@@ -223,25 +225,25 @@ export default function Dashboard() {
         <header className="h-16 shrink-0 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 z-20 shadow-xl relative">
           <div className="flex items-center gap-3">
             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 -ml-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"><Menu size={24} /></button>
-            <img src={HydraIcon} alt="Hydra Logo" className="w-8 h-8 object-contain" />
+            <img src={HydraIcon} alt={t('dashboard.logo_alt')} className="w-8 h-8 object-contain" />
             <h1 className="text-2xl font-bold tracking-wider text-slate-100">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span></h1>
           </div>
           <div className="flex items-center gap-4">
             {/* The global STOP: one click, every robot, always in sight (Ctrl+Shift+Space does the same). */}
             <StopAllButton variant="header" />
-            <IconButton onClick={() => setIsSettingsOpen(true)} icon={<Settings size={18}/>} label="Config" />
-            <IconButton onClick={() => openHelp()} icon={<HelpCircle size={18}/>} label="Help" />
-            <IconButton onClick={() => setIsAboutOpen(true)} icon={<Info size={18}/>} label="About" />
+            <IconButton onClick={() => setIsSettingsOpen(true)} icon={<Settings size={18}/>} label={t('dashboard.configure')} />
+            <IconButton onClick={() => openHelp()} icon={<HelpCircle size={18}/>} label={t('dashboard.help')} />
+            <IconButton onClick={() => setIsAboutOpen(true)} icon={<Info size={18}/>} label={t('dashboard.about')} />
             <div className="w-px h-6 bg-slate-800 mx-2"></div>
             <div className="flex items-center gap-3">
               {/* reads the real, live serverReachable signal,
                   never activeController.status - see that field's own
                   header comment in store.tsx for why. */}
               <span className={cn("w-4 h-4 rounded-full animate-pulse", serverReachable ? "bg-emerald-500 shadow-[0_0_10px_#10b981]" : "bg-rose-500 shadow-[0_0_10px_#f43f5e]")} />
-              <span className={cn("tracking-widest font-bold text-xs uppercase", serverReachable ? "text-emerald-400" : "text-rose-400")}>{serverReachable ? 'System Online' : 'System Offline'}</span>
+              <span className={cn("tracking-widest font-bold text-xs uppercase", serverReachable ? "text-emerald-400" : "text-rose-400")}>{serverReachable ? t('dashboard.status.connected') : t('dashboard.status.disconnected')}</span>
               {!serverReachable && (
-                <span className="ml-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-amber-500/20 text-amber-400 border border-amber-500/40" title="No real Server connection has been confirmed yet - the robots/cameras shown are example configuration, not live telemetry.">
-                  Example data
+                <span className="ml-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-amber-500/20 text-amber-400 border border-amber-500/40" title={t('dashboard.example_data_hint')}>
+                  {t('dashboard.example_data')}
                 </span>
               )}
               {/* Real, live "the last save actually failed" signal - see
@@ -255,7 +257,7 @@ export default function Dashboard() {
                   title={settingsSaveError}
                   className="ml-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-rose-500/30 transition-colors animate-pulse"
                 >
-                  Save failed - Retry
+                  {t('dashboard.save_failed_retry')}
                 </button>
               )}
             </div>
@@ -273,9 +275,9 @@ export default function Dashboard() {
 
              {currentMenu === 'root' && (
                <div className="flex flex-col h-full animate-in slide-in-from-left-4 duration-300 overflow-hidden">
-                  <NavItem icon={<Activity size={18} />} label="OVERVIEW" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
+                  <NavItem icon={<Activity size={18} />} label={t('dashboard.overview')} active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
 
-                  <div className="mt-6 mb-2 px-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1 shrink-0">Networked Robots</div>
+                  <div className="mt-6 mb-2 px-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1 shrink-0">{t('dashboard.networked_robots')}</div>
 
                   <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 flex flex-col gap-1 min-h-0">
                     {robots.map(r => (
@@ -289,10 +291,10 @@ export default function Dashboard() {
                     ))}
                   </div>
 
-                  <div className="mt-12 mb-2 px-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1 shrink-0">Resources</div>
+                  <div className="mt-12 mb-2 px-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1 shrink-0">{t('dashboard.resources')}</div>
                   <div className="flex flex-col gap-1 pb-4 shrink-0">
                     <button onClick={() => setNavStack(['industrial'])} className="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-800 transition-all">
-                      <div className="flex items-center gap-4"><Layers size={18} /> Industrial</div>
+                      <div className="flex items-center gap-4"><Layers size={18} /> {t('dashboard.industrial')}</div>
                       <ChevronRight size={14} />
                     </button>
                     <button onClick={() => setNavStack(['urtc'])} className="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-800 transition-all">
@@ -303,14 +305,14 @@ export default function Dashboard() {
                       <div className="flex items-center gap-4"><Cpu size={18} /> HYDRA-UMC</div>
                       <ChevronRight size={14} />
                     </button>
-                    <NavItem icon={<Video size={18} />} label="VISION CENTER" active={activeTab === 'cameras'} onClick={() => setActiveTab('cameras')} className="mt-2 font-black text-[10px]" />
+                    <NavItem icon={<Video size={18} />} label={t('dashboard.vision_center')} active={activeTab === 'cameras'} onClick={() => setActiveTab('cameras')} className="mt-2 font-black text-[10px]" />
                   </div>
                </div>
              )}
 
              {currentMenu === 'industrial' && (
                <div className="flex flex-col gap-1 animate-in slide-in-from-right-4 duration-300">
-                  <button onClick={() => setNavStack([])} className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-sky-500 uppercase tracking-widest mb-4 hover:text-sky-400 transition-colors"><ArrowLeft size={14}/> Back to Root</button>
+                  <button onClick={() => setNavStack([])} className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-sky-500 uppercase tracking-widest mb-4 hover:text-sky-400 transition-colors"><ArrowLeft size={14}/> {t('dashboard.back_to_root')}</button>
                   {['Robots', 'XY Table', 'ATC Tools', 'Rack', 'PickAndPlace', 'CNC', 'Laser', 'VacuumTable', 'HeatedBed'].map(m => (
                     <button key={m} onClick={() => setActiveTab(m.toLowerCase().replace(" ",""))} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === m.toLowerCase().replace(" ","") ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{INDUSTRIAL_MENU_LABELS[m] ?? m}</button>
                   ))}
@@ -319,18 +321,18 @@ export default function Dashboard() {
 
              {currentMenu === 'urtc' && (
                <div className="flex flex-col gap-1 animate-in slide-in-from-right-4 duration-300">
-                  <button onClick={() => setNavStack([])} className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-sky-500 uppercase tracking-widest mb-4 hover:text-sky-400 transition-colors"><ArrowLeft size={14}/> Back to Root</button>
-                  <button onClick={() => setActiveTab('flasher')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'flasher' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Flasher Studio</button>
-                  <button onClick={() => setActiveTab('tester')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'tester' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Tester Center</button>
+                  <button onClick={() => setNavStack([])} className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-sky-500 uppercase tracking-widest mb-4 hover:text-sky-400 transition-colors"><ArrowLeft size={14}/> {t('dashboard.back_to_root')}</button>
+                  <button onClick={() => setActiveTab('flasher')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'flasher' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('dashboard.flasher_studio')}</button>
+                  <button onClick={() => setActiveTab('tester')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'tester' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('dashboard.tester_center')}</button>
                </div>
              )}
 
              {currentMenu === 'hydraumc' && (
                <div className="flex flex-col gap-1 animate-in slide-in-from-right-4 duration-300">
-                  <button onClick={() => setNavStack([])} className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-sky-500 uppercase tracking-widest mb-4 hover:text-sky-400 transition-colors"><ArrowLeft size={14}/> Back to Root</button>
-                  <button onClick={() => setActiveTab('hydraFlasher')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'hydraFlasher' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Firmware Update</button>
-                  <button onClick={() => setActiveTab('hydraTester')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'hydraTester' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Hardware Tester</button>
-                  <button onClick={() => setActiveTab('kinematicBrainStage')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'kinematicBrainStage' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>Kinematic Brain</button>
+                  <button onClick={() => setNavStack([])} className="flex items-center gap-2 px-4 py-2 text-[10px] font-black text-sky-500 uppercase tracking-widest mb-4 hover:text-sky-400 transition-colors"><ArrowLeft size={14}/> {t('dashboard.back_to_root')}</button>
+                  <button onClick={() => setActiveTab('hydraFlasher')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'hydraFlasher' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('dashboard.firmware_update')}</button>
+                  <button onClick={() => setActiveTab('hydraTester')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'hydraTester' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('dashboard.hardware_tester')}</button>
+                  <button onClick={() => setActiveTab('kinematicBrainStage')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'kinematicBrainStage' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('dashboard.kinematic_brain')}</button>
                   <button onClick={() => setActiveTab('cameraMedia')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'cameraMedia' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('cameraMedia.menu_label', 'Camera Media')}</button>
 
                   <div className="mt-6 mb-2 px-4 text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1">{t('ecosystem.menu_section')}</div>

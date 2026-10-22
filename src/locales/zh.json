@@ -123,7 +123,21 @@
     "cpu_load": "CPU 负载",
     "mem_load": "内存",
     "network_status": "网络",
-    "remote_app_access_short": "应用访问权限"
+    "remote_app_access_short": "应用访问权限",
+    "loading": "加载中…",
+    "example_data": "示例数据",
+    "example_data_hint": "尚未确认与服务器的真实连接：显示的机器人和摄像头是示例配置，不是实时遥测。",
+    "save_failed_retry": "保存失败 - 重试",
+    "back_to_root": "返回主菜单",
+    "resources": "资源",
+    "industrial": "工业",
+    "flasher_studio": "Flasher Studio",
+    "tester_center": "测试中心",
+    "firmware_update": "固件更新",
+    "hardware_tester": "硬件测试器",
+    "kinematic_brain": "运动学大脑",
+    "vision_center": "视觉中心",
+    "logo_alt": "HYDRA 标志"
   },
   "config": {
     "title": "系统配置",
@@ -304,7 +318,8 @@
     "ai_hailo_registry_desc": "编译后的 .hef 模型存放位置 - 对应 HYDRA-UMC-DETECTION-HEF 自身的 models_dir(其带 sha256 校验和验证的真实注册表)。",
     "ai_hailo_none": "无(未安装)",
     "language_pt": "葡萄牙语",
-    "confirm_hardware_transport": "将 CAN-OTA 切换到真实硬件？刷写和测试将改为与真实电路板通信，而不是模拟。"
+    "confirm_hardware_transport": "将 CAN-OTA 切换到真实硬件？刷写和测试将改为与真实电路板通信，而不是模拟。",
+    "not_active_connection": "不是当前活动连接：此应用仅检查它正在使用的连接。"
   },
   "robot_detail": {
     "back": "返回仪表盘",
@@ -391,7 +406,16 @@
     "confirm_tool": "将工具更换为 {{tool}}？机器人将在后续动作中使用该工具。",
     "reach_confirm": "此轨迹有 {{count}} 个点该机器人无法到达：机械臂能达到的最接近姿态与所绘制的点最多相差 {{worst}} mm（容差 {{threshold}} mm）。机器人将沿着与所绘制路径不同的路径运动。仍要发送吗？",
     "reach_tolerance_label": "可达容差（mm）",
-    "reach_tolerance_hint": "轨迹中有点距离机械臂可达位置超过此值时，发送前会请求确认。"
+    "reach_tolerance_hint": "轨迹中有点距离机械臂可达位置超过此值时，发送前会请求确认。",
+    "show_camera": "显示 {{name}} 的摄像头",
+    "role_idle": "空闲",
+    "role_laser": "激光",
+    "role_3d_printing": "3D 打印",
+    "role_inspection": "检测",
+    "no_other_robots": "没有其他可用的机器人。",
+    "reset_pose": "重置",
+    "reset_3d": "重置 3D",
+    "confirm_model": "要将型号更改为 {{model}} 吗？其运动学、限位和 3D 视图也会随之改变。"
   },
   "cameras": {
     "title": "八路视觉矩阵",
@@ -502,9 +526,9 @@
     "pick_and_place_title": "拾取放置",
     "machine": "机器",
     "reset": "重置",
-    "no_module_assigned": "未分配 {machineType}",
+    "no_module_assigned": "未分配 {{machineType}}",
     "no_module_desc": "该机器人目前尚未配置此模块。添加一个以启用其功能。",
-    "enable_module": "启用 {machineType}",
+    "enable_module": "启用 {{machineType}}",
     "remove_module": "移除模块",
     "module_settings": "模块设置",
     "width_x": "宽度（X 毫米）",
@@ -539,7 +563,9 @@
     "tool_assignments": "工具分配",
     "usable_slots": "可用插槽配置",
     "vacuum_controls": "真空控制",
-    "vertical": "垂直"
+    "vertical": "垂直",
+    "x_axis": "X 轴",
+    "y_axis": "Y 轴"
   },
   "help": {
     "title": "帮助",
@@ -1102,5 +1128,17 @@
     "prev": "上一步",
     "next": "下一步",
     "done": "完成"
+  },
+  "serverErrors": {
+    "login_failed": "登录失败",
+    "cannot_reach_server": "无法连接服务器",
+    "save_401": "保存失败 (401)：会话已过期，请重新登录。",
+    "save_403": "保存失败 (403)：此账户无权保存设置。",
+    "save_http": "保存失败 (HTTP {{status}})。",
+    "save_unreachable": "保存失败：无法连接服务器。",
+    "reset_401": "恢复出厂设置失败 (401)：会话已过期，请重新登录。",
+    "reset_403": "恢复出厂设置失败 (403)：此账户无权保存设置。",
+    "reset_http": "恢复出厂设置失败 (HTTP {{status}})。",
+    "reset_unreachable": "恢复出厂设置失败：无法连接服务器。"
   }
 }

@@ -123,7 +123,21 @@
     "cpu_load": "Carga da CPU",
     "mem_load": "Memória",
     "network_status": "Rede",
-    "remote_app_access_short": "Acesso das apps"
+    "remote_app_access_short": "Acesso das apps",
+    "loading": "A carregar…",
+    "example_data": "Dados de exemplo",
+    "example_data_hint": "Ainda não foi confirmada nenhuma ligação real ao servidor: os robôs e as câmaras apresentados são configuração de exemplo, não telemetria em direto.",
+    "save_failed_retry": "Falha ao guardar - Tentar novamente",
+    "back_to_root": "Voltar ao início",
+    "resources": "Recursos",
+    "industrial": "Industrial",
+    "flasher_studio": "Flasher Studio",
+    "tester_center": "Centro de testes",
+    "firmware_update": "Atualização de firmware",
+    "hardware_tester": "Testador de hardware",
+    "kinematic_brain": "Cérebro cinemático",
+    "vision_center": "Centro de visão",
+    "logo_alt": "Logótipo HYDRA"
   },
   "config": {
     "title": "Configuração do sistema",
@@ -304,7 +318,8 @@
     "ai_hailo_registry_desc": "Onde ficam os modelos .hef compilados - espelha o models_dir do HYDRA-UMC-DETECTION-HEF (o seu registo real com verificação de somas sha256).",
     "ai_hailo_none": "Nenhum (não instalado)",
     "language_pt": "Português",
-    "confirm_hardware_transport": "Mudar o CAN-OTA para o hardware real? A gravação e os testes passarão a falar com as placas reais em vez da simulação."
+    "confirm_hardware_transport": "Mudar o CAN-OTA para o hardware real? A gravação e os testes passarão a falar com as placas reais em vez da simulação.",
+    "not_active_connection": "Não é a ligação ativa: esta aplicação só verifica a que está a usar."
   },
   "robot_detail": {
     "back": "Voltar ao painel",
@@ -391,7 +406,16 @@
     "confirm_tool": "Mudar a ferramenta para {{tool}}? O robô vai usá-la nos próximos movimentos.",
     "reach_confirm": "{{count}} ponto(s) desta trajetória não são alcançáveis por este robô: a pose mais próxima que o braço pode tomar fica até {{worst}} mm do ponto desenhado (tolerância {{threshold}} mm). O robô seguiria um caminho diferente do desenhado. Enviar mesmo assim?",
     "reach_tolerance_label": "Tolerância de alcance (mm)",
-    "reach_tolerance_hint": "Uma trajetória com um ponto mais longe do que esta distância daquilo que o braço pode alcançar pede confirmação antes de ser enviada."
+    "reach_tolerance_hint": "Uma trajetória com um ponto mais longe do que esta distância daquilo que o braço pode alcançar pede confirmação antes de ser enviada.",
+    "show_camera": "Mostrar a câmara de {{name}}",
+    "role_idle": "Inativo",
+    "role_laser": "Laser",
+    "role_3d_printing": "Impressão 3D",
+    "role_inspection": "Inspeção",
+    "no_other_robots": "Não há outros robôs disponíveis.",
+    "reset_pose": "REPOR",
+    "reset_3d": "REPOR 3D",
+    "confirm_model": "Alterar o modelo para {{model}}? A cinemática, os limites e a vista 3D mudam com ele."
   },
   "cameras": {
     "title": "Matriz de visão octal",
@@ -502,9 +526,9 @@
     "pick_and_place_title": "Pick & Place",
     "machine": "Máquina",
     "reset": "Repor",
-    "no_module_assigned": "Nenhum(a) {machineType} atribuído(a)",
+    "no_module_assigned": "Nenhum(a) {{machineType}} atribuído(a)",
     "no_module_desc": "Este robô não tem este módulo configurado. Adicione um para ativar as suas funções.",
-    "enable_module": "Ativar {machineType}",
+    "enable_module": "Ativar {{machineType}}",
     "remove_module": "Remover módulo",
     "module_settings": "Definições do módulo",
     "width_x": "Largura (X mm)",
@@ -539,7 +563,9 @@
     "tool_assignments": "Atribuição de ferramentas",
     "usable_slots": "Configuração das ranhuras utilizáveis",
     "vacuum_controls": "Controlos de vácuo",
-    "vertical": "Vertical"
+    "vertical": "Vertical",
+    "x_axis": "Eixo X",
+    "y_axis": "Eixo Y"
   },
   "help": {
     "title": "Ajuda",
@@ -1102,5 +1128,17 @@
     "prev": "Anterior",
     "next": "Seguinte",
     "done": "Concluído"
+  },
+  "serverErrors": {
+    "login_failed": "Falha no início de sessão",
+    "cannot_reach_server": "Não é possível contactar o servidor",
+    "save_401": "Falha ao guardar (401): a sessão expirou - inicie sessão novamente.",
+    "save_403": "Falha ao guardar (403): esta conta não tem permissão para guardar definições.",
+    "save_http": "Falha ao guardar (HTTP {{status}}).",
+    "save_unreachable": "Falha ao guardar: não foi possível contactar o servidor.",
+    "reset_401": "Falha na reposição de fábrica (401): a sessão expirou - inicie sessão novamente.",
+    "reset_403": "Falha na reposição de fábrica (403): esta conta não tem permissão para guardar definições.",
+    "reset_http": "Falha na reposição de fábrica (HTTP {{status}}).",
+    "reset_unreachable": "Falha na reposição de fábrica: não foi possível contactar o servidor."
   }
 }
