@@ -25,6 +25,7 @@ import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
+import { infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, type SecurityState } from '../lib/serverSecurity';
 
 interface HydraInfo {
   product?: string;
@@ -52,8 +53,54 @@ export function AdminServer() {
   const [error, setError] = useState('');
   const [confirmRestart, setConfirmRestart] = useState(false);
   const [info, setInfo] = useState<HydraInfo | null>(null);
+  const [security, setSecurity] = useState<SecurityState | null>(null);
+  const [confirmInfoOff, setConfirmInfoOff] = useState(false);
+  const [warning, setWarning] = useState('');
+  const [tlsEnabled, setTlsEnabled] = useState(false);
+  const [tlsCert, setTlsCert] = useState('');
+  const [tlsKey, setTlsKey] = useState('');
 
   const authHeaders = () => ({ 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) });
+
+  const applySecurity = (state: SecurityState | null) => {
+    setSecurity(state);
+    if (state) {
+      setTlsEnabled(state.tls.enabled);
+      setTlsCert(state.tls.certPath);
+      setTlsKey(state.tls.keyPath);
+    }
+  };
+
+  // Sends one part of the access options and shows what the server answered (or why it refused).
+  const saveSecurity = async (patch: Record<string, unknown>) => {
+    setSaving(true); setError(''); setNotice(''); setWarning('');
+    try {
+      const res = await fetch(apiUrl('/api/admin/server-config'), { method: 'PUT', headers: authHeaders(), body: JSON.stringify(patch) });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
+      applySecurity(parseSecurityState(data));
+      if (knownWarnings(data.warnings).includes('info_auth_off')) setWarning(t('ecosystem.admin_security_info_off_warning'));
+      setNotice(t('ecosystem.admin_security_saved'));
+    } catch {
+      setError(t('ecosystem.admin_server_load_error'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleInfoAuth = (next: boolean) => {
+    if (!security) return;
+    if (infoAuthChangeNeedsConfirmation(security.infoAuth.value, next)) setConfirmInfoOff(true);
+    else void saveSecurity({ infoAuth: next });
+  };
+
+  const saveTls = () => {
+    const patch = tlsPatch(tlsEnabled, tlsCert, tlsKey);
+    if (!patch) { setError(t('ecosystem.admin_security_tls_paths_required')); return; }
+    void saveSecurity(patch);
+  };
+
+  const sourceText = (source: 'env' | 'config' | 'default') => t(`ecosystem.admin_security_source_${source}`);
 
   const load = async () => {
     try {
@@ -62,6 +109,7 @@ export function AdminServer() {
       if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
       setCurrentPort(data.port);
       setPendingPort(String(data.pendingPort ?? data.port));
+      applySecurity(parseSecurityState(data));
     } catch {
       setError(t('ecosystem.admin_server_load_error'));
     }
@@ -167,6 +215,85 @@ export function AdminServer() {
           <Power size={14} /> {t('ecosystem.admin_server_restart')}
         </button>
       </div>
+
+      {security && (
+        <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+          <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t('ecosystem.admin_security_title')}</h4>
+          {warning && <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">{warning}</p>}
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-slate-200" htmlFor="admin-security-ai">{t('ecosystem.admin_security_ai_label')}</label>
+            <select
+              id="admin-security-ai"
+              value={security.aiAccess.value}
+              disabled={saving || isLocked(security.aiAccess.source)}
+              onChange={e => void saveSecurity({ aiAccess: e.target.value })}
+              className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500 disabled:opacity-50"
+            >
+              <option value="open">{t('ecosystem.admin_security_ai_open')}</option>
+              <option value="admin">{t('ecosystem.admin_security_ai_admin')}</option>
+            </select>
+            <span className="text-[10px] text-slate-500">{sourceText(security.aiAccess.source)}</span>
+          </div>
+
+          <div className="space-y-1">
+            <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+              <input
+                type="checkbox"
+                checked={security.infoAuth.value}
+                disabled={saving || isLocked(security.infoAuth.source)}
+                onChange={e => toggleInfoAuth(e.target.checked)}
+              />
+              {t('ecosystem.admin_security_info_label')}
+            </label>
+            <span className="text-[10px] text-slate-500">{sourceText(security.infoAuth.source)}</span>
+          </div>
+
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+              <input
+                type="checkbox"
+                checked={tlsEnabled}
+                disabled={saving || isLocked(security.tls.source)}
+                onChange={e => setTlsEnabled(e.target.checked)}
+              />
+              {t('ecosystem.admin_security_tls_label')}
+            </label>
+            <input
+              type="text" value={tlsCert} placeholder={t('ecosystem.admin_security_tls_cert')} aria-label={t('ecosystem.admin_security_tls_cert')}
+              disabled={saving || isLocked(security.tls.source)}
+              onChange={e => setTlsCert(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500 disabled:opacity-50"
+            />
+            <input
+              type="text" value={tlsKey} placeholder={t('ecosystem.admin_security_tls_key')} aria-label={t('ecosystem.admin_security_tls_key')}
+              disabled={saving || isLocked(security.tls.source)}
+              onChange={e => setTlsKey(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500 disabled:opacity-50"
+            />
+            <div className="flex items-center gap-2">
+              <button onClick={saveTls} disabled={saving || isLocked(security.tls.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                <Save size={14} /> {t('ecosystem.admin_server_save')}
+              </button>
+              <span className="text-[10px] text-slate-500">{sourceText(security.tls.source)}</span>
+            </div>
+            <div className="text-[10px] text-slate-400 font-mono break-all">
+              {t('ecosystem.admin_security_tls_fingerprint')}: {security.tls.fingerprint256 ?? '-'}
+            </div>
+            <div className="text-[10px] text-slate-500">
+              {security.tls.active ? t('ecosystem.admin_security_tls_active') : t('ecosystem.admin_security_tls_inactive')}
+              {security.tls.appliesOnRestart ? ` ${t('ecosystem.admin_security_tls_restart')}` : ''}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={confirmInfoOff}
+        message={t('ecosystem.admin_security_info_off_confirm')}
+        onConfirm={() => { setConfirmInfoOff(false); void saveSecurity({ infoAuth: false }); }}
+        onCancel={() => setConfirmInfoOff(false)}
+      />
 
       <ConfirmDialog
         open={confirmRestart}

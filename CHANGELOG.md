@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- Server Admin (administrators only) now shows and changes the access options of the server: who may use the local AI relay (any signed-in user or administrators only), whether the host information asks for a sign-in, and TLS with the paths of the certificate and key and the SHA-256 fingerprint of the certificate in use. A value that the server's own environment fixes is shown as locked, turning the sign-in requirement off asks for confirmation and shows a warning, and TLS says that it applies on the next restart. Texts in the eight languages; a server that predates these options simply does not show the section.
+- A trajectory whose points the arm cannot reach no longer goes to the server without a word: each point is measured (the distance between the pose asked for and the pose the joints really give) and, when any is further than the tolerance (5 mm by default, set next to the Works selector and kept in the browser), a confirmation says how many points and how far before anything is sent; declining keeps the previous trajectory. Tested with the real kinematics.
+
 ## [0.8.0.1] - Token in the fragment, accessible dialogs and confirmed tool changes
 
 - The banner follows the animated style of the ecosystem banners, with the name, the kind and the technologies of the project.
