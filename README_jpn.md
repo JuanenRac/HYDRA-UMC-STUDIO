@@ -277,7 +277,7 @@ HYDRA-UMC-STUDIO/
 │   ├── lib/canOta.ts            # CAN-OTA シミュレーション/プロトコル層、GitHub ファームウェアダウンロード
 │   ├── lib/apiBase.ts           # バックエンド URL の解決——開発環境では相対パス+プロキシ、本番環境では VITE_API_BASE_URL
 │   ├── lib/mediaTicket.ts       # カメラ映像用の短寿命チケット
-│   └── locales/                 # en/es/de/fr/it/zh/ja 翻訳ファイル（react-i18next）
+│   └── locales/                 # en/es/de/fr/it/zh/ja/pt 翻訳ファイル（react-i18next）
 ├── public/
 │   ├── models/                  # 実際の 3D メッシュアセット——ロボットごとに 1 フォルダ（計 24）、
 │   │                             # それぞれ自身の ATTRIBUTION.txt を持つ——下記のライセンス表を参照

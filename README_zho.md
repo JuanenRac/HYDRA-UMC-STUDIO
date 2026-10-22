@@ -276,7 +276,7 @@ HYDRA-UMC-STUDIO/
 │   ├── lib/canOta.ts            # CAN-OTA 仿真/协议层，GitHub 固件下载
 │   ├── lib/apiBase.ts           # 后端 URL 解析——开发环境中相对路径+代理，生产环境使用 VITE_API_BASE_URL
 │   ├── lib/mediaTicket.ts       # 摄像头画面用的短时效票据
-│   └── locales/                 # en/es/de/fr/it/zh/ja 翻译文件（react-i18next）
+│   └── locales/                 # en/es/de/fr/it/zh/ja/pt 翻译文件（react-i18next）
 ├── public/
 │   ├── models/                  # 真实的 3D 网格资产——每个机器人一个文件夹（共 24 个），
 │   │                             # 每个都有自己的 ATTRIBUTION.txt——见下方许可证表
