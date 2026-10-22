@@ -16,8 +16,8 @@ import {
   interpretStopAllResponse, isStopAllShortcut, parseStopAllBody, reportNeedsAttention, requestStopAll, requestStopAllWithRetry,
 } from '../src/lib/stopAll';
 
-const failed = (status: number, detail: string | null = null): CommandResult => ({ ok: false, status, code: failureCodeForStatus(status), detail, warnings: [] });
-const accepted: CommandResult = { ok: true, status: 200, code: null, detail: null, warnings: [] };
+const failed = (status: number, detail: string | null = null): CommandResult => ({ ok: false, status, code: failureCodeForStatus(status), detail, serverCode: null, warnings: [] });
+const accepted: CommandResult = { ok: true, status: 200, code: null, detail: null, serverCode: null, warnings: [] };
 
 describe('failureCodeForStatus', () => {
   it('maps every status class the server uses', () => {
@@ -43,7 +43,7 @@ describe('interpretCommandResponse', () => {
 
   it('never reports detail or a code for an accepted command', () => {
     const result = interpretCommandResponse(200, true, { error: 'ignored' });
-    expect(result).toEqual({ ok: true, status: 200, code: null, detail: null, warnings: [] });
+    expect(result).toEqual({ ok: true, status: 200, code: null, detail: null, serverCode: null, warnings: [] });
   });
 
   it('uses the status, not the body, to name a refusal', () => {
@@ -58,7 +58,7 @@ describe('interpretCommandResponse', () => {
 
 describe('networkFailure', () => {
   it('has status 0, the network code and a bounded detail', () => {
-    expect(networkFailure()).toEqual({ ok: false, status: 0, code: 'network', detail: null, warnings: [] });
+    expect(networkFailure()).toEqual({ ok: false, status: 0, code: 'network', detail: null, serverCode: null, warnings: [] });
     expect(networkFailure('x'.repeat(400)).detail).toHaveLength(300);
   });
 });

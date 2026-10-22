@@ -21,7 +21,8 @@
 // (docs/CANBUS_STM32H745.TXT section 1) is a real follow-up, not done here.
 // =============================================================================
 
-import { clampBedTarget } from '../lib/heatedBed';
+import { clampBedTargetTo, highestBedMax } from '../lib/safetyLimits';
+import { useSafetyState } from '../lib/accessStore';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Crosshair, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Thermometer, RotateCw, RotateCcw, Wind, Fan, Droplets, GitBranch, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -48,6 +49,7 @@ type AxisKey = 'x' | 'y1' | 'y2' | 'z';
 export function KinematicBrainStage() {
   const { t } = useTranslation();
   const { activeController, updateController } = useHydraStore();
+  const bedCeiling = highestBedMax(useSafetyState().limits);
   const [jogStep, setJogStep] = useState<number>(10);
 
   const stage = activeController?.kinematicBrainStage;
@@ -177,9 +179,9 @@ export function KinematicBrainStage() {
             </div>
             <div className="flex items-center gap-3">
               <label className="text-[11px] text-slate-400 shrink-0">{t('kbstage.target_temp', 'Target °C')}</label>
-              <input type="number" min="0" max="150" aria-label={t('kbstage.target_temp', 'Target °C')} className="w-24 bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[36px] text-xs text-slate-200 focus:outline-none focus:border-rose-500"
+              <input type="number" min="0" max={bedCeiling} aria-label={t('kbstage.target_temp', 'Target °C')} className="w-24 bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[36px] text-xs text-slate-200 focus:outline-none focus:border-rose-500"
                 value={stage.heatedBed.targetTemp}
-                onChange={e => patch({ heatedBed: { ...stage.heatedBed, targetTemp: clampBedTarget(Number(e.target.value)) } })} />
+                onChange={e => patch({ heatedBed: { ...stage.heatedBed, targetTemp: clampBedTargetTo(Number(e.target.value), bedCeiling) } })} />
               <button
                 onClick={() => patch({ heatedBed: { ...stage.heatedBed, ssrActive: !stage.heatedBed.ssrActive } })}
                 className={cn('ml-auto px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-colors', stage.heatedBed.ssrActive ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-slate-800 text-slate-500 border border-slate-700')}

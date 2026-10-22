@@ -4,7 +4,8 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import { clampBedTarget } from '../lib/heatedBed';
+import { bedMaxFor, clampBedTargetTo } from '../lib/safetyLimits';
+import { useSafetyState } from '../lib/accessStore';
 import { useState } from 'react';
 import { useHydraStore } from '../store';
 import { HEATED_BED_MODELS, heatedBedModel, heatedBedSize, selectHeatedBed, resizeHeatedBed } from '../heatedBeds';
@@ -26,6 +27,7 @@ export function HeatedBedConfig() {
   const { robots, updateRobot } = useHydraStore();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const selectedRobot = robots.find(r => r.id === selectedRobotId);
+  const safety = useSafetyState();
 
   if (!selectedRobot) return null;
 
@@ -168,10 +170,10 @@ export function HeatedBedConfig() {
                   </label>
                   <input 
                     type="number"
-                    min="0" max="300" step="1"
+                    min="0" max={bedMaxFor(safety.limits, selectedRobot.model)} step="1"
                     className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-xs text-slate-200 focus:outline-none focus:border-rose-500"
                     value={moduleData?.targetTemp ?? 60}
-                    onChange={(e) => handleCustomChange('targetTemp', clampBedTarget(Number(e.target.value)))}
+                    onChange={(e) => handleCustomChange('targetTemp', clampBedTargetTo(Number(e.target.value), bedMaxFor(safety.limits, selectedRobot.model)))}
                   />
                 </div>
               </div>

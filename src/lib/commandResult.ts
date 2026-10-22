@@ -13,7 +13,11 @@ export type CommandFailureCode =
   | 'session_expired' // 401: the access token ran out (a refresh is tried first)
   | 'forbidden'       // 403: this account may not do that
   | 'not_found'       // 404: the server knows no such robot
-  | 'claimed'         // 409: another operator holds the robot
+  | 'claimed'         // 409: another operator holds the robot (a server that gives no reason)
+  | 'claim_other_account'     // 409 other-account: another account holds the robot
+  | 'claim_other_controller'  // 409 other-controller: this account holds it from another window or device
+  | 'claim_controller_required' // 409 or 400 controller-id-required: the reservation names a controller and this request sent none
+  | 'jog_not_armed'  // 403 jog-not-armed: the jog has to be armed first
   | 'rejected'        // any other 4xx: the server refused the command
   | 'server'          // 5xx
   | 'network';        // no answer at all
@@ -25,8 +29,19 @@ export interface CommandResult {
   code: CommandFailureCode | null;
   /** The server's own explanation, when it gave one (kept verbatim; it is shown next to the translated sentence). */
   detail: string | null;
+  /** The stable `code` the server put next to its explanation (for example "other-controller"), when there was one. */
+  serverCode: string | null;
   /** Non-blocking remarks the server attached to an accepted command (a speed outside its range, for example). */
   warnings: string[];
+}
+
+/** The failure code for a status, refined by the stable `code` of the answer when the server gave one. */
+export function failureCodeFor(status: number, serverCode: string | null): CommandFailureCode {
+  if (serverCode === 'other-account') return 'claim_other_account';
+  if (serverCode === 'other-controller') return 'claim_other_controller';
+  if (serverCode === 'controller-id-required') return 'claim_controller_required';
+  if (serverCode === 'jog-not-armed') return 'jog_not_armed';
+  return failureCodeForStatus(status);
 }
 
 export function failureCodeForStatus(status: number): CommandFailureCode {
@@ -52,19 +67,20 @@ export function interpretCommandResponse(status: number, ok: boolean, body: unkn
       .map((w) => textOf(w && typeof w === 'object' ? (w as Record<string, unknown>).message : w))
       .filter((w): w is string => w !== null)
     : [];
-  if (ok) return { ok: true, status, code: null, detail: null, warnings };
-  return { ok: false, status, code: failureCodeForStatus(status), detail: textOf(object.error), warnings };
+  if (ok) return { ok: true, status, code: null, detail: null, serverCode: null, warnings };
+  const serverCode = textOf(object.code);
+  return { ok: false, status, code: failureCodeFor(status, serverCode), detail: textOf(object.error), serverCode, warnings };
 }
 
 export function networkFailure(detail?: string): CommandResult {
-  return { ok: false, status: 0, code: 'network', detail: detail ? detail.slice(0, 300) : null, warnings: [] };
+  return { ok: false, status: 0, code: 'network', detail: detail ? detail.slice(0, 300) : null, serverCode: null, warnings: [] };
 }
 
 /** A problem the interface keeps on screen until it is dismissed (or retried). */
 export interface CommandIssue {
   id: number;
   /** Which sentence to show: a failure code, or one of the client-side codes. */
-  code: CommandFailureCode | 'jog_jump' | 'estop_failed' | 'warnings' | 'power_failed' | 'import_invalid';
+  code: CommandFailureCode | 'jog_jump' | 'estop_failed' | 'warnings' | 'power_failed' | 'import_invalid' | 'sim_blocked' | 'jog_limit' | 'temperature_limit' | 'jog_server_limit';
   command: string;
   /** Robots the issue is about. */
   robotIds: number[];
@@ -75,7 +91,7 @@ export interface CommandIssue {
 export function summarizeBulk(results: { robotId: number; result: CommandResult }[]): { failed: number[]; code: CommandFailureCode | null; detail: string | null } {
   const failed = results.filter((r) => !r.result.ok);
   if (failed.length === 0) return { failed: [], code: null, detail: null };
-  const order: CommandFailureCode[] = ['network', 'session_expired', 'forbidden', 'server', 'claimed', 'not_found', 'rejected'];
+  const order: CommandFailureCode[] = ['network', 'session_expired', 'forbidden', 'jog_not_armed', 'server', 'claim_other_account', 'claim_other_controller', 'claim_controller_required', 'claimed', 'not_found', 'rejected'];
   const present = new Set(failed.map((r) => r.result.code));
   const code = order.find((c) => present.has(c)) ?? 'rejected';
   const detail = failed.find((r) => r.result.code === code)?.result.detail ?? null;

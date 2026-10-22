@@ -170,6 +170,8 @@ JuanenPnP、JuanenCNC 和 JuanenLaser 使用独立的 STL 副本，LumenPnP 保�
 本应用为自身抵御两类不同的运行时故障，二者都源自一次真实的生产事故（一次重新部署后信息亭屏幕变黑）。`src/main.tsx` 监听 Vite 自身的 `vite:preloadError` 事件——当一个跨越重新部署仍保持打开的浏览器标签页，尝试获取一个通过 `React.lazy()` 加载的面板代码块（`Dashboard.tsx` 中的每个面板，按 `vite.config.ts` 做了内容哈希）、而该代码块在其旧哈希下已不复存在时触发——并自动重新加载一次页面，使长期运行的信息亭标签页或过期的后台标签页在无人察觉的情况下自我修复。一个 `sessionStorage` 保护机制可防止在代码块因其他原因确实缺失时陷入无限重载循环。另外，`src/components/ErrorBoundary.tsx` 包裹了 `<Suspense>` 面板区域，作为其他任何渲染崩溃的后备方案；它按当前活动标签页进行索引，因此切换离开一个已崩溃的面板会真正重试下一个面板，而不会让整个仪表盘卡在回退画面上。
 命令不会静默失败:每个点动、播放、电源、视觉和工具命令都会返回带类型的结果,过期的会话会刷新一次并重试,仍被拒绝的内容会显示在横幅中。红色 **STOP** 按钮是全局的:单击即可,无需确认,一次调用(`POST /api/stop-all`)就会停止所有控制器的所有机器人,并关闭所有阀门和泵。它位于页眉和页脚、机器人面板以及远程控制覆盖层中,也可用 Ctrl+Shift+空格从键盘按下(这个组合键不会被误输入,按住不放时会被忽略)。结果按机器人逐个列出(有机器人未停止或服务器无法保存停止时给出警告;被其他账户预约的机器人会被标出);网络故障会重试一次,超出限制(429)或没有该路由(404)的服务器改用逐个机器人停止,并且“STOP 未确认”的持续警告会一直保留到之后的某次 STOP 得到应答。摇杆点动是按住式的死人开关(指针取消、窗口失焦、标签页隐藏或 8 秒后结束),J1 的移动保持在最接近的等效角度,超过 20 度的点动步长会被拒绝。手柄输入跟随界面中选中的机器人,并限制发送频率。发布版固件在 CAN-OTA 刷写前会用 sha256 校验,引导加载程序镜像为可选项,导入的轨迹和场景在进入共享状态之前会被验证。
 
+对每个客户端而言，谁可以移动机器人以及移动多远，都由服务器决定。机器人可以为提出请求的账户和窗口（每个窗口选定一个控制器 ID）**预留**：同一账户在另一个窗口，或另一个账户，都会被拒绝，并附带说明具体情况的消息（`other-controller`、`other-account`、`controller-id-required`），预留列表来自 `GET /api/claims`，管理员可以接管机器人。点动的大小、绝对点动的范围和热床的最高目标温度从 `GET /api/safety-limits` 读取，而不是保存在应用中；管理员可在 **生态系统 > 安全限制** 中按型号编辑它们，同时可设置可选的点动启用（默认关闭；开启后，按钮会在限定时间内启用点动）和必填的控制器 ID。每个机器人都有一个 **Live / Sim** 开关（默认 Live）：在 Sim 下，该窗口不会发送任何会移动机器人或接通设备的内容，而 STOP 始终有效。包含机械臂无法到达的点的 Work 或示例会被拒绝并列出这些点，也可以改为缩放到该型号的工作范围。
+
 ## 🔐 账户与访问
 
 每个后端在自身首次启动时都会预置一个账户——用户名 `admin`，密码 `admin`——一旦服务器可从完全受信任的局域网之外访问，请立即从 **Config > Users** 修改它。同一个选项卡还允许管理员账户创建额外的**操作员**账户：操作员可以登录、查看实时状态并驱动机器人（点动/播放/暂停/停止/工具/阀门/泵/速度），但不能覆盖全局设置或管理其他账户。仅仅四处浏览并不需要任何账户——登录界面自身的“以只读方式继续”会直接跳转到仪表盘,写入功能被禁用。完整契约（角色、令牌、`/api/users` 路由）记录于 [HYDRA-UMC-SERVER 自身的 `docs/REMOTE_API.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md) 第 2a/2b 节。 在生产环境中，第一个管理员来自部署的引导设置，服务器会拒绝示例密钥（参见 [HYDRA-UMC-SERVER 的 `docs/PRODUCTION_BOOTSTRAP.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/PRODUCTION_BOOTSTRAP.md)）。
@@ -224,6 +226,7 @@ HYDRA-UMC-STUDIO/
 │   │   ├── AuthGate.tsx, UsersPanel.tsx  # 登录界面和 Config > Users 管理员/操作员账户管理器
 │   │   ├── AdminServer.tsx, AdminLogs.tsx, AdminClients.tsx  # 生态系统菜单：服务器管理、
 │   │   │                       # 服务器日志、已连接应用面板
+│   │   ├── RobotAccessBar.tsx, AdminSafety.tsx  # 每个机器人的访问栏（Live/Sim、预留、点动启用）和安全限制管理界面
 │   │   ├── EcosystemServices.tsx, EcosystemTelemetry.tsx, AiFamilyStatus.tsx  # 生态系统菜单：
 │   │   │                       # 服务、遥测、AI 家族状态面板
 │   │   ├── SystemSupervisor.tsx  # 生态系统菜单：Netdata 风格的 CPU/内存/磁盘/温度/进程实时
@@ -276,6 +279,7 @@ HYDRA-UMC-STUDIO/
 │   ├── lib/canOta.ts            # CAN-OTA 仿真/协议层，GitHub 固件下载
 │   ├── lib/apiBase.ts           # 后端 URL 解析——开发环境中相对路径+代理，生产环境使用 VITE_API_BASE_URL
 │   ├── lib/mediaTicket.ts       # 摄像头画面用的短时效票据
+│   ├── lib/claims.ts, controllerSession.ts, accessApi.ts, accessStore.ts, safetyLimits.ts, liveSim.ts  # 预留、控制器 ID、从服务器读取的安全限制、Live/Sim 模式
 │   └── locales/                 # en/es/de/fr/it/zh/ja/pt 翻译文件（react-i18next）
 ├── public/
 │   ├── models/                  # 真实的 3D 网格资产——每个机器人一个文件夹（共 24 个），

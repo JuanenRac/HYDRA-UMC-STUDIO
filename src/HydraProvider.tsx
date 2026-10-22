@@ -24,6 +24,11 @@ import {
   extractLaunchToken,
   saveLoginTokens,
 } from './lib/session';
+import { getControllerId } from './lib/controllerSession';
+import { blockedBySim } from './lib/liveSim';
+import { getModeState, getSafetyState, setSafetyState } from './lib/accessStore';
+import { fetchSafetyLimits } from './lib/accessApi';
+import { checkJog, isTemperatureWarning, parseWarnings } from './lib/safetyLimits';
 import { type StopAllReport, type StopAllRobot, requestStopAllWithRetry } from './lib/stopAll';
 import { validateSceneRobots, validateTrajectoryPoints } from './lib/importValidation';
 import { type CameraState, HydraContext, type HydraController, type RobotState, type SystemSettings, decodeJwtRole, defaultControllers } from './store';
@@ -302,6 +307,21 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => { activeControllerIdRef.current = activeControllerId; }, [activeControllerId]);
   const settingsRef = useRef(settings);
   useEffect(() => { settingsRef.current = settings; }, [settings]);
+
+  // The safety limits come from the server (every client is held to the same ones), read after sign-in and again
+  // every half minute so a change by an administrator reaches the open windows. A server without the route keeps
+  // the conservative defaults.
+  useEffect(() => {
+    if (!authToken) return;
+    let cancelled = false;
+    const load = async () => {
+      const read = await fetchSafetyLimits();
+      if (!cancelled && read) setSafetyState(read.state);
+    };
+    void load();
+    const timer = setInterval(() => { void load(); }, 30_000);
+    return () => { cancelled = true; clearInterval(timer); };
+  }, [authToken]);
 
   // Per-robot generation counter guarding sendRobotCommand()'s own
   // rollback-on-failure - see that function's own comment and its
@@ -668,12 +688,17 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
         lastPayloadJsonRef.current = payloadJson;
         setSettingsSaveError(null);
+        // The server lowers a bed target above the ceiling of its model and says so.
+        response.json().then((body: unknown) => {
+          const lowered = parseWarnings(body).find(isTemperatureWarning);
+          if (lowered) reportCommandIssue({ code: 'temperature_limit', command: 'settings', robotIds: lowered.robotId === null ? [] : [lowered.robotId], detail: `${lowered.requested ?? '?'} -> ${lowered.applied ?? '?'}` });
+        }).catch(() => { /* an answer without a JSON body */ });
       }).catch(() => {
         // Real network failure - also not marked as sent, same retry reasoning as the non-ok branch above.
         setSettingsSaveError(saveFailureText('save', null));
       });
     }, 500);
-  }, [settings, controllers, activeControllerId, isLoaded]);
+  }, [settings, controllers, activeControllerId, isLoaded, reportCommandIssue]);
 
   const activeController = useMemo(() => controllers.find(c => c.id === activeControllerId) || controllers[0] || defaultControllers[0], [controllers, activeControllerId]);
   const robots = activeController?.robots || [];
@@ -703,7 +728,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const res = await fetch(apiUrl(`/api/robot/${id}/command`), {
           method: 'POST',
           headers: authHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ command, params }),
+          body: JSON.stringify({ command, params, controllerId: getControllerId() }),
         });
         let body: unknown = null;
         try { body = await res.json(); } catch { /* an answer without a JSON body */ }
@@ -725,6 +750,22 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     affectedIds?: number[]
   ): Promise<CommandResult> => {
     const ids = affectedIds && affectedIds.length > 0 ? affectedIds : [id];
+    // A robot put in Sim never receives a command that moves it or switches something on (lib/liveSim.ts): the
+    // command is refused here, before it leaves the browser, and the interface says so. STOP is never one of them.
+    if (blockedBySim(getModeState(), ids, command)) {
+      reportCommandIssue({ code: 'sim_blocked', command, robotIds: ids, detail: null });
+      return { ok: false, status: 0, code: 'rejected', detail: null, serverCode: 'sim-mode', warnings: [] };
+    }
+    // The size of a jog is bounded by the limits the server reports for the model of the robot (the server checks
+    // again); a step over the limit is not sent and the message says which limit.
+    if (command === 'jog') {
+      const target = controllersRef.current.flatMap((c) => c.robots).find((r) => r.id === id);
+      const check = checkJog(getSafetyState().limits, target?.model, params);
+      if (!check.ok) {
+        reportCommandIssue({ code: 'jog_limit', command, robotIds: ids, detail: `${check.kind === 'absolute' ? 'abs ' : ''}${check.limit}` });
+        return { ok: false, status: 0, code: 'rejected', detail: null, serverCode: 'jog-limit', warnings: [] };
+      }
+    }
     // Snapshot (for rollback) and this call's own generation number for
     // every affected robot - captured BEFORE the optimistic mutation
     // below, so a failed send can restore exactly what was there. See this

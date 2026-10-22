@@ -14,13 +14,14 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertOctagon, X } from 'lucide-react';
 import { useHydraStore } from '../store';
+import { armJog } from '../lib/accessApi';
 
 export function CommandIssueBanner() {
   const { t } = useTranslation();
   const { commandIssue, dismissCommandIssue, emergencyStop, settingsLoadError, robots } = useHydraStore();
 
   // A remark on a command the server accepted is information, not an alarm: it fades. Every failure stays.
-  const fades = commandIssue?.code === 'warnings';
+  const fades = commandIssue?.code === 'warnings' || commandIssue?.code === 'temperature_limit';
   useEffect(() => {
     if (!commandIssue || !fades) return;
     const timer = setTimeout(dismissCommandIssue, 8000);
@@ -46,7 +47,7 @@ export function CommandIssueBanner() {
           aria-live="assertive"
           className={
             'pointer-events-auto max-w-3xl w-full rounded-lg border px-4 py-3 shadow-2xl flex items-start gap-3 ' +
-            (commandIssue.code === 'warnings'
+            (commandIssue.code === 'warnings' || commandIssue.code === 'temperature_limit' || commandIssue.code === 'sim_blocked'
               ? 'border-amber-500/50 bg-amber-950/95 text-amber-100'
               : 'border-rose-500 bg-rose-950/95 text-rose-100')
           }
@@ -61,6 +62,19 @@ export function CommandIssueBanner() {
                 detail: commandIssue.detail ?? '',
               })}
             </div>
+            {commandIssue.code === 'jog_not_armed' && commandIssue.robotIds.length > 0 && (
+              <button
+                type="button"
+                data-testid="arm-from-banner"
+                onClick={() => {
+                  const robotId = commandIssue.robotIds[0];
+                  void armJog(robotId, true).then(({ result }) => { if (result.ok) dismissCommandIssue(); });
+                }}
+                className="mt-2 px-3 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase tracking-widest"
+              >
+                {t('command_issue.arm_jog')}
+              </button>
+            )}
             {commandIssue.code === 'estop_failed' && (
               <button
                 type="button"

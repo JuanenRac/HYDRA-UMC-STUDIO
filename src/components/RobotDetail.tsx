@@ -47,7 +47,8 @@ import { convertToCartesian } from '../examples/utils';
 import { jointsToCartesianForModel, jointLimitsFor, resolveTargetJoints } from '../examples/robotKinematicsDispatch';
 import { excessiveJogStep } from '../examples/jogSafety';
 import { ConfirmDialog } from './ConfirmDialog';
-import { buildReachReport, loadReachTolerance, positionResidualMm, reachNeedsConfirmation, saveReachTolerance, type ReachReport } from '../lib/reachCheck';
+import { buildReachReport, findReachScale, loadReachTolerance, positionResidualMm, reachNeedsConfirmation, saveReachTolerance, scalePortablePoints, type ReachReport, type ReachScale } from '../lib/reachCheck';
+import { RobotAccessBar } from './RobotAccessBar';
 import { currentPlaybackStep, playbackProgressPercent } from '../lib/playbackStep';
 
 /**
@@ -960,13 +961,13 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
         // this panel already displayed the newly loaded points. The atomic
         // trajectory command persists, resets the cursor and broadcasts the
         // same points as one operation.
-        await sendUnlessUnreachable(residuals, () => setSelectedWorkFile(robot.selectedWorkFile || ''), () => sendRobotCommand(
+        const sendPoints = (pts: any[]) => sendRobotCommand(
           robot.id,
           'trajectory',
-          { points, selectedWorkFile: fileName },
+          { points: pts, selectedWorkFile: fileName },
           () => ({
             selectedWorkFile: fileName,
-            recordedPoints: points,
+            recordedPoints: pts,
             playbackState: {
               ...(robot.playbackState || {}),
               isPlaying: false,
@@ -978,7 +979,8 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
               finished: false,
             },
           }),
-        ));
+        );
+        await sendUnlessUnreachable(residuals, () => setSelectedWorkFile(robot.selectedWorkFile || ''), () => sendPoints(points), { raw: rawPoints as unknown[], target: robot, sendPoints });
       } else {
         updateRobot(robot.id, { selectedWorkFile: fileName });
       }
@@ -999,20 +1001,21 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     try {
       const residuals: Array<number | null> = [];
       const points = normalizeTrajectoryForRobot(ex.points.map(withCartesian), robot, residuals);
-      await sendUnlessUnreachable(residuals, () => setSelectedExample(robot.selectedExample || ''), () => sendRobotCommand(
+      const sendPoints = (pts: any[]) => sendRobotCommand(
         robot.id,
         'trajectory',
-        { points, selectedExample: id },
+        { points: pts, selectedExample: id },
         () => ({
           selectedExample: id,
-          recordedPoints: points,
+          recordedPoints: pts,
           playbackState: {
             ...(robot.playbackState || {}),
             isPlaying: false, playing: false, isPaused: false, paused: false,
             activeStep: -1, isFinished: false, finished: false,
           },
         }),
-      ));
+      );
+      await sendUnlessUnreachable(residuals, () => setSelectedExample(robot.selectedExample || ''), () => sendPoints(points), { raw: ex.points.map(withCartesian), target: robot, sendPoints });
     } catch (error) {
       console.error('Unable to prepare example trajectory', error);
       updateRobot(robot.id, { selectedExample: id });
@@ -1026,20 +1029,21 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     try {
       const residuals: Array<number | null> = [];
       const points = normalizeTrajectoryForRobot(ex.points.map(withCartesian), targetRobot, residuals);
-      await sendUnlessUnreachable(residuals, () => undefined, () => sendRobotCommand(
+      const sendPoints = (pts: any[]) => sendRobotCommand(
         botId,
         'trajectory',
-        { points, selectedExample: exId },
+        { points: pts, selectedExample: exId },
         () => ({
           selectedExample: exId,
-          recordedPoints: points,
+          recordedPoints: pts,
           playbackState: {
             ...(targetRobot.playbackState || {}),
             isPlaying: false, playing: false, isPaused: false, paused: false,
             activeStep: -1, isFinished: false, finished: false,
           },
         }),
-      ));
+      );
+      await sendUnlessUnreachable(residuals, () => undefined, () => sendPoints(points), { raw: ex.points.map(withCartesian), target: targetRobot, sendPoints });
     } catch (error) {
       console.error('Unable to prepare combined robot example trajectory', error);
     }
@@ -1472,20 +1476,43 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   // Same for the model: kinematics, joint limits and the 3D view all follow it.
   const [pendingModel, setPendingModel] = useState<string | null>(null);
   // A trajectory with points the arm cannot reach asks first (see src/lib/reachCheck.ts).
-  const [pendingReach, setPendingReach] = useState<{ report: ReachReport; send: () => Promise<unknown>; decline: () => void } | null>(null);
+  const [pendingReach, setPendingReach] = useState<{ report: ReachReport; fit: ReachScale | null; sendScaled: (() => Promise<unknown>) | null; decline: () => void } | null>(null);
   const [reachTolerance, setReachTolerance] = useState<number>(() => loadReachTolerance(browserStorage()));
-  const sendUnlessUnreachable = async (residuals: Array<number | null>, decline: () => void, send: () => Promise<unknown>) => {
-    const report = buildReachReport(residuals, loadReachTolerance(browserStorage()));
-    if (reachNeedsConfirmation(report)) {
-      setPendingReach({ report, send, decline });
+  // A trajectory with points the arm cannot reach is refused, with the list of those points. The operator can
+  // accept the same trajectory scaled to the reach of this model (about the base of the robot), or cancel.
+  // `scaling` carries what is needed to build the scaled trajectory; without it only the refusal is offered.
+  const sendUnlessUnreachable = async (
+    residuals: Array<number | null>,
+    decline: () => void,
+    send: () => Promise<unknown>,
+    scaling?: { raw: unknown[]; target: Pick<RobotState, 'model' | 'joints'>; sendPoints: (points: any[]) => Promise<unknown> },
+  ) => {
+    const tolerance = loadReachTolerance(browserStorage());
+    const report = buildReachReport(residuals, tolerance);
+    if (!reachNeedsConfirmation(report)) {
+      await send();
       return;
     }
-    await send();
+    let fit: ReachScale | null = null;
+    let sendScaled: (() => Promise<unknown>) | null = null;
+    if (scaling) {
+      const scaledAt = (scale: number) => scalePortablePoints(scaling.raw, scale, withCartesian);
+      fit = findReachScale((scale) => {
+        const measured: Array<number | null> = [];
+        try { normalizeTrajectoryForRobot(scaledAt(scale), scaling.target, measured); } catch { return [Number.POSITIVE_INFINITY]; }
+        return measured;
+      }, tolerance, scaling.raw.length > 500 ? 0.1 : 0.05);
+      if (fit.scale < 1 && fit.remaining < report.count) {
+        const chosen = fit.scale;
+        sendScaled = () => scaling.sendPoints(normalizeTrajectoryForRobot(scaledAt(chosen), scaling.target));
+      }
+    }
+    setPendingReach({ report, fit, sendScaled, decline });
   };
   const runPendingReach = () => {
     const pending = pendingReach;
     setPendingReach(null);
-    if (pending) void pending.send();
+    if (pending?.sendScaled) void pending.sendScaled();
   };
   const cancelPendingReach = () => {
     const pending = pendingReach;
@@ -1586,8 +1613,27 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
       />
       <ConfirmDialog
         open={pendingReach !== null}
-        message={pendingReach ? t('robot_detail.reach_confirm', { count: pendingReach.report.count, worst: Math.round(pendingReach.report.worstMm), threshold: pendingReach.report.toleranceMm }) : ''}
-        danger
+        title={t('robot_detail.reach_title')}
+        message={pendingReach ? t('robot_detail.reach_rejected', { count: pendingReach.report.count, model: robot.model, worst: Number.isFinite(pendingReach.report.worstMm) ? Math.round(pendingReach.report.worstMm) : '-', threshold: pendingReach.report.toleranceMm }) : ''}
+        details={pendingReach && (
+          <div className="flex flex-col gap-2 text-xs text-slate-400">
+            <ul data-testid="reach-offenders" className="max-h-32 overflow-y-auto font-mono">
+              {pendingReach.report.offenders.slice(0, 12).map((o) => (
+                <li key={o.index}>{t('robot_detail.reach_point', { point: o.index + 1, mm: Number.isFinite(o.mm) ? Math.round(o.mm) : '-' })}</li>
+              ))}
+              {pendingReach.report.offenders.length > 12 && <li>{t('robot_detail.reach_more', { count: pendingReach.report.offenders.length - 12 })}</li>}
+            </ul>
+            {pendingReach.sendScaled && pendingReach.fit && (
+              <p>{pendingReach.fit.fits
+                ? t('robot_detail.reach_scale_fits', { percent: Math.round(pendingReach.fit.scale * 100) })
+                : t('robot_detail.reach_scale_partial', { percent: Math.round(pendingReach.fit.scale * 100), remaining: pendingReach.fit.remaining })}</p>
+            )}
+          </div>
+        )}
+        hideConfirm={!pendingReach?.sendScaled}
+        confirmLabel={t('robot_detail.reach_scale_button')}
+        cancelLabel={t('robot_detail.reach_reject_button')}
+        danger={false}
         onConfirm={runPendingReach}
         onCancel={cancelPendingReach}
       />
@@ -1618,6 +1664,12 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
               <span data-testid="motion-source" className={cn("text-xs px-2 py-1 rounded-md uppercase font-bold tracking-wider", motionSource(robot) === 'live' ? "bg-emerald-950 text-emerald-400" : motionSource(robot) === 'simulated' ? "bg-amber-950 text-amber-400" : "bg-rose-950 text-rose-400")}>{t(`motion_source.${motionSource(robot)}`)}</span>
             </div>
           </div>
+        </div>
+      )}
+
+      {!viewportOnly && (
+        <div className="px-3 py-2 border-b border-slate-800 bg-slate-900/80 shrink-0">
+          <RobotAccessBar robot={robot} />
         </div>
       )}
 

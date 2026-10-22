@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_IMPORTED_POINTS, validateSceneRobots, validateTrajectoryPoints } from '../src/lib/importValidation';
 import { createDefaultRobots } from '../src/store';
-import { clampBedTarget, MAX_BED_TARGET_C } from '../src/lib/heatedBed';
+import { clampBedTargetTo } from '../src/lib/safetyLimits';
 
 const point = { j1: 0, j2: -10, j3: 20, j4: 0, j5: 0, j6: 0 };
 
@@ -58,14 +58,14 @@ describe('validateSceneRobots', () => {
   });
 });
 
-describe('clampBedTarget', () => {
+describe('clampBedTargetTo', () => {
   it('keeps 0, the real value that used to be shown as 60', () => {
-    expect(clampBedTarget(0)).toBe(0);
+    expect(clampBedTargetTo(0, 110)).toBe(0);
   });
   it('limits to the one maximum and survives garbage', () => {
-    expect(clampBedTarget(300)).toBe(MAX_BED_TARGET_C);
-    expect(clampBedTarget(-5)).toBe(0);
-    expect(clampBedTarget(Number.NaN)).toBe(0);
-    expect(clampBedTarget(60.4)).toBe(60);
+    expect(clampBedTargetTo(300, 110)).toBe(110);
+    expect(clampBedTargetTo(-5, 110)).toBe(0);
+    expect(clampBedTargetTo(Number.NaN, 110)).toBe(0);
+    expect(clampBedTargetTo(60.4, 110)).toBe(60);
   });
 });

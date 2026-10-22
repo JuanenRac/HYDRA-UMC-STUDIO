@@ -14,7 +14,7 @@
 // browser popup.
 // =============================================================================
 
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import { isDismissKey, nextTabIndex } from '../lib/dialogKeys';
@@ -26,6 +26,8 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel,
   danger = true,
+  details,
+  hideConfirm = false,
   onConfirm,
   onCancel,
 }: {
@@ -36,6 +38,10 @@ export function ConfirmDialog({
   cancelLabel?: string;
   /** Red confirm button for destructive/irreversible actions (delete, factory reset, e-stop) - true by default since every current caller is one of those. */
   danger?: boolean;
+  /** Extra content under the message (a list, for example). */
+  details?: ReactNode;
+  /** Leaves only the cancel button, for a dialog whose only choice left is to refuse. */
+  hideConfirm?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -96,6 +102,7 @@ export function ConfirmDialog({
             {title || t('common.confirm')}
           </div>
           <p id={messageId} className="text-sm text-slate-300 leading-relaxed">{message}</p>
+          {details}
         </div>
         <div className="p-4 border-t border-slate-800 bg-slate-950 flex justify-end gap-3">
           <button
@@ -105,14 +112,14 @@ export function ConfirmDialog({
           >
             {cancelLabel || t('common.cancel')}
           </button>
-          <button
+          {!hideConfirm && <button
             onClick={onConfirm}
             className={danger
               ? "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-white bg-rose-600 hover:bg-rose-500 transition-colors"
               : "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-950 bg-sky-500 hover:bg-sky-400 transition-colors"}
           >
             {confirmLabel || t('common.confirm')}
-          </button>
+          </button>}
         </div>
       </div>
     </div>
