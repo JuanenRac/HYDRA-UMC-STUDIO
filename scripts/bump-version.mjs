@@ -1,11 +1,13 @@
 // =============================================================================
-// HYDRA-UMC STUDIO - Build-time version bump: scripts/bump-version.mjs
+// HYDRA-UMC STUDIO - Explicit version bump: scripts/bump-version.mjs
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 // =============================================================================
-// Legacy native-only version helper. Root build scripts own the single project
-// increment through bump_manifest_version.py; `npm run build` is deliberately
-// compilation-only so it cannot create manifest/package version drift.
+// Legacy native-only version helper. The explicit bump command
+// (`python tools/hydra_project_tool.py bump`) owns the single project increment
+// through bump_manifest_version.py; building never changes a version, and
+// `npm run build` is deliberately compilation-only so it cannot create
+// manifest/package version drift.
 //
 // Increment rule ("odometer" in base 10, ecosystem-wide convention):
 //   - patch +1
