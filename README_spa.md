@@ -33,7 +33,7 @@
 
 | | |
 |---|---|
-| Versión | `0.8.0.0` |
+| Versión | `0.8.0.1` |
 | Madurez | Funcional |
 | Tecnología | React 19 / Vite / Three.js / Tailwind CSS |
 | Destino | La Raspberry Pi CM5 de una celda HYDRA-UMC |
