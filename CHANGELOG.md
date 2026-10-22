@@ -29,6 +29,7 @@ a change is actually worth summarizing for a human.
 
 ## [Unreleased]
 
+- The banner follows the animated style of the ecosystem banners, with the name, the kind and the technologies of the project.
 - Added `tools/hydra_project_tool.py`: the same `validate`, `test`, `version`, `status` and `bump` commands in every repository. The checks run with `HYDRA_UMC_CI=1` and fail if the version changes; only `bump` changes it.
 - A token that arrives in the launch address is read from the fragment (`#token=`), which a browser never sends to a server and no proxy or access log records; the query form (`?token=`) is still read for an app that has not moved yet. Either form is removed from the address bar as soon as it is read (`extractLaunchToken`, six new tests).
 - The live connection of the page no longer falls back to `/ws?token=`: the token travels only as the `hydra.bearer` subprotocol, which every server since the subprotocol was added answers and which the server now requires (it refuses the address form by default). A server that does not answer it is reported as a failed connection instead of being handed the token in the address.
