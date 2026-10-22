@@ -1527,13 +1527,13 @@ Verified: full `build-test.bat` suite passes (typecheck/tests/lint).
 
 ---
 
-## Project history (pre-versioning), summarized
+## Earlier history
+
+### Project history (pre-versioning), summarized
 
 Entries below predate this file and the automatic version bump, so they
 carry no version number - order reflects roughly how the work happened,
 oldest first.
-
-### Real 3D foundations
 
 Read-only review of the initial scaffold, followed by several passes of real
 robot geometry: swapping a placeholder figure for Parol6's actual mesh and
@@ -1543,15 +1543,11 @@ to further robots. A later pass found and fixed the root cause of 3D
 trajectory paths drawing incorrectly for robots whose kinematics used a
 different Euler rotation order than the renderer assumed.
 
-### CAN-OTA tooling and firmware scaffolding
-
 Brought the CAN-OTA Flasher/Tester screens (previously a "coming soon"
 placeholder) to life for both the URTC and HYDRA-UMC tiers, followed by real
 scaffolding work on the STM32G474/STM32H745 firmware side. A full-scope
 read-only audit (parallel subagents) then produced a confirmed bug list,
 fixed in a later pass.
-
-### Robot library expansion to 24 real models
 
 Added Universal Robots' e-Series (5 models) with joint limits/kinematics
 pulled from UR's own official ROS2 description repo, plus a grouped
@@ -1565,8 +1561,6 @@ byte-for-byte truncated `LICENSE` file, a full `README.md` rewrite, the
 `REMOTE_API.md` contract documenting the SUITE/Android/iOS remote clients,
 and a per-client remote-access toggle in Config.
 
-### Real authentication and accounts
-
 A background reconnaissance pass fed a real implementation pass. The
 owner's own live testing surfaced a real robot-state bug (A1) fixed on the
 spot, and a major structural finding: STUDIO never actually had a login
@@ -1576,15 +1570,11 @@ per-client (SUITE/Android/iOS) remote-access control. Model-submission
 wiring from the sibling HYDRA-UMC-EDITOR-URDF project, and a real
 performance bug fix for slow robot-panel entry, followed shortly after.
 
-### Documentation cleanup and localization
-
 Purged historical/dated narrative ("previously...", migration notices tied
 to a specific day) from source comments and docs in favor of comments that
 explain current behavior only - copyright headers excluded by design.
 Translated `README.md` into Spanish, Italian, French, and German
 (`README_spa.md`/`README_ita.md`/`README_fra.md`/`README_deu.md`).
-
-### Line-by-line audit and backlog pass
 
 A full line-by-line (not sampled) review of the backend and `src/` root plus
 `components/` (excluding `3d/`), followed by two passes over the
