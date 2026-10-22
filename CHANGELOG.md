@@ -1,31 +1,6 @@
 # Changelog
 
-All notable work on **HYDRA-UMC STUDIO** is summarized here, newest first.
-
-## Versioning scheme
-
-`bump_manifest_version.py` (root of the workspace) is the single owner of
-both `hydra-umc.project.json` and `package.json`'s `version` field -
-`npm run build` (`vite build`) is deliberately compilation-only so it can
-never create drift between them. `scripts/bump-version.mjs` is a legacy
-native-only helper kept for reference; nothing in this repo calls it. It
-follows a simple base-10 "odometer" rule rather than semantic-versioning
-judgment calls:
-
-- `patch` +1 on every build
-- when `patch` would exceed 9, it resets to 0 and `minor` +1 instead (e.g. `0.0.9` -> `0.1.0`, never `0.0.10`)
-- the same carry cascades into `major` if `minor` would exceed 9
-
-The running version is visible live in the app itself: **About** dialog
-(header `About` button) shows it, read from this app's own `package.json` - no
-separate number to keep in sync by hand. The server version shown next to it
-comes from `GET /api/hydra-info`.
-
-This file itself is *not* auto-generated per build (most builds are routine
-verification runs with nothing changelog-worthy); it's updated by hand when
-a change is actually worth summarizing for a human.
-
----
+All notable changes to this project are documented here.
 
 ## [Unreleased]
 
