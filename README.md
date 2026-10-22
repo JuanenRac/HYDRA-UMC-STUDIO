@@ -286,7 +286,7 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # Seeded example settings for a fresh checkout
 │   └── favicon.svg, icons.svg   # App icon and shared icon sprite
 ├── images/                       # README banner
-├── tests/                        # Real Vitest suite (286 tests) - src/examples/ FK/IK math only, no React/DOM
+├── tests/                        # Real Vitest suite (423 tests) - src/examples/ FK/IK math only, no React/DOM
 │   ├── utils.test.ts             # Shared generic-arm FK/IK pair + its 5 path generators
 │   ├── urKinematicsShared.test.ts  # Real DH-chain FK + Newton-Raphson IK engine (via the real UR5e chain)
 │   ├── parol6Kinematics.test.ts  # Parol6's own hard-coded real chain
@@ -334,7 +334,7 @@ Runs Vite's own dev server (plain `vite`, port `5173`) with live-reloading. `vit
 ### Automated Tests
 
 ```bash
-npm test          # vitest run - 286 real tests over src/examples/
+npm test          # vitest run - 423 real tests over src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

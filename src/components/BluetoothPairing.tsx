@@ -204,7 +204,7 @@ export function BluetoothPairing() {
                   <button
                     onClick={() => forget(device.mac)}
                     disabled={actioningMac === device.mac}
-                    title={t('bluetooth_pairing.forget', 'Forget this device')}
+                    title={t('bluetooth_pairing.forget', 'Forget this device')} aria-label={t('bluetooth_pairing.forget', 'Forget this device')}
                     className="p-1.5 rounded bg-slate-800 text-slate-400 border border-slate-700 disabled:opacity-50 hover:text-red-400 hover:border-red-500/50"
                   >
                     <Trash2 size={12} />

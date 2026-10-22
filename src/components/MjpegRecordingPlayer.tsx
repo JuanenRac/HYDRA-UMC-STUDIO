@@ -124,7 +124,7 @@ export function MjpegRecordingPlayer({ url, durationMs, frameCount: knownFrameCo
         <button
           onClick={() => { setPlaying(false); setIndex(0); }}
           className="p-2 rounded-lg bg-slate-800 text-slate-200 hover:bg-slate-700 transition-colors"
-          title={t('cameraMedia.stop', 'Stop')}
+          title={t('cameraMedia.stop', 'Stop')} aria-label={t('cameraMedia.stop', 'Stop')}
         >
           <Square size={16} />
         </button>

@@ -121,7 +121,7 @@ export function CameraMediaView() {
         <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
           <ImageIcon className="text-emerald-400" size={20} /> <span className="glow-text-emerald">{t('cameraMedia.title', 'Camera Media Library')}</span>
         </h2>
-        <button onClick={load} className="p-2 rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-colors" title={t('cameraMedia.refresh', 'Refresh')}>
+        <button onClick={load} className="p-2 rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-colors" title={t('cameraMedia.refresh', 'Refresh')} aria-label={t('cameraMedia.refresh', 'Refresh')}>
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>

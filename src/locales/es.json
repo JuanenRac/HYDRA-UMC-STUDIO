@@ -387,7 +387,8 @@
     "floating_overlay_hint": "Velocidad, aceleración, articulaciones y jog XYZ se movieron al panel flotante sobre la vista 3D de arriba.",
     "confirm_home": "¿Enviar el robot a su pose de inicio ahora? Se mueve de una sola vez.",
     "confirm_reset": "¿Parar el robot y enviarlo a su pose de inicio ahora? Se mueve de una sola vez.",
-    "confirm_delete_points": "¿Borrar todos los puntos grabados de este robot? No se puede deshacer."
+    "confirm_delete_points": "¿Borrar todos los puntos grabados de este robot? No se puede deshacer.",
+    "confirm_tool": "¿Cambiar la herramienta a {{tool}}? El robot la usará en los siguientes movimientos."
   },
   "cameras": {
     "title": "Matriz de Visión Octal",

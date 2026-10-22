@@ -387,7 +387,8 @@
     "floating_overlay_hint": "A velocidade, a aceleração, as articulações e o jog XYZ passaram para o painel flutuante na vista 3D acima.",
     "confirm_home": "Enviar já o robô para a sua pose inicial? Move-se de uma só vez.",
     "confirm_reset": "Parar o robô e enviá-lo já para a sua pose inicial? Move-se de uma só vez.",
-    "confirm_delete_points": "Apagar todos os pontos gravados deste robô? Não se pode desfazer."
+    "confirm_delete_points": "Apagar todos os pontos gravados deste robô? Não se pode desfazer.",
+    "confirm_tool": "Mudar a ferramenta para {{tool}}? O robô vai usá-la nos próximos movimentos."
   },
   "cameras": {
     "title": "Matriz de visão octal",

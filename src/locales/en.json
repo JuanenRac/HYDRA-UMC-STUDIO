@@ -387,7 +387,8 @@
     "floating_overlay_hint": "Speed, acceleration, joints and XYZ jog moved to the floating panel on the 3D view above.",
     "confirm_home": "Send the robot to its home pose now? It moves in one step.",
     "confirm_reset": "Stop the robot and send it to its home pose now? It moves in one step.",
-    "confirm_delete_points": "Delete every recorded point of this robot? This cannot be undone."
+    "confirm_delete_points": "Delete every recorded point of this robot? This cannot be undone.",
+    "confirm_tool": "Change the tool to {{tool}}? The robot will use it for the next moves."
   },
   "cameras": {
     "title": "Octal Vision Matrix",

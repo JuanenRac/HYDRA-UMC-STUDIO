@@ -387,7 +387,8 @@
     "floating_overlay_hint": "Velocità, accelerazione, articolazioni e jog XYZ sono stati spostati nel pannello flottante sopra la vista 3D.",
     "confirm_home": "Mandare ora il robot alla posizione iniziale? Si muove in un unico passo.",
     "confirm_reset": "Fermare il robot e mandarlo ora alla posizione iniziale? Si muove in un unico passo.",
-    "confirm_delete_points": "Eliminare tutti i punti registrati di questo robot? Non si può annullare."
+    "confirm_delete_points": "Eliminare tutti i punti registrati di questo robot? Non si può annullare.",
+    "confirm_tool": "Cambiare l'utensile in {{tool}}? Il robot lo userà per i prossimi movimenti."
   },
   "cameras": {
     "title": "Matrice di Visione Ottale",

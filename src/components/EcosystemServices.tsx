@@ -417,21 +417,21 @@ export function EcosystemServices() {
                             <>
                               <button
                                 onClick={() => requestAction(p, 'start')}
-                                title={t('ecosystem.services_start')}
+                                title={t('ecosystem.services_start')} aria-label={t('ecosystem.services_start')}
                                 className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 transition-colors"
                               >
                                 <Play size={12} />
                               </button>
                               <button
                                 onClick={() => requestAction(p, 'stop')}
-                                title={t('ecosystem.services_stop')}
+                                title={t('ecosystem.services_stop')} aria-label={t('ecosystem.services_stop')}
                                 className="flex items-center justify-center w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 transition-colors"
                               >
                                 <Square size={12} />
                               </button>
                               <button
                                 onClick={() => requestAction(p, 'restart')}
-                                title={t('ecosystem.services_restart')}
+                                title={t('ecosystem.services_restart')} aria-label={t('ecosystem.services_restart')}
                                 className="flex items-center justify-center w-7 h-7 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-400 transition-colors"
                               >
                                 <RotateCw size={12} />

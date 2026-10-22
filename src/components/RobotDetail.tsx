@@ -603,7 +603,7 @@ function JoystickOverlay({
             <button
               onClick={() => onJ1Jog(-1)}
               disabled={j1Value <= j1Min}
-              title={t('robot_detail.base_rotate_ccw', 'Rotate base counter-clockwise')}
+              title={t('robot_detail.base_rotate_ccw', 'Rotate base counter-clockwise')} aria-label={t('robot_detail.base_rotate_ccw', 'Rotate base counter-clockwise')}
               className="flex-1 flex items-center justify-center gap-1.5 bg-slate-900/80 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed border border-slate-800 rounded-lg py-1.5 text-slate-300 transition-colors"
             >
               <RotateCcw size={14} />
@@ -614,7 +614,7 @@ function JoystickOverlay({
             <button
               onClick={() => onJ1Jog(1)}
               disabled={j1Value >= j1Max}
-              title={t('robot_detail.base_rotate_cw', 'Rotate base clockwise')}
+              title={t('robot_detail.base_rotate_cw', 'Rotate base clockwise')} aria-label={t('robot_detail.base_rotate_cw', 'Rotate base clockwise')}
               className="flex-1 flex items-center justify-center gap-1.5 bg-slate-900/80 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed border border-slate-800 rounded-lg py-1.5 text-slate-300 transition-colors"
             >
               <RotateCw size={14} />
@@ -1450,8 +1450,15 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   // HOME and RESET send the robot to an absolute pose in one jump, and "delete points" empties the whole trajectory:
   // none of them is undone by pressing again, so each asks first.
   const [pendingAction, setPendingAction] = useState<'home' | 'reset' | 'delete_points' | null>(null);
+  // Changing the tool changes what the robot does with the following moves, so it asks first too.
+  const [pendingTool, setPendingTool] = useState<string | null>(null);
   const handleHome = () => setPendingAction('home');
   const handleReset = () => setPendingAction('reset');
+  const runPendingTool = () => {
+    const tool = pendingTool;
+    setPendingTool(null);
+    if (tool) sendRobotCommand(robot.id, 'tool', { tool }, () => ({ tool: tool as any }));
+  };
   const runPendingAction = () => {
     const action = pendingAction;
     setPendingAction(null);
@@ -1532,6 +1539,13 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
         onConfirm={runPendingAction}
         onCancel={() => setPendingAction(null)}
       />
+      <ConfirmDialog
+        open={pendingTool !== null}
+        message={t('robot_detail.confirm_tool', { tool: pendingTool ?? '' })}
+        danger={false}
+        onConfirm={runPendingTool}
+        onCancel={() => setPendingTool(null)}
+      />
       {!viewportOnly && (
         <div className="flex items-center justify-between p-3 border-b border-slate-800 bg-slate-900 shrink-0">
           <div className="flex items-center gap-4">
@@ -1574,21 +1588,21 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                   <button
                     onClick={() => toggleControl('translate')}
                     className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'translate' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
-                    title={t('robot_detail.move', 'Move')}
+                    title={t('robot_detail.move', 'Move')} aria-label={t('robot_detail.move', 'Move')}
                   >
                     <ArrowUp size={16} />
                   </button>
                   <button
                     onClick={() => toggleControl('rotate')}
                     className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'rotate' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
-                    title={t('robot_detail.rotate', 'Rotate')}
+                    title={t('robot_detail.rotate', 'Rotate')} aria-label={t('robot_detail.rotate', 'Rotate')}
                   >
                     <RotateCcw size={16} />
                   </button>
                   <button
                     onClick={() => toggleControl('scale')}
                     className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'scale' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
-                    title={t('robot_detail.resize', 'Resize')}
+                    title={t('robot_detail.resize', 'Resize')} aria-label={t('robot_detail.resize', 'Resize')}
                   >
                     <Maximize2 size={16} />
                   </button>
@@ -1601,7 +1615,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                       });
                     }}
                     className="p-2 rounded bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-300 backdrop-blur-sm transition-colors"
-                    title={t('robot_detail.center_view', 'Center View')}
+                    title={t('robot_detail.center_view', 'Center View')} aria-label={t('robot_detail.center_view', 'Center View')}
                   >
                     <Crosshair size={16} />
                   </button>
@@ -1756,7 +1770,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                     onClick={() => handlePlay()}
                     disabled={robot.recordedPoints.length === 0}
                     className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 hover:bg-emerald-950 disabled:opacity-40 border border-slate-800 hover:border-emerald-800 text-emerald-400 rounded-lg transition-colors"
-                    title={isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START')}
+                    title={isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START')} aria-label={isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START')}
                   >
                     <Play size={18} />
                   </button>
@@ -1764,7 +1778,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                   <button
                     onClick={handleStop}
                     className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 hover:bg-red-950 border border-slate-800 hover:border-red-800 text-red-400 rounded-lg transition-colors"
-                    title={isStartAll ? t('robot_detail.stop_all', 'STOP ALL') : t('robot_detail.stop', 'STOP')}
+                    title={isStartAll ? t('robot_detail.stop_all', 'STOP ALL') : t('robot_detail.stop', 'STOP')} aria-label={isStartAll ? t('robot_detail.stop_all', 'STOP ALL') : t('robot_detail.stop', 'STOP')}
                   >
                     <Square size={18} />
                   </button>
@@ -1795,32 +1809,32 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                 <div className="hidden landscape:flex items-center gap-1">
                   <div className="w-px h-5 bg-slate-700 mx-0.5" />
 
-                  <button onClick={handleHome} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="HOME">
+                  <button onClick={handleHome} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="HOME" aria-label="HOME">
                     <Home size={16} />
                   </button>
 
                   {robot.hasXYTable && (
-                    <button onClick={handleResetXY} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="HOME XY">
+                    <button onClick={handleResetXY} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="HOME XY" aria-label="HOME XY">
                       <Grid3x3 size={16} />
                     </button>
                   )}
 
-                  <button onClick={handleReset} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="RESET">
+                  <button onClick={handleReset} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="RESET" aria-label="RESET">
                     <RefreshCw size={16} />
                   </button>
 
-                  <button onClick={handleReset3D} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="RESET 3D">
+                  <button onClick={handleReset3D} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title="RESET 3D" aria-label="RESET 3D">
                     <RotateCcw size={16} />
                   </button>
 
-                  <button onClick={() => updateRobot(robot.id, { playbackState: { ...(robot.playbackState || { isPlaying: false, activeStep: 0, speed: 100 }), isLooping: !robot.playbackState?.isLooping } })} className={cn("flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] border rounded-lg transition-colors", robot.playbackState?.isLooping ? "bg-fuchsia-950 border-fuchsia-800 text-fuchsia-400" : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200")} title={t('robot_detail.repeat', 'Repeat')}>
+                  <button onClick={() => updateRobot(robot.id, { playbackState: { ...(robot.playbackState || { isPlaying: false, activeStep: 0, speed: 100 }), isLooping: !robot.playbackState?.isLooping } })} className={cn("flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] border rounded-lg transition-colors", robot.playbackState?.isLooping ? "bg-fuchsia-950 border-fuchsia-800 text-fuchsia-400" : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200")} title={t('robot_detail.repeat', 'Repeat')} aria-label={t('robot_detail.repeat', 'Repeat')}>
                     <Repeat size={16} className={cn(robot.playbackState?.isLooping && "animate-spin-slow")} />
                   </button>
 
-                  <button onClick={handleAddPoint} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-sky-400 rounded-lg transition-colors" title={t('robot_detail.add_point', '+ Add Point')}>
+                  <button onClick={handleAddPoint} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-sky-400 rounded-lg transition-colors" title={t('robot_detail.add_point', '+ Add Point')} aria-label={t('robot_detail.add_point', '+ Add Point')}>
                     <Plus size={16} />
                   </button>
-                  <button onClick={() => setPendingAction('delete_points')} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-rose-400 rounded-lg transition-colors" title={t('robot_detail.delete_points', 'Delete points')}>
+                  <button onClick={() => setPendingAction('delete_points')} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-rose-400 rounded-lg transition-colors" title={t('robot_detail.delete_points', 'Delete points')} aria-label={t('robot_detail.delete_points', 'Delete points')}>
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -1989,7 +2003,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                 <button
                   onClick={() => setPendingAction('delete_points')}
                   className={cn("flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors", isAndroidApp ? "p-2 min-h-[40px] min-w-[40px]" : "p-2 min-h-[44px] min-w-[44px]")}
-                  title={t('robot_detail.delete_points', 'Delete points')}
+                  title={t('robot_detail.delete_points', 'Delete points')} aria-label={t('robot_detail.delete_points', 'Delete points')}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -2236,7 +2250,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                         onClick={handleSaveWorkFile}
                         disabled={robot.playbackState?.isPlaying || robot.recordedPoints.length === 0}
                         className="flex items-center justify-center w-10 h-10 bg-indigo-600 hover:bg-indigo-500 text-white rounded transition-colors disabled:opacity-50 shrink-0"
-                        title={t('robot_detail.save_trajectory', 'Save')}
+                        title={t('robot_detail.save_trajectory', 'Save')} aria-label={t('robot_detail.save_trajectory', 'Save')}
                       >
                         <Save size={20} />
                       </button>
@@ -2244,7 +2258,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                         onClick={() => uploadWorkFileRef.current?.click()}
                         disabled={robot.playbackState?.isPlaying}
                         className="flex items-center justify-center w-10 h-10 bg-sky-600 hover:bg-sky-500 text-white rounded transition-colors disabled:opacity-50 shrink-0"
-                        title={t('robot_detail.upload_trajectory', 'Open / Add')}
+                        title={t('robot_detail.upload_trajectory', 'Open / Add')} aria-label={t('robot_detail.upload_trajectory', 'Open / Add')}
                       >
                         <FolderOpen size={20} />
                       </button>
@@ -2252,7 +2266,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                         onClick={handleExportGCode}
                         disabled={robot.recordedPoints.length === 0}
                         className="flex items-center justify-center w-10 h-10 bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors disabled:opacity-50 shrink-0"
-                        title={t('robot_detail.export_gcode', 'Export as G-code')}
+                        title={t('robot_detail.export_gcode', 'Export as G-code')} aria-label={t('robot_detail.export_gcode', 'Export as G-code')}
                       >
                         <Download size={20} />
                       </button>
@@ -2404,7 +2418,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('robot_detail.urtc_tool', 'URTC Tool')}</label>
                     <select 
                       value={robot.tool}
-                      onChange={e => sendRobotCommand(robot.id, 'tool', { tool: e.target.value }, () => ({ tool: e.target.value as any }))}
+                      onChange={e => setPendingTool(e.target.value)}
                       className="bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
                     >
                       {URTC_TOOLS.map(t => (

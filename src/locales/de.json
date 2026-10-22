@@ -387,7 +387,8 @@
     "floating_overlay_hint": "Geschwindigkeit, Beschleunigung, Gelenke und XYZ-Jog wurden in das schwebende Panel über der 3D-Ansicht oben verschoben.",
     "confirm_home": "Den Roboter jetzt in seine Grundstellung schicken? Er fährt in einem Schritt.",
     "confirm_reset": "Den Roboter stoppen und jetzt in seine Grundstellung schicken? Er fährt in einem Schritt.",
-    "confirm_delete_points": "Alle aufgezeichneten Punkte dieses Roboters löschen? Das lässt sich nicht rückgängig machen."
+    "confirm_delete_points": "Alle aufgezeichneten Punkte dieses Roboters löschen? Das lässt sich nicht rückgängig machen.",
+    "confirm_tool": "Werkzeug auf {{tool}} wechseln? Der Roboter verwendet es für die nächsten Bewegungen."
   },
   "cameras": {
     "title": "Oktal Vision Matrix",

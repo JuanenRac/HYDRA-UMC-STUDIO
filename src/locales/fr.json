@@ -387,7 +387,8 @@
     "floating_overlay_hint": "Vitesse, accélération, articulations et jog XYZ ont été déplacés vers le panneau flottant sur la vue 3D ci-dessus.",
     "confirm_home": "Envoyer le robot à sa pose d'origine maintenant ? Il se déplace en un seul mouvement.",
     "confirm_reset": "Arrêter le robot et l'envoyer à sa pose d'origine maintenant ? Il se déplace en un seul mouvement.",
-    "confirm_delete_points": "Supprimer tous les points enregistrés de ce robot ? Cette action est irréversible."
+    "confirm_delete_points": "Supprimer tous les points enregistrés de ce robot ? Cette action est irréversible.",
+    "confirm_tool": "Changer l'outil pour {{tool}} ? Le robot l'utilisera pour les prochains mouvements."
   },
   "cameras": {
     "title": "Matrice de Vision Octale",

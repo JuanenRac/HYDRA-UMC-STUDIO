@@ -172,7 +172,7 @@ export function Assistant({ view, go, openHelp, openSettings }: Props) {
     <div className={`assistant ${classes}`} style={style} role="complementary" aria-label={t('assistant.name')}>
       <button type="button" className="assistant-mascot" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag} onKeyDown={arrow}
         onClick={() => { if (dragged.current) { dragged.current = false; return; } setOpen(value => !value); }}
-        title={prefs.assistantPinned ? (open ? t('assistant.quiet') : t('assistant.call')) : `${open ? t('assistant.quiet') : t('assistant.call')} · ${t('assistant.drag_hint')}`} aria-expanded={open}>
+        title={prefs.assistantPinned ? (open ? t('assistant.quiet') : t('assistant.call')) : `${open ? t('assistant.quiet') : t('assistant.call')} · ${t('assistant.drag_hint')}`} aria-label={prefs.assistantPinned ? (open ? t('assistant.quiet') : t('assistant.call')) : `${open ? t('assistant.quiet') : t('assistant.call')} · ${t('assistant.drag_hint')}`} aria-expanded={open}>
         <Mascot talking={open && !prefs.assistantSpeak} speaking={speaking} scale={scale} />
       </button>
       {open && (

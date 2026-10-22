@@ -290,7 +290,7 @@ export function CamerasView() {
                   {/* PTZ is IP-only - a USB webcam has no real
                       pan/tilt/zoom hardware to control. */}
                   {c.sourceType === 'ip' && (
-                    <button onClick={() => togglePtzPanel(c.id)} disabled={!c.connected} title={t('cameras.ptz_toggle', 'Pan / Tilt / Zoom')} className={cn("p-1.5 rounded transition-colors disabled:opacity-50", ptzOpenIds.has(c.id) ? "text-violet-400 hover:text-violet-300 bg-violet-500/10 border border-violet-500/30" : "text-slate-500 hover:text-violet-400 border border-transparent")}>
+                    <button onClick={() => togglePtzPanel(c.id)} disabled={!c.connected} title={t('cameras.ptz_toggle', 'Pan / Tilt / Zoom')} aria-label={t('cameras.ptz_toggle', 'Pan / Tilt / Zoom')} className={cn("p-1.5 rounded transition-colors disabled:opacity-50", ptzOpenIds.has(c.id) ? "text-violet-400 hover:text-violet-300 bg-violet-500/10 border border-violet-500/30" : "text-slate-500 hover:text-violet-400 border border-transparent")}>
                       <Move size={14} />
                     </button>
                   )}

@@ -387,7 +387,8 @@
     "floating_overlay_hint": "速度、加速度、关节及 XYZ 点动已移动到上方 3D 视图中的浮动面板。",
     "confirm_home": "现在让机器人回到初始姿态？它会一步到位地移动。",
     "confirm_reset": "停止机器人并立即让它回到初始姿态？它会一步到位地移动。",
-    "confirm_delete_points": "删除此机器人所有已记录的点？此操作无法撤销。"
+    "confirm_delete_points": "删除此机器人所有已记录的点？此操作无法撤销。",
+    "confirm_tool": "将工具更换为 {{tool}}？机器人将在后续动作中使用该工具。"
   },
   "cameras": {
     "title": "八路视觉矩阵",
