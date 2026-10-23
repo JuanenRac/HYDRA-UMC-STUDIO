@@ -33,6 +33,8 @@ export interface CommandResult {
   serverCode: string | null;
   /** Non-blocking remarks the server attached to an accepted command (a speed outside its range, for example). */
   warnings: string[];
+  /** The `field` each structured remark named ("jog" for a jog the server did not apply), present only when there is one. */
+  warningFields?: string[];
 }
 
 /** The failure code for a status, refined by the stable `code` of the answer when the server gave one. */
@@ -67,7 +69,12 @@ export function interpretCommandResponse(status: number, ok: boolean, body: unkn
       .map((w) => textOf(w && typeof w === 'object' ? (w as Record<string, unknown>).message : w))
       .filter((w): w is string => w !== null)
     : [];
-  if (ok) return { ok: true, status, code: null, detail: null, serverCode: null, warnings };
+  const fields = Array.isArray(object.warnings)
+    ? object.warnings
+      .map((w) => (w && typeof w === 'object' && typeof (w as Record<string, unknown>).field === 'string' ? ((w as Record<string, unknown>).field as string) : null))
+      .filter((f): f is string => f !== null)
+    : [];
+  if (ok) return { ok: true, status, code: null, detail: null, serverCode: null, warnings, ...(fields.length > 0 ? { warningFields: fields } : {}) };
   const serverCode = textOf(object.code);
   return { ok: false, status, code: failureCodeFor(status, serverCode), detail: textOf(object.error), serverCode, warnings };
 }

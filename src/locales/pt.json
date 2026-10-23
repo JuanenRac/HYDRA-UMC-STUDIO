@@ -39,7 +39,8 @@
     "arm_jog": "Armar o jog",
     "sim_blocked": "O robô {{robots}} está em modo Sim - o comando {{command}} não foi enviado. Mude para Live para mover o robô real.",
     "jog_limit": "Jog recusado: o passo excede o limite de {{detail}} definido pelo servidor para este modelo. Não foi enviado nada.",
-    "temperature_limit": "O servidor reduziu a temperatura alvo da cama ({{detail}} °C) para o limite deste modelo."
+    "temperature_limit": "O servidor reduziu a temperatura alvo da cama ({{detail}} °C) para o limite deste modelo.",
+    "jog_server_limit": "O servidor não aplicou o jog: {{detail}}"
   },
   "motion_source": {
     "offline": "Offline",

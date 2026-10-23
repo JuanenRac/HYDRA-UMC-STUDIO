@@ -39,7 +39,8 @@
     "arm_jog": "Arm the jog",
     "sim_blocked": "Robot {{robots}} is in Sim mode - the {{command}} command was not sent. Switch it to Live to move the real robot.",
     "jog_limit": "Jog refused: the step is above the limit of {{detail}} set by the server for this model. Nothing was sent.",
-    "temperature_limit": "The server lowered the bed target ({{detail}} °C) to the limit of this model."
+    "temperature_limit": "The server lowered the bed target ({{detail}} °C) to the limit of this model.",
+    "jog_server_limit": "The server did not apply the jog: {{detail}}"
   },
   "motion_source": {
     "offline": "Offline",

@@ -39,7 +39,8 @@
     "arm_jog": "ジョグをアームする",
     "sim_blocked": "ロボット {{robots}} は Sim モードのため、{{command}} コマンドは送信されませんでした。実機を動かすには Live に切り替えてください。",
     "jog_limit": "ジョグを拒否しました。ステップがこのモデルにサーバーが設定した上限 {{detail}} を超えています。何も送信されていません。",
-    "temperature_limit": "サーバーがベッドの目標温度({{detail}} °C)をこのモデルの上限まで下げました。"
+    "temperature_limit": "サーバーがベッドの目標温度({{detail}} °C)をこのモデルの上限まで下げました。",
+    "jog_server_limit": "サーバーはジョグを適用しませんでした: {{detail}}"
   },
   "motion_source": {
     "offline": "オフライン",

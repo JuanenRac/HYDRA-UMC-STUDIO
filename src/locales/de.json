@@ -39,7 +39,8 @@
     "arm_jog": "Jog scharfschalten",
     "sim_blocked": "Roboter {{robots}} ist im Sim-Modus - der Befehl {{command}} wurde nicht gesendet. Wechseln Sie auf Live, um den echten Roboter zu bewegen.",
     "jog_limit": "Jog abgelehnt: Der Schritt überschreitet das vom Server für dieses Modell festgelegte Limit von {{detail}}. Es wurde nichts gesendet.",
-    "temperature_limit": "Der Server hat die Betttemperatur ({{detail}} °C) auf das Limit dieses Modells gesenkt."
+    "temperature_limit": "Der Server hat die Betttemperatur ({{detail}} °C) auf das Limit dieses Modells gesenkt.",
+    "jog_server_limit": "Der Server hat den Jog nicht ausgeführt: {{detail}}"
   },
   "motion_source": {
     "offline": "Offline",

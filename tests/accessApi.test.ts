@@ -98,3 +98,14 @@ describe('the calls of contract v2 block 1', () => {
     expect(refused.state).toBeNull();
   });
 });
+
+describe('the remarks of the server about a jog', () => {
+  it('names the field of a structured remark so the banner can say it in the language of the operator', () => {
+    const result = interpretCommandResponse(200, true, { warnings: [{ robotId: 1, field: 'jog', message: 'jog needs a valid axis' }, 'plain'] });
+    expect(result.warningFields).toEqual(['jog']);
+    expect(result.warnings).toEqual(['jog needs a valid axis', 'plain']);
+  });
+  it('leaves the field out when no remark has one', () => {
+    expect(interpretCommandResponse(200, true, { warnings: ['plain'] }).warningFields).toBeUndefined();
+  });
+});

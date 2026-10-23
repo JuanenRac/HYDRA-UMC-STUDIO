@@ -816,7 +816,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // And say it: a command that did not reach the robot is never silent (a STOP above all).
       reportCommandIssue({ code: result.code ?? 'rejected', command, robotIds: ids, detail: result.detail });
     } else if (result.warnings.length > 0) {
-      reportCommandIssue({ code: 'warnings', command, robotIds: ids, detail: result.warnings.join('; ') });
+      // A jog the server did not apply (beyond the limit of the model, or without a valid axis) has its own sentence.
+      reportCommandIssue({ code: result.warningFields?.includes('jog') ? 'jog_server_limit' : 'warnings', command, robotIds: ids, detail: result.warnings.join('; ') });
     }
     return result;
   };

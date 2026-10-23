@@ -39,7 +39,8 @@
     "arm_jog": "Armer le jog",
     "sim_blocked": "Le robot {{robots}} est en mode Sim - la commande {{command}} n'a pas été envoyée. Passez-le en Live pour déplacer le robot réel.",
     "jog_limit": "Jog refusé : le pas dépasse la limite de {{detail}} fixée par le serveur pour ce modèle. Rien n'a été envoyé.",
-    "temperature_limit": "Le serveur a abaissé la consigne du plateau chauffant ({{detail}} °C) à la limite de ce modèle."
+    "temperature_limit": "Le serveur a abaissé la consigne du plateau chauffant ({{detail}} °C) à la limite de ce modèle.",
+    "jog_server_limit": "Le serveur n'a pas appliqué le jog : {{detail}}"
   },
   "motion_source": {
     "offline": "Hors ligne",

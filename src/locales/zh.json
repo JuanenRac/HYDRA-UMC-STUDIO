@@ -39,7 +39,8 @@
     "arm_jog": "启用点动",
     "sim_blocked": "机器人 {{robots}} 处于 Sim 模式，{{command}} 命令未发送。要移动真实机器人，请切换到 Live。",
     "jog_limit": "点动被拒绝：步长超过服务器为此型号设定的上限 {{detail}}。未发送任何内容。",
-    "temperature_limit": "服务器已将热床目标温度（{{detail}} °C）降至此型号的上限。"
+    "temperature_limit": "服务器已将热床目标温度（{{detail}} °C）降至此型号的上限。",
+    "jog_server_limit": "服务器未执行该点动：{{detail}}"
   },
   "motion_source": {
     "offline": "离线",
