@@ -580,7 +580,8 @@
     "vacuum_controls": "真空控制",
     "vertical": "垂直",
     "x_axis": "X 轴",
-    "y_axis": "Y 轴"
+    "y_axis": "Y 轴",
+    "ssr_confirm": "固态继电器会将 230 V 市电接通到热床。要打开吗？"
   },
   "help": {
     "title": "帮助",

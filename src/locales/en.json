@@ -580,7 +580,8 @@
     "vacuum_controls": "Vacuum Controls",
     "vertical": "Vertical",
     "x_axis": "X Axis",
-    "y_axis": "Y Axis"
+    "y_axis": "Y Axis",
+    "ssr_confirm": "The solid-state relay switches 230 V mains power to the heated bed. Switch it on?"
   },
   "help": {
     "title": "Help",

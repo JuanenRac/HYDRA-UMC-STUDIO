@@ -580,7 +580,8 @@
     "vacuum_controls": "Controlos de vácuo",
     "vertical": "Vertical",
     "x_axis": "Eixo X",
-    "y_axis": "Eixo Y"
+    "y_axis": "Eixo Y",
+    "ssr_confirm": "O relé de estado sólido liga a rede de 230 V à cama aquecida. Ligá-lo?"
   },
   "help": {
     "title": "Ajuda",

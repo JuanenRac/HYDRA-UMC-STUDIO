@@ -580,7 +580,8 @@
     "vacuum_controls": "Controlli del Vuoto",
     "vertical": "Verticale",
     "x_axis": "Asse X",
-    "y_axis": "Asse Y"
+    "y_axis": "Asse Y",
+    "ssr_confirm": "Il relè a stato solido commuta la rete a 230 V verso il piatto riscaldato. Accenderlo?"
   },
   "help": {
     "title": "Aiuto",

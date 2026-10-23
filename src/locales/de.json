@@ -580,7 +580,8 @@
     "vacuum_controls": "Vakuumsteuerung",
     "vertical": "Vertikal",
     "x_axis": "X-Achse",
-    "y_axis": "Y-Achse"
+    "y_axis": "Y-Achse",
+    "ssr_confirm": "Das Halbleiterrelais schaltet die 230-V-Netzspannung zum Heizbett. Einschalten?"
   },
   "help": {
     "title": "Hilfe",

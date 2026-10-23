@@ -24,6 +24,7 @@
 import { clampBedTargetTo, highestBedMax } from '../lib/safetyLimits';
 import { useSafetyState } from '../lib/accessStore';
 import { useState } from 'react';
+import { ConfirmDialog } from './ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 import { Crosshair, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Thermometer, RotateCw, RotateCcw, Wind, Fan, Droplets, GitBranch, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useHydraStore, type KinematicBrainStage as KinematicBrainStageState } from '../store';
@@ -51,6 +52,8 @@ export function KinematicBrainStage() {
   const { activeController, updateController } = useHydraStore();
   const bedCeiling = highestBedMax(useSafetyState().limits);
   const [jogStep, setJogStep] = useState<number>(10);
+  // Switching the heater on switches 230 V mains: it asks first. Off never asks.
+  const [pendingSsr, setPendingSsr] = useState(false);
 
   const stage = activeController?.kinematicBrainStage;
 
@@ -93,6 +96,13 @@ export function KinematicBrainStage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-slate-900/50 rounded-2xl border border-slate-800/50 overflow-hidden relative">
       <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-position-[bottom_1px_center] pointer-events-none" />
+      <ConfirmDialog
+        open={pendingSsr}
+        message={t('modules.ssr_confirm')}
+        confirmLabel={t('modules.on', 'ON')}
+        onConfirm={() => { setPendingSsr(false); patch({ heatedBed: { ...stage.heatedBed, ssrActive: true } }); }}
+        onCancel={() => setPendingSsr(false)}
+      />
 
       <div className="p-4 border-b border-slate-800/50 flex justify-between items-center bg-slate-900/80 backdrop-blur-sm z-10">
         <div className="flex items-center gap-3">
@@ -183,7 +193,7 @@ export function KinematicBrainStage() {
                 value={stage.heatedBed.targetTemp}
                 onChange={e => patch({ heatedBed: { ...stage.heatedBed, targetTemp: clampBedTargetTo(Number(e.target.value), bedCeiling) } })} />
               <button
-                onClick={() => patch({ heatedBed: { ...stage.heatedBed, ssrActive: !stage.heatedBed.ssrActive } })}
+                onClick={() => (stage.heatedBed.ssrActive ? patch({ heatedBed: { ...stage.heatedBed, ssrActive: false } }) : setPendingSsr(true))}
                 className={cn('ml-auto px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-colors', stage.heatedBed.ssrActive ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-slate-800 text-slate-500 border border-slate-700')}
               >
                 {stage.heatedBed.ssrActive ? t('modules.on', 'ON') : t('modules.off', 'OFF')}
@@ -259,9 +269,9 @@ export function KinematicBrainStage() {
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('kbstage.endstops', 'Endstops (2 per axis)')}</h3>
           <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
             {endstopEntries.map(({ key, label }) => (
-              <button
+              <div
                 key={key}
-                onClick={() => patch({ endstops: { ...stage.endstops, [key]: !stage.endstops[key] } })}
+                role="status"
                 className={cn(
                   'flex flex-col items-center gap-1 px-2 py-2 rounded border text-[10px] font-mono transition-colors',
                   stage.endstops[key] ? 'bg-rose-500/20 border-rose-500/40 text-rose-400' : 'bg-slate-900 border-slate-800 text-slate-500'
@@ -269,7 +279,7 @@ export function KinematicBrainStage() {
               >
                 <span>{label}</span>
                 <span className="text-[9px] uppercase">{stage.endstops[key] ? t('kbstage.triggered', 'Triggered') : t('kbstage.open', 'Open')}</span>
-              </button>
+              </div>
             ))}
           </div>
         </div>

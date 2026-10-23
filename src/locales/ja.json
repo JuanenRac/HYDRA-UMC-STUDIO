@@ -580,7 +580,8 @@
     "vacuum_controls": "真空制御",
     "vertical": "垂直",
     "x_axis": "X軸",
-    "y_axis": "Y軸"
+    "y_axis": "Y軸",
+    "ssr_confirm": "ソリッドステートリレーが 230 V の商用電源をヒートベッドに接続します。オンにしますか?"
   },
   "help": {
     "title": "ヘルプ",

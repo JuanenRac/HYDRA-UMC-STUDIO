@@ -7,6 +7,7 @@
 import { bedMaxFor, clampBedTargetTo } from '../lib/safetyLimits';
 import { useSafetyState } from '../lib/accessStore';
 import { useState } from 'react';
+import { ConfirmDialog } from './ConfirmDialog';
 import { useHydraStore } from '../store';
 import { HEATED_BED_MODELS, heatedBedModel, heatedBedSize, selectHeatedBed, resizeHeatedBed } from '../heatedBeds';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +27,8 @@ export function HeatedBedConfig() {
   const { t } = useTranslation();
   const { robots, updateRobot } = useHydraStore();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
+  // Switching the heater on switches 230 V mains: it asks first. Off never asks.
+  const [pendingSsr, setPendingSsr] = useState(false);
   const selectedRobot = robots.find(r => r.id === selectedRobotId);
   const safety = useSafetyState();
 
@@ -63,7 +66,14 @@ export function HeatedBedConfig() {
   };
   
   return (
-    <div className="h-full flex flex-col space-y-4">
+    <div className="h-full flex flex-col space-y-4 relative">
+      <ConfirmDialog
+        open={pendingSsr}
+        message={t('modules.ssr_confirm')}
+        confirmLabel={t('modules.on', 'ON')}
+        onConfirm={() => { setPendingSsr(false); handleCustomChange('ssrActive', true); }}
+        onCancel={() => setPendingSsr(false)}
+      />
       <div className="flex items-center justify-between shrink-0">
         <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
           <Thermometer className="text-sky-400" size={20} /> {t('modules.heated_bed_title', 'Heated Bed')}
@@ -156,7 +166,7 @@ export function HeatedBedConfig() {
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium text-slate-200">{t('modules.heating_controls', 'Heating Controls')}</h3>
                 <button 
-                  onClick={() => handleCustomChange('ssrActive', !moduleData.ssrActive)}
+                  onClick={() => (moduleData.ssrActive ? handleCustomChange('ssrActive', false) : setPendingSsr(true))}
                   className={`flex items-center justify-center gap-2 px-3 py-1 text-xs border transition-all font-medium rounded ${moduleData.ssrActive ? 'bg-rose-500/20 border-rose-500 text-rose-400' : 'bg-slate-950 border-slate-700 text-slate-400'}`}
                 >
                   <Power size={12} /> {t('modules.ssr', 'SSR')} {moduleData.ssrActive ? t('modules.on', 'ON') : t('modules.off', 'OFF')}

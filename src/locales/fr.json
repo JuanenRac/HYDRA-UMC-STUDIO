@@ -580,7 +580,8 @@
     "vacuum_controls": "Commandes de Vide",
     "vertical": "Vertical",
     "x_axis": "Axe X",
-    "y_axis": "Axe Y"
+    "y_axis": "Axe Y",
+    "ssr_confirm": "Le relais statique commute le secteur 230 V vers le plateau chauffant. L'allumer ?"
   },
   "help": {
     "title": "Aide",

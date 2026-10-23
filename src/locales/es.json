@@ -580,7 +580,8 @@
     "vacuum_controls": "Controles de Vacío",
     "vertical": "Vertical",
     "x_axis": "Eje X",
-    "y_axis": "Eje Y"
+    "y_axis": "Eje Y",
+    "ssr_confirm": "El relé de estado sólido conecta la red de 230 V a la cama caliente. ¿Encenderlo?"
   },
   "help": {
     "title": "Ayuda",
