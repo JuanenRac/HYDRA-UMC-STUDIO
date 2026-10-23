@@ -11,13 +11,14 @@
 // - The arming of the jog, when the administrator asks for it (safety limit jog.armRequired).
 // - The list of every reservation (GET /api/claims).
 // =============================================================================
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Hand, Lock, ShieldCheck, Unlock } from 'lucide-react';
 import { useHydraStore, type RobotState } from '../store';
 import { useModeState, useSafetyState, setRobotMode, setDefaultRobotMode, setSafetyState } from '../lib/accessStore';
 import { modeOf } from '../lib/liveSim';
 import { armJog, claimRobot, fetchClaims, fetchSafetyLimits, releaseRobot } from '../lib/accessApi';
+import { claimsSnapshot, lastClaimsEventAt, subscribeClaims } from '../lib/claimsFeed';
 import { claimStanding, decodeJwtUsername, secondsLeft, type ClaimEntry } from '../lib/claims';
 import { getControllerId } from '../lib/controllerSession';
 import { isArmed } from '../lib/safetyLimits';
@@ -25,6 +26,8 @@ import type { CommandResult } from '../lib/commandResult';
 import { ConfirmDialog } from './ConfirmDialog';
 
 const POLL_MS = 10_000;
+/** A list pushed this recently makes the poll skip its turn. */
+const PUSH_FRESH_MS = 3 * POLL_MS;
 /** A reservation of this window is renewed when it has less than this left. */
 const RENEW_BELOW_SECONDS = 90;
 
@@ -100,9 +103,22 @@ export function RobotAccessBar({ robot }: { robot: RobotState }) {
   useEffect(() => {
     if (!authToken) return;
     void refresh();
-    const timer = setInterval(() => { void refresh(); }, POLL_MS);
+    // The server pushes the list when a reservation changes; while it does, the poll only needs to run now and then.
+    const timer = setInterval(() => {
+      if (Date.now() - lastClaimsEventAt() < PUSH_FRESH_MS) return;
+      void refresh();
+    }, POLL_MS);
     return () => clearInterval(timer);
   }, [authToken, refresh]);
+
+  // The list the server pushed (WebSocket message `claims`) replaces what was last read, and carries when the jog is armed.
+  const pushed = useSyncExternalStore(subscribeClaims, claimsSnapshot);
+  useEffect(() => {
+    if (!pushed) return;
+    setClaims(pushed);
+    const own = pushed.find((c) => c.robotId === robot.id && c.controllerId === myController);
+    if (own && own.jogArmedUntil !== undefined) setArmedUntil(own.jogArmedUntil);
+  }, [pushed, robot.id, myController]);
 
   useEffect(() => {
     if (standing !== 'mine' && !armed) return;

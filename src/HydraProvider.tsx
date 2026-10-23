@@ -4,6 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
+import { publishClaimsEvent } from './lib/claimsFeed';
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { apiUrl, wsUrl } from './lib/apiBase';
 import { loginFailureText, saveFailureText, unreachableText } from './lib/serverErrors';
@@ -582,6 +583,9 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               // differs, see server.ts's own broadcastSettings() - so both
               // apply identically here.
               applyServerData(msg.payload);
+            } else if (msg?.type === 'claims') {
+              // who reserves which robot, pushed when it changes (see lib/claimsFeed.ts)
+              publishClaimsEvent(msg);
             } else if (msg?.type === 'canota_progress' && msg.payload) {
               setCanotaProgress(msg.payload);
             } else if (msg?.error) {

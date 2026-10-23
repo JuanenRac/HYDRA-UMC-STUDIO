@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Reservations arrive live**: the connection (which already asks for `remoteApiVersion=2`) takes the `claims` message the server pushes when a reservation or an arming changes (`lib/claimsFeed.ts`), and the access bar shows it at once, including when the jog is armed, instead of waiting for its next poll of `GET /api/claims`; the poll only runs now and then while the pushes arrive. The test counters of the README follow the suite (547).
 - CI builds the production page (`npm run build`) next to the type check, the tests and the lint (oxlint), so a break of the bundle or of the policy injection is caught before a release.
 - **Session lasts as long as the tab by default.** A login typed into the page is kept in sessionStorage (with its refresh token); the new sign-in option **Keep me signed in on this device** keeps it in localStorage across browser restarts. An older saved login keeps working. Texts in the eight languages; tests for both storages, switching between them and sign-out.
 - **Content-Security-Policy in the production page.** The build adds a policy as a meta tag (scripts only from the page itself, no inline scripts, no plugins, restricted base and forms). `HYDRA_STUDIO_CSP=off` omits it and any other value is used as the policy. The dev server is unchanged. Tested.

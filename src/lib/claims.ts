@@ -20,6 +20,8 @@ export interface ClaimEntry {
   controllerId: string | null;
   claimedAt: number | null;
   expiresAt: number | null;
+  /** When the arming of the jog of this robot ends; null (or absent on an older server) when it is not armed. */
+  jogArmedUntil?: number | null;
 }
 
 const CONFLICT_CODES: readonly string[] = ['other-account', 'other-controller', 'controller-id-required'];
@@ -63,6 +65,7 @@ export function parseClaims(body: unknown): ClaimEntry[] {
       controllerId: text(e.controllerId),
       claimedAt: time(e.claimedAt),
       expiresAt: time(e.expiresAt),
+      jogArmedUntil: time(e.jogArmedUntil),
     });
   }
   return out;
