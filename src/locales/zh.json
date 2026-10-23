@@ -1015,6 +1015,8 @@
     "continue_read_only": "以只读方式继续",
     "read_only_hint": "你可以在不登录的情况下浏览，但更改不会被保存，也不会收到实时更新。",
     "sign_out": "退出登录",
+    "keep_signed_in": "在此设备上保持登录",
+    "keep_signed_in_hint": "关闭:关闭标签页后会话结束。开启:重启浏览器后会话仍然有效。",
     "shutdown": "关机",
     "restart": "重启",
     "shutting_down": "正在关机…",

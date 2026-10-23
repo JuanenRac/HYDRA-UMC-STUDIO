@@ -1015,6 +1015,8 @@
     "continue_read_only": "Continuer en lecture seule",
     "read_only_hint": "Vous pouvez naviguer sans vous connecter, mais les modifications ne seront pas enregistrées et les mises à jour en direct n'arriveront pas.",
     "sign_out": "Se Déconnecter",
+    "keep_signed_in": "Rester connecté sur cet appareil",
+    "keep_signed_in_hint": "Désactivé : la session se termine à la fermeture de l'onglet. Activé : elle survit au redémarrage du navigateur.",
     "shutdown": "Éteindre",
     "restart": "Redémarrer",
     "shutting_down": "Extinction…",

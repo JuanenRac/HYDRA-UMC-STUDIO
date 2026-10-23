@@ -1015,6 +1015,8 @@
     "continue_read_only": "Nur lesend fortfahren",
     "read_only_hint": "Du kannst ohne Anmeldung navigieren, aber Änderungen werden nicht gespeichert und Live-Updates bleiben aus.",
     "sign_out": "Abmelden",
+    "keep_signed_in": "Auf diesem Gerät angemeldet bleiben",
+    "keep_signed_in_hint": "Aus: Die Sitzung endet, wenn du den Tab schließt. Ein: Sie übersteht einen Neustart des Browsers.",
     "shutdown": "Herunterfahren",
     "restart": "Neu Starten",
     "shutting_down": "Wird heruntergefahren…",

@@ -89,13 +89,41 @@ describe('extractLaunchToken', () => {
 });
 
 describe('a login typed into the page', () => {
-  it('is kept across reloads and replaces a launch token', () => {
+  it('lasts as long as the tab by default and replaces a launch token', () => {
     const s = stores();
     saveLaunchToken('launch.jwt', s.both);
     saveLoginTokens('login.jwt', 'login.refresh', s.both);
     expect(readToken(s.both)).toBe('login.jwt');
+    expect(s.session.data.get(TOKEN_KEY)).toBe('login.jwt');
+    expect(s.session.data.get(REFRESH_TOKEN_KEY)).toBe('login.refresh');
+    expect(s.local.data.has(TOKEN_KEY)).toBe(false);
+    expect(s.local.data.has(REFRESH_TOKEN_KEY)).toBe(false);
+  });
+  it('is kept across browser restarts only when the person asked for it', () => {
+    const s = stores();
+    saveLoginTokens('login.jwt', 'login.refresh', s.both, true);
+    expect(readToken(s.both)).toBe('login.jwt');
     expect(s.local.data.get(TOKEN_KEY)).toBe('login.jwt');
     expect(s.local.data.get(REFRESH_TOKEN_KEY)).toBe('login.refresh');
+    expect(s.session.data.has(TOKEN_KEY)).toBe(false);
+  });
+  it('a later login without the choice removes what an earlier persistent one left', () => {
+    const s = stores();
+    saveLoginTokens('old.jwt', 'old.refresh', s.both, true);
+    saveLoginTokens('new.jwt', 'new.refresh', s.both);
+    expect(s.local.data.has(TOKEN_KEY)).toBe(false);
+    expect(s.local.data.has(REFRESH_TOKEN_KEY)).toBe(false);
+    expect(readToken(s.both)).toBe('new.jwt');
+    expect(readRefreshToken(s.both)).toBe('new.refresh');
+  });
+  it('an older login already in localStorage keeps working and is renewed in place', () => {
+    const s = stores();
+    s.local.data.set(TOKEN_KEY, 'legacy.jwt');
+    s.local.data.set(REFRESH_TOKEN_KEY, 'legacy.refresh');
+    expect(readToken(s.both)).toBe('legacy.jwt');
+    expect(readRefreshToken(s.both)).toBe('legacy.refresh');
+    replaceToken('renewed.jwt', 'renewed.refresh', s.both);
+    expect(s.local.data.get(TOKEN_KEY)).toBe('renewed.jwt');
     expect(s.session.data.has(TOKEN_KEY)).toBe(false);
   });
   it('keeps the old refresh token when a login brings none', () => {
@@ -109,9 +137,11 @@ describe('a login typed into the page', () => {
 describe('clearTokens and authHeaders', () => {
   it('signs out of both storages', () => {
     const s = stores();
-    saveLoginTokens('a', 'r', s.both);
+    saveLoginTokens('a', 'r', s.both, true);
+    saveLoginTokens('c', 'r2', s.both);
     saveLaunchToken('b', s.both);
     clearTokens(s.both);
+    expect(s.local.data.size + s.session.data.size).toBe(0);
     expect(readToken(s.both)).toBe(null);
     expect(readRefreshToken(s.both)).toBe(null);
   });

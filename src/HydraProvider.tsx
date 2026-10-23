@@ -168,7 +168,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // this lives here rather than as AdminLogs.tsx's own local state.
   const [logsClearedAt, setLogsClearedAt] = useState<{ anchor: string | null } | null>(null);
 
-  const login = useCallback(async (username: string, password: string) => {
+  const login = useCallback(async (username: string, password: string, keepSignedIn = false) => {
     setLoginError(null);
     try {
       const res = await fetch(apiUrl('/api/login'), {
@@ -183,7 +183,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
       // The refresh token returned beside the access token lets a later WS 1008 close (or a 401 on a command)
       // recover a fresh access token silently; a server that sends none degrades to a forced re-login.
-      saveLoginTokens(data.token, typeof data.refreshToken === 'string' ? data.refreshToken : undefined);
+      saveLoginTokens(data.token, typeof data.refreshToken === 'string' ? data.refreshToken : undefined, undefined, keepSignedIn);
       setAuthToken(data.token);
       return true;
     } catch {

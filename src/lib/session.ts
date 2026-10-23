@@ -6,12 +6,16 @@
 // Where the access token and the refresh token live, and the one way every call to the server gets its
 // Authorization header.
 //
-// - A login typed into this page is kept in localStorage, so a reload or a second tab stays signed in.
+// - A login typed into this page is kept in sessionStorage by default: it survives a reload of the tab but not
+//   closing it, and no other tab or later visit can read it. Ticking "keep me signed in on this device" at login keeps
+//   it in localStorage instead, so a restart of the browser and a second tab stay signed in. An older login already in
+//   localStorage keeps working.
 // - A token that arrives in the address is kept in sessionStorage only: it dies with that view, is not shared with
 //   other tabs of the same origin and is never written to the storage a script of the page can read after the view
 //   is gone. The apps open their embedded 3D view with it in the fragment (`#token=`), which a browser never sends
 //   to a server and no proxy or access log records; the query form (`?token=`) is still read for an app that has
 //   not moved yet. Either way it is removed from the address as soon as it is read.
+// - The refresh token lives in the same storage as the access token it belongs to.
 // =============================================================================
 
 export const TOKEN_KEY = 'hydra_token';
@@ -52,7 +56,7 @@ export function readToken(stores: Stores = defaultStores()): string | null {
 }
 
 export function readRefreshToken(stores: Stores = defaultStores()): string | null {
-  return safeGet(stores.local, REFRESH_TOKEN_KEY);
+  return safeGet(stores.session, REFRESH_TOKEN_KEY) ?? safeGet(stores.local, REFRESH_TOKEN_KEY);
 }
 
 /**
@@ -81,26 +85,37 @@ export function saveLaunchToken(token: string, stores: Stores = defaultStores())
   safeSet(stores.session, TOKEN_KEY, token);
 }
 
-/** A login typed into this page (or a refresh of one): kept across reloads. */
-export function saveLoginTokens(token: string, refreshToken: string | undefined, stores: Stores = defaultStores()): void {
-  // A new login replaces whatever the launch address brought.
-  safeRemove(stores.session, TOKEN_KEY);
-  safeSet(stores.local, TOKEN_KEY, token);
-  if (typeof refreshToken === 'string') safeSet(stores.local, REFRESH_TOKEN_KEY, refreshToken);
+/**
+ * A login typed into this page (or a refresh of one). By default it lasts as long as the tab ([persist] false);
+ * with [persist] true it is kept across browser restarts and shared by the tabs of this browser.
+ */
+export function saveLoginTokens(
+  token: string,
+  refreshToken: string | undefined,
+  stores: Stores = defaultStores(),
+  persist = false,
+): void {
+  const keep = persist ? stores.local : stores.session;
+  const drop = persist ? stores.session : stores.local;
+  // A new login replaces whatever the launch address or an earlier login left in the other storage.
+  safeRemove(drop, TOKEN_KEY);
+  safeSet(keep, TOKEN_KEY, token);
+  if (typeof refreshToken === 'string') {
+    safeSet(keep, REFRESH_TOKEN_KEY, refreshToken);
+    safeRemove(drop, REFRESH_TOKEN_KEY);
+  }
 }
 
 /** Replaces the access token wherever it currently lives (a silent refresh keeps a launch token a launch token). */
 export function replaceToken(token: string, refreshToken: string | undefined, stores: Stores = defaultStores()): void {
-  if (safeGet(stores.session, TOKEN_KEY) !== null) {
-    safeSet(stores.session, TOKEN_KEY, token);
-  } else {
-    safeSet(stores.local, TOKEN_KEY, token);
-  }
-  if (typeof refreshToken === 'string') safeSet(stores.local, REFRESH_TOKEN_KEY, refreshToken);
+  const target = safeGet(stores.session, TOKEN_KEY) !== null ? stores.session : stores.local;
+  safeSet(target, TOKEN_KEY, token);
+  if (typeof refreshToken === 'string') safeSet(target, REFRESH_TOKEN_KEY, refreshToken);
 }
 
 export function clearTokens(stores: Stores = defaultStores()): void {
   safeRemove(stores.session, TOKEN_KEY);
+  safeRemove(stores.session, REFRESH_TOKEN_KEY);
   safeRemove(stores.local, TOKEN_KEY);
   safeRemove(stores.local, REFRESH_TOKEN_KEY);
 }

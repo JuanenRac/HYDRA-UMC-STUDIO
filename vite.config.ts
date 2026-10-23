@@ -7,10 +7,21 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { injectCsp, resolveCsp } from './scripts/csp.ts'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    {
+      // The Content-Security-Policy goes only into the production page: the dev server needs inline scripts for
+      // hot reload. HYDRA_STUDIO_CSP=off omits it (see scripts/csp.ts).
+      name: 'hydra-csp',
+      apply: 'build',
+      transformIndexHtml: (html: string) => injectCsp(html, resolveCsp(process.env.HYDRA_STUDIO_CSP)),
+    },
+  ],
   server: {
     host: '0.0.0.0',
     port: 5173,

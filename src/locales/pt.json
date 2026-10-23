@@ -1015,6 +1015,8 @@
     "continue_read_only": "Continuar só de leitura",
     "read_only_hint": "Pode navegar sem iniciar sessão, mas as alterações não serão guardadas e não chegarão atualizações em direto.",
     "sign_out": "Terminar sessão",
+    "keep_signed_in": "Manter a sessão iniciada neste dispositivo",
+    "keep_signed_in_hint": "Desativado: a sessão termina ao fechar o separador. Ativado: sobrevive ao reinício do navegador.",
     "shutdown": "Desligar",
     "restart": "Reiniciar",
     "shutting_down": "A desligar…",

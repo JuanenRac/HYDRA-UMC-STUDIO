@@ -1015,6 +1015,8 @@
     "continue_read_only": "Continue read-only",
     "read_only_hint": "You can browse without signing in, but changes won't be saved and live updates won't arrive.",
     "sign_out": "Sign Out",
+    "keep_signed_in": "Keep me signed in on this device",
+    "keep_signed_in_hint": "Off: the session ends when you close the tab. On: it survives restarting the browser.",
     "shutdown": "Shut Down",
     "restart": "Restart",
     "shutting_down": "Shutting down…",

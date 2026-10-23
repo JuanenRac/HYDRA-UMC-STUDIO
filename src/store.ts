@@ -786,7 +786,8 @@ interface HydraStoreContextType {
   role: string | null;
   /** `role === 'admin'` - gates the Ecosystem > Connected Apps / Server Logs / Server Admin panels the same way server.ts's own requireAdmin already gates their backing routes (GET /api/admin/*), so a logged-in non-admin session never sees a menu entry that would just 403. */
   isAdmin: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
+  /** [keepSignedIn] keeps the session across browser restarts (localStorage); by default it lasts as long as the tab (sessionStorage). */
+  login: (username: string, password: string, keepSignedIn?: boolean) => Promise<boolean>;
   logout: () => void;
   loginError: string | null;
   /** Real, live per-page progress from a real POST /api/hardware/canota/flash cycle, pushed over WS as `{type: "canota_progress", payload}` (server.ts's own comment). Null until the first real message arrives; Flasher.tsx owns interpreting/clearing it, same as it already owns phase/percent for the mock transport. */

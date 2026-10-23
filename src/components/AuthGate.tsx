@@ -28,6 +28,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [readOnly, setReadOnly] = useState(false);
+  // Off by default: the session then lasts as long as the tab. On keeps it across browser restarts.
+  const [keepSignedIn, setKeepSignedIn] = useState(false);
   // Independent from isSubmitting (the sign-in button's own state) -
   // shutdown/restart hit a different endpoint entirely and should disable
   // themselves without touching the login form.
@@ -39,7 +41,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await login(username, password);
+    await login(username, password, keepSignedIn);
     setIsSubmitting(false);
   };
 
@@ -101,6 +103,19 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
             />
           </div>
         </div>
+
+        <label className="w-full flex items-start gap-2 text-xs text-slate-400 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={keepSignedIn}
+            onChange={e => setKeepSignedIn(e.target.checked)}
+            className="mt-0.5 accent-sky-500"
+          />
+          <span>
+            {t('auth.keep_signed_in')}
+            <span className="block text-[10px] text-slate-600">{t('auth.keep_signed_in_hint')}</span>
+          </span>
+        </label>
 
         {loginError && <p className="text-xs text-rose-400 text-center">{loginError}</p>}
 

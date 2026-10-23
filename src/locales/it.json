@@ -1015,6 +1015,8 @@
     "continue_read_only": "Continua in sola lettura",
     "read_only_hint": "Puoi navigare senza accedere, ma le modifiche non verranno salvate e non arriveranno aggiornamenti live.",
     "sign_out": "Esci",
+    "keep_signed_in": "Resta connesso su questo dispositivo",
+    "keep_signed_in_hint": "Disattivato: la sessione termina alla chiusura della scheda. Attivato: sopravvive al riavvio del browser.",
     "shutdown": "Spegni",
     "restart": "Riavvia",
     "shutting_down": "Spegnimento…",

@@ -1015,6 +1015,8 @@
     "continue_read_only": "Continuar solo lectura",
     "read_only_hint": "Puedes navegar sin iniciar sesión, pero los cambios no se guardarán y no llegarán actualizaciones en vivo.",
     "sign_out": "Cerrar Sesión",
+    "keep_signed_in": "Mantener la sesión iniciada en este dispositivo",
+    "keep_signed_in_hint": "Desactivado: la sesión termina al cerrar la pestaña. Activado: sobrevive al reiniciar el navegador.",
     "shutdown": "Apagar",
     "restart": "Reiniciar",
     "shutting_down": "Apagando…",
