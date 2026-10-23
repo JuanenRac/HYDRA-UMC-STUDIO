@@ -184,6 +184,8 @@ USB および Bluetooth コントローラーの統合、ボタン／軸ごと�
 
 HYDRA-UMC STUDIO 自体は純粋なクライアントです——現在のセッションのためにメモリ上にあるもの以外、自身の状態は一切保持しません。すべての永続化データ（`settings.json`、`users.json`、`WORKS/` 下に保存された軌道、提出されたモデル）は、本アプリがネットワーク越しに通信する別個のバックエンド **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** 上に存在します（全体像は同プロジェクト自身の `data/` と README を参照）——どちらもバックエンドプロセスに一切触れないため、状態はページの再読み込みや本アプリ自身の再デプロイを経ても失われません。`settings.json` 自体は、そのバックエンドの静的ファイル配信から意図的に除外されています（コントローラーの IP、CAN-OTA 設定、ロボットごとの完全な状態を保持しているため）が、その `WORKS/` フォルダは通常どおり配信されます。
 
+サインインはブラウザのタブが開いている間だけ有効です。セッションと更新トークンは `sessionStorage` に保存されるため、タブを閉じると終了します。サインインオプション **この端末でサインインを維持する** を選ぶと、代わりに `localStorage` に保存され、ブラウザを再起動しても残ります(既定ではオフ)。本番ページには Content-Security-Policy が meta タグとして含まれます(スクリプトはページ自身からのみ、インラインスクリプトとプラグインは不可)。ビルド時に `HYDRA_STUDIO_CSP=off` を指定すると、ヘッダーを自前で設定するデプロイ向けにこれを省略でき、それ以外の値はそのままポリシーとして使われます。
+
 同じ `GET`/`POST /api/settings` 契約に加え、ディスカバリーエンドポイント（`GET /api/hydra-info`）とリアルタイムプッシュ更新用の `WebSocket /ws` も、外部クライアントが同じバックエンドに接続する方法です——これにより、[HYDRA-UMC SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE) がネットワーク上で稼働中の HYDRA-UMC SERVER インスタンスを発見し、その状態を読み取り／変更でき、本アプリ自身のブラウザタブから行った変更がリアルタイムに反映されるのを見ることができます（その逆も同様）。完全な契約は [HYDRA-UMC-SERVER 自身の `docs/REMOTE_API.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md) にあります。
 
 `GET /api/system/metrics` は概要ダッシュボードのフッターを駆動します：CPU 負荷とメモリ使用率は常に実際の値です（Node 自身の `os` モジュール）。温度は、実際の Raspberry Pi 上で動作している場合は実際の `vcgencmd measure_temp` の出力を読み取り、そうでない場合は明確にフラグ付けされたモック値にフォールバックします（レスポンス内の `temp_is_real`）。Wi-Fi/イーサネット/Bluetooth の状態は `/sys/class/net`/`/sys/class/bluetooth` から読み取られます（Linux 専用、それ以外のホストでは推測値ではなく `null`／不明）。

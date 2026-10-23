@@ -184,6 +184,8 @@ JuanenPnP、JuanenCNC 和 JuanenLaser 使用独立的 STL 副本，LumenPnP 保�
 
 HYDRA-UMC STUDIO 本身是一个纯客户端——除了当前会话在内存中的内容外，它不持有任何自身的状态。所有持久化数据（`settings.json`、`users.json`、`WORKS/` 下保存的轨迹、已提交的模型）都存放在本应用通过网络通信的独立后端 **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** 上（完整情况参见该项目自身的 `data/` 目录和 README）——状态在页面重新加载或本应用自身重新部署后依然保留,因为这两者都完全不会触碰后端进程。`settings.json` 本身被刻意排除在该后端的静态文件服务之外（它保存控制器 IP、CAN-OTA 配置和每个机器人的完整状态），即便其 `WORKS/` 文件夹是正常提供服务的。
 
+登录只在浏览器标签页存在期间有效:会话及其刷新令牌保存在 `sessionStorage` 中,关闭标签页即结束。登录选项 **在此设备上保持登录** 会改为把它们保存在 `localStorage` 中,重启浏览器后仍然有效(默认关闭)。生产页面带有作为 meta 标签的 Content-Security-Policy(脚本仅来自页面自身,不允许内联脚本和插件);构建时设置 `HYDRA_STUDIO_CSP=off` 可省略它,适用于自行设置响应头的部署,其他任何值都会按原样用作策略。
+
 同一套 `GET`/`POST /api/settings` 契约，加上一个发现端点（`GET /api/hydra-info`）和一个用于实时推送更新的 `WebSocket /ws`，也是外部客户端连接到同一个后端的方式——这正是 [HYDRA-UMC SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE) 能够在网络上发现一个正在运行的 HYDRA-UMC SERVER 实例、读取/修改其状态,并实时看到本应用自身浏览器标签页所做更改的原因（反之亦然）。完整契约见 [HYDRA-UMC-SERVER 自身的 `docs/REMOTE_API.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md)。
 
 `GET /api/system/metrics` 驱动概览仪表盘页脚：CPU 负载和内存使用始终是真实的（Node 自身的 `os` 模块）；在真实的 Raspberry Pi 上运行时,温度读取真实的 `vcgencmd measure_temp` 输出,否则回退为明确标记的模拟值（响应中的 `temp_is_real`）；Wi-Fi/以太网/蓝牙状态读取自 `/sys/class/net`/`/sys/class/bluetooth`（仅限 Linux,在任何其他主机上为 `null`/未知,而非猜测值）。
