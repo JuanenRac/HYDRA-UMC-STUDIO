@@ -37,7 +37,7 @@
     "claim_controller_required": "Il robot {{robots}} è riservato a un controller specifico e questa richiesta non ne indicava nessuno - il comando {{command}} è stato rifiutato. {{detail}}",
     "jog_not_armed": "Il jog del robot {{robots}} non è armato - il comando {{command}} non è stato applicato. Arma prima il jog. {{detail}}",
     "arm_jog": "Arma il jog",
-    "sim_blocked": "Il robot {{robots}} è in modalità Sim - il comando {{command}} non è stato inviato. Passa a Live per muovere il robot reale.",
+    "sim_blocked": "Il robot {{robots}} è in modalità Sim - il comando {{command}} non è stato inviato. Passa a Live per muovere o modificare il robot reale.",
     "jog_limit": "Jog rifiutato: il passo supera il limite di {{detail}} impostato dal server per questo modello. Non è stato inviato nulla.",
     "temperature_limit": "Il server ha abbassato la temperatura obiettivo del piatto ({{detail}} °C) al limite di questo modello.",
     "jog_server_limit": "Il server non ha applicato il jog: {{detail}}"
@@ -1175,7 +1175,7 @@
     "mode_sim": "Sim",
     "mode_live_hint": "I comandi raggiungono il robot reale.",
     "mode_sim_hint": "Da questa finestra non viene inviato nulla che muova il robot. STOP continua a funzionare.",
-    "sim_notice": "Sim: i comandi che muovono il robot sono bloccati",
+    "sim_notice": "Sim: i comandi che muovono o modificano il robot sono bloccati",
     "list_toggle": "Prenotazioni ({{count}})",
     "list_empty": "Nessun robot è riservato.",
     "col_robot": "Robot",

@@ -37,7 +37,7 @@
     "claim_controller_required": "机器人 {{robots}} 已为特定控制器预留，而此请求未指明控制器，{{command}} 命令被拒绝。{{detail}}",
     "jog_not_armed": "机器人 {{robots}} 的点动尚未启用，{{command}} 命令未执行。请先启用点动。{{detail}}",
     "arm_jog": "启用点动",
-    "sim_blocked": "机器人 {{robots}} 处于 Sim 模式，{{command}} 命令未发送。要移动真实机器人，请切换到 Live。",
+    "sim_blocked": "机器人 {{robots}} 处于 Sim 模式，{{command}} 命令未发送。要移动或更改真实机器人，请切换到 Live。",
     "jog_limit": "点动被拒绝：步长超过服务器为此型号设定的上限 {{detail}}。未发送任何内容。",
     "temperature_limit": "服务器已将热床目标温度（{{detail}} °C）降至此型号的上限。",
     "jog_server_limit": "服务器未执行该点动：{{detail}}"
@@ -1175,7 +1175,7 @@
     "mode_sim": "Sim",
     "mode_live_hint": "命令会发送到真实机器人。",
     "mode_sim_hint": "此窗口不会发送任何会移动机器人的内容。STOP 仍然有效。",
-    "sim_notice": "Sim：会移动机器人的命令已被阻止",
+    "sim_notice": "Sim：会移动或更改机器人的命令已被阻止",
     "list_toggle": "预留列表（{{count}}）",
     "list_empty": "没有被预留的机器人。",
     "col_robot": "机器人",

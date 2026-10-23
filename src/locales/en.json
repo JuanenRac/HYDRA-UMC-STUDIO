@@ -37,7 +37,7 @@
     "claim_controller_required": "Robot {{robots}} is reserved for a specific controller and this request did not name one - the {{command}} command was refused. {{detail}}",
     "jog_not_armed": "The jog of robot {{robots}} is not armed - the {{command}} command was not applied. Arm the jog first. {{detail}}",
     "arm_jog": "Arm the jog",
-    "sim_blocked": "Robot {{robots}} is in Sim mode - the {{command}} command was not sent. Switch it to Live to move the real robot.",
+    "sim_blocked": "Robot {{robots}} is in Sim mode - the {{command}} command was not sent. Switch it to Live to move or change the real robot.",
     "jog_limit": "Jog refused: the step is above the limit of {{detail}} set by the server for this model. Nothing was sent.",
     "temperature_limit": "The server lowered the bed target ({{detail}} °C) to the limit of this model.",
     "jog_server_limit": "The server did not apply the jog: {{detail}}"
@@ -1175,7 +1175,7 @@
     "mode_sim": "Sim",
     "mode_live_hint": "Commands reach the real robot.",
     "mode_sim_hint": "Nothing that moves the robot is sent from this window. STOP still works.",
-    "sim_notice": "Sim: commands that move the robot are blocked",
+    "sim_notice": "Sim: commands that move or change the robot are blocked",
     "list_toggle": "Reservations ({{count}})",
     "list_empty": "No robot is reserved.",
     "col_robot": "Robot",

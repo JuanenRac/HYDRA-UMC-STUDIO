@@ -29,11 +29,11 @@ describe('Live or Sim', () => {
 
   it('blocks what moves a robot or switches something on, and nothing else', () => {
     const sim = withMode(INITIAL_MODE_STATE, 1, 'sim');
-    for (const command of ['jog', 'play', 'reset', 'tool', 'valve', 'pump']) {
+    for (const command of ['jog', 'play', 'reset', 'tool', 'valve', 'pump', 'trajectory', 'speed']) {
       expect(isRealCommand(command)).toBe(true);
       expect(blockedBySim(sim, [1], command)).toBe(true);
     }
-    for (const command of ['stop', 'pause', 'jogStep', 'speed', 'trajectory', 'vision', 'reset3D']) {
+    for (const command of ['stop', 'pause', 'jogStep', 'vision', 'reset3D']) {
       expect(blockedBySim(sim, [1], command)).toBe(false);
     }
   });

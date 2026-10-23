@@ -37,7 +37,7 @@
     "claim_controller_required": "Roboter {{robots}} ist für einen bestimmten Controller reserviert und diese Anfrage nannte keinen - der Befehl {{command}} wurde abgelehnt. {{detail}}",
     "jog_not_armed": "Der Jog von Roboter {{robots}} ist nicht scharfgeschaltet - der Befehl {{command}} wurde nicht ausgeführt. Schalten Sie den Jog zuerst scharf. {{detail}}",
     "arm_jog": "Jog scharfschalten",
-    "sim_blocked": "Roboter {{robots}} ist im Sim-Modus - der Befehl {{command}} wurde nicht gesendet. Wechseln Sie auf Live, um den echten Roboter zu bewegen.",
+    "sim_blocked": "Roboter {{robots}} ist im Sim-Modus - der Befehl {{command}} wurde nicht gesendet. Wechseln Sie auf Live, um den echten Roboter zu bewegen oder zu ändern.",
     "jog_limit": "Jog abgelehnt: Der Schritt überschreitet das vom Server für dieses Modell festgelegte Limit von {{detail}}. Es wurde nichts gesendet.",
     "temperature_limit": "Der Server hat die Betttemperatur ({{detail}} °C) auf das Limit dieses Modells gesenkt.",
     "jog_server_limit": "Der Server hat den Jog nicht ausgeführt: {{detail}}"
@@ -1175,7 +1175,7 @@
     "mode_sim": "Sim",
     "mode_live_hint": "Befehle erreichen den echten Roboter.",
     "mode_sim_hint": "Von diesem Fenster wird nichts gesendet, was den Roboter bewegt. STOP funktioniert weiterhin.",
-    "sim_notice": "Sim: Befehle, die den Roboter bewegen, sind gesperrt",
+    "sim_notice": "Sim: Befehle, die den Roboter bewegen oder ändern, sind gesperrt",
     "list_toggle": "Reservierungen ({{count}})",
     "list_empty": "Kein Roboter ist reserviert.",
     "col_robot": "Roboter",
