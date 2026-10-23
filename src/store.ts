@@ -756,6 +756,8 @@ interface HydraStoreContextType {
   dismissStopAllReport: () => void;
   /** True while a global STOP is on the wire. */
   stopAllPending: boolean;
+  /** Reads one robot again from the server (GET /api/robot/:id) and puts it on screen; false when it could not be read. Used after a 412. */
+  refreshRobotFromServer: (robotId: number) => Promise<boolean>;
   /** The problem the last command (or emergency stop) ran into, until it is dismissed; null when there is none. */
   commandIssue: CommandIssue | null;
   dismissCommandIssue: () => void;

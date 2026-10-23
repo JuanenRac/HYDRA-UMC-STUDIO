@@ -22,6 +22,7 @@ import { claimsSnapshot, lastClaimsEventAt, subscribeClaims } from '../lib/claim
 import { claimStanding, decodeJwtUsername, secondsLeft, type ClaimEntry } from '../lib/claims';
 import { getControllerId } from '../lib/controllerSession';
 import { isArmed } from '../lib/safetyLimits';
+import { chooseConditionalMode, robotRevisions, type ConditionalMode } from '../lib/revisions';
 import type { CommandResult } from '../lib/commandResult';
 import { ConfirmDialog } from './ConfirmDialog';
 
@@ -67,7 +68,7 @@ export function ClaimsList({ claims, robotNames, myUsername }: { claims: ClaimEn
 
 export function RobotAccessBar({ robot }: { robot: RobotState }) {
   const { t } = useTranslation();
-  const { authToken, isAdmin, robots, reportCommandIssue } = useHydraStore();
+  const { authToken, isAdmin, robots, reportCommandIssue, refreshRobotFromServer } = useHydraStore();
   const modes = useModeState();
   const safety = useSafetyState();
   const mode = modeOf(modes, robot.id);
@@ -80,6 +81,7 @@ export function RobotAccessBar({ robot }: { robot: RobotState }) {
   const [busy, setBusy] = useState(false);
   const [showList, setShowList] = useState(false);
   const [confirmForce, setConfirmForce] = useState(false);
+  const [conditionalMode, setConditionalMode] = useState<ConditionalMode>(() => robotRevisions.mode());
 
   const mine = claims.find((c) => c.robotId === robot.id);
   const standing = claimStanding(mine, myController, myUsername);
@@ -88,8 +90,10 @@ export function RobotAccessBar({ robot }: { robot: RobotState }) {
 
   const report = useCallback((command: string, result: CommandResult) => {
     if (result.ok) return;
+    // The robot changed since this window read it: read it again, then say so (nothing was applied).
+    if (result.code === 'revision_changed') void refreshRobotFromServer(robot.id);
     reportCommandIssue({ code: result.code ?? 'rejected', command, robotIds: [robot.id], detail: result.detail });
-  }, [reportCommandIssue, robot.id]);
+  }, [reportCommandIssue, refreshRobotFromServer, robot.id]);
 
   const refresh = useCallback(async () => {
     const [list, read] = await Promise.all([fetchClaims(), fetchSafetyLimits(robot.id)]);
@@ -130,7 +134,7 @@ export function RobotAccessBar({ robot }: { robot: RobotState }) {
   const left = mine ? secondsLeft(mine, now) : null;
   useEffect(() => {
     if (standing !== 'mine' || left === null || left > RENEW_BELOW_SECONDS) return;
-    void claimRobot(robot.id).then((result) => { if (result.ok) void refresh(); });
+    void claimRobot(robot.id, { unconditional: true }).then((result) => { if (result.ok) void refresh(); });
   }, [standing, left, robot.id, refresh]);
 
   const run = async (command: string, action: () => Promise<CommandResult>) => {
@@ -237,6 +241,19 @@ export function RobotAccessBar({ robot }: { robot: RobotState }) {
           <label className="mt-2 flex items-center gap-2 text-[11px] text-slate-400">
             <input type="checkbox" checked={modes.defaultMode === 'sim'} onChange={(e) => setDefaultRobotMode(e.target.checked ? 'sim' : 'live')} />
             {t('access.default_sim')}
+          </label>
+          <label className="mt-2 flex items-center gap-2 text-[11px] text-slate-400" title={t('access.conditional_hint')}>
+            {t('access.conditional_label')}
+            <select
+              data-testid="conditional-mode"
+              value={conditionalMode}
+              onChange={(e) => { const next = e.target.value as ConditionalMode; chooseConditionalMode(next); setConditionalMode(next); }}
+              className="bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-[11px] text-slate-200"
+            >
+              <option value="standard">{t('access.conditional_standard')}</option>
+              <option value="strict">{t('access.conditional_strict')}</option>
+              <option value="off">{t('access.conditional_off')}</option>
+            </select>
           </label>
         </div>
       )}

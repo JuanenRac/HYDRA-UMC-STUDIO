@@ -170,7 +170,7 @@ Two standalone dialogs, both reachable from the header (`Config`/`About` buttons
 The app protects itself against two different classes of runtime failure, both born from a real production incident (a kiosk display going black after a redeploy). `src/main.tsx` listens for Vite's own `vite:preloadError` event - emitted when a browser tab left open across a redeploy tries to fetch a `React.lazy()`-loaded panel chunk (every `Dashboard.tsx` panel, content-hashed per `vite.config.ts`) that no longer exists under its old hash - and reloads the page once automatically, so a long-lived kiosk tab or a stale background tab self-heals without anyone noticing. A `sessionStorage` guard stops that from reload-looping forever if a chunk is genuinely missing for some other reason. Separately, `src/components/ErrorBoundary.tsx` wraps the `<Suspense>` panel area as a backstop for any other render crash; it's keyed by the active tab, so switching away from a crashed panel actually retries the next one instead of leaving the whole dashboard stuck on a fallback screen.
 Commands never fail silently: every jog, play, power, vision and tool command returns a typed result, an expired session is refreshed once and retried, and anything still refused is shown in a banner. The red **STOP** button is global: one click, no confirmation, it stops every robot of every controller and switches every valve and pump off in one call (`POST /api/stop-all`). It sits in the header and the footer, in the robot panel and in the remote-control overlay, and Ctrl+Shift+Space presses it from the keyboard (a chord that is not typed by accident, ignored on a held key). The answer is listed robot by robot (a warning when a robot did not stop or the server could not save the stop; robots reserved by someone else are marked); a network failure is retried once, a server over its rate limit (429) or without the route (404) is answered with the per-robot stop, and a persistent "STOP not confirmed" warning stays until a later STOP gets an answer. Joystick jogging is a held deadman control (it ends on pointer cancel, window blur, a hidden tab or after 8 seconds), a J1 move stays on the nearest equivalent angle and a jog step above 20 degrees is refused. Gamepad input follows the robot selected in the interface and is rate limited. A release firmware is checked against its sha256 before CAN-OTA flashing, bootloader images are opt-in, and imported trajectories and scenes are validated before they reach the shared state.
 
-Who may move a robot, and how far, is decided by the server for every client. A robot can be **reserved** for the account and the window (a controller id chosen per window) that asks for it: the same account on another window, or another account, is refused with a message that says which (`other-controller`, `other-account`, `controller-id-required`), the list of reservations comes from `GET /api/claims`, and an administrator can take a robot over. The size of a jog, the range of an absolute jog and the hottest heated-bed target are read from `GET /api/safety-limits` instead of being kept in the app; an administrator edits them by model in **Ecosystem > Safety limits**, together with the optional arming of the jog (off by default; when on, a button arms the jog for a limited time) and the mandatory controller id. Each robot has a **Live / Sim** switch (Live by default): in Sim, nothing that moves the robot or switches something on is sent from that window, while STOP always goes through. A Work or an example with points the arm cannot reach is refused with the list of those points, and can be scaled to the reach of the model instead. The list of reservations is also pushed by the server on the WebSocket (the `claims` message, for connections that asked for `remoteApiVersion=2`), so the access bar shows a change at once instead of waiting for its next poll; the poll only runs now and then while the pushes arrive.
+Who may move a robot, and how far, is decided by the server for every client. A robot can be **reserved** for the account and the window (a controller id chosen per window) that asks for it: the same account on another window, or another account, is refused with a message that says which (`other-controller`, `other-account`, `controller-id-required`), the list of reservations comes from `GET /api/claims`, and an administrator can take a robot over. The size of a jog, the range of an absolute jog and the hottest heated-bed target are read from `GET /api/safety-limits` instead of being kept in the app; an administrator edits them by model in **Ecosystem > Safety limits**, together with the optional arming of the jog (off by default; when on, a button arms the jog for a limited time) and the mandatory controller id. Each robot has a **Live / Sim** switch (Live by default): in Sim, nothing that moves the robot or switches something on is sent from that window, while STOP always goes through. A Work or an example with points the arm cannot reach is refused with the list of those points, and can be scaled to the reach of the model instead. The list of reservations is also pushed by the server on the WebSocket (the `claims` message, for connections that asked for `remoteApiVersion=2`), so the access bar shows a change at once instead of waiting for its next poll; the poll only runs now and then while the pushes arrive. Writes are conditional: each one carries the revision of the robot this window last saw (`If-Match`), and when someone else changed the robot in between the server answers 412, the robot is read again and the banner says so (Standard checks reservations, the table and the one-off commands; Strict checks everything but STOP; Off checks nothing; STOP is never checked). The XY table moves with the atomic `table` command, and administrators read the append-only audit record, with its SHA-256 chain verified, in **Ecosystem > Audit record**.
 
 ## 🔐 Accounts & Access
 
@@ -229,6 +229,7 @@ HYDRA-UMC-STUDIO/
 │   │   ├── AdminServer.tsx, AdminLogs.tsx, AdminClients.tsx  # Ecosystem menu: Server Admin, Server
 │   │   │                       # Logs, and Connected Apps panels
 │   │   ├── RobotAccessBar.tsx, AdminSafety.tsx  # Per-robot access bar (Live/Sim, reservation, jog arming) and the Safety limits admin screen
+│   │   ├── AdminAudit.tsx  # Ecosystem > Audit record screen (administrators): filter, verify the chain, export
 │   │   ├── EcosystemServices.tsx, EcosystemTelemetry.tsx, AiFamilyStatus.tsx  # Ecosystem menu:
 │   │   │                       # Services, Telemetry, and AI Family status panels
 │   │   ├── SystemSupervisor.tsx  # Ecosystem menu: Netdata-style real-time CPU/memory/disk/temp/
@@ -284,6 +285,7 @@ HYDRA-UMC-STUDIO/
 │   ├── lib/apiBase.ts           # Backend URL resolution - relative+proxied in dev, VITE_API_BASE_URL in prod
 │   ├── lib/mediaTicket.ts       # Short-lived tickets for the camera pictures
 │   ├── lib/claims.ts, controllerSession.ts, accessApi.ts, accessStore.ts, safetyLimits.ts, liveSim.ts  # Reservations, controller id, safety limits read from the server, Live/Sim mode
+│   ├── lib/revisions.ts, tableMove.ts, audit.ts, auditApi.ts  # Revision of each robot (If-Match, 412), atomic table move, audit record and its chain check
 │   └── locales/                 # en/es/de/fr/it/ja/zh/pt translation files (react-i18next)
 ├── public/
 │   ├── models/                  # Real 3D mesh assets - one folder per robot (24 total),
@@ -292,7 +294,7 @@ HYDRA-UMC-STUDIO/
 │   ├── settings.json            # Seeded example settings for a fresh checkout
 │   └── favicon.svg, icons.svg   # App icon and shared icon sprite
 ├── images/                       # README banner
-├── tests/                        # Real Vitest suite (547 tests) - src/examples/ FK/IK math only, no React/DOM
+├── tests/                        # Real Vitest suite (589 tests) - src/examples/ FK/IK math only, no React/DOM
 │   ├── utils.test.ts             # Shared generic-arm FK/IK pair + its 5 path generators
 │   ├── urKinematicsShared.test.ts  # Real DH-chain FK + Newton-Raphson IK engine (via the real UR5e chain)
 │   ├── parol6Kinematics.test.ts  # Parol6's own hard-coded real chain
@@ -340,7 +342,7 @@ Runs Vite's own dev server (plain `vite`, port `5173`) with live-reloading. `vit
 ### Automated Tests
 
 ```bash
-npm test          # vitest run - 547 real tests over src/examples/
+npm test          # vitest run - 589 real tests over src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

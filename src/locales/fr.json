@@ -40,7 +40,8 @@
     "sim_blocked": "Le robot {{robots}} est en mode Sim - la commande {{command}} n'a pas été envoyée. Passez-le en Live pour déplacer ou modifier le robot réel.",
     "jog_limit": "Jog refusé : le pas dépasse la limite de {{detail}} fixée par le serveur pour ce modèle. Rien n'a été envoyé.",
     "temperature_limit": "Le serveur a abaissé la consigne du plateau chauffant ({{detail}} °C) à la limite de ce modèle.",
-    "jog_server_limit": "Le serveur n'a pas appliqué le jog : {{detail}}"
+    "jog_server_limit": "Le serveur n'a pas appliqué le jog : {{detail}}",
+    "revision_changed": "Le robot {{robots}} a changé depuis la dernière lecture de cette fenêtre (autre opérateur ou autre fenêtre) - la commande {{command}} n'a PAS été appliquée. Le robot a été relu depuis le serveur : vérifiez-le et répétez la commande si c'est toujours ce que vous voulez."
   },
   "motion_source": {
     "offline": "Hors ligne",
@@ -1003,7 +1004,8 @@
     "admin_server_stat_controllers": "Contrôleurs",
     "admin_server_stat_robots": "Robots",
     "admin_server_stat_host": "Hôte",
-    "menu_safety": "Limites de sécurité"
+    "menu_safety": "Limites de sécurité",
+    "menu_audit": "Journal d'audit"
   },
   "auth": {
     "title": "Accès HYDRA-UMC STUDIO",
@@ -1187,7 +1189,12 @@
     "no_controller": "non indiqué",
     "this_window": "cette fenêtre",
     "default_sim": "Démarrer en mode Sim les robots que je n'ai pas choisis (ce navigateur)",
-    "confirm_take_over": "Reprendre le robot {{robot}} à {{user}} ? Sa réservation prend fin et le robot devient le vôtre."
+    "confirm_take_over": "Reprendre le robot {{robot}} à {{user}} ? Sa réservation prend fin et le robot devient le vôtre.",
+    "conditional_label": "Vérifier que le robot n'a pas changé (ce navigateur)",
+    "conditional_standard": "Standard : réservations, table et commandes ponctuelles",
+    "conditional_strict": "Strict : toutes les commandes sauf STOP",
+    "conditional_off": "Désactivé : envoyer sans vérifier",
+    "conditional_hint": "Chaque écriture porte la révision du robot que cette fenêtre a vue en dernier ; si quelqu'un a modifié le robot entre-temps, le serveur refuse (412) et le robot est relu. Le jog et la vitesse ne sont pas vérifiés en Standard car ils se répètent plusieurs fois par seconde. STOP n'est jamais vérifié."
   },
   "safety": {
     "admin_only": "Seuls les administrateurs peuvent modifier les limites de sécurité.",
@@ -1219,5 +1226,50 @@
     "problem_range": "Hors plage (supérieur à 0 et au plus le plafond du serveur) : {{field}}",
     "problem_model": "Une ligne n'a pas de nom de modèle.",
     "problem_duplicate": "Le modèle est déjà dans le tableau : {{field}}"
+  },
+  "audit": {
+    "admin_only": "Seuls les administrateurs peuvent lire le journal d'audit.",
+    "title": "Journal d'audit",
+    "intro": "Ce que le serveur a noté sur les changements importants : réservations, libérations forcées, armement du jog, modifications des limites de sécurité et arrêts globaux. Chaque ligne est chaînée à la précédente par un SHA-256 : une ligne modifiée ou supprimée plus tard se voit à la vérification de la chaîne.",
+    "filter_type": "Type",
+    "filter_robot": "Robot",
+    "filter_limit": "Lignes",
+    "all_types": "Tous les types",
+    "all_robots": "Tous les robots",
+    "refresh": "Actualiser",
+    "verify": "Vérifier la chaîne",
+    "export": "Exporter (.jsonl)",
+    "failure_forbidden": "Ce compte n'est pas administrateur : le serveur ne lui donne pas le journal d'audit.",
+    "failure_unavailable": "Ce serveur n'a pas de journal d'audit (version plus ancienne ou indisponible).",
+    "failure_session": "Votre session est terminée. Reconnectez-vous.",
+    "failure_network": "Le serveur est injoignable.",
+    "failure_other": "Le serveur n'a pas fourni le journal d'audit.",
+    "locked_off": "Le journal d'audit est verrouillé sur arrêt par l'environnement du serveur : rien de nouveau n'est écrit.",
+    "switched_off": "Le journal d'audit est désactivé dans les limites de sécurité : rien de nouveau n'est écrit.",
+    "server_ok": "Serveur : toute la chaîne est intacte ({{count}} lignes).",
+    "server_broken": "Serveur : la chaîne est ROMPUE à la ligne {{seq}} ({{reason}}).",
+    "local_ok": "Cette fenêtre : {{count}} lignes lues, tous les hachages correspondent, {{links}} liens entre voisines vérifiés, {{gaps}} trous non comparables.",
+    "local_broken_changed": "Cette fenêtre : la ligne {{seq}} ne correspond pas à son propre hachage - elle a été modifiée.",
+    "local_broken_link": "Cette fenêtre : la ligne {{seq}} ne nomme pas la précédente - une ligne manque ou a été remplacée.",
+    "empty": "Aucune ligne pour ce filtre.",
+    "col_seq": "N°",
+    "col_time": "Heure",
+    "col_type": "Type",
+    "col_outcome": "Résultat",
+    "col_account": "Compte",
+    "col_controller": "Fenêtre ou appareil",
+    "col_address": "Adresse",
+    "col_robot": "Robot",
+    "col_detail": "Détail",
+    "outcome_ok": "fait",
+    "outcome_refused": "refusé",
+    "outcome_failed": "échoué",
+    "type_claim": "Réservation",
+    "type_force_claim": "Réservation reprise",
+    "type_release": "Libération",
+    "type_force_release": "Libération forcée",
+    "type_jog_arm": "Armement du jog",
+    "type_safety_limits": "Limites de sécurité",
+    "type_stop_all": "STOP global"
   }
 }

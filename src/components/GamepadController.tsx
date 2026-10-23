@@ -242,10 +242,11 @@ export function GamepadController() {
               const xyTable = currentRobot.xyTable;
               const newTableVal = ((xyTable.pos as any)[tableAxis] || 0) + step;
 
+              // One atomic "table" move, relative to where the table is now.
               sendTracked(
                 currentRobot.id,
-                'jog',
-                { axis: tableAxis, amount: step, target: 'xytable' },
+                'table',
+                { x: tableAxis === 'x' ? step : 0, y: tableAxis === 'y' ? step : 0, mode: 'relative' },
                 () => ({
                   pos: { ...currentRobot.pos, [axisStr]: newTableVal },
                   xyTable: { ...xyTable, pos: { ...xyTable.pos, [tableAxis]: newTableVal } },

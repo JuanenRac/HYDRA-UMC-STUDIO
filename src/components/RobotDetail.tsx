@@ -47,6 +47,7 @@ import { convertToCartesian } from '../examples/utils';
 import { jointsToCartesianForModel, jointLimitsFor, resolveTargetJoints } from '../examples/robotKinematicsDispatch';
 import { excessiveJogStep } from '../examples/jogSafety';
 import { ConfirmDialog } from './ConfirmDialog';
+import { tableParams } from '../lib/tableMove';
 import { buildReachReport, findReachScale, loadReachTolerance, positionResidualMm, reachNeedsConfirmation, saveReachTolerance, scalePortablePoints, type ReachReport, type ReachScale } from '../lib/reachCheck';
 import { RobotAccessBar } from './RobotAccessBar';
 import { currentPlaybackStep, playbackProgressPercent } from '../lib/playbackStep';
@@ -1573,10 +1574,15 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   // the axis to `amount` instead of adding it, reusing the same validated
   // 'jog' command/case rather than a bespoke one.
   const handleXYAxisChange = (axis: 'tx' | 'ty', val: number) => {
+    // One atomic "table" move to the position the slider reached (the other axis stays where it is): the server
+    // checks the whole move against the limits of the model and applies all of it or none of it.
+    const current = robot.xyTable?.pos;
+    const params = tableParams(axis === 'tx' ? val : (current?.x ?? 0), axis === 'ty' ? val : (current?.y ?? 0), 'absolute');
+    if (!params) return;
     sendRobotCommand(
       robot.id,
-      'jog',
-      { axis: axis === 'tx' ? 'x' : 'y', amount: val, target: 'xytable', absolute: true },
+      'table',
+      { ...params },
       (r) => ({
         pos: { ...r.pos, [axis]: val },
         xyTable: r.xyTable ? { ...r.xyTable, pos: { ...r.xyTable.pos, [axis === 'tx' ? 'x' : 'y']: val } } : r.xyTable,

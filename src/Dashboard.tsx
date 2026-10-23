@@ -118,6 +118,7 @@ const EcosystemTelemetry = React.lazy(() => import('./components/EcosystemTeleme
 const AdminClients = React.lazy(() => import('./components/AdminClients').then(m => ({ default: m.AdminClients })));
 const AdminLogs = React.lazy(() => import('./components/AdminLogs').then(m => ({ default: m.AdminLogs })));
 const AdminSafety = React.lazy(() => import('./components/AdminSafety').then(m => ({ default: m.AdminSafety })));
+const AdminAudit = React.lazy(() => import('./components/AdminAudit').then(m => ({ default: m.AdminAudit })));
 const AdminServer = React.lazy(() => import('./components/AdminServer').then(m => ({ default: m.AdminServer })));
 const SystemSupervisor = React.lazy(() => import('./components/SystemSupervisor').then(m => ({ default: m.SystemSupervisor })));
 
@@ -345,6 +346,7 @@ export default function Dashboard() {
                     <button onClick={() => setActiveTab('adminLogs')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'adminLogs' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_logs')}</button>
                     <button onClick={() => setActiveTab('adminServer')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'adminServer' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_admin')}</button>
                     <button onClick={() => setActiveTab('adminSafety')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'adminSafety' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_safety')}</button>
+                    <button onClick={() => setActiveTab('adminAudit')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'adminAudit' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_audit')}</button>
                     <button onClick={() => setActiveTab('systemSupervisor')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'systemSupervisor' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_supervisor', 'Supervisor')}</button>
                   </>}
                </div>
@@ -394,6 +396,7 @@ export default function Dashboard() {
                {activeTab === 'adminLogs' && <AdminLogs />}
                {activeTab === 'adminServer' && <AdminServer />}
                {activeTab === 'adminSafety' && <AdminSafety />}
+               {activeTab === 'adminAudit' && <AdminAudit />}
                {activeTab === 'systemSupervisor' && <SystemSupervisor />}
             </div>
           </React.Suspense>

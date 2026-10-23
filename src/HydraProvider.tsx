@@ -28,7 +28,9 @@ import {
 import { getControllerId } from './lib/controllerSession';
 import { blockedBySim } from './lib/liveSim';
 import { getModeState, getSafetyState, setSafetyState } from './lib/accessStore';
-import { fetchSafetyLimits } from './lib/accessApi';
+import { fetchRobot, fetchSafetyLimits } from './lib/accessApi';
+import { revisionOf, robotRevisions } from './lib/revisions';
+import { checkTable, isUnknownCommand, markTableCommand, serverHasTableCommand, tableAsJogs } from './lib/tableMove';
 import { checkJog, isTemperatureWarning, parseWarnings } from './lib/safetyLimits';
 import { type StopAllReport, type StopAllRobot, requestStopAllWithRetry } from './lib/stopAll';
 import { validateSceneRobots, validateTrajectoryPoints } from './lib/importValidation';
@@ -692,6 +694,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
         lastPayloadJsonRef.current = payloadJson;
         setSettingsSaveError(null);
+        // Saving the whole tree changes the robots on the server too: what was known of their revisions is stale.
+        robotRevisions.forget();
         // The server lowers a bed target above the ceiling of its model and says so.
         response.json().then((body: unknown) => {
           const lowered = parseWarnings(body).find(isTemperatureWarning);
@@ -728,16 +732,23 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     params?: Record<string, unknown>
   ): Promise<CommandResult> => {
     const send = async (): Promise<CommandResult> => {
+      // The revision this window last saw of the robot goes along as If-Match (never for STOP): when the robot changed
+      // in between, the server answers 412 instead of overwriting what someone else did.
+      const ticket = robotRevisions.begin(id, command);
+      const headers = authHeaders({ 'Content-Type': 'application/json' });
+      if (ticket.ifMatch) headers['If-Match'] = ticket.ifMatch;
       try {
         const res = await fetch(apiUrl(`/api/robot/${id}/command`), {
           method: 'POST',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers,
           body: JSON.stringify({ command, params, controllerId: getControllerId() }),
         });
         let body: unknown = null;
         try { body = await res.json(); } catch { /* an answer without a JSON body */ }
+        robotRevisions.finish(id, ticket.seq, revisionOf(body));
         return interpretCommandResponse(res.status, res.ok, body);
       } catch (error) {
+        robotRevisions.finish(id, ticket.seq, null);
         return networkFailure(error instanceof Error ? error.message : undefined);
       }
     };
@@ -745,6 +756,27 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!result.ok && result.code === 'session_expired' && (await attemptTokenRefresh())) result = await send();
     return result;
   };
+
+  // The table move as the jogs of a server that has no table command (the first failing answer is the result).
+  const tableThroughJogs = async (id: number, params: Record<string, unknown>): Promise<CommandResult> => {
+    let last: CommandResult = { ok: true, status: 200, code: null, detail: null, serverCode: null, warnings: [] };
+    for (const jog of tableAsJogs(params)) {
+      last = await postRobotCommand(id, 'jog', jog);
+      if (!last.ok) return last;
+    }
+    return last;
+  };
+
+  // Reads one robot again (GET /api/robot/:id, which also gives the revision to use next) and puts it on screen.
+  // Called after a 412: the robot changed under this window, and what is shown may be behind.
+  const refreshRobotFromServer = useCallback(async (robotId: number): Promise<boolean> => {
+    const read = await fetchRobot(robotId);
+    if (!read) return false;
+    const owner = controllersRef.current.find((c) => c.robots.some((r) => r.id === robotId));
+    if (!owner) return false;
+    applyRobotDelta({ controllerId: owner.id, robotId, patch: read.robot });
+    return true;
+  }, [applyRobotDelta]);
 
   const sendRobotCommand = async (
     id: number,
@@ -765,6 +797,17 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (command === 'jog') {
       const target = controllersRef.current.flatMap((c) => c.robots).find((r) => r.id === id);
       const check = checkJog(getSafetyState().limits, target?.model, params);
+      if (!check.ok) {
+        reportCommandIssue({ code: 'jog_limit', command, robotIds: ids, detail: `${check.kind === 'absolute' ? 'abs ' : ''}${check.limit}` });
+        return { ok: false, status: 0, code: 'rejected', detail: null, serverCode: 'jog-limit', warnings: [] };
+      }
+    }
+    // A table move is checked as a whole against the same limits (the server checks again, and applies all of it or none).
+    if (command === 'table') {
+      const target = controllersRef.current.flatMap((c) => c.robots).find((r) => r.id === id);
+      const check = checkTable(getSafetyState().limits, target?.model, params, {
+        x: target?.xyTable?.pos?.x, y: target?.xyTable?.pos?.y, rz: target?.pos?.trz,
+      });
       if (!check.ok) {
         reportCommandIssue({ code: 'jog_limit', command, robotIds: ids, detail: `${check.kind === 'absolute' ? 'abs ' : ''}${check.limit}` });
         return { ok: false, status: 0, code: 'rejected', detail: null, serverCode: 'jog-limit', warnings: [] };
@@ -795,7 +838,17 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
     }
 
-    const result = await postRobotCommand(id, command, params);
+    let result: CommandResult;
+    if (command === 'table' && !serverHasTableCommand()) {
+      result = await tableThroughJogs(id, params ?? {});
+    } else {
+      result = await postRobotCommand(id, command, params);
+      // A server that predates the table command: remember it and do the same with the jogs it understands.
+      if (command === 'table' && isUnknownCommand(result)) {
+        markTableCommand(false);
+        result = await tableThroughJogs(id, params ?? {});
+      }
+    }
     if (!result.ok) {
       // Roll back the optimistic mutation - but only for a robot whose
       // generation counter still matches what THIS call incremented it to;
@@ -817,6 +870,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           return next;
         });
       }
+      // The robot changed since this window read it (412): read it again so the screen shows what it is now, then say so.
+      if (result.code === 'revision_changed') void refreshRobotFromServer(id);
       // And say it: a command that did not reach the robot is never silent (a STOP above all).
       reportCommandIssue({ code: result.code ?? 'rejected', command, robotIds: ids, detail: result.detail });
     } else if (result.warnings.length > 0) {
@@ -1073,7 +1128,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <HydraContext.Provider value={{
       controllers, activeControllerId, activeController, setActiveControllerId,
       robots, cameras, settings,
-      updateController, updateRobot, sendRobotCommand, emergencyStop, stopAllReport, dismissStopAllReport, stopAllPending: stopAllInFlight > 0, updateCamera, flushSettingsSave, updateSettings,
+      updateController, updateRobot, sendRobotCommand, refreshRobotFromServer, emergencyStop, stopAllReport, dismissStopAllReport, stopAllPending: stopAllInFlight > 0, updateCamera, flushSettingsSave, updateSettings,
       commandIssue, dismissCommandIssue, reportCommandIssue,
       saveKinematics, loadKinematics, addController, removeController,
       exportScene, importScene, factoryReset,

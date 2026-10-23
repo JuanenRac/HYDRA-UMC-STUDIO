@@ -8,6 +8,8 @@
 // result, and a failure into a code the interface can say out loud in the user's language.
 // =============================================================================
 
+import { revisionOf } from './revisions';
+
 /** Why a command did not reach the robot, as a code the interface has a translated sentence for. */
 export type CommandFailureCode =
   | 'session_expired' // 401: the access token ran out (a refresh is tried first)
@@ -18,6 +20,7 @@ export type CommandFailureCode =
   | 'claim_other_controller'  // 409 other-controller: this account holds it from another window or device
   | 'claim_controller_required' // 409 or 400 controller-id-required: the reservation names a controller and this request sent none
   | 'jog_not_armed'  // 403 jog-not-armed: the jog has to be armed first
+  | 'revision_changed' // 412 revision-mismatch: the robot changed since this window read it
   | 'rejected'        // any other 4xx: the server refused the command
   | 'server'          // 5xx
   | 'network';        // no answer at all
@@ -35,6 +38,8 @@ export interface CommandResult {
   warnings: string[];
   /** The `field` each structured remark named ("jog" for a jog the server did not apply), present only when there is one. */
   warningFields?: string[];
+  /** The revision of the robot after the answer (the server puts it in every answer of a command, a reservation or a release). */
+  revision?: string | null;
 }
 
 /** The failure code for a status, refined by the stable `code` of the answer when the server gave one. */
@@ -43,6 +48,7 @@ export function failureCodeFor(status: number, serverCode: string | null): Comma
   if (serverCode === 'other-controller') return 'claim_other_controller';
   if (serverCode === 'controller-id-required') return 'claim_controller_required';
   if (serverCode === 'jog-not-armed') return 'jog_not_armed';
+  if (serverCode === 'revision-mismatch' || status === 412) return 'revision_changed';
   return failureCodeForStatus(status);
 }
 
@@ -74,9 +80,10 @@ export function interpretCommandResponse(status: number, ok: boolean, body: unkn
       .map((w) => (w && typeof w === 'object' && typeof (w as Record<string, unknown>).field === 'string' ? ((w as Record<string, unknown>).field as string) : null))
       .filter((f): f is string => f !== null)
     : [];
-  if (ok) return { ok: true, status, code: null, detail: null, serverCode: null, warnings, ...(fields.length > 0 ? { warningFields: fields } : {}) };
+  const revision = revisionOf(object);
+  if (ok) return { ok: true, status, code: null, detail: null, serverCode: null, warnings, ...(revision !== null ? { revision } : {}), ...(fields.length > 0 ? { warningFields: fields } : {}) };
   const serverCode = textOf(object.code);
-  return { ok: false, status, code: failureCodeFor(status, serverCode), detail: textOf(object.error), serverCode, warnings };
+  return { ok: false, status, code: failureCodeFor(status, serverCode), detail: textOf(object.error), serverCode, warnings, ...(revision !== null ? { revision } : {}) };
 }
 
 export function networkFailure(detail?: string): CommandResult {
@@ -98,7 +105,7 @@ export interface CommandIssue {
 export function summarizeBulk(results: { robotId: number; result: CommandResult }[]): { failed: number[]; code: CommandFailureCode | null; detail: string | null } {
   const failed = results.filter((r) => !r.result.ok);
   if (failed.length === 0) return { failed: [], code: null, detail: null };
-  const order: CommandFailureCode[] = ['network', 'session_expired', 'forbidden', 'jog_not_armed', 'server', 'claim_other_account', 'claim_other_controller', 'claim_controller_required', 'claimed', 'not_found', 'rejected'];
+  const order: CommandFailureCode[] = ['network', 'session_expired', 'forbidden', 'jog_not_armed', 'revision_changed', 'server', 'claim_other_account', 'claim_other_controller', 'claim_controller_required', 'claimed', 'not_found', 'rejected'];
   const present = new Set(failed.map((r) => r.result.code));
   const code = order.find((c) => present.has(c)) ?? 'rejected';
   const detail = failed.find((r) => r.result.code === code)?.result.detail ?? null;

@@ -13,30 +13,65 @@ import { getControllerId } from './controllerSession';
 import { interpretCommandResponse, networkFailure, type CommandResult } from './commandResult';
 import { parseClaims, type ClaimEntry } from './claims';
 import { parseSafetyLimits, type SafetyLimitsState } from './safetyLimits';
+import { robotRevisions, revisionOf } from './revisions';
 
-async function post(path: string, body: Record<string, unknown>): Promise<{ result: CommandResult; data: Record<string, unknown> }> {
+/**
+ * One POST. With `conditional`, the revision this window last saw of the robot goes along as If-Match (when the mode
+ * of this window and the state of the tracker allow it) and the revision of the answer is kept for the next write.
+ */
+async function post(
+  path: string,
+  body: Record<string, unknown>,
+  conditional?: { robotId: number; command: string },
+): Promise<{ result: CommandResult; data: Record<string, unknown> }> {
+  const ticket = conditional ? robotRevisions.begin(conditional.robotId, conditional.command) : null;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (ticket?.ifMatch) headers['If-Match'] = ticket.ifMatch;
   try {
     const res = await authFetch(apiUrl(path), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ ...body, controllerId: getControllerId() }),
     });
     let data: unknown = null;
     try { data = await res.json(); } catch { /* an answer without a JSON body */ }
+    if (conditional && ticket) robotRevisions.finish(conditional.robotId, ticket.seq, revisionOf(data));
     return { result: interpretCommandResponse(res.status, res.ok, data), data: data && typeof data === 'object' ? (data as Record<string, unknown>) : {} };
   } catch (error) {
+    if (conditional && ticket) robotRevisions.finish(conditional.robotId, ticket.seq, null);
     return { result: networkFailure(error instanceof Error ? error.message : undefined), data: {} };
   }
 }
 
-export interface ClaimOptions { ttlMs?: number; force?: boolean; reason?: string }
+/** `unconditional` keeps If-Match off the request (renewing one's own reservation must not fail because the robot moved). */
+export interface ClaimOptions { ttlMs?: number; force?: boolean; reason?: string; unconditional?: boolean }
 
 export async function claimRobot(robotId: number, options: ClaimOptions = {}): Promise<CommandResult> {
-  return (await post(`/api/robot/${robotId}/claim`, { ...options })).result;
+  const { unconditional, ...body } = options;
+  return (await post(`/api/robot/${robotId}/claim`, body, unconditional || body.force ? undefined : { robotId, command: 'claim' })).result;
 }
 
 export async function releaseRobot(robotId: number, reason?: string): Promise<CommandResult> {
-  return (await post(`/api/robot/${robotId}/release`, reason ? { reason } : {})).result;
+  return (await post(`/api/robot/${robotId}/release`, reason ? { reason } : {}, { robotId, command: 'release' })).result;
+}
+
+export interface RobotRead { robot: Record<string, unknown>; revision: string | null; cellId: string | null }
+
+/** GET /api/robot/:id: one robot with its revision (also kept for the next write); null when it could not be read or the server predates the route. */
+export async function fetchRobot(robotId: number): Promise<RobotRead | null> {
+  try {
+    const res = await authFetch(apiUrl(`/api/robot/${robotId}`));
+    if (!res.ok) return null;
+    const body: unknown = await res.json();
+    if (!body || typeof body !== 'object') return null;
+    const record = body as Record<string, unknown>;
+    if (!record.robot || typeof record.robot !== 'object') return null;
+    const revision = revisionOf(record);
+    robotRevisions.learn(robotId, revision);
+    return { robot: record.robot as Record<string, unknown>, revision, cellId: typeof record.cellId === 'string' ? record.cellId : null };
+  } catch {
+    return null;
+  }
 }
 
 export interface ArmResult { result: CommandResult; expiresAt: number | null }

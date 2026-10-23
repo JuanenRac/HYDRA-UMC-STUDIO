@@ -40,7 +40,8 @@
     "sim_blocked": "ロボット {{robots}} は Sim モードのため、{{command}} コマンドは送信されませんでした。実機を動かしたり変更したりするには Live に切り替えてください。",
     "jog_limit": "ジョグを拒否しました。ステップがこのモデルにサーバーが設定した上限 {{detail}} を超えています。何も送信されていません。",
     "temperature_limit": "サーバーがベッドの目標温度({{detail}} °C)をこのモデルの上限まで下げました。",
-    "jog_server_limit": "サーバーはジョグを適用しませんでした: {{detail}}"
+    "jog_server_limit": "サーバーはジョグを適用しませんでした: {{detail}}",
+    "revision_changed": "このウィンドウが最後に読み取って以降、ロボット {{robots}} が変更されました(別のオペレーターまたは別のウィンドウ)。{{command}} コマンドは適用されていません。サーバーからロボットを読み直しました。内容を確認し、まだ必要ならコマンドをやり直してください。"
   },
   "motion_source": {
     "offline": "オフライン",
@@ -1003,7 +1004,8 @@
     "admin_server_stat_controllers": "コントローラー",
     "admin_server_stat_robots": "ロボット",
     "admin_server_stat_host": "ホスト",
-    "menu_safety": "安全上限"
+    "menu_safety": "安全上限",
+    "menu_audit": "監査記録"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO アクセス",
@@ -1187,7 +1189,12 @@
     "no_controller": "未指定",
     "this_window": "このウィンドウ",
     "default_sim": "未選択のロボットを Sim モードで開始する(このブラウザ)",
-    "confirm_take_over": "ロボット {{robot}} を {{user}} から引き継ぎますか? 相手の予約は終了し、ロボットはあなたのものになります。"
+    "confirm_take_over": "ロボット {{robot}} を {{user}} から引き継ぎますか? 相手の予約は終了し、ロボットはあなたのものになります。",
+    "conditional_label": "ロボットが変更されていないか確認する(このブラウザ)",
+    "conditional_standard": "標準:予約、テーブル、単発のコマンド",
+    "conditional_strict": "厳格:STOP 以外のすべてのコマンド",
+    "conditional_off": "オフ:確認せずに送信",
+    "conditional_hint": "書き込みごとに、このウィンドウが最後に見たロボットのリビジョンを付けて送ります。その間に他の人がロボットを変更していた場合、サーバーは拒否(412)し、ロボットを読み直します。ジョグと速度は1秒間に何度も繰り返されるため、標準では確認しません。STOP は確認されません。"
   },
   "safety": {
     "admin_only": "安全上限を変更できるのは管理者のみです。",
@@ -1219,5 +1226,50 @@
     "problem_range": "範囲外です (0 より大きく、サーバーの上限以下): {{field}}",
     "problem_model": "モデル名のない行があります。",
     "problem_duplicate": "このモデルはすでに表にあります: {{field}}"
+  },
+  "audit": {
+    "admin_only": "監査記録を読めるのは管理者だけです。",
+    "title": "監査記録",
+    "intro": "サーバーが重要な変更について記録した内容です(予約、強制解放、ジョグの有効化、安全上限の変更、全体停止)。各行は SHA-256 で前の行につながっているため、後から変更または削除された行は、チェーンを検証すると分かります。",
+    "filter_type": "種類",
+    "filter_robot": "ロボット",
+    "filter_limit": "行数",
+    "all_types": "すべての種類",
+    "all_robots": "すべてのロボット",
+    "refresh": "更新",
+    "verify": "チェーンを検証",
+    "export": "エクスポート(.jsonl)",
+    "failure_forbidden": "このアカウントは管理者ではないため、サーバーは監査記録を渡しません。",
+    "failure_unavailable": "このサーバーには監査記録がありません(古いバージョン、または利用不可)。",
+    "failure_session": "セッションが終了しました。もう一度サインインしてください。",
+    "failure_network": "サーバーに接続できませんでした。",
+    "failure_other": "サーバーが監査記録を返しませんでした。",
+    "locked_off": "監査記録はサーバーの環境設定でオフに固定されています。新しい記録は書かれません。",
+    "switched_off": "監査記録は安全上限でオフになっています。新しい記録は書かれません。",
+    "server_ok": "サーバー:チェーン全体が無傷です({{count}} 行)。",
+    "server_broken": "サーバー:チェーンが {{seq}} 行目で壊れています({{reason}})。",
+    "local_ok": "このウィンドウ:{{count}} 行を読み、すべてのハッシュが一致し、隣接行の連結 {{links}} 件を確認、比較できない欠番 {{gaps}} 件。",
+    "local_broken_changed": "このウィンドウ:{{seq}} 行目が自身のハッシュと一致しません。変更されています。",
+    "local_broken_link": "このウィンドウ:{{seq}} 行目が直前の行を指していません。行が欠けているか置き換えられています。",
+    "empty": "このフィルターに該当する行はありません。",
+    "col_seq": "番号",
+    "col_time": "時刻",
+    "col_type": "種類",
+    "col_outcome": "結果",
+    "col_account": "アカウント",
+    "col_controller": "ウィンドウまたは端末",
+    "col_address": "アドレス",
+    "col_robot": "ロボット",
+    "col_detail": "詳細",
+    "outcome_ok": "完了",
+    "outcome_refused": "拒否",
+    "outcome_failed": "失敗",
+    "type_claim": "予約",
+    "type_force_claim": "予約の引き継ぎ",
+    "type_release": "解放",
+    "type_force_release": "強制解放",
+    "type_jog_arm": "ジョグの有効化",
+    "type_safety_limits": "安全上限",
+    "type_stop_all": "全体 STOP"
   }
 }

@@ -40,7 +40,8 @@
     "sim_blocked": "Robot {{robots}} is in Sim mode - the {{command}} command was not sent. Switch it to Live to move or change the real robot.",
     "jog_limit": "Jog refused: the step is above the limit of {{detail}} set by the server for this model. Nothing was sent.",
     "temperature_limit": "The server lowered the bed target ({{detail}} °C) to the limit of this model.",
-    "jog_server_limit": "The server did not apply the jog: {{detail}}"
+    "jog_server_limit": "The server did not apply the jog: {{detail}}",
+    "revision_changed": "Robot {{robots}} changed since this window last read it (another operator or window) - the {{command}} command was NOT applied. The robot was read again from the server: check it and repeat the command if it is still what you want."
   },
   "motion_source": {
     "offline": "Offline",
@@ -1003,7 +1004,8 @@
     "admin_server_stat_controllers": "Controllers",
     "admin_server_stat_robots": "Robots",
     "admin_server_stat_host": "Host",
-    "menu_safety": "Safety limits"
+    "menu_safety": "Safety limits",
+    "menu_audit": "Audit record"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Access",
@@ -1187,7 +1189,12 @@
     "no_controller": "not named",
     "this_window": "this window",
     "default_sim": "Start the robots I have not chosen for in Sim mode (this browser)",
-    "confirm_take_over": "Take over robot {{robot}} from {{user}}? Their reservation ends and the robot becomes yours."
+    "confirm_take_over": "Take over robot {{robot}} from {{user}}? Their reservation ends and the robot becomes yours.",
+    "conditional_label": "Check that the robot has not changed (this browser)",
+    "conditional_standard": "Standard: reservations, table and one-off commands",
+    "conditional_strict": "Strict: every command except STOP",
+    "conditional_off": "Off: send commands without checking",
+    "conditional_hint": "Each write carries the revision of the robot this window last saw; if someone else changed the robot in between, the server refuses it (412) and the robot is read again. Jog and speed are not checked in Standard because they repeat many times a second. STOP is never checked."
   },
   "safety": {
     "admin_only": "Only administrators can change the safety limits.",
@@ -1219,5 +1226,50 @@
     "problem_range": "Out of range (above 0 and at most the ceiling of the server): {{field}}",
     "problem_model": "A row has no model name.",
     "problem_duplicate": "The model is already in the table: {{field}}"
+  },
+  "audit": {
+    "admin_only": "Only administrators can read the audit record.",
+    "title": "Audit record",
+    "intro": "What the server wrote down about the changes that matter: reservations, forced releases, arming of the jog, changes of the safety limits and global stops. Each line is chained to the one before it by a SHA-256, so a line changed or removed later shows when the chain is verified.",
+    "filter_type": "Type",
+    "filter_robot": "Robot",
+    "filter_limit": "Lines",
+    "all_types": "All types",
+    "all_robots": "All robots",
+    "refresh": "Refresh",
+    "verify": "Verify the chain",
+    "export": "Export (.jsonl)",
+    "failure_forbidden": "This account is not an administrator: the server does not give it the audit record.",
+    "failure_unavailable": "This server has no audit record (an older version, or it is not available).",
+    "failure_session": "Your session ended. Sign in again.",
+    "failure_network": "The server could not be reached.",
+    "failure_other": "The server did not give the audit record.",
+    "locked_off": "The audit record is locked off by the environment of the server: nothing new is written.",
+    "switched_off": "The audit record is switched off in the safety limits: nothing new is written.",
+    "server_ok": "Server: the whole chain is intact ({{count}} lines).",
+    "server_broken": "Server: the chain is BROKEN at line {{seq}} ({{reason}}).",
+    "local_ok": "This window: {{count}} lines read, every hash matches, {{links}} links between neighbours checked, {{gaps}} gaps not comparable.",
+    "local_broken_changed": "This window: line {{seq}} does not match its own hash - it was changed.",
+    "local_broken_link": "This window: line {{seq}} does not name the line before it - a line is missing or was replaced.",
+    "empty": "No lines for this filter.",
+    "col_seq": "No.",
+    "col_time": "Time",
+    "col_type": "Type",
+    "col_outcome": "Outcome",
+    "col_account": "Account",
+    "col_controller": "Window or device",
+    "col_address": "Address",
+    "col_robot": "Robot",
+    "col_detail": "Detail",
+    "outcome_ok": "done",
+    "outcome_refused": "refused",
+    "outcome_failed": "failed",
+    "type_claim": "Reservation",
+    "type_force_claim": "Reservation taken over",
+    "type_release": "Release",
+    "type_force_release": "Release forced",
+    "type_jog_arm": "Jog arming",
+    "type_safety_limits": "Safety limits",
+    "type_stop_all": "Global STOP"
   }
 }

@@ -40,7 +40,8 @@
     "sim_blocked": "O robô {{robots}} está em modo Sim - o comando {{command}} não foi enviado. Mude para Live para mover ou alterar o robô real.",
     "jog_limit": "Jog recusado: o passo excede o limite de {{detail}} definido pelo servidor para este modelo. Não foi enviado nada.",
     "temperature_limit": "O servidor reduziu a temperatura alvo da cama ({{detail}} °C) para o limite deste modelo.",
-    "jog_server_limit": "O servidor não aplicou o jog: {{detail}}"
+    "jog_server_limit": "O servidor não aplicou o jog: {{detail}}",
+    "revision_changed": "O robô {{robots}} mudou desde a última vez que esta janela o leu (outro operador ou outra janela) - o comando {{command}} NÃO foi aplicado. O robô foi lido de novo a partir do servidor: verifique-o e repita o comando se ainda for o que pretende."
   },
   "motion_source": {
     "offline": "Offline",
@@ -1003,7 +1004,8 @@
     "admin_server_stat_controllers": "Controladores",
     "admin_server_stat_robots": "Robôs",
     "admin_server_stat_host": "Anfitrião",
-    "menu_safety": "Limites de segurança"
+    "menu_safety": "Limites de segurança",
+    "menu_audit": "Registo de auditoria"
   },
   "auth": {
     "title": "Acesso ao HYDRA-UMC STUDIO",
@@ -1187,7 +1189,12 @@
     "no_controller": "não indicado",
     "this_window": "esta janela",
     "default_sim": "Iniciar em modo Sim os robôs que não escolhi (este navegador)",
-    "confirm_take_over": "Assumir o robô {{robot}} de {{user}}? A reserva dessa pessoa termina e o robô passa a ser seu."
+    "confirm_take_over": "Assumir o robô {{robot}} de {{user}}? A reserva dessa pessoa termina e o robô passa a ser seu.",
+    "conditional_label": "Verificar se o robô não mudou (este navegador)",
+    "conditional_standard": "Padrão: reservas, mesa e comandos pontuais",
+    "conditional_strict": "Estrito: todos os comandos exceto STOP",
+    "conditional_off": "Desligado: enviar sem verificar",
+    "conditional_hint": "Cada escrita leva a revisão do robô que esta janela viu pela última vez; se outra pessoa mudou o robô entretanto, o servidor recusa (412) e o robô é lido de novo. O jog e a velocidade não são verificados no modo Padrão porque se repetem muitas vezes por segundo. O STOP nunca é verificado."
   },
   "safety": {
     "admin_only": "Só os administradores podem alterar os limites de segurança.",
@@ -1219,5 +1226,50 @@
     "problem_range": "Fora do intervalo (acima de 0 e no máximo o teto do servidor): {{field}}",
     "problem_model": "Uma linha não tem nome de modelo.",
     "problem_duplicate": "O modelo já está na tabela: {{field}}"
+  },
+  "audit": {
+    "admin_only": "Só os administradores podem ler o registo de auditoria.",
+    "title": "Registo de auditoria",
+    "intro": "O que o servidor registou sobre as alterações importantes: reservas, libertações forçadas, armação do jog, alterações dos limites de segurança e paragens globais. Cada linha está encadeada à anterior por um SHA-256, pelo que uma linha alterada ou removida mais tarde nota-se ao verificar a cadeia.",
+    "filter_type": "Tipo",
+    "filter_robot": "Robô",
+    "filter_limit": "Linhas",
+    "all_types": "Todos os tipos",
+    "all_robots": "Todos os robôs",
+    "refresh": "Atualizar",
+    "verify": "Verificar a cadeia",
+    "export": "Exportar (.jsonl)",
+    "failure_forbidden": "Esta conta não é administradora: o servidor não lhe dá o registo de auditoria.",
+    "failure_unavailable": "Este servidor não tem registo de auditoria (versão mais antiga ou indisponível).",
+    "failure_session": "A sua sessão terminou. Inicie sessão de novo.",
+    "failure_network": "Não foi possível contactar o servidor.",
+    "failure_other": "O servidor não deu o registo de auditoria.",
+    "locked_off": "O registo de auditoria está bloqueado como desligado pelo ambiente do servidor: não se regista nada de novo.",
+    "switched_off": "O registo de auditoria está desligado nos limites de segurança: não se regista nada de novo.",
+    "server_ok": "Servidor: a cadeia inteira está intacta ({{count}} linhas).",
+    "server_broken": "Servidor: a cadeia está QUEBRADA na linha {{seq}} ({{reason}}).",
+    "local_ok": "Esta janela: {{count}} linhas lidas, todos os hashes coincidem, {{links}} ligações entre vizinhas verificadas, {{gaps}} lacunas não comparáveis.",
+    "local_broken_changed": "Esta janela: a linha {{seq}} não coincide com o seu próprio hash - foi alterada.",
+    "local_broken_link": "Esta janela: a linha {{seq}} não nomeia a anterior - falta uma linha ou foi substituída.",
+    "empty": "Não há linhas para este filtro.",
+    "col_seq": "N.º",
+    "col_time": "Hora",
+    "col_type": "Tipo",
+    "col_outcome": "Resultado",
+    "col_account": "Conta",
+    "col_controller": "Janela ou dispositivo",
+    "col_address": "Endereço",
+    "col_robot": "Robô",
+    "col_detail": "Detalhe",
+    "outcome_ok": "feito",
+    "outcome_refused": "recusado",
+    "outcome_failed": "falhou",
+    "type_claim": "Reserva",
+    "type_force_claim": "Reserva tomada",
+    "type_release": "Libertação",
+    "type_force_release": "Libertação forçada",
+    "type_jog_arm": "Armação do jog",
+    "type_safety_limits": "Limites de segurança",
+    "type_stop_all": "STOP global"
   }
 }
