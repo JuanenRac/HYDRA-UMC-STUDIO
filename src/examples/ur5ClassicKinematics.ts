@@ -14,12 +14,18 @@
 import type { KinematicsPoint } from './utils';
 import { createUrClassicKinematics, type UrClassicChain } from './urClassicKinematics';
 
+// The official DH table of the UR5 (Universal Robots, the same one ros-industrial/universal_robot starts from).
+// In the URDF the lateral offset d4 is split between the shoulder joint, the elbow joint and the step from wrist_1 to wrist_2, so that step
+// is d4 minus the other two: putting d4 itself there (and the other two as well) moved the wrist 16.2 mm sideways.
+export const UR5CLASSIC_DH = { d1: 0.089159, a2: -0.425, a3: -0.39225, d4: 0.10915, d5: 0.09465, d6: 0.0823, shoulderOffset: 0.13585, elbowOffset: -0.1197 } as const;
+export const UR5CLASSIC_WRIST_1_LENGTH = UR5CLASSIC_DH.d4 - UR5CLASSIC_DH.shoulderOffset - UR5CLASSIC_DH.elbowOffset;
+
 export const UR5CLASSIC_CHAIN: UrClassicChain = [
   { pos: [0, 0, 0.089159], rpy: [0, 0, 0], axis: [0, 0, 1] },
   { pos: [0, 0.13585, 0], rpy: [0, Math.PI / 2, 0], axis: [0, 1, 0] },
   { pos: [0, -0.1197, 0.425], rpy: [0, 0, 0], axis: [0, 1, 0] },
   { pos: [0, 0, 0.39225], rpy: [0, Math.PI / 2, 0], axis: [0, 1, 0] },
-  { pos: [0, 0.10915, 0], rpy: [0, 0, 0], axis: [0, 0, 1] },
+  { pos: [0, UR5CLASSIC_WRIST_1_LENGTH, 0], rpy: [0, 0, 0], axis: [0, 0, 1] },
   { pos: [0, 0, 0.09465], rpy: [0, 0, 0], axis: [0, 1, 0] },
 ];
 
