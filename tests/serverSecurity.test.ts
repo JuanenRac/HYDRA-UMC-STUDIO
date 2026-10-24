@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch } from '../src/lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -48,5 +48,25 @@ describe('the access options of the Server Admin screen', () => {
   it('keeps only the warnings the screen can say', () => {
     expect(knownWarnings(['info_auth_off', 'something_new'])).toEqual(['info_auth_off']);
     expect(knownWarnings(undefined)).toEqual([]);
+    expect(knownWarnings(['ble_commands_unencrypted'])).toEqual(['ble_commands_unencrypted']);
+  });
+
+  it('reads the Bluetooth options, and shows no section for a server without them', () => {
+    expect(parseSecurityState(answer)?.ble).toBeNull();
+    const ble = { mode: { value: 'commands', source: 'config' }, requireEncryption: { value: true, source: 'default' }, activeMode: 'state', appliesOnRestart: true };
+    expect(parseSecurityState({ ...answer, ble })?.ble).toEqual(ble);
+    expect(parseSecurityState({ ...answer, ble: { ...ble, activeMode: 'weird' } })?.ble?.activeMode).toBe('off');
+    expect(parseSecurityState({ ...answer, ble: { ...ble, mode: { value: 'all', source: 'config' } } })?.ble).toBeNull();
+    expect(parseSecurityState({ ...answer, ble: { ...ble, requireEncryption: { value: 'yes', source: 'config' } } })?.ble).toBeNull();
+    // a damaged Bluetooth part never hides the rest of the options
+    expect(parseSecurityState({ ...answer, ble: 7 })?.tls.enabled).toBe(true);
+  });
+
+  it('asks before commands are allowed over a link that is not encrypted, and only then', () => {
+    expect(bleChangeNeedsConfirmation('commands', false)).toBe(true);
+    expect(bleChangeNeedsConfirmation('commands', true)).toBe(false);
+    expect(bleChangeNeedsConfirmation('state', false)).toBe(false);
+    expect(bleChangeNeedsConfirmation('off', false)).toBe(false);
+    expect(blePatch('state', true)).toEqual({ ble: { mode: 'state', requireEncryption: true } });
   });
 });

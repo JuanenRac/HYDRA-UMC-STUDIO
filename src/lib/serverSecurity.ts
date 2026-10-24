@@ -6,9 +6,11 @@
 // The access options the Server Admin screen shows and changes (GET/PUT /api/admin/server-config):
 // who may use the local AI relay, whether the host information asks for a sign-in, and TLS. The
 // reading is tolerant: a server that predates these options answers without them and the screen
-// simply does not show the section.
+// simply does not show the section. The Bluetooth LE service (off, state only, or state and commands, with an
+// encrypted link required by default) is one more option of the same kind.
 
 export type SecuritySource = 'env' | 'config' | 'default';
+export type BleMode = 'off' | 'state' | 'commands';
 
 export interface SecurityState {
   aiAccess: { value: 'open' | 'admin'; source: SecuritySource };
@@ -22,9 +24,33 @@ export interface SecurityState {
     active: boolean;
     appliesOnRestart: boolean;
   };
+  /** Absent when the server predates the Bluetooth LE service. */
+  ble: {
+    mode: { value: BleMode; source: SecuritySource };
+    requireEncryption: { value: boolean; source: SecuritySource };
+    activeMode: BleMode;
+    appliesOnRestart: boolean;
+  } | null;
 }
 
 const isSource = (value: unknown): value is SecuritySource => value === 'env' || value === 'config' || value === 'default';
+
+const isBleMode = (value: unknown): value is BleMode => value === 'off' || value === 'state' || value === 'commands';
+
+function parseBle(raw: any): SecurityState['ble'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const mode = raw.mode;
+  const encryption = raw.requireEncryption;
+  if (!mode || !encryption) return null;
+  if (!isBleMode(mode.value) || !isSource(mode.source)) return null;
+  if (typeof encryption.value !== 'boolean' || !isSource(encryption.source)) return null;
+  return {
+    mode: { value: mode.value, source: mode.source },
+    requireEncryption: { value: encryption.value, source: encryption.source },
+    activeMode: isBleMode(raw.activeMode) ? raw.activeMode : 'off',
+    appliesOnRestart: raw.appliesOnRestart === true,
+  };
+}
 
 export function parseSecurityState(data: unknown): SecurityState | null {
   if (!data || typeof data !== 'object') return null;
@@ -48,6 +74,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
       active: tls.active === true,
       appliesOnRestart: tls.appliesOnRestart === true,
     },
+    ble: parseBle(raw.ble),
   };
 }
 
@@ -67,8 +94,21 @@ export function tlsPatch(enabled: boolean, certPath: string, keyPath: string): {
   return { tls: { enabled, certPath: cert, keyPath: key } };
 }
 
+/** The request body for the Bluetooth LE part. */
+export function blePatch(mode: BleMode, requireEncryption: boolean): { ble: { mode: BleMode; requireEncryption: boolean } } {
+  return { ble: { mode, requireEncryption } };
+}
+
+/**
+ * Taking commands over Bluetooth (the access token of the account travels in every one) without an encrypted
+ * link, or dropping the encrypted link while commands are on, asks for a confirmation first.
+ */
+export function bleChangeNeedsConfirmation(mode: BleMode, requireEncryption: boolean): boolean {
+  return mode === 'commands' && !requireEncryption;
+}
+
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  return warnings.filter((item): item is string => item === 'info_auth_off');
+  return warnings.filter((item): item is string => item === 'info_auth_off' || item === 'ble_commands_unencrypted');
 }

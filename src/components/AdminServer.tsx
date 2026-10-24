@@ -25,7 +25,7 @@ import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
-import { infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, type SecurityState } from '../lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, type BleMode, type SecurityState } from '../lib/serverSecurity';
 
 interface HydraInfo {
   product?: string;
@@ -59,6 +59,7 @@ export function AdminServer() {
   const [tlsEnabled, setTlsEnabled] = useState(false);
   const [tlsCert, setTlsCert] = useState('');
   const [tlsKey, setTlsKey] = useState('');
+  const [pendingBle, setPendingBle] = useState<{ mode: BleMode; requireEncryption: boolean } | null>(null);
 
   const authHeaders = () => ({ 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) });
 
@@ -80,6 +81,7 @@ export function AdminServer() {
       if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
       applySecurity(parseSecurityState(data));
       if (knownWarnings(data.warnings).includes('info_auth_off')) setWarning(t('ecosystem.admin_security_info_off_warning'));
+      if (knownWarnings(data.warnings).includes('ble_commands_unencrypted')) setWarning(t('ecosystem.admin_security_ble_unencrypted_warning'));
       setNotice(t('ecosystem.admin_security_saved'));
     } catch {
       setError(t('ecosystem.admin_server_load_error'));
@@ -92,6 +94,11 @@ export function AdminServer() {
     if (!security) return;
     if (infoAuthChangeNeedsConfirmation(security.infoAuth.value, next)) setConfirmInfoOff(true);
     else void saveSecurity({ infoAuth: next });
+  };
+
+  const changeBle = (mode: BleMode, requireEncryption: boolean) => {
+    if (bleChangeNeedsConfirmation(mode, requireEncryption)) setPendingBle({ mode, requireEncryption });
+    else void saveSecurity(blePatch(mode, requireEncryption));
   };
 
   const saveTls = () => {
@@ -285,8 +292,47 @@ export function AdminServer() {
               {security.tls.appliesOnRestart ? ` ${t('ecosystem.admin_security_tls_restart')}` : ''}
             </div>
           </div>
+
+          {security.ble && (
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-200" htmlFor="admin-security-ble">{t('ecosystem.admin_security_ble_label')}</label>
+              <select
+                id="admin-security-ble"
+                value={security.ble.mode.value}
+                disabled={saving || isLocked(security.ble.mode.source)}
+                onChange={e => changeBle(e.target.value as BleMode, security.ble!.requireEncryption.value)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500 disabled:opacity-50"
+              >
+                <option value="off">{t('ecosystem.admin_security_ble_off')}</option>
+                <option value="state">{t('ecosystem.admin_security_ble_state')}</option>
+                <option value="commands">{t('ecosystem.admin_security_ble_commands')}</option>
+              </select>
+              <span className="text-[10px] text-slate-500">{sourceText(security.ble.mode.source)}</span>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  checked={security.ble.requireEncryption.value}
+                  disabled={saving || isLocked(security.ble.requireEncryption.source)}
+                  onChange={e => changeBle(security.ble!.mode.value, e.target.checked)}
+                />
+                {t('ecosystem.admin_security_ble_encryption')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.ble.requireEncryption.source)}</span>
+              <div className="text-[10px] text-slate-500">
+                {t('ecosystem.admin_security_ble_running', { mode: t(`ecosystem.admin_security_ble_${security.ble.activeMode}`) })}
+                {security.ble.appliesOnRestart ? ` ${t('ecosystem.admin_security_tls_restart')}` : ''}
+              </div>
+            </div>
+          )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingBle !== null}
+        message={t('ecosystem.admin_security_ble_unencrypted_confirm')}
+        onConfirm={() => { const next = pendingBle; setPendingBle(null); if (next) void saveSecurity(blePatch(next.mode, next.requireEncryption)); }}
+        onCancel={() => setPendingBle(null)}
+      />
 
       <ConfirmDialog
         open={confirmInfoOff}
