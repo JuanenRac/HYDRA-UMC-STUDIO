@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useHydraStore, createDefaultRobots, createDefaultCameras, RTSP_DEFAULT_PORT, ipStreamLabels } from '../store';
 import { UsersPanel } from './UsersPanel';
+import { SubmittedModels } from './SubmittedModels';
 import { ConfirmDialog } from './ConfirmDialog';
 import { apiUrl } from '../lib/apiBase';
 
@@ -714,6 +715,8 @@ export function Config({ onClose }: { onClose: () => void }) {
                     </div>
                   </div>
                 </div>
+
+                <SubmittedModels />
               </div>
             )}
 
