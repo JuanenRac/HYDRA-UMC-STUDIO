@@ -70,3 +70,34 @@ describe('the access options of the Server Admin screen', () => {
     expect(blePatch('state', true)).toEqual({ ble: { mode: 'state', requireEncryption: true } });
   });
 });
+
+import { mqttChangeNeedsConfirmation, mqttPatch, parseSecurityState as parseState } from '../src/lib/serverSecurity';
+
+describe('the MQTT bridge options', () => {
+  const base = {
+    aiAccess: { value: 'open', source: 'default' }, infoAuth: { value: false, source: 'default' },
+    tls: { enabled: false, source: 'default', certPath: '', keyPath: '', active: false, appliesOnRestart: false },
+  };
+
+  it('reads the section when the server has it and ignores a damaged one', () => {
+    const state = parseState({ ...base, mqtt: { mode: { value: 'state', source: 'config' }, url: 'mqtt://b:1883', prefix: 'hydra/swarm', username: 'u', commandUser: '', activeMode: 'off', appliesOnRestart: true } });
+    expect(state?.mqtt).toEqual({ mode: { value: 'state', source: 'config' }, url: 'mqtt://b:1883', prefix: 'hydra/swarm', username: 'u', commandUser: '', activeMode: 'off', appliesOnRestart: true });
+    expect(parseState(base)?.mqtt).toBeNull();
+    expect(parseState({ ...base, mqtt: { mode: { value: 'banana', source: 'config' } } })?.mqtt).toBeNull();
+  });
+
+  it('builds the request without any password and refuses what the server would refuse', () => {
+    expect(mqttPatch('state', ' mqtts://b:8883 ', ' plant/a ', ' u ', '')).toEqual({ mqtt: { mode: 'state', url: 'mqtts://b:8883', prefix: 'plant/a', username: 'u', commandUser: '' } });
+    expect(mqttPatch('commands', 'mqtt://b', '', '', '')).toBeNull();
+    expect(mqttPatch('commands', 'mqtt://b', '', '', 'bridge')).not.toBeNull();
+    expect(mqttPatch('state', 'http://b', '', '', '')).toBeNull();
+    expect(mqttPatch('off', '', '', '', '')).not.toBeNull();
+  });
+
+  it('asks for a confirmation only when commands are being turned on', () => {
+    expect(mqttChangeNeedsConfirmation('off', 'commands')).toBe(true);
+    expect(mqttChangeNeedsConfirmation('state', 'commands')).toBe(true);
+    expect(mqttChangeNeedsConfirmation('commands', 'commands')).toBe(false);
+    expect(mqttChangeNeedsConfirmation('commands', 'off')).toBe(false);
+  });
+});

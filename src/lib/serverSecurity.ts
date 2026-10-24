@@ -11,6 +11,7 @@
 
 export type SecuritySource = 'env' | 'config' | 'default';
 export type BleMode = 'off' | 'state' | 'commands';
+export type MqttMode = 'off' | 'state' | 'commands';
 
 export interface SecurityState {
   aiAccess: { value: 'open' | 'admin'; source: SecuritySource };
@@ -31,11 +32,38 @@ export interface SecurityState {
     activeMode: BleMode;
     appliesOnRestart: boolean;
   } | null;
+  /** Absent when the server predates the MQTT bridge. */
+  mqtt: {
+    mode: { value: MqttMode; source: SecuritySource };
+    url: string;
+    prefix: string;
+    username: string;
+    commandUser: string;
+    activeMode: MqttMode;
+    appliesOnRestart: boolean;
+  } | null;
 }
 
 const isSource = (value: unknown): value is SecuritySource => value === 'env' || value === 'config' || value === 'default';
 
 const isBleMode = (value: unknown): value is BleMode => value === 'off' || value === 'state' || value === 'commands';
+
+const isMqttMode = (value: unknown): value is MqttMode => value === 'off' || value === 'state' || value === 'commands';
+
+function parseMqtt(raw: any): SecurityState['mqtt'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const mode = raw.mode;
+  if (!mode || !isMqttMode(mode.value) || !isSource(mode.source)) return null;
+  return {
+    mode: { value: mode.value, source: mode.source },
+    url: typeof raw.url === 'string' ? raw.url : '',
+    prefix: typeof raw.prefix === 'string' ? raw.prefix : '',
+    username: typeof raw.username === 'string' ? raw.username : '',
+    commandUser: typeof raw.commandUser === 'string' ? raw.commandUser : '',
+    activeMode: isMqttMode(raw.activeMode) ? raw.activeMode : 'off',
+    appliesOnRestart: raw.appliesOnRestart === true,
+  };
+}
 
 function parseBle(raw: any): SecurityState['ble'] {
   if (!raw || typeof raw !== 'object') return null;
@@ -75,6 +103,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
       appliesOnRestart: tls.appliesOnRestart === true,
     },
     ble: parseBle(raw.ble),
+    mqtt: parseMqtt(raw.mqtt),
   };
 }
 
@@ -99,6 +128,25 @@ export function blePatch(mode: BleMode, requireEncryption: boolean): { ble: { mo
   return { ble: { mode, requireEncryption } };
 }
 
+export type MqttPatchBody = { mqtt: { mode: MqttMode; url: string; prefix: string; username: string; commandUser: string } };
+
+/**
+ * The request body for the MQTT bridge part; null when commands are asked for without the account that carries them
+ * out, or when the address does not start like a broker address. The passwords are never part of it: the server reads
+ * them from its environment only.
+ */
+export function mqttPatch(mode: MqttMode, url: string, prefix: string, username: string, commandUser: string): MqttPatchBody | null {
+  const address = url.trim();
+  if (address !== '' && !/^(mqtts?|wss?):\/\/\S+$/i.test(address)) return null;
+  if (mode === 'commands' && commandUser.trim() === '') return null;
+  return { mqtt: { mode, url: address, prefix: prefix.trim(), username: username.trim(), commandUser: commandUser.trim() } };
+}
+
+/** Carrying out commands that arrive on the broker asks for a confirmation first. */
+export function mqttChangeNeedsConfirmation(current: MqttMode, next: MqttMode): boolean {
+  return next === 'commands' && current !== 'commands';
+}
+
 /**
  * Taking commands over Bluetooth (the access token of the account travels in every one) without an encrypted
  * link, or dropping the encrypted link while commands are on, asks for a confirmation first.
@@ -110,5 +158,5 @@ export function bleChangeNeedsConfirmation(mode: BleMode, requireEncryption: boo
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  return warnings.filter((item): item is string => item === 'info_auth_off' || item === 'ble_commands_unencrypted');
+  return warnings.filter((item): item is string => item === 'info_auth_off' || item === 'ble_commands_unencrypted' || item === 'mqtt_commands_on');
 }

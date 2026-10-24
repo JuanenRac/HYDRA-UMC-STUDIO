@@ -25,7 +25,7 @@ import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, type BleMode, type SecurityState } from '../lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
 
 interface HydraInfo {
   product?: string;
@@ -59,6 +59,12 @@ export function AdminServer() {
   const [tlsEnabled, setTlsEnabled] = useState(false);
   const [tlsCert, setTlsCert] = useState('');
   const [tlsKey, setTlsKey] = useState('');
+  const [mqttMode, setMqttMode] = useState<MqttMode>('off');
+  const [mqttUrl, setMqttUrl] = useState('');
+  const [mqttPrefix, setMqttPrefix] = useState('');
+  const [mqttUser, setMqttUser] = useState('');
+  const [mqttCommandUser, setMqttCommandUser] = useState('');
+  const [confirmMqtt, setConfirmMqtt] = useState(false);
   const [pendingBle, setPendingBle] = useState<{ mode: BleMode; requireEncryption: boolean } | null>(null);
 
   const authHeaders = () => ({ 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) });
@@ -69,6 +75,13 @@ export function AdminServer() {
       setTlsEnabled(state.tls.enabled);
       setTlsCert(state.tls.certPath);
       setTlsKey(state.tls.keyPath);
+      if (state.mqtt) {
+        setMqttMode(state.mqtt.mode.value);
+        setMqttUrl(state.mqtt.url);
+        setMqttPrefix(state.mqtt.prefix);
+        setMqttUser(state.mqtt.username);
+        setMqttCommandUser(state.mqtt.commandUser);
+      }
     }
   };
 
@@ -82,6 +95,7 @@ export function AdminServer() {
       applySecurity(parseSecurityState(data));
       if (knownWarnings(data.warnings).includes('info_auth_off')) setWarning(t('ecosystem.admin_security_info_off_warning'));
       if (knownWarnings(data.warnings).includes('ble_commands_unencrypted')) setWarning(t('ecosystem.admin_security_ble_unencrypted_warning'));
+      if (knownWarnings(data.warnings).includes('mqtt_commands_on')) setWarning(t('ecosystem.admin_security_mqtt_commands_warning'));
       setNotice(t('ecosystem.admin_security_saved'));
     } catch {
       setError(t('ecosystem.admin_server_load_error'));
@@ -99,6 +113,13 @@ export function AdminServer() {
   const changeBle = (mode: BleMode, requireEncryption: boolean) => {
     if (bleChangeNeedsConfirmation(mode, requireEncryption)) setPendingBle({ mode, requireEncryption });
     else void saveSecurity(blePatch(mode, requireEncryption));
+  };
+
+  const saveMqtt = () => {
+    const patch = mqttPatch(mqttMode, mqttUrl, mqttPrefix, mqttUser, mqttCommandUser);
+    if (!patch) { setError(t('ecosystem.admin_security_mqtt_invalid')); return; }
+    if (mqttChangeNeedsConfirmation(security?.mqtt?.mode.value ?? 'off', mqttMode)) setConfirmMqtt(true);
+    else void saveSecurity(patch);
   };
 
   const saveTls = () => {
@@ -324,8 +345,53 @@ export function AdminServer() {
               </div>
             </div>
           )}
+
+          {security.mqtt && (
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-200" htmlFor="admin-security-mqtt">{t('ecosystem.admin_security_mqtt_label')}</label>
+              <select
+                id="admin-security-mqtt"
+                value={mqttMode}
+                disabled={saving || isLocked(security.mqtt.mode.source)}
+                onChange={e => setMqttMode(e.target.value as MqttMode)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500 disabled:opacity-50"
+              >
+                <option value="off">{t('ecosystem.admin_security_mqtt_off')}</option>
+                <option value="state">{t('ecosystem.admin_security_mqtt_state')}</option>
+                <option value="commands">{t('ecosystem.admin_security_mqtt_commands')}</option>
+              </select>
+              <span className="text-[10px] text-slate-500">{sourceText(security.mqtt.mode.source)}</span>
+              <input value={mqttUrl} onChange={e => setMqttUrl(e.target.value)} placeholder={t('ecosystem.admin_security_mqtt_url')} aria-label={t('ecosystem.admin_security_mqtt_url')}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500" />
+              <input value={mqttPrefix} onChange={e => setMqttPrefix(e.target.value)} placeholder={t('ecosystem.admin_security_mqtt_prefix')} aria-label={t('ecosystem.admin_security_mqtt_prefix')}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500" />
+              <input value={mqttUser} onChange={e => setMqttUser(e.target.value)} placeholder={t('ecosystem.admin_security_mqtt_user')} aria-label={t('ecosystem.admin_security_mqtt_user')}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500" />
+              <input value={mqttCommandUser} onChange={e => setMqttCommandUser(e.target.value)} placeholder={t('ecosystem.admin_security_mqtt_command_user')} aria-label={t('ecosystem.admin_security_mqtt_command_user')}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500" />
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_mqtt_passwords')}</div>
+              <button onClick={saveMqtt} disabled={saving} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                {t('ecosystem.admin_security_mqtt_save')}
+              </button>
+              <div className="text-[10px] text-slate-500">
+                {t('ecosystem.admin_security_mqtt_running', { mode: t(`ecosystem.admin_security_mqtt_${security.mqtt.activeMode}`) })}
+                {security.mqtt.appliesOnRestart ? ` ${t('ecosystem.admin_security_tls_restart')}` : ''}
+              </div>
+            </div>
+          )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmMqtt}
+        message={t('ecosystem.admin_security_mqtt_commands_confirm')}
+        onConfirm={() => {
+          setConfirmMqtt(false);
+          const patch = mqttPatch(mqttMode, mqttUrl, mqttPrefix, mqttUser, mqttCommandUser);
+          if (patch) void saveSecurity(patch);
+        }}
+        onCancel={() => setConfirmMqtt(false)}
+      />
 
       <ConfirmDialog
         open={pendingBle !== null}
