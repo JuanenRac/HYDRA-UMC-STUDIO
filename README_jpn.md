@@ -34,7 +34,7 @@
 
 | | |
 |---|---|
-| バージョン | `0.8.0.1` |
+| バージョン | `0.8.0.2` |
 | 成熟度 | 機能する |
 | 技術 | React 19 / Vite / Three.js / Tailwind CSS |
 | 対象 | HYDRA-UMC セルの Raspberry Pi CM5 |

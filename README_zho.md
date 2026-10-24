@@ -34,7 +34,7 @@
 
 | | |
 |---|---|
-| 版本 | `0.8.0.1` |
+| 版本 | `0.8.0.2` |
 | 成熟度 | 可用 |
 | 技术栈 | React 19 / Vite / Three.js / Tailwind CSS |
 | 目标 | HYDRA-UMC 工作单元的 Raspberry Pi CM5 |
