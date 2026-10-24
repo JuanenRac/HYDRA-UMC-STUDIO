@@ -306,6 +306,7 @@
     "users_role": "Rolle",
     "users_role_admin": "Administrator",
     "users_role_operator": "Operator",
+    "users_role_viewer": "Betrachter (nur lesen)",
     "users_none": "Noch keine Konten vorhanden.",
     "users_change_title": "Umbenennen / Passwort ändern",
     "users_select_account": "Konto auswählen…",

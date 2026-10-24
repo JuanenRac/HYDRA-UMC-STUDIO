@@ -23,7 +23,7 @@ import { ConfirmDialog } from './ConfirmDialog';
 
 interface StoredUserSummary {
   username: string;
-  role: 'admin' | 'operator';
+  role: 'admin' | 'operator' | 'viewer';
   createdAt: string;
 }
 
@@ -36,7 +36,7 @@ export function UsersPanel() {
 
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [newRole, setNewRole] = useState<'admin' | 'operator'>('operator');
+  const [newRole, setNewRole] = useState<'admin' | 'operator' | 'viewer'>('operator');
 
   const [renameTarget, setRenameTarget] = useState('');
   const [renameNewName, setRenameNewName] = useState('');
@@ -154,7 +154,7 @@ export function UsersPanel() {
                 <td className="px-4 py-3 text-slate-200 font-bold">{u.username}</td>
                 <td className="px-4 py-3">
                   <span className={u.role === 'admin' ? 'inline-flex items-center gap-1 text-emerald-400 text-[10px] font-black uppercase' : 'inline-flex items-center gap-1 text-sky-400 text-[10px] font-black uppercase'}>
-                    {u.role === 'admin' && <ShieldCheck size={12} />} {u.role === 'admin' ? t('config.users_role_admin') : t('config.users_role_operator')}
+                    {u.role === 'admin' && <ShieldCheck size={12} />} {u.role === 'admin' ? t('config.users_role_admin') : u.role === 'viewer' ? t('config.users_role_viewer') : t('config.users_role_operator')}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -192,8 +192,9 @@ export function UsersPanel() {
           <input value={newUsername} onChange={e => setNewUsername(e.target.value)} placeholder={t('config.users_username')} className="bg-slate-900 border border-slate-800 rounded-lg p-2 text-sm text-slate-200 outline-none focus:border-sky-500" />
           <input value={newPassword} onChange={e => setNewPassword(e.target.value)} type="password" placeholder={t('config.users_new_password')} className="bg-slate-900 border border-slate-800 rounded-lg p-2 text-sm text-slate-200 outline-none focus:border-sky-500" />
         </div>
-        <select value={newRole} onChange={e => setNewRole(e.target.value as 'admin' | 'operator')} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-sm text-slate-200 outline-none focus:border-sky-500">
+        <select value={newRole} onChange={e => setNewRole(e.target.value as 'admin' | 'operator' | 'viewer')} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-sm text-slate-200 outline-none focus:border-sky-500">
           <option value="operator">{t('config.users_role_operator')}</option>
+          <option value="viewer">{t('config.users_role_viewer')}</option>
           <option value="admin">{t('config.users_role_admin')}</option>
         </select>
         <p className="text-[9px] text-slate-600 leading-relaxed">{t('config.users_role_hint')}</p>

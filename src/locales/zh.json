@@ -306,6 +306,7 @@
     "users_role": "角色",
     "users_role_admin": "管理员",
     "users_role_operator": "操作员",
+    "users_role_viewer": "查看者(只读)",
     "users_none": "尚无账户。",
     "users_change_title": "重命名／修改密码",
     "users_select_account": "选择一个账户…",

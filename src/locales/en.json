@@ -306,6 +306,7 @@
     "users_role": "Role",
     "users_role_admin": "Administrator",
     "users_role_operator": "Operator",
+    "users_role_viewer": "Viewer (read only)",
     "users_none": "No accounts yet.",
     "users_change_title": "Rename / change password",
     "users_select_account": "Select an account…",

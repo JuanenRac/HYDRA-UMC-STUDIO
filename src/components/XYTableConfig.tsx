@@ -64,7 +64,7 @@ function XYTableVisualizer({ xyTable }: { xyTable: any }) {
  */
 export function XYTableConfig() {
   const { t } = useTranslation();
-  const { robots, updateRobot } = useHydraStore();
+  const { robots, updateRobot, sendRobotCommand } = useHydraStore();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(robots[0]?.id || 1);
   const [jogStep, setJogStep] = useState<number>(10);
 
@@ -84,9 +84,14 @@ export function XYTableConfig() {
 
   const handleReset = () => {
     if (!selectedRobot) return;
+    // The layout goes as the layout command; the position goes back to zero with the table command.
     updateRobot(selectedRobot.id, {
-      xyTable: { pos: { x: 0, y: 0 }, tableSize: { width: 300, length: 300 }, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
+      xyTable: { ...(xyTable ?? { pos: { x: 0, y: 0 } }), tableSize: { width: 300, length: 300 }, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
     } as any);
+    void sendRobotCommand(selectedRobot.id, 'table', { x: 0, y: 0, mode: 'absolute' }, (r) => ({
+      pos: { ...r.pos, tx: 0, ty: 0 },
+      xyTable: r.xyTable ? { ...r.xyTable, pos: { x: 0, y: 0 } } : r.xyTable,
+    }));
   };
 
   const handleJog = (axis: 'x' | 'y', direction: number) => {
@@ -97,9 +102,12 @@ export function XYTableConfig() {
     if (axis === 'x') newPos = Math.max(0, Math.min(newPos, xyTable.tableSize.width));
     if (axis === 'y') newPos = Math.max(0, Math.min(newPos, xyTable.tableSize.length));
     
-    updateRobot(selectedRobot.id, {
-      xyTable: { ...xyTable, pos: { ...xyTable.pos, [axis]: newPos } }
-    });
+    // One atomic table move to the position reached (the other axis stays where it is).
+    const target = { x: axis === 'x' ? newPos : xyTable.pos.x, y: axis === 'y' ? newPos : xyTable.pos.y };
+    void sendRobotCommand(selectedRobot.id, 'table', { ...target, mode: 'absolute' }, (r) => ({
+      pos: { ...r.pos, tx: target.x, ty: target.y },
+      xyTable: r.xyTable ? { ...r.xyTable, pos: target } : r.xyTable,
+    }));
   };
 
   const handleSizeChange = (axis: 'width' | 'length', value: number) => {

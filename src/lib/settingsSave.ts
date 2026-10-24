@@ -9,9 +9,9 @@
 // sent anyway, refused with a 403 and shown as a pulsing "Save failed - Retry". The edit now stays in this window,
 // nothing is sent, and the header says so once instead of failing after every change.
 
-/** False for an operator's session: it does not send the settings tree, which the server would refuse. */
+/** False for an operator's or a viewer's session: it does not send the settings tree, which the server would refuse. */
 export function settingsSaveAllowed(role: string | null): boolean {
-  return role !== 'operator';
+  return role !== 'operator' && role !== 'viewer';
 }
 
 /** True when this window holds edits of the settings tree that the account cannot save on the server. */

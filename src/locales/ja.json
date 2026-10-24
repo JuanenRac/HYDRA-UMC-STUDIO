@@ -306,6 +306,7 @@
     "users_role": "役割",
     "users_role_admin": "管理者",
     "users_role_operator": "オペレーター",
+    "users_role_viewer": "閲覧者(読み取り専用)",
     "users_none": "アカウントはまだありません。",
     "users_change_title": "名前変更／パスワード変更",
     "users_select_account": "アカウントを選択…",

@@ -329,6 +329,38 @@ export interface GithubFirmwareAsset {
   chip?: string;
   /** Present when sourced from a manifest (every real case today) - the real hardware_id (e.g. "0x48374334") the bootloader validates START_UPDATE against; hardwareStartFlash() forwards this so a real device rejects a mismatched image instead of STUDIO guessing one. */
   hardwareId?: string;
+  /** The Ed25519 signature of the image (128 hexadecimal digits) when the manifest states one; the bootloaders of the HYDRA-UMC boards accept an image only with it. */
+  signature?: string;
+}
+
+/** `major.minor[.patch]` of a version text (a leading v and anything after the third number are ignored), or null. */
+export function parseVersion(text: string | undefined | null): { major: number; minor: number; patch: number } | null {
+  const match = /^\s*v?(\d{1,5})\.(\d{1,5})(?:\.(\d{1,5}))?/.exec(text ?? '');
+  return match ? { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3] ?? 0) } : null;
+}
+
+/** Whether version `a` is strictly older than `b` (the rule of the bootloader's anti-rollback). */
+export function isOlderVersion(a: { major: number; minor: number; patch: number }, b: { major: number; minor: number; patch: number }): boolean {
+  if (a.major !== b.major) return a.major < b.major;
+  if (a.minor !== b.minor) return a.minor < b.minor;
+  return a.patch < b.patch;
+}
+
+/** A signature as 128 lowercase hexadecimal digits, or null when the text is not one (a `.sig` file may end in a newline). */
+export function normalizeSignature(text: string | undefined | null): string | null {
+  const clean = (text ?? '').trim().toLowerCase();
+  return /^[0-9a-f]{128}$/.test(clean) ? clean : null;
+}
+
+/** What an image needs besides its bytes to be accepted: the patch of its version, its signature and, when it is older than the installed one, that installed version. */
+export function flashSigningOptions(imageVersion: string | undefined, installedVersion: string | undefined, signature: string | undefined | null): { versionPatch: number; signature: string | null; downgradeFrom: string | null } {
+  const image = parseVersion(imageVersion);
+  const installed = parseVersion(installedVersion);
+  return {
+    versionPatch: image?.patch ?? 0,
+    signature: normalizeSignature(signature),
+    downgradeFrom: image && installed && isOlderVersion(image, installed) ? `${installed.major}.${installed.minor}.${installed.patch}` : null,
+  };
 }
 
 /**
@@ -363,7 +395,7 @@ export async function fetchGithubFirmwareReleases(
   const manifest = await res.json() as {
     components: Record<string, {
       display_name: string; chip: string; version_string: string; hardware_id?: string;
-      files: { bin: { filename: string; size_bytes: number; crc32: string; sha256?: string } };
+      files: { bin: { filename: string; size_bytes: number; crc32: string; sha256?: string; signature?: string } };
     }>
   };
   const keys = TIER_COMPONENTS[tier] || [];
@@ -387,6 +419,7 @@ export async function fetchGithubFirmwareReleases(
       displayName: comp.display_name,
       chip: comp.chip,
       hardwareId: comp.hardware_id,
+      signature: normalizeSignature(comp.files.bin.signature) ?? undefined,
     });
   }
   return assets;
@@ -485,6 +518,7 @@ export async function hardwareStartFlash(
   versionMinor: number,
   authToken: string | null,
   hardwareId = 0,
+  signing: { versionPatch?: number; signature?: string | null; downgradeFrom?: string | null } = {},
 ): Promise<HardwareFlashResult> {
   const resolved = resolveHardwareTarget(target);
   if (!resolved) {
@@ -498,6 +532,10 @@ export async function hardwareStartFlash(
     version_major: String(versionMajor),
     version_minor: String(versionMinor),
   });
+  if (signing.versionPatch !== undefined) qs.set('version_patch', String(signing.versionPatch));
+  const signature = normalizeSignature(signing.signature);
+  if (signature) qs.set('signature', signature);
+  if (signing.downgradeFrom && parseVersion(signing.downgradeFrom)) qs.set('downgrade_from', signing.downgradeFrom);
   try {
     const res = await fetch(apiUrl(`/api/hardware/canota/flash?${qs.toString()}`), {
       method: 'POST',

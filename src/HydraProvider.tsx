@@ -32,6 +32,7 @@ import { getModeState, getSafetyState, setSafetyState } from './lib/accessStore'
 import { fetchRobot, fetchSafetyLimits } from './lib/accessApi';
 import { revisionOf, robotRevisions } from './lib/revisions';
 import { checkTable, isUnknownCommand, markTableCommand, serverHasTableCommand, tableAsJogs } from './lib/tableMove';
+import { createEditQueue, markEditCommands, planRobotEdits, serverHasEditCommands, type RobotEditCommand } from './lib/robotEdits';
 import { checkJog, isTemperatureWarning, parseWarnings } from './lib/safetyLimits';
 import { type StopAllReport, type StopAllRobot, requestStopAllWithRetry } from './lib/stopAll';
 import { validateSceneRobots, validateTrajectoryPoints } from './lib/importValidation';
@@ -727,11 +728,47 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateRobot = (id: number, updates: Partial<RobotState>) => {
-    
+    const before = controllersRef.current.find((c) => c.id === activeControllerIdRef.current)?.robots.find((r) => r.id === id);
     setControllers((prev) => prev.map((c) => {
       if (c.id !== activeControllerId) return c;
       return { ...c, robots: c.robots.map(r => (r.id === id ? { ...r, ...updates } : r)) };
     }));
+    sendRobotEdits(id, before, updates, false);
+  };
+
+  // The edits an operator makes on one robot (points, repeat, model, role, combination, XY table layout, joints of the
+  // sliders) go to the server as commands (src/lib/robotEdits.ts): they are not lost for an account that may not save the
+  // settings tree, and two windows no longer overwrite each other's edit. What no command covers still travels in the
+  // tree, as before. A robot in Sim keeps the edits that would move it in this window, and a server that does not know the
+  // commands gets the tree again.
+  const editQueue = useRef(createEditQueue<CommandResult>(async (robotId, edit) => {
+    const result = await sendRobotCommandRef.current!(robotId, edit.command, edit.params);
+    if (isUnknownCommand(result)) {
+      markEditCommands(false);
+      editFallbackRef.current();
+    } else if (!result.ok) {
+      // What this window shows was changed before the server answered: read the robot again so the screen shows what it is.
+      void refreshRobotFromServerRef.current(robotId);
+    }
+    return result;
+  })).current;
+  const sendRobotCommandRef = useRef<null | ((id: number, command: string, params?: Record<string, unknown>) => Promise<CommandResult>)>(null);
+  const refreshRobotFromServerRef = useRef<(robotId: number) => Promise<boolean>>(async () => false);
+  const editFallbackRef = useRef<() => void>(() => undefined);
+
+  const sendRobotEdits = (id: number, before: RobotState | undefined, updates: Partial<RobotState>, withJoints: boolean) => {
+    if (!serverHasEditCommands() || (role !== null && role === 'viewer')) return;
+    const plan = planRobotEdits(before, updates, { joints: withJoints });
+    if (plan.commands.length === 0) return;
+    const sent: RobotEditCommand[] = [];
+    const heldBack: string[] = [];
+    for (const edit of plan.commands) {
+      if (blockedBySim(getModeState(), [id], edit.command)) heldBack.push(edit.command);
+      else sent.push(edit);
+    }
+    // Nothing is left for the tree when every changed field went out as a command.
+    if (plan.rest.length === 0 && heldBack.length === 0) skipNextSaveRef.current = true;
+    for (const edit of sent) void editQueue.enqueue(id, edit);
   };
 
   // One POST of a robot command, answered as a typed result. A 401 means the access token ran out: it is refreshed
@@ -975,6 +1012,16 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  // The joint values of a slider: shown at once and sent as a command (the newest of the ones sent while an earlier is on its way).
+  const setRobotJoints = (id: number, joints: RobotState['joints']) => {
+    const before = controllersRef.current.find((c) => c.id === activeControllerIdRef.current)?.robots.find((r) => r.id === id);
+    setControllers((prev) => prev.map((c) => {
+      if (c.id !== activeControllerId) return c;
+      return { ...c, robots: c.robots.map((r) => (r.id === id ? { ...r, joints } : r)) };
+    }));
+    sendRobotEdits(id, before, { joints }, true);
+  };
+
   const updateCamera = (id: number, updates: Partial<CameraState>) => {
     setControllers((prev) => prev.map((c) => {
       if (c.id !== activeControllerId) return c;
@@ -1138,11 +1185,19 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     window.location.reload();
   };
 
+  // The edit queue reaches these through refs: it is created before they are defined.
+  sendRobotCommandRef.current = sendRobotCommand;
+  refreshRobotFromServerRef.current = refreshRobotFromServer;
+  editFallbackRef.current = () => {
+    if (!settingsSaveAllowed(role)) setOperatorEdited(true);
+    else void flushSettingsSave();
+  };
+
   return (
     <HydraContext.Provider value={{
       controllers, activeControllerId, activeController, setActiveControllerId,
       robots, cameras, settings,
-      updateController, updateRobot, sendRobotCommand, refreshRobotFromServer, emergencyStop, stopAllReport, dismissStopAllReport, stopAllPending: stopAllInFlight > 0, updateCamera, flushSettingsSave, updateSettings,
+      updateController, updateRobot, setRobotJoints, sendRobotCommand, refreshRobotFromServer, emergencyStop, stopAllReport, dismissStopAllReport, stopAllPending: stopAllInFlight > 0, updateCamera, flushSettingsSave, updateSettings,
       commandIssue, dismissCommandIssue, reportCommandIssue,
       saveKinematics, loadKinematics, addController, removeController,
       exportScene, importScene, factoryReset,

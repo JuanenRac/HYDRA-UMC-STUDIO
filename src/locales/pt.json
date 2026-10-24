@@ -306,6 +306,7 @@
     "users_role": "Função",
     "users_role_admin": "Administrador",
     "users_role_operator": "Operador",
+    "users_role_viewer": "Observador (só leitura)",
     "users_none": "Ainda não há contas.",
     "users_change_title": "Mudar o nome / a palavra-passe",
     "users_select_account": "Selecione uma conta…",

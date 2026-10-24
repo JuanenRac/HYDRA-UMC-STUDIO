@@ -4,7 +4,7 @@
 // GPL-3.0-or-later - see LICENSE
 //
 // A robot can be put in Sim from the robot panel. In Sim, this window sends nothing that moves or switches
-// something on: jogs, table moves, play, reset, tool changes, valves, pumps, loading a trajectory and changing the speed are refused before they leave the browser and
+// something on: jogs, table moves, play, reset, tool changes, valves, pumps, loading a trajectory, setting the joints and changing the speed are refused before they leave the browser and
 // the interface says so. STOP, pause and the harmless settings (step, camera, vision) still
 // go through, so a robot in Sim can always be stopped. The default is Live (what the app always did); the choice
 // is kept in this browser, per robot, and a browser can also start every robot it has not chosen for in Sim.
@@ -16,7 +16,7 @@ export const MODES_KEY = 'hydra.robotModes';
 export const DEFAULT_MODE_KEY = 'hydra.defaultRobotMode';
 
 /** The commands that move a robot or switch something on: refused while the robot is in Sim. */
-export const REAL_COMMANDS: ReadonlySet<string> = new Set(['jog', 'table', 'play', 'reset', 'tool', 'valve', 'pump', 'trajectory', 'speed']);
+export const REAL_COMMANDS: ReadonlySet<string> = new Set(['jog', 'table', 'play', 'reset', 'tool', 'valve', 'pump', 'trajectory', 'speed', 'joints']);
 
 export const isRealCommand = (command: string): boolean => REAL_COMMANDS.has(command);
 

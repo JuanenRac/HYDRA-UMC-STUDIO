@@ -714,6 +714,8 @@ interface HydraStoreContextType {
   settings: SystemSettings;
   updateController: (id: string, updates: Partial<HydraController>) => void;
   updateRobot: (id: number, updates: Partial<RobotState>) => void;
+  /** The joint values of a slider: shown at once and sent to the server as the `joints` command. */
+  setRobotJoints: (id: number, joints: RobotState['joints']) => void;
   /**
    * Fires the atomic POST /api/robot/:id/command instead of mutating local
    * state + waiting on the 500ms debounced POST /api/settings (see the

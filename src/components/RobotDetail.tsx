@@ -708,7 +708,7 @@ function XYTableOverlay({
  */
 export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: { robot: RobotState, viewportOnly?: boolean, onNavigateToRobot?: (robotId: number) => void }) {
   const { t } = useTranslation();
-  const { updateRobot, sendRobotCommand, emergencyStop, reportCommandIssue, loadKinematics, settings, robots, updateSettings, authToken, cameras } = useHydraStore();
+  const { updateRobot, setRobotJoints, sendRobotCommand, emergencyStop, reportCommandIssue, loadKinematics, settings, robots, updateSettings, authToken, cameras } = useHydraStore();
   // Real bug this fixes, reported live: a robot's Camera PIP still showed
   // in the 3D viewport with every camera actually disconnected. `visionEnabled`
   // is a robot-level flag MEANT to mirror its assigned camera's own
@@ -1758,7 +1758,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                 playbackAcceleration={playbackAcceleration}
                 onSpeedChange={handleSpeedChange}
                 onAccelerationChange={handleAccelerationChange}
-                onJointChange={(j, val) => updateRobot(robot.id, { joints: { ...robot.joints, [j]: val } })}
+                onJointChange={(j, val) => setRobotJoints(robot.id, { ...robot.joints, [j]: val })}
                 t={t}
               />
             )}
@@ -2250,11 +2250,11 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                         min={jMin}
                         max={jMax}
                         value={robot.joints[j as keyof typeof robot.joints]}
-                        onChange={val => updateRobot(robot.id, { joints: { ...robot.joints, [j]: val } })}
+                        onChange={val => setRobotJoints(robot.id, { ...robot.joints, [j]: val })}
                         size={44}
                         step={jogStep}
                       />
-                      <FuturisticSlider min={jMin} max={jMax} value={robot.joints[j as keyof typeof robot.joints]} onChange={val => updateRobot(robot.id, { joints: { ...robot.joints, [j]: val } })} className="flex-1" step={jogStep} />
+                      <FuturisticSlider min={jMin} max={jMax} value={robot.joints[j as keyof typeof robot.joints]} onChange={val => setRobotJoints(robot.id, { ...robot.joints, [j]: val })} className="flex-1" step={jogStep} />
                     </div>
                   </div>
                   );
