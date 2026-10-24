@@ -62,6 +62,34 @@ export function slotBaseId(robotIndex0: number): number {
   return 0x600 + robotIndex0 * 0x20;
 }
 
+/**
+ * The frames of one slot's window of identifiers, as offsets from the slot base (mirrors tools/can_ids.py of HYDRA-UMC): each offset
+ * has one emitter, so no identifier is sent by two boards. The relay answers on +0x16 and +0x18 (they used to share the
+ * identifiers of the requests, +0x10 and +0x13), the host asks for the next acknowledgement with +0x17, and the signed image header
+ * and the downgrade token travel on +0x19 to +0x1C.
+ */
+export const SLOT_FRAMES = {
+  relayRequest: 0x10,
+  relayRequestExtra: 0x13,
+  relayResponse: 0x16,
+  pollStatus: 0x17,
+  relayResponseExtra: 0x18,
+  bootPageAck: 0x03,
+  bootStatus: 0x05,
+  bootImageHeader: 0x19,
+  bootDowngradeNonceRequest: 0x1a,
+  bootDowngradeToken: 0x1b,
+  bootDowngradeNonceResponse: 0x1c,
+} as const;
+
+/** The window of identifiers each slot owns (0x20), so every frame above fits inside it. */
+export const SLOT_WINDOW = 0x20;
+
+/** The CAN identifier of a frame of a robot's slot. */
+export function slotFrameId(robotIndex0: number, frame: keyof typeof SLOT_FRAMES): number {
+  return slotBaseId(robotIndex0) + SLOT_FRAMES[frame];
+}
+
 /** Robot Controller Board's own bootloader/telemetry block, +0x00 within its slot - architecture.md section 3.
  *  `tier` is kept in the signature for consistency with the other tier-aware ID helpers even though this
  *  particular tier's offset is always 0x00. */

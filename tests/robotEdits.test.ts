@@ -105,3 +105,19 @@ describe('what a signed flash needs', () => {
     expect(flashSigningOptions('0.3.0', undefined, sig).downgradeFrom).toBeNull();
   });
 });
+
+import { SLOT_FRAMES, SLOT_WINDOW, slotBaseId, slotFrameId } from '../src/lib/canOta';
+
+describe('the frames of a slot', () => {
+  it('have one identifier each, inside the window of the slot', () => {
+    const offsets = Object.values(SLOT_FRAMES);
+    expect(new Set(offsets).size).toBe(offsets.length);
+    for (const offset of offsets) expect(offset).toBeLessThan(SLOT_WINDOW);
+    expect(slotFrameId(7, 'bootDowngradeNonceResponse')).toBeLessThanOrEqual(0x7ff);
+    expect(slotFrameId(0, 'relayResponse')).toBe(slotBaseId(0) + 0x16);
+  });
+  it('keep the answers of the relay off the identifiers of its requests', () => {
+    expect(SLOT_FRAMES.relayResponse).not.toBe(SLOT_FRAMES.relayRequest);
+    expect(SLOT_FRAMES.relayResponseExtra).not.toBe(SLOT_FRAMES.relayRequestExtra);
+  });
+});
