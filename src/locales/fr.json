@@ -138,6 +138,8 @@
     "example_data": "Données d'exemple",
     "example_data_hint": "Aucune connexion réelle au serveur n'a encore été confirmée : les robots et caméras affichés sont une configuration d'exemple, pas de la télémétrie en direct.",
     "save_failed_retry": "Échec de l'enregistrement - Réessayer",
+    "operator_local_only": "Les modifications restent ici",
+    "operator_local_only_hint": "Ce compte est un opérateur : il peut commander les robots, mais le serveur n'accepte les modifications des réglages, des points enregistrés et de la disposition que d'un administrateur. Ce que vous avez modifié reste dans cette fenêtre et n'est pas enregistré.",
     "back_to_root": "Retour à l'accueil",
     "resources": "Ressources",
     "industrial": "Industriel",

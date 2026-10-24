@@ -124,7 +124,7 @@ const SystemSupervisor = React.lazy(() => import('./components/SystemSupervisor'
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
-  const { controllers, activeControllerId, setActiveControllerId, robots, settings, isAdmin, logout, serverReachable, settingsSaveError, flushSettingsSave, reportCommandIssue } = useHydraStore();
+  const { controllers, activeControllerId, setActiveControllerId, robots, settings, isAdmin, logout, serverReachable, settingsSaveError, settingsLocalOnly, flushSettingsSave, reportCommandIssue } = useHydraStore();
   const [activeTab, setActiveTab] = useState<string>('overview');
   // Shared with the gamepad, which moves the robot selected here (it used to be fixed on robot 1).
   const selectedRobotId = useSelectedRobotId();
@@ -253,6 +253,14 @@ export default function Dashboard() {
                   production bug (a stopped camera whose settings save
                   silently 401/403'd, leaving the real stream process
                   running) this makes visible instead of silent. */}
+              {settingsLocalOnly && (
+                <span
+                  className="ml-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                  title={t('dashboard.operator_local_only_hint')}
+                >
+                  {t('dashboard.operator_local_only')}
+                </span>
+              )}
               {settingsSaveError && (
                 <button
                   onClick={() => flushSettingsSave()}

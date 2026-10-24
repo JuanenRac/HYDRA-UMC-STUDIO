@@ -138,6 +138,8 @@
     "example_data": "Datos de ejemplo",
     "example_data_hint": "Aún no se ha confirmado ninguna conexión real con el servidor: los robots y cámaras que se muestran son configuración de ejemplo, no telemetría en vivo.",
     "save_failed_retry": "Error al guardar - Reintentar",
+    "operator_local_only": "Los cambios quedan aquí",
+    "operator_local_only_hint": "Esta cuenta es de operador: puede mover los robots, pero el servidor solo acepta cambios de los ajustes, de los puntos grabados y del diseño de un administrador. Lo que cambiaste se queda en esta ventana y no se guarda.",
     "back_to_root": "Volver al inicio",
     "resources": "Recursos",
     "industrial": "Industrial",

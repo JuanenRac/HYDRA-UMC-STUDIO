@@ -809,6 +809,8 @@ interface HydraStoreContextType {
    * real production bug (camera streams left running after being
    * "stopped") this exists to make visible instead of silent. */
   settingsSaveError: string | null;
+  /** True when this window holds edits of the settings tree that an operator's account cannot save (the server takes the tree only from an administrator): nothing is sent for them, and the header says so. */
+  settingsLocalOnly: boolean;
   /** 'login_required' when the server answered the first read of the settings with a refusal (no session): the robots on screen are then the built-in sample, not the system. */
   settingsLoadError: 'login_required' | 'server' | null;
 }

@@ -138,6 +138,8 @@
     "example_data": "示例数据",
     "example_data_hint": "尚未确认与服务器的真实连接：显示的机器人和摄像头是示例配置，不是实时遥测。",
     "save_failed_retry": "保存失败 - 重试",
+    "operator_local_only": "更改仅保留在此",
+    "operator_local_only_hint": "此账户是操作员:可以控制机器人,但服务器只接受管理员对设置、已记录的点和布局的更改。你所做的更改只保留在此窗口中,不会被保存。",
     "back_to_root": "返回主菜单",
     "resources": "资源",
     "industrial": "工业",

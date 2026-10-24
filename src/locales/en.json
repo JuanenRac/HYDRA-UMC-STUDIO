@@ -138,6 +138,8 @@
     "example_data": "Example data",
     "example_data_hint": "No real Server connection has been confirmed yet - the robots/cameras shown are example configuration, not live telemetry.",
     "save_failed_retry": "Save failed - Retry",
+    "operator_local_only": "Changes stay here",
+    "operator_local_only_hint": "This account is an operator: it can drive the robots, but the server accepts changes to the settings, the recorded points and the layout only from an administrator. What you changed stays in this window and is not saved.",
     "back_to_root": "Back to Root",
     "resources": "Resources",
     "industrial": "Industrial",

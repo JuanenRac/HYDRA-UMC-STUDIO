@@ -27,6 +27,7 @@ import {
 } from './lib/session';
 import { getControllerId } from './lib/controllerSession';
 import { blockedBySim } from './lib/liveSim';
+import { settingsLocalOnly, settingsSaveAllowed } from './lib/settingsSave';
 import { getModeState, getSafetyState, setSafetyState } from './lib/accessStore';
 import { fetchRobot, fetchSafetyLimits } from './lib/accessApi';
 import { revisionOf, robotRevisions } from './lib/revisions';
@@ -111,6 +112,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // message otherwise. See the debounced save effect, flushSettingsSave()
   // and factoryReset() below - all three share this one signal.
   const [settingsSaveError, setSettingsSaveError] = useState<string | null>(null);
+  // An operator edited the settings tree and, because the server accepts it only from an administrator, nothing was sent.
+  const [operatorEdited, setOperatorEdited] = useState(false);
 
   // Set when the server answered the first read of the settings with a refusal (no session): what is on screen
   // is then the built-in sample, not the system, and the interface says so.
@@ -157,6 +160,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [loginError, setLoginError] = useState<string | null>(null);
   const role = useMemo(() => decodeJwtRole(authToken), [authToken]);
   const isAdmin = role === 'admin';
+  const localOnly = settingsLocalOnly(role, operatorEdited);
 
   // Real, live per-page flash progress from a real POST /api/hardware/
   // canota/flash cycle (server.ts's own comment on its `canota_progress`
@@ -679,6 +683,12 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         activeControllerId: activeControllerIdRef.current,
       });
       if (payloadJson === lastPayloadJsonRef.current) return; // unchanged since the last send/receive - nothing to do
+      if (!settingsSaveAllowed(role)) {
+        // An operator cannot save the tree: it would be a 403 after every edit. The edit stays in this window.
+        setOperatorEdited(true);
+        setSettingsSaveError(null);
+        return;
+      }
 
       fetch(apiUrl('/api/settings'), {
         method: 'POST',
@@ -706,7 +716,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setSettingsSaveError(saveFailureText('save', null));
       });
     }, 500);
-  }, [settings, controllers, activeControllerId, isLoaded, reportCommandIssue]);
+  }, [settings, controllers, activeControllerId, isLoaded, reportCommandIssue, role]);
 
   const activeController = useMemo(() => controllers.find(c => c.id === activeControllerId) || controllers[0] || defaultControllers[0], [controllers, activeControllerId]);
   const robots = activeController?.robots || [];
@@ -983,6 +993,10 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const payload = { settings, controllers, activeControllerId };
     const payloadJson = JSON.stringify(payload);
     if (payloadJson === lastPayloadJsonRef.current) return; // already in sync, nothing to send
+    if (!settingsSaveAllowed(role)) {
+      setOperatorEdited(true);
+      return;
+    }
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
     try {
@@ -1135,7 +1149,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       authToken, role, isAdmin, login, logout, loginError,
       canotaProgress,
       logsClearedAt, setLogsClearedAt,
-      serverReachable, settingsSaveError, settingsLoadError
+      serverReachable, settingsSaveError, settingsLocalOnly: localOnly, settingsLoadError
     }}>
       {children}
     </HydraContext.Provider>

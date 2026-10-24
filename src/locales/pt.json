@@ -138,6 +138,8 @@
     "example_data": "Dados de exemplo",
     "example_data_hint": "Ainda não foi confirmada nenhuma ligação real ao servidor: os robôs e as câmaras apresentados são configuração de exemplo, não telemetria em direto.",
     "save_failed_retry": "Falha ao guardar - Tentar novamente",
+    "operator_local_only": "As alterações ficam aqui",
+    "operator_local_only_hint": "Esta conta é de operador: pode comandar os robôs, mas o servidor só aceita alterações das definições, dos pontos gravados e da disposição vindas de um administrador. O que alterou fica nesta janela e não é guardado.",
     "back_to_root": "Voltar ao início",
     "resources": "Recursos",
     "industrial": "Industrial",
