@@ -226,16 +226,20 @@ HYDRA-UMC-STUDIO/
 ├── src/components/3d/VacuumTableMesh.tsx
 ├── tests/vacuumTables.test.ts
 ├── src/
+│   ├── App.tsx, main.tsx, HydraProvider.tsx  # Le routeur et la mise en page, le point d'entrée et le fournisseur de l'état global
 │   ├── Dashboard.tsx            # Coquille principale de l'application - navigation, panneau Overview, métriques système en pied de page
-│   ├── store.tsx                # État global : RobotModel/RobotState/HydraController/SystemSettings -
+│   ├── store.ts                 # État global : RobotModel/RobotState/HydraController/SystemSettings -
 │   │                             # communique avec le backend séparé HYDRA-UMC-SERVER via REST + WebSocket
+│   ├── motionSource.ts, robotCommandTransition.ts # Ce que représente la pose dessinée (commandée ou suivie par la machine) et le noyau pur de transition d'état de sendRobotCommand()
 │   ├── i18n.ts                  # Configuration react-i18next - charge src/locales/*.json
+│   ├── hooks/                   # usePartColors.ts : couleurs par pièce enregistrées par HYDRA-UMC-EDITOR-STL
+│   ├── assets/, index.css, App.css # L'icône, l'écran de démarrage et les images de l'app, et les styles globaux
 │   ├── assistant/               # Hydri, l'assistant : moteur de réponses, base de connaissances (8 langues), mascotte, préférences
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # Boîtes de dialogue de Configuration Système et À propos - composants autonomes
 │   │   │                       # qui lisent le même store global, non intégrés en ligne dans la coquille du tableau de bord
-│   │   ├── ErrorBoundary.tsx    # Filet de sécurité pour tout crash de rendu de panneau - indexé par onglet actif, voir 🛡️ Fiabilité
 │   │   ├── ConfirmDialog.tsx    # Modale partagée de confirmation oui/non
+│   │   ├── ErrorBoundary.tsx    # Filet de sécurité pour tout crash de rendu de panneau - indexé par onglet actif, voir 🛡️ Fiabilité
 │   │   ├── AuthGate.tsx, UsersPanel.tsx  # Écran de connexion et le gestionnaire de comptes admin/operator de Config > Users
 │   │   ├── AdminServer.tsx, AdminLogs.tsx, AdminClients.tsx  # Menu Écosystème : panneaux
 │   │   │                       # Administration Serveur, Logs Serveur et Apps Connectées
@@ -264,6 +268,8 @@ HYDRA-UMC-STUDIO/
 │   │   │                       # Variantes de configuration spécifiques à une machine - pas encore connectées à un
 │   │   │                       # chemin de navigation (code mort)
 │   │   ├── CamerasView.tsx, GamepadConfig.tsx, GamepadController.tsx, HelpModal.tsx
+│   │   ├── BluetoothPairing.tsx, CameraMediaView.tsx, MjpegRecordingPlayer.tsx # Appairage Bluetooth de la CM5 elle-même, la bibliothèque des captures et enregistrements de caméra et le lecteur d'un enregistrement sauvegardé
+│   │   ├── StopAll.tsx, CommandIssueBanner.tsx, RobotsCatalogView.tsx, SubmittedModels.tsx # Le STOP global (un clic, tous les robots), la bannière d'une commande qui n'a pas fait ce qui était demandé, le catalogue des robots et les modèles soumis par les éditeurs
 │   │   ├── FuturisticSlider.tsx, RotaryKnob.tsx  # Widgets de contrôle de jog partagés
 │   │   └── 3d/
 │   │       ├── RobotArm.tsx     # Dirige vers le bon rig par modèle selon robot.model
@@ -279,6 +285,7 @@ HYDRA-UMC-STUDIO/
 │   │       ├── Shared3DEnvironment.tsx, SharedModule3DView.tsx, PathVisualizer.tsx,
 │   │       │   Toolhead.tsx, DraggableGizmo.tsx, ATC3DView.tsx, Rack3DView.tsx
 │   │       │                   # Environnement de scène, dessin de trajectoire, rendu d'outil/gizmo
+│   │       └── chains/                      # Les chaînes d'articulations (données) des rigs AR3, AR4, Edo, Faze4, Koch, M710ic, SoArm100, Vx300s, Wx250s et Z1, séparées des composants
 │   ├── examples/
 │   │   ├── kinematics.ts, utils.ts, robotKinematicsDispatch.ts
 │   │   │                       # Cinématique générique partagée à 2 liaisons + dispatch par modèle
@@ -287,6 +294,7 @@ HYDRA-UMC-STUDIO/
 │   │   │   lite6Kinematics.ts, m710icKinematics.ts, piperKinematics.ts, soArm100Kinematics.ts,
 │   │   │   xarm6Kinematics.ts, z1Kinematics.ts
 │   │   │                       # FK/IK réelle spécifique à chaque fabricant
+│   │   ├── jogSafety.ts, vx300sKinematics.ts, wx250sKinematics.ts # La règle de sécurité du jog pour l'articulation de base et la cinématique directe/inverse des Vx300s et Wx250s
 │   │   ├── urKinematicsShared.ts, urClassicKinematics.ts  # Moteur FK/IK partagé pour les lignes e-Series/Classic d'UR
 │   │   ├── ur3eKinematics.ts, ur5eKinematics.ts, ur10eKinematics.ts, ur16eKinematics.ts, ur20Kinematics.ts,
 │   │   │   ur3ClassicKinematics.ts, ur5ClassicKinematics.ts, ur10ClassicKinematics.ts
@@ -297,23 +305,32 @@ HYDRA-UMC-STUDIO/
 │   ├── lib/mediaTicket.ts       # Tickets de courte durée pour les images des caméras
 │   ├── lib/claims.ts, controllerSession.ts, accessApi.ts, accessStore.ts, safetyLimits.ts, liveSim.ts  # Réservations, identifiant de contrôleur, limites de sécurité lues du serveur, mode Live/Sim
 │   ├── lib/revisions.ts, tableMove.ts, audit.ts, auditApi.ts  # Révision de chaque robot (If-Match, 412), déplacement atomique de la table, journal d'audit et vérification de sa chaîne
+│   ├── lib/session.ts, serverSecurity.ts, serverErrors.ts, settingsSave.ts, sha256.ts # Jetons de session, options d'accès du serveur, textes d'erreur pour l'opérateur, qui peut enregistrer les réglages, SHA-256 sans crypto.subtle
+│   ├── lib/stopAll.ts, commandResult.ts, robotEdits.ts, selectedRobot.ts, playbackStep.ts, reachCheck.ts, toolheadMount.ts, angles.ts # Le STOP global, la réponse à une commande de robot, les modifications d'un robot comme commandes, le robot sélectionné, la numérotation des pas de lecture, l'avertissement des trajectoires inatteignables, où l'outil se place sur la bride, angles par le plus court chemin
+│   ├── lib/claimsFeed.ts, importValidation.ts, inputThrottle.ts, jogRepeater.ts, dialogKeys.ts, mjpegParser.ts, modelCatalog.ts # La liste en direct des réservations, contrôles avant l'import d'un fichier, limitation des entrées maintenues, répétition d'un bouton de jog maintenu, règles clavier des dialogues, l'analyseur des enregistrements MJPEG, le catalogue des modèles soumis par les éditeurs
 │   └── locales/                 # Fichiers de traduction en/es/de/fr/it/ja/zh/pt (react-i18next)
 ├── public/
-│   ├── models/                  # Assets de maillage 3D réels - un dossier par robot (24 au total),
+│   ├── models/                  # Vrais maillages 3D : robots-5-dof, robots-6-dof et robots-7-dof (un dossier par robot, chacun avec son ATTRIBUTION.txt - voir le tableau des licences ci-dessous), plus machine-*, racks, heatedbeds et vacuum-tables
 │   │                             # chacun avec son propre ATTRIBUTION.txt - voir la table des licences plus bas
 │   ├── WORKS/                   # Trajectoires enregistrées d'exemple, un dossier par robot
-│   ├── settings.json            # Settings d'exemple préchargés pour un checkout neuf
 │   └── favicon.svg, icons.svg   # Icône de l'app et sprite d'icônes partagé
 ├── images/                       # Bannière du README
 ├── tests/                        # Vraie suite Vitest (610 tests) - uniquement les maths FK/IK de src/examples/, sans React/DOM
 │   ├── utils.test.ts             # Paire FK/IK partagee du bras generique + ses 5 generateurs de trajectoires
 │   ├── urKinematicsShared.test.ts  # Vrai moteur de chaine DH + IK Newton-Raphson (via la vraie chaine UR5e)
 │   ├── parol6Kinematics.test.ts  # Propre chaine reelle et codee en dur de Parol6
-│   └── robotKinematicsDispatch.test.ts  # Une suite generique parametree sur les 24 vrais modeles de robots
+│   ├── robotKinematicsDispatch.test.ts  # Une suite generique parametree sur les 24 vrais modeles de robots
+│   └── ...                              # et un fichier de tests par module de src/lib, src/assistant et le reste, plus les contrôles i18n (clés, espaces réservés, qualité, pas de texte littéral dans l'interface, langues paresseuses)
 ├── tools/
 │   ├── build_test.py            # Contrôle build/compilation sans gestion de version
 │   ├── ci_validate.py           # Validation manifest/CHANGELOG/docs utilisée par la CI
-│   └── generate_portable_works.py  # Régénère les trajectoires d'exemple de public/WORKS/
+│   ├── extra_checks.py          # Les contrôles de ce dépôt en plus du validateur partagé
+│   ├── generate_portable_works.py  # Régénère les trajectoires d'exemple de public/WORKS/
+│   ├── _doc_policy.py              # Règles de documentation partagées par la famille (copie de celle de HYDRA-UMC-SDK, tenue synchronisée)
+│   ├── _readme_parity.py           # Contrôle que les huit README partagent la même structure (copie de celui de HYDRA-UMC-SDK, tenue synchronisée)
+│   └── hydra_project_tool.py       # Les mêmes commandes dans chaque dépôt : validate, test, ci, version, status, bump
+├── index.html                  # La page à partir de laquelle Vite construit l'app (la politique de sécurité du contenu est insérée à la compilation)
+├── scripts/                    # bump-version.mjs (montée de version explicite) et csp.ts (la politique de sécurité du contenu de la page compilée)
 ├── example_trajectory.json       # Trajectoire d'exemple autonome (séquence d'angles articulaires, données d'exemple)
 ├── metadata.json                 # Nom/description de l'app (utilisé par la plateforme d'hébergement)
 ├── bump_manifest_version.py      # Synchronise la version de hydra-umc.project.json avec la version native (--sync)

@@ -228,16 +228,20 @@ HYDRA-UMC-STUDIO/
 ├── src/components/3d/VacuumTableMesh.tsx
 ├── tests/vacuumTables.test.ts
 ├── src/
+│   ├── App.tsx, main.tsx, HydraProvider.tsx  # 路由与布局、入口点以及全局状态提供者
 │   ├── Dashboard.tsx            # 顶层应用外壳——导航、概览面板、页脚系统指标
-│   ├── store.tsx                # 全局状态：RobotModel/RobotState/HydraController/SystemSettings ——
+│   ├── store.ts                 # 全局状态：RobotModel/RobotState/HydraController/SystemSettings ——
 │   │                             # 通过 REST + WebSocket 与独立的 HYDRA-UMC-SERVER 后端通信
+│   ├── motionSource.ts, robotCommandTransition.ts # 所绘姿态代表什么 (指令值还是机器实际跟随的值),以及 sendRobotCommand() 的纯状态转换核心
 │   ├── i18n.ts                  # react-i18next 配置——加载 src/locales/*.json
+│   ├── hooks/                   # usePartColors.ts: 由 HYDRA-UMC-EDITOR-STL 保存的按零件颜色覆盖
+│   ├── assets/, index.css, App.css # 应用的图标、启动画面和图片,以及全局样式
 │   ├── assistant/               # 助手 Hydri：回答引擎、知识库（8 种语言）、吉祥物、偏好设置
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # 系统配置和关于对话框——读取同一全局存储的独立组件，
 │   │   │                       # 并未内联到仪表盘外壳中
-│   │   ├── ErrorBoundary.tsx    # 任何面板渲染崩溃的后备方案 - 按当前活动标签页索引，参见 🛡️ 可靠性
 │   │   ├── ConfirmDialog.tsx    # 共享的是/否确认弹窗
+│   │   ├── ErrorBoundary.tsx    # 任何面板渲染崩溃的后备方案 - 按当前活动标签页索引，参见 🛡️ 可靠性
 │   │   ├── AuthGate.tsx, UsersPanel.tsx  # 登录界面和 Config > Users 管理员/操作员账户管理器
 │   │   ├── AdminServer.tsx, AdminLogs.tsx, AdminClients.tsx  # 生态系统菜单：服务器管理、
 │   │   │                       # 服务器日志、已连接应用面板
@@ -264,6 +268,8 @@ HYDRA-UMC-STUDIO/
 │   │   ├── JuanenPnPConfig.tsx, LumenPnPConfig.tsx, JuanenCNCConfig.tsx, JuanenLaserConfig.tsx
 │   │   │                       # 特定机器的配置变体——尚未接入任何导航路径（死代码）
 │   │   ├── CamerasView.tsx, GamepadConfig.tsx, GamepadController.tsx, HelpModal.tsx
+│   │   ├── BluetoothPairing.tsx, CameraMediaView.tsx, MjpegRecordingPlayer.tsx # CM5 本机的蓝牙配对、摄像头快照与录像库,以及已保存录像的播放器
+│   │   ├── StopAll.tsx, CommandIssueBanner.tsx, RobotsCatalogView.tsx, SubmittedModels.tsx # 全局 STOP (一次点击、所有机器人)、命令未按要求执行时的横幅、机器人目录以及编辑器提交的模型
 │   │   ├── FuturisticSlider.tsx, RotaryKnob.tsx  # 共享的点动控制小部件
 │   │   └── 3d/
 │   │       ├── RobotArm.tsx     # 根据 robot.model 分发到正确的每型号装配
@@ -279,6 +285,7 @@ HYDRA-UMC-STUDIO/
 │   │       ├── Shared3DEnvironment.tsx, SharedModule3DView.tsx, PathVisualizer.tsx,
 │   │       │   Toolhead.tsx, DraggableGizmo.tsx, ATC3DView.tsx, Rack3DView.tsx
 │   │       │                   # 场景环境、轨迹绘制、工具/操纵器渲染
+│   │       └── chains/                      # AR3、AR4、Edo、Faze4、Koch、M710ic、SoArm100、Vx300s、Wx250s、Z1 骨架的关节链 (数据),与组件分开
 │   ├── examples/
 │   │   ├── kinematics.ts, utils.ts, robotKinematicsDispatch.ts
 │   │   │                       # 共享的通用双连杆运动学 + 每型号分发
@@ -287,6 +294,7 @@ HYDRA-UMC-STUDIO/
 │   │   │   lite6Kinematics.ts, m710icKinematics.ts, piperKinematics.ts, soArm100Kinematics.ts,
 │   │   │   xarm6Kinematics.ts, z1Kinematics.ts
 │   │   │                       # 特定制造商的真实正向/逆向运动学
+│   │   ├── jogSafety.ts, vx300sKinematics.ts, wx250sKinematics.ts # 基座关节的点动安全规则,以及 Vx300s 与 Wx250s 的正/逆运动学
 │   │   ├── urKinematicsShared.ts, urClassicKinematics.ts  # e-Series/经典 UR 系列的共享正向/逆向运动学引擎
 │   │   ├── ur3eKinematics.ts, ur5eKinematics.ts, ur10eKinematics.ts, ur16eKinematics.ts, ur20Kinematics.ts,
 │   │   │   ur3ClassicKinematics.ts, ur5ClassicKinematics.ts, ur10ClassicKinematics.ts
@@ -297,23 +305,32 @@ HYDRA-UMC-STUDIO/
 │   ├── lib/mediaTicket.ts       # 摄像头画面用的短时效票据
 │   ├── lib/claims.ts, controllerSession.ts, accessApi.ts, accessStore.ts, safetyLimits.ts, liveSim.ts  # 预留、控制器 ID、从服务器读取的安全限制、Live/Sim 模式
 │   ├── lib/revisions.ts, tableMove.ts, audit.ts, auditApi.ts  # 每个机器人的修订号(If-Match、412)、工作台原子移动、审计记录及其链校验
+│   ├── lib/session.ts, serverSecurity.ts, serverErrors.ts, settingsSave.ts, sha256.ts # 会话令牌、服务器访问选项、面向操作员的错误文字、谁可以保存设置、不依赖 crypto.subtle 的 SHA-256
+│   ├── lib/stopAll.ts, commandResult.ts, robotEdits.ts, selectedRobot.ts, playbackStep.ts, reachCheck.ts, toolheadMount.ts, angles.ts # 全局 STOP、机器人命令的应答、把机器人的编辑转为命令、所选机器人、回放步骤编号、不可达轨迹的警告、工具在法兰上的位置、最短路径角度
+│   ├── lib/claimsFeed.ts, importValidation.ts, inputThrottle.ts, jogRepeater.ts, dialogKeys.ts, mjpegParser.ts, modelCatalog.ts # 预约的实时列表、导入文件前的检查、对持续输入的限流、持续按住点动按钮的重复、对话框的键盘规则、已保存 MJPEG 录像的解析器、编辑器提交的模型目录
 │   └── locales/                 # en/es/de/fr/it/zh/ja/pt 翻译文件（react-i18next）
 ├── public/
-│   ├── models/                  # 真实的 3D 网格资产——每个机器人一个文件夹（共 24 个），
+│   ├── models/                  # 真实 3D 网格资源: robots-5-dof、robots-6-dof 和 robots-7-dof (每个机器人一个文件夹,各带自己的 ATTRIBUTION.txt - 见下方许可证表),另有 machine-*、racks、heatedbeds 和 vacuum-tables
 │   │                             # 每个都有自己的 ATTRIBUTION.txt——见下方许可证表
 │   ├── WORKS/                   # 示例保存轨迹，每个机器人一个文件夹
-│   ├── settings.json            # 全新检出时预置的示例设置
 │   └── favicon.svg, icons.svg   # 应用图标与共享图标精灵图
 ├── images/                       # README 横幅
 ├── tests/                        # 真实的 Vitest 套件(610 个测试)——只测 src/examples/ 的 FK/IK 数学逻辑,不涉及 React/DOM
 │   ├── utils.test.ts             # 共享的通用手臂 FK/IK 组合及其 5 个路径生成器
 │   ├── urKinematicsShared.test.ts  # 真实的 DH 链 FK + 牛顿-拉夫逊 IK 引擎(通过真实的 UR5e 链验证)
 │   ├── parol6Kinematics.test.ts  # Parol6 自身硬编码的真实链条
-│   └── robotKinematicsDispatch.test.ts  # 一套针对全部 24 个真实机器人型号参数化的通用测试
+│   ├── robotKinematicsDispatch.test.ts  # 一套针对全部 24 个真实机器人型号参数化的通用测试
+│   └── ...                              # 以及 src/lib、src/assistant 等每个模块各一个测试文件,外加 i18n 检查 (键、占位符、质量、界面无硬编码文本、懒加载语言)
 ├── tools/
 │   ├── build_test.py            # 不递增版本号的构建/编译检查
 │   ├── ci_validate.py           # CI 使用的 manifest/CHANGELOG/docs 校验
-│   └── generate_portable_works.py  # 重新生成 public/WORKS/ 的示例轨迹
+│   ├── extra_checks.py          # 除共享校验器外本仓库自己的检查
+│   ├── generate_portable_works.py  # 重新生成 public/WORKS/ 的示例轨迹
+│   ├── _doc_policy.py              # 家族共享的文档规则 (HYDRA-UMC-SDK 的副本,保持同步)
+│   ├── _readme_parity.py           # 检查八个 README 结构一致 (HYDRA-UMC-SDK 的副本,保持同步)
+│   └── hydra_project_tool.py       # 每个仓库相同的命令: validate、test、ci、version、status、bump
+├── index.html                  # Vite 构建应用所用的页面 (内容安全策略在构建时写入)
+├── scripts/                    # bump-version.mjs (显式升版) 和 csp.ts (构建后页面的内容安全策略)
 ├── example_trajectory.json       # 独立的示例轨迹（关节角序列，示例数据）
 ├── metadata.json                 # 应用名称/描述（由托管平台使用）
 ├── bump_manifest_version.py      # 将 hydra-umc.project.json 的版本与原生版本同步（--sync）

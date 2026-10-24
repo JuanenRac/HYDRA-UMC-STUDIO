@@ -228,16 +228,20 @@ HYDRA-UMC-STUDIO/
 ├── src/components/3d/VacuumTableMesh.tsx
 ├── tests/vacuumTables.test.ts
 ├── src/
+│   ├── App.tsx, main.tsx, HydraProvider.tsx  # ルーターとレイアウト、エントリポイント、グローバル状態のプロバイダー
 │   ├── Dashboard.tsx            # トップレベルのアプリシェル——ナビゲーション、概要パネル、フッターのシステム指標
-│   ├── store.tsx                # グローバル状態：RobotModel/RobotState/HydraController/SystemSettings ——
+│   ├── store.ts                 # グローバル状態：RobotModel/RobotState/HydraController/SystemSettings ——
 │   │                             # REST + WebSocket 経由で別個の HYDRA-UMC-SERVER バックエンドと通信
+│   ├── motionSource.ts, robotCommandTransition.ts # 描画されたポーズが表すもの (指令値か、機械が追従した値か)、および sendRobotCommand() の純粋な状態遷移の中核
 │   ├── i18n.ts                  # react-i18next の設定——src/locales/*.json を読み込み
+│   ├── hooks/                   # usePartColors.ts: HYDRA-UMC-EDITOR-STL が保存したパーツごとの色の上書き
+│   ├── assets/, index.css, App.css # アプリのアイコン、スプラッシュ画面、画像と、グローバルなスタイル
 │   ├── assistant/               # Hydri アシスタント：回答エンジン、知識ベース（8言語）、マスコット、設定
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # システム設定と About ダイアログ——同じグローバルストアを読み取る
 │   │   │                       # 独立したコンポーネント、ダッシュボードシェルにはインライン化されていない
-│   │   ├── ErrorBoundary.tsx    # パネルのレンダリングクラッシュに対するバックストップ - アクティブなタブでキー管理、🛡️ 信頼性を参照
 │   │   ├── ConfirmDialog.tsx    # 共有の Yes/No 確認モーダル
+│   │   ├── ErrorBoundary.tsx    # パネルのレンダリングクラッシュに対するバックストップ - アクティブなタブでキー管理、🛡️ 信頼性を参照
 │   │   ├── AuthGate.tsx, UsersPanel.tsx  # ログイン画面と Config > Users の管理者/オペレーターアカウント管理
 │   │   ├── AdminServer.tsx, AdminLogs.tsx, AdminClients.tsx  # Ecosystem メニュー：サーバー管理、
 │   │   │                       # サーバーログ、接続アプリのパネル
@@ -265,6 +269,8 @@ HYDRA-UMC-STUDIO/
 │   │   │                       # 機械固有の設定バリエーション——まだどのナビゲーションパスにも
 │   │   │                       # 接続されていない（デッドコード）
 │   │   ├── CamerasView.tsx, GamepadConfig.tsx, GamepadController.tsx, HelpModal.tsx
+│   │   ├── BluetoothPairing.tsx, CameraMediaView.tsx, MjpegRecordingPlayer.tsx # CM5 自身の Bluetooth ペアリング、カメラのスナップショットと録画のライブラリ、保存した録画のプレーヤー
+│   │   ├── StopAll.tsx, CommandIssueBanner.tsx, RobotsCatalogView.tsx, SubmittedModels.tsx # グローバル STOP (1クリックで全ロボット)、要求どおりに動かなかったコマンドのバナー、ロボットカタログ、エディターが提出したモデル
 │   │   ├── FuturisticSlider.tsx, RotaryKnob.tsx  # 共有のジョグ制御ウィジェット
 │   │   └── 3d/
 │   │       ├── RobotArm.tsx     # robot.model に応じて正しいモデルごとのリグへディスパッチ
@@ -280,6 +286,7 @@ HYDRA-UMC-STUDIO/
 │   │       ├── Shared3DEnvironment.tsx, SharedModule3DView.tsx, PathVisualizer.tsx,
 │   │       │   Toolhead.tsx, DraggableGizmo.tsx, ATC3DView.tsx, Rack3DView.tsx
 │   │       │                   # シーン環境、軌道描画、ツール/ギズモのレンダリング
+│   │       └── chains/                      # AR3、AR4、Edo、Faze4、Koch、M710ic、SoArm100、Vx300s、Wx250s、Z1 リグの関節チェーン (データ)。コンポーネントとは分離
 │   ├── examples/
 │   │   ├── kinematics.ts, utils.ts, robotKinematicsDispatch.ts
 │   │   │                       # 共有の汎用 2 リンク運動学 + モデルごとのディスパッチ
@@ -288,6 +295,7 @@ HYDRA-UMC-STUDIO/
 │   │   │   lite6Kinematics.ts, m710icKinematics.ts, piperKinematics.ts, soArm100Kinematics.ts,
 │   │   │   xarm6Kinematics.ts, z1Kinematics.ts
 │   │   │                       # メーカー固有の実際の FK/IK
+│   │   ├── jogSafety.ts, vx300sKinematics.ts, wx250sKinematics.ts # ベース関節のジョグ安全規則と、Vx300s・Wx250s の順/逆運動学
 │   │   ├── urKinematicsShared.ts, urClassicKinematics.ts  # e-Series/クラシック UR ラインの共有 FK/IK エンジン
 │   │   ├── ur3eKinematics.ts, ur5eKinematics.ts, ur10eKinematics.ts, ur16eKinematics.ts, ur20Kinematics.ts,
 │   │   │   ur3ClassicKinematics.ts, ur5ClassicKinematics.ts, ur10ClassicKinematics.ts
@@ -298,23 +306,32 @@ HYDRA-UMC-STUDIO/
 │   ├── lib/mediaTicket.ts       # カメラ映像用の短寿命チケット
 │   ├── lib/claims.ts, controllerSession.ts, accessApi.ts, accessStore.ts, safetyLimits.ts, liveSim.ts  # 予約、コントローラ ID、サーバーから読む安全上限、Live/Sim モード
 │   ├── lib/revisions.ts, tableMove.ts, audit.ts, auditApi.ts  # ロボットごとのリビジョン(If-Match、412)、テーブルのアトミックな移動、監査記録とそのチェーン検証
+│   ├── lib/session.ts, serverSecurity.ts, serverErrors.ts, settingsSave.ts, sha256.ts # セッショントークン、サーバーのアクセスオプション、オペレーター向けエラー文言、設定を保存できる人、crypto.subtle を使わない SHA-256
+│   ├── lib/stopAll.ts, commandResult.ts, robotEdits.ts, selectedRobot.ts, playbackStep.ts, reachCheck.ts, toolheadMount.ts, angles.ts # グローバル STOP、ロボットコマンドへの応答、ロボットの編集をコマンド化したもの、選択中のロボット、再生ステップの番号付け、到達不能な軌道の警告、フランジ上のツールの位置、最短経路の角度
+│   ├── lib/claimsFeed.ts, importValidation.ts, inputThrottle.ts, jogRepeater.ts, dialogKeys.ts, mjpegParser.ts, modelCatalog.ts # 予約のライブ一覧、ファイル取り込み前の検査、押し続け入力の間引き、押し続けたジョグボタンの繰り返し、ダイアログのキーボード規則、保存した MJPEG 録画のパーサー、エディターが提出したモデルのカタログ
 │   └── locales/                 # en/es/de/fr/it/zh/ja/pt 翻訳ファイル（react-i18next）
 ├── public/
-│   ├── models/                  # 実際の 3D メッシュアセット——ロボットごとに 1 フォルダ（計 24）、
+│   ├── models/                  # 実在の 3D メッシュ: robots-5-dof、robots-6-dof、robots-7-dof (ロボットごとに1フォルダー、それぞれ ATTRIBUTION.txt 付き。下のライセンス表を参照) と、machine-*、racks、heatedbeds、vacuum-tables
 │   │                             # それぞれ自身の ATTRIBUTION.txt を持つ——下記のライセンス表を参照
 │   ├── WORKS/                   # サンプル保存軌道、ロボットごとに 1 フォルダ
-│   ├── settings.json            # 新規チェックアウト用のサンプル設定
 │   └── favicon.svg, icons.svg   # アプリアイコンと共有アイコンスプライト
 ├── images/                       # README バナー
 ├── tests/                        # 実際の Vitest スイート(610 件のテスト)—— src/examples/ の FK/IK 数学のみ、React/DOM は不使用
 │   ├── utils.test.ts             # 共有の汎用アーム FK/IK ペアとその 5 つのパスジェネレーター
 │   ├── urKinematicsShared.test.ts  # 実際の DH チェーン FK + Newton-Raphson IK エンジン(実際の UR5e チェーンを通じて検証)
 │   ├── parol6Kinematics.test.ts  # Parol6 自身のハードコードされた実際のチェーン
-│   └── robotKinematicsDispatch.test.ts  # 24 の実在するロボットモデルすべてにわたる単一の汎用パラメータ化スイート
+│   ├── robotKinematicsDispatch.test.ts  # 24 の実在するロボットモデルすべてにわたる単一の汎用パラメータ化スイート
+│   └── ...                              # src/lib、src/assistant などのモジュールごとに1つのテストファイル、および i18n の検査 (キー、プレースホルダー、品質、UI の直書きテキストなし、遅延読み込み言語)
 ├── tools/
 │   ├── build_test.py            # バージョンを更新しないビルド/コンパイル確認
 │   ├── ci_validate.py           # CI が使用する manifest/CHANGELOG/docs の検証
-│   └── generate_portable_works.py  # public/WORKS/ のサンプル軌道を再生成
+│   ├── extra_checks.py          # 共通バリデーターに加えた、このリポジトリ固有の検査
+│   ├── generate_portable_works.py  # public/WORKS/ のサンプル軌道を再生成
+│   ├── _doc_policy.py              # ファミリー共通のドキュメント規則 (HYDRA-UMC-SDK のコピーで、同期を維持)
+│   ├── _readme_parity.py           # 8つの README が同じ構造であることの検査 (HYDRA-UMC-SDK のコピーで、同期を維持)
+│   └── hydra_project_tool.py       # すべてのリポジトリで共通のコマンド: validate、test、ci、version、status、bump
+├── index.html                  # Vite がアプリをビルドする元のページ (Content-Security-Policy はビルド時に埋め込まれる)
+├── scripts/                    # bump-version.mjs (明示的なバージョン更新) と csp.ts (ビルドされたページの Content-Security-Policy)
 ├── example_trajectory.json       # 独立したサンプル軌道（関節角シーケンス、サンプルデータ）
 ├── metadata.json                 # アプリ名/説明（ホスティングプラットフォームが使用）
 ├── bump_manifest_version.py      # hydra-umc.project.json のバージョンをネイティブ側と同期（--sync）

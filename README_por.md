@@ -229,10 +229,14 @@ HYDRA-UMC-STUDIO/
 ├── src/components/3d/VacuumTableMesh.tsx
 ├── tests/vacuumTables.test.ts
 ├── src/
+│   ├── App.tsx, main.tsx, HydraProvider.tsx  # O encaminhador e a disposição, o ponto de entrada e o fornecedor do estado global
 │   ├── Dashboard.tsx            # Estrutura principal da app - navegação, painel Resumo, métricas do sistema no rodapé
-│   ├── store.tsx                # Estado global: RobotModel/RobotState/HydraController/SystemSettings -
+│   ├── store.ts                 # Estado global: RobotModel/RobotState/HydraController/SystemSettings -
 │   │                             # comunica com o back-end HYDRA-UMC-SERVER separado por REST + WebSocket
+│   ├── motionSource.ts, robotCommandTransition.ts # O que a pose desenhada representa (comandada ou seguida pela máquina) e o núcleo puro de transição de estado de sendRobotCommand()
 │   ├── i18n.ts                  # Configuração do react-i18next - carrega src/locales/*.json
+│   ├── hooks/                   # usePartColors.ts: cores por peça guardadas pelo HYDRA-UMC-EDITOR-STL
+│   ├── assets/, index.css, App.css # O ícone, o ecrã de arranque e as imagens da app, e os estilos globais
 │   ├── assistant/               # Hydri, o assistente: motor de respostas, base de conhecimento (8 idiomas), mascote, preferências
 │   ├── components/
 │   │   ├── About.tsx, Config.tsx  # Caixas de Configuração do sistema e Acerca de - componentes independentes
@@ -266,6 +270,8 @@ HYDRA-UMC-STUDIO/
 │   │   │                       # Variantes de configuração específicas de máquina - ainda não ligadas a nenhum
 │   │   │                       # caminho de navegação (código morto)
 │   │   ├── CamerasView.tsx, GamepadConfig.tsx, GamepadController.tsx, HelpModal.tsx
+│   │   ├── BluetoothPairing.tsx, CameraMediaView.tsx, MjpegRecordingPlayer.tsx # Emparelhamento Bluetooth da própria CM5, a biblioteca de capturas e gravações das câmaras e o leitor de uma gravação guardada
+│   │   ├── StopAll.tsx, CommandIssueBanner.tsx, RobotsCatalogView.tsx, SubmittedModels.tsx # O STOP global (um clique, todos os robôs), o aviso de um comando que não fez o pedido, o catálogo de robôs e os modelos submetidos pelos editores
 │   │   ├── FuturisticSlider.tsx, RotaryKnob.tsx  # Widgets partilhados de controlo de jog
 │   │   └── 3d/
 │   │       ├── RobotArm.tsx     # Despacha para o rig correto por modelo segundo robot.model
@@ -281,6 +287,7 @@ HYDRA-UMC-STUDIO/
 │   │       ├── Shared3DEnvironment.tsx, SharedModule3DView.tsx, PathVisualizer.tsx,
 │   │       │   Toolhead.tsx, DraggableGizmo.tsx, ATC3DView.tsx, Rack3DView.tsx
 │   │       │                   # Ambiente da cena, desenho de trajetórias, desenho de ferramentas/gizmos
+│   │       └── chains/                      # As cadeias de articulações (dados) dos rigs AR3, AR4, Edo, Faze4, Koch, M710ic, SoArm100, Vx300s, Wx250s e Z1, separadas dos componentes
 │   ├── examples/
 │   │   ├── kinematics.ts, utils.ts, robotKinematicsDispatch.ts
 │   │   │                       # Cinemática genérica partilhada de 2 elos + despacho por modelo
@@ -289,6 +296,7 @@ HYDRA-UMC-STUDIO/
 │   │   │   lite6Kinematics.ts, m710icKinematics.ts, piperKinematics.ts, soArm100Kinematics.ts,
 │   │   │   xarm6Kinematics.ts, z1Kinematics.ts
 │   │   │                       # FK/IK reais específicas de fabricante
+│   │   ├── jogSafety.ts, vx300sKinematics.ts, wx250sKinematics.ts # A regra de segurança do jog para a articulação da base e a cinemática direta/inversa do Vx300s e do Wx250s
 │   │   ├── urKinematicsShared.ts, urClassicKinematics.ts  # Motor FK/IK partilhado para as linhas UR e-Series/Clássica
 │   │   ├── ur3eKinematics.ts, ur5eKinematics.ts, ur10eKinematics.ts, ur16eKinematics.ts, ur20Kinematics.ts,
 │   │   │   ur3ClassicKinematics.ts, ur5ClassicKinematics.ts, ur10ClassicKinematics.ts
@@ -299,23 +307,32 @@ HYDRA-UMC-STUDIO/
 │   ├── lib/mediaTicket.ts       # Tickets de vida curta para as imagens das câmaras
 │   ├── lib/claims.ts, controllerSession.ts, accessApi.ts, accessStore.ts, safetyLimits.ts, liveSim.ts  # Reservas, identificador de controlador, limites de segurança lidos do servidor, modo Live/Sim
 │   ├── lib/revisions.ts, tableMove.ts, audit.ts, auditApi.ts  # Revisão de cada robô (If-Match, 412), movimento atómico da mesa, registo de auditoria e verificação da sua cadeia
+│   ├── lib/session.ts, serverSecurity.ts, serverErrors.ts, settingsSave.ts, sha256.ts # Tokens de sessão, opções de acesso do servidor, textos de erro para o operador, quem pode guardar as definições, SHA-256 sem crypto.subtle
+│   ├── lib/stopAll.ts, commandResult.ts, robotEdits.ts, selectedRobot.ts, playbackStep.ts, reachCheck.ts, toolheadMount.ts, angles.ts # O STOP global, a resposta a um comando de robô, as edições de um robô como comandos, o robô selecionado, a numeração dos passos de reprodução, o aviso de trajetórias inalcançáveis, onde a ferramenta fica no flange, ângulos pelo caminho mais curto
+│   ├── lib/claimsFeed.ts, importValidation.ts, inputThrottle.ts, jogRepeater.ts, dialogKeys.ts, mjpegParser.ts, modelCatalog.ts # A lista em direto das reservas, verificações antes de importar um ficheiro, limitação da entrada mantida, repetição de um botão de jog mantido, regras de teclado dos diálogos, o analisador das gravações MJPEG, o catálogo de modelos submetidos pelos editores
 │   └── locales/                 # Ficheiros de tradução en/es/de/fr/it/ja/zh/pt (react-i18next)
 ├── public/
-│   ├── models/                  # Recursos de malha 3D reais - uma pasta por robô (24 no total),
+│   ├── models/                  # Malhas 3D reais: robots-5-dof, robots-6-dof e robots-7-dof (uma pasta por robô, cada uma com a sua ATTRIBUTION.txt - ver a tabela de licenças abaixo), mais machine-*, racks, heatedbeds e vacuum-tables
 │   │                             # cada uma com o seu ATTRIBUTION.txt - veja a tabela de licenças abaixo
 │   ├── WORKS/                   # Trajetórias de exemplo guardadas, uma pasta por robô
-│   ├── settings.json            # Definições de exemplo para um clone novo
 │   └── favicon.svg, icons.svg   # Ícone da app e sprite de ícones partilhado
 ├── images/                       # Faixa do README
 ├── tests/                        # Suite Vitest real - matemática FK/IK de src/examples/, o assistente, as traduções, sem React/DOM
 │   ├── utils.test.ts             # Par FK/IK genérico partilhado do braço + os seus 5 geradores de percursos
 │   ├── urKinematicsShared.test.ts  # Motor real de FK por cadeia DH + IK de Newton-Raphson (através da cadeia real do UR5e)
 │   ├── parol6Kinematics.test.ts  # A cadeia real fixa do próprio Parol6
-│   └── robotKinematicsDispatch.test.ts  # Uma suite genérica parametrizada sobre os 24 modelos de robô reais
+│   ├── robotKinematicsDispatch.test.ts  # Uma suite genérica parametrizada sobre os 24 modelos de robô reais
+│   └── ...                              # e um ficheiro de testes por cada módulo de src/lib, src/assistant e o resto, mais as verificações de i18n (chaves, marcadores, qualidade, sem texto literal na interface, idiomas preguiçosos)
 ├── tools/
 │   ├── build_test.py            # Verificação de compilação sem versão
 │   ├── ci_validate.py           # Validação de manifesto/CHANGELOG/docs usada pelo CI
-│   └── generate_portable_works.py  # Regenera as trajetórias de exemplo de public/WORKS/
+│   ├── extra_checks.py          # As verificações deste repositório além do validador partilhado
+│   ├── generate_portable_works.py  # Regenera as trajetórias de exemplo de public/WORKS/
+│   ├── _doc_policy.py              # Regras de documentação partilhadas pela família (cópia da de HYDRA-UMC-SDK, mantida em sincronia)
+│   ├── _readme_parity.py           # Verificação de que os oito README partilham a mesma estrutura (cópia da de HYDRA-UMC-SDK, mantida em sincronia)
+│   └── hydra_project_tool.py       # Os mesmos comandos em todos os repositórios: validate, test, ci, version, status, bump
+├── index.html                  # A página a partir da qual o Vite constrói a app (a política de segurança de conteúdo é inserida na compilação)
+├── scripts/                    # bump-version.mjs (subida de versão explícita) e csp.ts (a política de segurança de conteúdo da página compilada)
 ├── example_trajectory.json       # Trajetória de exemplo independente (sequência de ângulos de articulação, dados de exemplo)
 ├── metadata.json                 # Nome/descrição da app (usado pela plataforma de alojamento)
 ├── bump_manifest_version.py      # Sincroniza a versão de hydra-umc.project.json com a nativa (--sync)
