@@ -15,6 +15,7 @@ import {
   interpretCommandResponse,
   networkFailure,
 } from './lib/commandResult';
+import { createCommandSequence, isNumberedCommand } from './lib/commandSequence';
 import {
   authHeaders,
   clearTokens,
@@ -752,6 +753,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
     return result;
   })).current;
+  // One counter for this window: the server orders the numbered motion commands (lib/commandSequence.ts).
+  const commandSequence = useRef(createCommandSequence()).current;
   const sendRobotCommandRef = useRef<null | ((id: number, command: string, params?: Record<string, unknown>) => Promise<CommandResult>)>(null);
   const refreshRobotFromServerRef = useRef<(robotId: number) => Promise<boolean>>(async () => false);
   const editFallbackRef = useRef<() => void>(() => undefined);
@@ -788,7 +791,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const res = await fetch(apiUrl(`/api/robot/${id}/command`), {
           method: 'POST',
           headers,
-          body: JSON.stringify({ command, params, controllerId: getControllerId() }),
+          body: JSON.stringify(isNumberedCommand(command) ? { command, params, controllerId: getControllerId(), seq: commandSequence.next() } : { command, params, controllerId: getControllerId() }),
         });
         let body: unknown = null;
         try { body = await res.json(); } catch { /* an answer without a JSON body */ }

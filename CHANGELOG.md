@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The motion commands are numbered:** every jog, table move, joints command and stop this window sends carries a `seq` that grows with each command and follows the clock (`src/lib/commandSequence.ts`), so a server that orders them refuses a jog that reaches the robot after a stop sent later than it. When the server refuses one as out of order, the window says so in its own text in the eight languages instead of reporting that another operator holds the robot. A server that does not know `seq` ignores it. 6 tests.
 - **README in the universal layout:** the README and its seven translations follow the layout that the four families share (22 sections in a fixed order), with an architecture picture and a repository-structure picture drawn from `docs/architecture.json` and `docs/structure.json`; the CI validator checks both pictures and the file tree.
 
 - **Server Admin has three more switches:** whether a voice reply repeats what was said, the least confidence of the speech recognizer before a request that starts a movement is accepted, and the MAVLink 2 signing key file with the switch for unsigned messages. Each shows where its value comes from (the environment of the server wins and locks the field), asks for a confirmation before the protection is lowered, and explains itself in the eight languages. The defaults are the conservative ones. Tested.

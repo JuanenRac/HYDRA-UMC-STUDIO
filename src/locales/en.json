@@ -41,7 +41,8 @@
     "jog_limit": "Jog refused: the step is above the limit of {{detail}} set by the server for this model. Nothing was sent.",
     "temperature_limit": "The server lowered the bed target ({{detail}} °C) to the limit of this model.",
     "jog_server_limit": "The server did not apply the jog: {{detail}}",
-    "revision_changed": "Robot {{robots}} changed since this window last read it (another operator or window) - the {{command}} command was NOT applied. The robot was read again from the server: check it and repeat the command if it is still what you want."
+    "revision_changed": "Robot {{robots}} changed since this window last read it (another operator or window) - the {{command}} command was NOT applied. The robot was read again from the server: check it and repeat the command if it is still what you want.",
+    "stale_sequence": "A newer motion command of this window had already reached robot {{robots}} - the {{command}} command was NOT applied because it arrived out of order. Repeat it if you still want it."
   },
   "motion_source": {
     "offline": "Offline",

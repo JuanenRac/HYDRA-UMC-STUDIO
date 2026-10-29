@@ -41,7 +41,8 @@
     "jog_limit": "Jog rifiutato: il passo supera il limite di {{detail}} impostato dal server per questo modello. Non è stato inviato nulla.",
     "temperature_limit": "Il server ha abbassato la temperatura obiettivo del piatto ({{detail}} °C) al limite di questo modello.",
     "jog_server_limit": "Il server non ha applicato il jog: {{detail}}",
-    "revision_changed": "Il robot {{robots}} è cambiato da quando questa finestra lo ha letto l'ultima volta (un altro operatore o un'altra finestra) - il comando {{command}} NON è stato applicato. Il robot è stato riletto dal server: controllalo e ripeti il comando se è ancora quello che vuoi."
+    "revision_changed": "Il robot {{robots}} è cambiato da quando questa finestra lo ha letto l'ultima volta (un altro operatore o un'altra finestra) - il comando {{command}} NON è stato applicato. Il robot è stato riletto dal server: controllalo e ripeti il comando se è ancora quello che vuoi.",
+    "stale_sequence": "Un comando di movimento più recente di questa finestra aveva già raggiunto il robot {{robots}} - il comando {{command}} NON è stato applicato perché è arrivato fuori ordine. Ripetilo se lo vuoi ancora."
   },
   "motion_source": {
     "offline": "Offline",

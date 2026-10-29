@@ -41,7 +41,8 @@
     "jog_limit": "Jog abgelehnt: Der Schritt überschreitet das vom Server für dieses Modell festgelegte Limit von {{detail}}. Es wurde nichts gesendet.",
     "temperature_limit": "Der Server hat die Betttemperatur ({{detail}} °C) auf das Limit dieses Modells gesenkt.",
     "jog_server_limit": "Der Server hat den Jog nicht ausgeführt: {{detail}}",
-    "revision_changed": "Roboter {{robots}} hat sich geändert, seit dieses Fenster ihn zuletzt gelesen hat (anderer Bediener oder anderes Fenster) - der Befehl {{command}} wurde NICHT ausgeführt. Der Roboter wurde erneut vom Server gelesen: Prüfen Sie ihn und wiederholen Sie den Befehl, falls er noch gewünscht ist."
+    "revision_changed": "Roboter {{robots}} hat sich geändert, seit dieses Fenster ihn zuletzt gelesen hat (anderer Bediener oder anderes Fenster) - der Befehl {{command}} wurde NICHT ausgeführt. Der Roboter wurde erneut vom Server gelesen: Prüfen Sie ihn und wiederholen Sie den Befehl, falls er noch gewünscht ist.",
+    "stale_sequence": "Ein neuerer Bewegungsbefehl dieses Fensters hat Roboter {{robots}} bereits erreicht - der Befehl {{command}} wurde NICHT angewendet, weil er außer der Reihe eintraf. Wiederholen Sie ihn, wenn Sie ihn noch möchten."
   },
   "motion_source": {
     "offline": "Offline",

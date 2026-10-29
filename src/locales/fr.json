@@ -41,7 +41,8 @@
     "jog_limit": "Jog refusé : le pas dépasse la limite de {{detail}} fixée par le serveur pour ce modèle. Rien n'a été envoyé.",
     "temperature_limit": "Le serveur a abaissé la consigne du plateau chauffant ({{detail}} °C) à la limite de ce modèle.",
     "jog_server_limit": "Le serveur n'a pas appliqué le jog : {{detail}}",
-    "revision_changed": "Le robot {{robots}} a changé depuis la dernière lecture de cette fenêtre (autre opérateur ou autre fenêtre) - la commande {{command}} n'a PAS été appliquée. Le robot a été relu depuis le serveur : vérifiez-le et répétez la commande si c'est toujours ce que vous voulez."
+    "revision_changed": "Le robot {{robots}} a changé depuis la dernière lecture de cette fenêtre (autre opérateur ou autre fenêtre) - la commande {{command}} n'a PAS été appliquée. Le robot a été relu depuis le serveur : vérifiez-le et répétez la commande si c'est toujours ce que vous voulez.",
+    "stale_sequence": "Une commande de mouvement plus récente de cette fenêtre avait déjà atteint le robot {{robots}} - la commande {{command}} n'a PAS été appliquée car elle est arrivée dans le désordre. Répétez-la si vous la voulez encore."
   },
   "motion_source": {
     "offline": "Hors ligne",

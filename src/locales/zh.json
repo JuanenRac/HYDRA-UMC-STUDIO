@@ -41,7 +41,8 @@
     "jog_limit": "点动被拒绝：步长超过服务器为此型号设定的上限 {{detail}}。未发送任何内容。",
     "temperature_limit": "服务器已将热床目标温度（{{detail}} °C）降至此型号的上限。",
     "jog_server_limit": "服务器未执行该点动：{{detail}}",
-    "revision_changed": "自此窗口上次读取以来,机器人 {{robots}} 已发生变化(其他操作员或其他窗口)-{{command}} 命令未被应用。已从服务器重新读取该机器人:请检查,如仍需要请重新发送命令。"
+    "revision_changed": "自此窗口上次读取以来,机器人 {{robots}} 已发生变化(其他操作员或其他窗口)-{{command}} 命令未被应用。已从服务器重新读取该机器人:请检查,如仍需要请重新发送命令。",
+    "stale_sequence": "此窗口较新的运动命令已先到达机器人 {{robots}},因此顺序错乱到达的 {{command}} 命令未被应用。如仍需要,请重新执行。"
   },
   "motion_source": {
     "offline": "离线",

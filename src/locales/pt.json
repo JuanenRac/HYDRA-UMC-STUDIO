@@ -41,7 +41,8 @@
     "jog_limit": "Jog recusado: o passo excede o limite de {{detail}} definido pelo servidor para este modelo. Não foi enviado nada.",
     "temperature_limit": "O servidor reduziu a temperatura alvo da cama ({{detail}} °C) para o limite deste modelo.",
     "jog_server_limit": "O servidor não aplicou o jog: {{detail}}",
-    "revision_changed": "O robô {{robots}} mudou desde a última vez que esta janela o leu (outro operador ou outra janela) - o comando {{command}} NÃO foi aplicado. O robô foi lido de novo a partir do servidor: verifique-o e repita o comando se ainda for o que pretende."
+    "revision_changed": "O robô {{robots}} mudou desde a última vez que esta janela o leu (outro operador ou outra janela) - o comando {{command}} NÃO foi aplicado. O robô foi lido de novo a partir do servidor: verifique-o e repita o comando se ainda for o que pretende.",
+    "stale_sequence": "Um comando de movimento mais recente desta janela já tinha chegado ao robô {{robots}} - o comando {{command}} NÃO foi aplicado porque chegou fora de ordem. Repita-o se ainda o quiser."
   },
   "motion_source": {
     "offline": "Offline",
