@@ -42,7 +42,21 @@ export interface SecurityState {
     activeMode: MqttMode;
     appliesOnRestart: boolean;
   } | null;
+  /** Absent when the server predates the voice options. */
+  voice: {
+    includeHeardText: { value: boolean; source: SecuritySource };
+    minConfidence: { value: number; source: SecuritySource };
+  } | null;
+  /** Absent when the server predates the MAVLink options. The key itself is never sent, only where its file is. */
+  mavlink: {
+    signingKeyFile: { value: string; source: SecuritySource };
+    signingAllowUnsigned: { value: boolean; source: SecuritySource };
+    signing: boolean;
+    appliesOnRestart: boolean;
+  } | null;
 }
+
+const isConfidence = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1;
 
 const isSource = (value: unknown): value is SecuritySource => value === 'env' || value === 'config' || value === 'default';
 
@@ -61,6 +75,34 @@ function parseMqtt(raw: any): SecurityState['mqtt'] {
     username: typeof raw.username === 'string' ? raw.username : '',
     commandUser: typeof raw.commandUser === 'string' ? raw.commandUser : '',
     activeMode: isMqttMode(raw.activeMode) ? raw.activeMode : 'off',
+    appliesOnRestart: raw.appliesOnRestart === true,
+  };
+}
+
+function parseVoice(raw: any): SecurityState['voice'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const heard = raw.includeHeardText;
+  const confidence = raw.minConfidence;
+  if (!heard || !confidence) return null;
+  if (typeof heard.value !== 'boolean' || !isSource(heard.source)) return null;
+  if (!isConfidence(confidence.value) || !isSource(confidence.source)) return null;
+  return {
+    includeHeardText: { value: heard.value, source: heard.source },
+    minConfidence: { value: confidence.value, source: confidence.source },
+  };
+}
+
+function parseMavlink(raw: any): SecurityState['mavlink'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const key = raw.signingKeyFile;
+  const unsigned = raw.signingAllowUnsigned;
+  if (!key || !unsigned) return null;
+  if (typeof key.value !== 'string' || !isSource(key.source)) return null;
+  if (typeof unsigned.value !== 'boolean' || !isSource(unsigned.source)) return null;
+  return {
+    signingKeyFile: { value: key.value, source: key.source },
+    signingAllowUnsigned: { value: unsigned.value, source: unsigned.source },
+    signing: key.value !== '',
     appliesOnRestart: raw.appliesOnRestart === true,
   };
 }
@@ -104,6 +146,8 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     },
     ble: parseBle(raw.ble),
     mqtt: parseMqtt(raw.mqtt),
+    voice: parseVoice(raw.voice),
+    mavlink: parseMavlink(raw.mavlink),
   };
 }
 
@@ -155,8 +199,41 @@ export function bleChangeNeedsConfirmation(mode: BleMode, requireEncryption: boo
   return mode === 'commands' && !requireEncryption;
 }
 
+export type VoicePatchBody = { voice: { includeHeardText: boolean; minConfidence: number } };
+
+/**
+ * The request body for the voice options; null when the confidence is not a number from 0 to 1 (a comma is read as a
+ * decimal point, as people type it). An empty text is not a number: it never silently becomes 0.
+ */
+export function voicePatch(includeHeardText: boolean, minConfidence: string): VoicePatchBody | null {
+  const text = minConfidence.trim().replace(',', '.');
+  if (text === '' || !/^\d*\.?\d+$|^\d+\.$/.test(text)) return null;
+  const value = Number(text);
+  if (!Number.isFinite(value) || value < 0 || value > 1) return null;
+  return { voice: { includeHeardText, minConfidence: value } };
+}
+
+/** Showing what was said, or switching the confidence check off, lowers the protection of the voice commands: ask first. */
+export function voiceChangeNeedsConfirmation(current: { includeHeardText: boolean; minConfidence: number }, next: VoicePatchBody['voice']): boolean {
+  return (!current.includeHeardText && next.includeHeardText) || (current.minConfidence > 0 && next.minConfidence === 0);
+}
+
+export type MavlinkPatchBody = { mavlink: { signingKeyFile: string; signingAllowUnsigned: boolean } };
+
+/** The request body for the MAVLink signing options: only the path of the key file travels, never the key. */
+export function mavlinkPatch(signingKeyFile: string, signingAllowUnsigned: boolean): MavlinkPatchBody {
+  return { mavlink: { signingKeyFile: signingKeyFile.trim(), signingAllowUnsigned } };
+}
+
+/** Switching signing off, or accepting unsigned messages while it is on, leaves the link to the vehicle open: ask first. */
+export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; signingAllowUnsigned: boolean }, next: MavlinkPatchBody['mavlink']): boolean {
+  const signingNext = next.signingKeyFile !== '';
+  return (current.signing && !signingNext) || (signingNext && next.signingAllowUnsigned && !current.signingAllowUnsigned);
+}
+
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  return warnings.filter((item): item is string => item === 'info_auth_off' || item === 'ble_commands_unencrypted' || item === 'mqtt_commands_on');
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'mavlink_unsigned_allowed', 'mavlink_signing_off'];
+  return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }

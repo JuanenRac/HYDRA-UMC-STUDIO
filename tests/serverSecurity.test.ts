@@ -101,3 +101,59 @@ describe('the MQTT bridge options', () => {
     expect(mqttChangeNeedsConfirmation('commands', 'off')).toBe(false);
   });
 });
+
+import { mavlinkChangeNeedsConfirmation, mavlinkPatch, voiceChangeNeedsConfirmation, voicePatch } from '../src/lib/serverSecurity';
+
+describe('the voice and MAVLink signing options', () => {
+  const base = {
+    aiAccess: { value: 'open', source: 'default' }, infoAuth: { value: false, source: 'default' },
+    tls: { enabled: false, source: 'default', certPath: '', keyPath: '', active: false, appliesOnRestart: false },
+  };
+  const voice = { includeHeardText: { value: false, source: 'default' }, minConfidence: { value: 0.6, source: 'env' } };
+  const mavlink = { signingKeyFile: { value: '/etc/uav.key', source: 'config' }, signingAllowUnsigned: { value: false, source: 'default' }, signing: true, appliesOnRestart: true };
+
+  it('reads both sections when the server has them and ignores damaged or missing ones', () => {
+    const state = parseState({ ...base, voice, mavlink });
+    expect(state?.voice).toEqual(voice);
+    expect(state?.mavlink?.signing).toBe(true);
+    expect(state?.mavlink?.signingKeyFile.value).toBe('/etc/uav.key');
+    expect(parseState(base)?.voice).toBeNull();
+    expect(parseState(base)?.mavlink).toBeNull();
+    expect(parseState({ ...base, voice: { ...voice, minConfidence: { value: 3, source: 'env' } } })?.voice).toBeNull();
+    expect(parseState({ ...base, voice: { ...voice, includeHeardText: { value: 'yes', source: 'env' } } })?.voice).toBeNull();
+    expect(parseState({ ...base, mavlink: { ...mavlink, signingKeyFile: { value: 5, source: 'config' } } })?.mavlink).toBeNull();
+    expect(parseState({ ...base, voice: 4, mavlink: 'x' })?.tls.enabled).toBe(false);
+    expect(parseState({ ...base, mavlink: { ...mavlink, signingKeyFile: { value: '', source: 'default' } } })?.mavlink?.signing).toBe(false);
+  });
+
+  it('builds the voice request from what was typed and refuses what is not a number from 0 to 1', () => {
+    expect(voicePatch(true, '0.8')).toEqual({ voice: { includeHeardText: true, minConfidence: 0.8 } });
+    expect(voicePatch(false, ' 0,75 ')).toEqual({ voice: { includeHeardText: false, minConfidence: 0.75 } });
+    expect(voicePatch(false, '0')).toEqual({ voice: { includeHeardText: false, minConfidence: 0 } });
+    expect(voicePatch(false, '1')).toEqual({ voice: { includeHeardText: false, minConfidence: 1 } });
+    for (const bad of ['', '  ', '1.1', '-0.1', 'abc', '0.5.5', '1e-1', '60%', 'NaN']) expect(voicePatch(false, bad)).toBeNull();
+  });
+
+  it('asks before the voice protection is lowered, and only then', () => {
+    const now = { includeHeardText: false, minConfidence: 0.6 };
+    expect(voiceChangeNeedsConfirmation(now, { includeHeardText: true, minConfidence: 0.6 })).toBe(true);
+    expect(voiceChangeNeedsConfirmation(now, { includeHeardText: false, minConfidence: 0 })).toBe(true);
+    expect(voiceChangeNeedsConfirmation(now, { includeHeardText: false, minConfidence: 0.2 })).toBe(false);
+    expect(voiceChangeNeedsConfirmation(now, { includeHeardText: false, minConfidence: 0.95 })).toBe(false);
+    expect(voiceChangeNeedsConfirmation({ includeHeardText: true, minConfidence: 0 }, { includeHeardText: true, minConfidence: 0 })).toBe(false);
+  });
+
+  it('sends only the path of the key file, trimmed, and asks before the link is left open', () => {
+    expect(mavlinkPatch('  /etc/uav.key ', false)).toEqual({ mavlink: { signingKeyFile: '/etc/uav.key', signingAllowUnsigned: false } });
+    const signed = { signing: true, signingAllowUnsigned: false };
+    expect(mavlinkChangeNeedsConfirmation(signed, mavlinkPatch('', false).mavlink)).toBe(true);
+    expect(mavlinkChangeNeedsConfirmation(signed, mavlinkPatch('/k', true).mavlink)).toBe(true);
+    expect(mavlinkChangeNeedsConfirmation(signed, mavlinkPatch('/other', false).mavlink)).toBe(false);
+    expect(mavlinkChangeNeedsConfirmation({ signing: false, signingAllowUnsigned: false }, mavlinkPatch('/k', false).mavlink)).toBe(false);
+    expect(mavlinkChangeNeedsConfirmation({ signing: false, signingAllowUnsigned: false }, mavlinkPatch('', false).mavlink)).toBe(false);
+  });
+
+  it('knows the new warnings and drops the rest', () => {
+    expect(knownWarnings(['voice_heard_text_on', 'voice_confidence_off', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'x', 5])).toEqual(['voice_heard_text_on', 'voice_confidence_off', 'mavlink_unsigned_allowed', 'mavlink_signing_off']);
+  });
+});

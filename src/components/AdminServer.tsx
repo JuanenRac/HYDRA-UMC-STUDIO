@@ -25,7 +25,7 @@ import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
 
 interface HydraInfo {
   product?: string;
@@ -65,6 +65,12 @@ export function AdminServer() {
   const [mqttUser, setMqttUser] = useState('');
   const [mqttCommandUser, setMqttCommandUser] = useState('');
   const [confirmMqtt, setConfirmMqtt] = useState(false);
+  const [voiceHeard, setVoiceHeard] = useState(false);
+  const [voiceConfidence, setVoiceConfidence] = useState('0.6');
+  const [pendingVoice, setPendingVoice] = useState<VoicePatchBody | null>(null);
+  const [mavlinkKey, setMavlinkKey] = useState('');
+  const [mavlinkUnsigned, setMavlinkUnsigned] = useState(false);
+  const [pendingMavlink, setPendingMavlink] = useState<MavlinkPatchBody | null>(null);
   const [pendingBle, setPendingBle] = useState<{ mode: BleMode; requireEncryption: boolean } | null>(null);
 
   const authHeaders = () => ({ 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) });
@@ -75,6 +81,14 @@ export function AdminServer() {
       setTlsEnabled(state.tls.enabled);
       setTlsCert(state.tls.certPath);
       setTlsKey(state.tls.keyPath);
+      if (state.voice) {
+        setVoiceHeard(state.voice.includeHeardText.value);
+        setVoiceConfidence(String(state.voice.minConfidence.value));
+      }
+      if (state.mavlink) {
+        setMavlinkKey(state.mavlink.signingKeyFile.value);
+        setMavlinkUnsigned(state.mavlink.signingAllowUnsigned.value);
+      }
       if (state.mqtt) {
         setMqttMode(state.mqtt.mode.value);
         setMqttUrl(state.mqtt.url);
@@ -96,6 +110,10 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('info_auth_off')) setWarning(t('ecosystem.admin_security_info_off_warning'));
       if (knownWarnings(data.warnings).includes('ble_commands_unencrypted')) setWarning(t('ecosystem.admin_security_ble_unencrypted_warning'));
       if (knownWarnings(data.warnings).includes('mqtt_commands_on')) setWarning(t('ecosystem.admin_security_mqtt_commands_warning'));
+      if (knownWarnings(data.warnings).includes('voice_heard_text_on')) setWarning(t('ecosystem.admin_security_voice_heard_warning'));
+      if (knownWarnings(data.warnings).includes('voice_confidence_off')) setWarning(t('ecosystem.admin_security_voice_confidence_warning'));
+      if (knownWarnings(data.warnings).includes('mavlink_unsigned_allowed')) setWarning(t('ecosystem.admin_security_mavlink_unsigned_warning'));
+      if (knownWarnings(data.warnings).includes('mavlink_signing_off')) setWarning(t('ecosystem.admin_security_mavlink_off_warning'));
       setNotice(t('ecosystem.admin_security_saved'));
     } catch {
       setError(t('ecosystem.admin_server_load_error'));
@@ -119,6 +137,20 @@ export function AdminServer() {
     const patch = mqttPatch(mqttMode, mqttUrl, mqttPrefix, mqttUser, mqttCommandUser);
     if (!patch) { setError(t('ecosystem.admin_security_mqtt_invalid')); return; }
     if (mqttChangeNeedsConfirmation(security?.mqtt?.mode.value ?? 'off', mqttMode)) setConfirmMqtt(true);
+    else void saveSecurity(patch);
+  };
+
+  const saveVoice = () => {
+    const patch = voicePatch(voiceHeard, voiceConfidence);
+    if (!patch || !security?.voice) { setError(t('ecosystem.admin_security_voice_invalid')); return; }
+    if (voiceChangeNeedsConfirmation({ includeHeardText: security.voice.includeHeardText.value, minConfidence: security.voice.minConfidence.value }, patch.voice)) setPendingVoice(patch);
+    else void saveSecurity(patch);
+  };
+
+  const saveMavlink = () => {
+    if (!security?.mavlink) return;
+    const patch = mavlinkPatch(mavlinkKey, mavlinkUnsigned);
+    if (mavlinkChangeNeedsConfirmation({ signing: security.mavlink.signing, signingAllowUnsigned: security.mavlink.signingAllowUnsigned.value }, patch.mavlink)) setPendingMavlink(patch);
     else void saveSecurity(patch);
   };
 
@@ -379,8 +411,82 @@ export function AdminServer() {
               </div>
             </div>
           )}
+
+          {security.voice && (
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_voice_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  checked={voiceHeard}
+                  disabled={saving || isLocked(security.voice.includeHeardText.source)}
+                  onChange={e => setVoiceHeard(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_voice_heard_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.voice.includeHeardText.source)}</span>
+              <label className="text-xs font-bold text-slate-200" htmlFor="admin-security-voice-confidence">{t('ecosystem.admin_security_voice_confidence_label')}</label>
+              <input
+                id="admin-security-voice-confidence" type="text" inputMode="decimal" value={voiceConfidence}
+                disabled={saving || isLocked(security.voice.minConfidence.source)}
+                onChange={e => setVoiceConfidence(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500 disabled:opacity-50"
+              />
+              <span className="text-[10px] text-slate-500">{sourceText(security.voice.minConfidence.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_voice_help')}</div>
+              <button onClick={saveVoice} disabled={saving || (isLocked(security.voice.includeHeardText.source) && isLocked(security.voice.minConfidence.source))} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                <Save size={14} /> {t('ecosystem.admin_security_voice_save')}
+              </button>
+            </div>
+          )}
+
+          {security.mavlink && (
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_mavlink_title')}</h5>
+              <label className="text-xs font-bold text-slate-200" htmlFor="admin-security-mavlink-key">{t('ecosystem.admin_security_mavlink_key_label')}</label>
+              <input
+                id="admin-security-mavlink-key" type="text" value={mavlinkKey} placeholder={t('ecosystem.admin_security_mavlink_key_placeholder')}
+                disabled={saving || isLocked(security.mavlink.signingKeyFile.source)}
+                onChange={e => setMavlinkKey(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500 disabled:opacity-50"
+              />
+              <span className="text-[10px] text-slate-500">{sourceText(security.mavlink.signingKeyFile.source)}</span>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  checked={mavlinkUnsigned}
+                  disabled={saving || isLocked(security.mavlink.signingAllowUnsigned.source)}
+                  onChange={e => setMavlinkUnsigned(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_mavlink_unsigned_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.mavlink.signingAllowUnsigned.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_mavlink_help')}</div>
+              <button onClick={saveMavlink} disabled={saving || (isLocked(security.mavlink.signingKeyFile.source) && isLocked(security.mavlink.signingAllowUnsigned.source))} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                <Save size={14} /> {t('ecosystem.admin_security_mavlink_save')}
+              </button>
+              <div className="text-[10px] text-slate-500">
+                {security.mavlink.signing ? t('ecosystem.admin_security_mavlink_signing_on') : t('ecosystem.admin_security_mavlink_signing_off')}
+                {security.mavlink.appliesOnRestart ? ` ${t('ecosystem.admin_security_mavlink_restart')}` : ''}
+              </div>
+            </div>
+          )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingVoice !== null}
+        message={t('ecosystem.admin_security_voice_confirm')}
+        onConfirm={() => { const next = pendingVoice; setPendingVoice(null); if (next) void saveSecurity(next); }}
+        onCancel={() => setPendingVoice(null)}
+      />
+
+      <ConfirmDialog
+        open={pendingMavlink !== null}
+        message={t('ecosystem.admin_security_mavlink_confirm')}
+        onConfirm={() => { const next = pendingMavlink; setPendingMavlink(null); if (next) void saveSecurity(next); }}
+        onCancel={() => setPendingMavlink(null)}
+      />
 
       <ConfirmDialog
         open={confirmMqtt}
