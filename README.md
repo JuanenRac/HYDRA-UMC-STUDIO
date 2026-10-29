@@ -1,34 +1,35 @@
+<!-- =============================================================================
+HYDRA-UMC-STUDIO - Web control dashboard of the HYDRA-UMC multi-robot micro-factory
+Copyright (C) JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+GPL-3.0-or-later - see LICENSE
+============================================================================= -->
+
 <p align="center">
   <img src="images/HYDRA_UMC_BANNER.svg" alt="HYDRA-UMC-STUDIO banner" width="100%">
 </p>
 
-# 🖥️ HYDRA-UMC STUDIO
+# 🤖 HYDRA-UMC-STUDIO
 
-<p align="center">
-  🇺🇸 <b>English</b> |
-  <a href="README_spa.md">🇪🇸 Español</a> |
-  <a href="README_fra.md">🇫🇷 Français</a> |
-  <a href="README_ita.md">🇮🇹 Italiano</a> |
-  <a href="README_deu.md">🇩🇪 Deutsch</a> |
-  <a href="README_zho.md">🇨🇳 简体中文</a> |
-  <a href="README_jpn.md">🇯🇵 日本語</a>
-</p>
-
+<p align="center">🇺🇸 <b>English</b> | <a href="README_spa.md">🇪🇸 Español</a> | <a href="README_fra.md">🇫🇷 Français</a> | <a href="README_ita.md">🇮🇹 Italiano</a> | <a href="README_deu.md">🇩🇪 Deutsch</a> | <a href="README_zho.md">🇨🇳 简体中文</a> | <a href="README_jpn.md">🇯🇵 日本語</a> | <a href="README_por.md">🇵🇹 Português</a></p>
 
 ### 🤖 Web-Based Control Dashboard for the HYDRA-UMC Multi-Robot Micro-Factory
 
 <p align="center">
-  <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
-  <img src="https://img.shields.io/badge/Framework-React%2019-61DAFB.svg" alt="React">
-  <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
-  <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="Three.js">
-  <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="TypeScript">
+  <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
+  <img src="https://img.shields.io/badge/Framework-React%2019-61DAFB.svg" alt="Framework">
+  <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
+  <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
+  <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
+  <img src="https://img.shields.io/badge/Tests-631%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Version-0.8.0.2-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
-
 
 ---
 
 > **Safety and security status:** this ecosystem is not a certified safety system. There is no hardware E-STOP path, no firmware-enforced limits or interlocks and no verified motion command yet; firmware images are checked with CRC32 and a shared-key HMAC-SHA256, not with an asymmetric signature; TLS and mutual TLS are optional and off by default; no custom board has been populated or tested yet. Read the [security baseline](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/SECURITY_BASELINE.md) and the [threat model](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/THREAT_MODEL.md) before relying on any statement here for the safety of a person.
+
+---
 
 ## 📋 At a glance
 
@@ -36,9 +37,12 @@
 |---|---|
 | Version | `0.8.0.2` |
 | Maturity | Functional |
+| Tests | 631 (`npm test`) |
 | Stack | React 19 / Vite / Three.js / Tailwind CSS |
 | Target | The Raspberry Pi CM5 of a HYDRA-UMC cell |
 | On real hardware | Not yet: no run on real hardware is recorded for this version |
+
+**Jump to:** [Overview](#-overview) · [Architecture](#-architecture) · [Features](#-features) · [Security & Safety](#-security--safety) · [Interfaces](#-interfaces) · [Configuration](#-configuration) · [Quick start](#-quick-start) · [Testing](#-testing) · [Troubleshooting](#-troubleshooting) · [Repository Structure](#-repository-structure) · [Related Projects](#-related-projects)
 
 ## 🚦 Project status
 
@@ -49,7 +53,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟡 | Works for its main purpose; the honesty check above lists what is still missing |
-| Tests | 🟠 | No test count is recorded for this repository yet |
+| Tests | 🟢 | 631 automated tests, run on every change |
 | Real hardware | 🔴 | Not yet: no run on real hardware is recorded for this version |
 | Documentation | 🟢 | README in eight languages, checked against the manifest on every change |
 
@@ -61,9 +65,19 @@ Each line is one part of this repository and the light says how far it is today.
 
 Built with **React 19**, **Vite**, **Three.js** (via `@react-three/fiber`/`@react-three/drei`), and **TypeScript** - a pure client with no backend code of its own. Persistent state lives on the separate **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** backend this app talks to over the network.
 
----
+## 🧩 Role in HYDRA-UMC
 
-## 🦾 Multi-Robot 3D Control
+**HYDRA-UMC-STUDIO** is the web control dashboard of the cell: it draws every robot in 3D from its real kinematics, jogs and records trajectories, runs the accessory and machine panels, flashes and tests firmware over the CAN-OTA chain and administers the server, in eight languages. It holds no state of its own and decides nothing about safety: roles, limits, reservations and the stop are decided by HYDRA-UMC-SERVER.
+
+## 🏛️ Architecture
+
+<p align="center">
+  <img src="images/architecture.svg" alt="HYDRA-UMC-STUDIO architecture" width="100%">
+</p>
+
+## ✨ Features
+
+### Multi-Robot 3D Control
 
 Manage multiple independent 6-DOF robots simultaneously, each with its own real 3D model, kinematics, and jog/trajectory state. The model picker (RobotDetail → Config tab) groups every available robot by manufacturer:
 
@@ -86,9 +100,7 @@ That's 24 real robot models across 13 manufacturers, plus the Generic placeholde
 
 Per-robot jog controls include a rotary knob + slider for both **speed** and **acceleration** on every axis, and a full endstop/status readout alongside a live "Robot Controller Board" status card once CAN-OTA is wired to real hardware. Every knob/slider snaps to the jog **Step** value selected in its own combobox (0.1° up to 100°/mm) rather than moving continuously. Robot **A1** is a running proof of concept for a different layout: its Speed/Acceleration/J1-J6/XYZ jog controls live in a draggable floating panel on top of the 3D viewport itself (`Joystick3D.tsx` for the XYZ pad) instead of the panel below it that every other robot still uses - see `src/components/robots/A1.tsx`.
 
----
-
-## 🏭 Kinematic Brain Stage
+### Kinematic Brain Stage
 
 A dedicated control panel for the HYDRA-UMC motherboard's own local motion subsystem - the STM32H745's directly-driven axes, separate from the distributed robot arms on STACK A:
 
@@ -98,9 +110,7 @@ A dedicated control panel for the HYDRA-UMC motherboard's own local motion subsy
 - 🎢 **Conveyor** - installed/running/speed control for the E1-driven transport belt
 - 🛑 A full 12-endstop grid, 3 fan channels, and 10 pumps/10 valves for process fluidics
 
----
-
-## 🎛️ Accessory & Machine Control Panels
+### Accessory & Machine Control Panels
 
 Dedicated panels for the machines and accessories that go alongside a robot cell: **XY Table**, **ATC Tools**, **Rack Manager**, **Pick & Place** (including JuanenPnP/LumenPnP-specific configuration), **CNC** (including JuanenCNC-specific configuration), **Laser** (including JuanenLaser-specific configuration), **Vacuum Table**, and **Heated Bed**.
 
@@ -130,16 +140,13 @@ Independent STL copies for JuanenPnP, JuanenCNC and JuanenLaser; LumenPnP stays 
 
 [Independent machine models — STL](docs/MACHINE_ASSETS.md).
 
-
 These original JuanenPNP / HYDRA-UMC assets and their SCAD sources use GPL-3.0; they are not Opulo machine CAD.
 
-## 🔄 Works & Trajectories
+### Works & Trajectories
 
 Load canned example trajectories, jog-and-record your own points live, or load/save/edit/play back complex multi-point trajectories (JSON) per robot. Trajectories are portable between robot models - each recorded point is resolved through that specific robot's own real kinematics (`src/examples/robotKinematicsDispatch.ts`) at load/draw/play time, not baked against whichever robot happened to record it, so the same trajectory file drives a Parol6 and a UR10e correctly along their own real reachable geometry.
 
----
-
-## 🛠️ CAN-OTA Firmware Tools
+### CAN-OTA Firmware Tools
 
 Flash and self-test firmware across the whole HYDRA-UMC + URTC CAN-OTA chain from one dashboard, with two dedicated entry points:
 
@@ -148,52 +155,40 @@ Flash and self-test firmware across the whole HYDRA-UMC + URTC CAN-OTA chain fro
 
 Both can download real firmware releases straight from GitHub (`firmware_manifest.json`-based, CRC32-verified) for either the `URTC` or `HYDRA-UMC` repository. As noted above, the transport itself runs against a full built-in simulation until real STM32H745 firmware exists on real hardware to talk to.
 
----
-
-## 🎮 Gamepad Support
+### Gamepad Support
 
 USB and Bluetooth controller integration with custom per-button/per-axis mappings, for jogging robots and accessories without a mouse/keyboard. Real-time actions (joint/table jog, E-STOP, START/STOP, playback speed) fire the same atomic `sendRobotCommand()` path the jog buttons in the robot detail panel use, not the debounced settings save - see `GamepadController.tsx`.
 
----
-
-## 📹 Camera Integration
+### Camera Integration
 
 Up to 8 simultaneous live feeds (USB vision or thermal MLX90640/41/42-family sensors) with recording and inference status - the camera matrix HYDRA-UMC's own dual USB 3.0 hub subsystem is built around.
 
----
-
-## 🌐 Multi-Language UI
+### Multi-Language UI
 
 Full interface translation across **English, Spanish, German, French, Italian, Simplified Chinese, Japanese and Portuguese** (`src/locales/`), including the in-app Help menu with its step-by-step guides, the assistant, the About dialog (version/author/license), and every tab of the System Configuration dialog. Coverage isn't 100% of every screen yet - a handful of standalone accessory panels are still hardcoded English, not yet reached by translation work.
 
----
-
-## 🤖 Help, Guides & Assistant
+### Help, Guides & Assistant
 
 The Help window has a **Step-by-step guides** tab: one guide per task (add a controller, move a robot, record a trajectory, use the cameras, flash firmware, manage users, remote access, security...), each with a level (basic, advanced, technical), a search box and a button that goes to the screen where the task is done. **Hydri**, the assistant, is a small animated mascot that floats over the dashboard: it explains the screen you are in, walks you through a task step by step, answers questions typed in words with no server and no AI model (in any of the 8 languages), can read the answers aloud with the browser's own voice, can be dragged anywhere and pinned there, and is switched on or off from the Help window. Its preferences are kept in the browser (`src/assistant/`).
 
----
-
-## ℹ️ About & System Configuration
+### ℹ️ About & System Configuration
 
 Two standalone dialogs, both reachable from the header (`Config`/`About` buttons): **About** shows the running app version (read live from `GET /api/hydra-info`), author, and license; **Config** covers server identity, controller/node management, UI theme + language, robot renaming, camera↔robot mapping with conflict detection, the custom URDF library, third-party software integrations (OpenPnP/CNC/Laser backends), per-client remote access (independent switches for SUITE/Android/iOS), user accounts, per-robot work directories, CAN-OTA transport, and gamepad mapping - each its own tab. Both are their own components (`src/components/About.tsx`, `src/components/Config.tsx`), not inlined into the main dashboard shell.
 
-## 🛡️ Reliability
+### Reliability
 
 The app protects itself against two different classes of runtime failure, both born from a real production incident (a kiosk display going black after a redeploy). `src/main.tsx` listens for Vite's own `vite:preloadError` event - emitted when a browser tab left open across a redeploy tries to fetch a `React.lazy()`-loaded panel chunk (every `Dashboard.tsx` panel, content-hashed per `vite.config.ts`) that no longer exists under its old hash - and reloads the page once automatically, so a long-lived kiosk tab or a stale background tab self-heals without anyone noticing. A `sessionStorage` guard stops that from reload-looping forever if a chunk is genuinely missing for some other reason. Separately, `src/components/ErrorBoundary.tsx` wraps the `<Suspense>` panel area as a backstop for any other render crash; it's keyed by the active tab, so switching away from a crashed panel actually retries the next one instead of leaving the whole dashboard stuck on a fallback screen.
 Commands never fail silently: every jog, play, power, vision and tool command returns a typed result, an expired session is refreshed once and retried, and anything still refused is shown in a banner. The red **STOP** button is global: one click, no confirmation, it stops every robot of every controller and switches every valve and pump off in one call (`POST /api/stop-all`). It sits in the header and the footer, in the robot panel and in the remote-control overlay, and Ctrl+Shift+Space presses it from the keyboard (a chord that is not typed by accident, ignored on a held key). The answer is listed robot by robot (a warning when a robot did not stop or the server could not save the stop; robots reserved by someone else are marked); a network failure is retried once, a server over its rate limit (429) or without the route (404) is answered with the per-robot stop, and a persistent "STOP not confirmed" warning stays until a later STOP gets an answer. Joystick jogging is a held deadman control (it ends on pointer cancel, window blur, a hidden tab or after 8 seconds), a J1 move stays on the nearest equivalent angle and a jog step above 20 degrees is refused. Gamepad input follows the robot selected in the interface and is rate limited. A release firmware is checked against its sha256 before CAN-OTA flashing, bootloader images are opt-in, and imported trajectories and scenes are validated before they reach the shared state.
 
 Who may move a robot, and how far, is decided by the server for every client. A robot can be **reserved** for the account and the window (a controller id chosen per window) that asks for it: the same account on another window, or another account, is refused with a message that says which (`other-controller`, `other-account`, `controller-id-required`), the list of reservations comes from `GET /api/claims`, and an administrator can take a robot over. The size of a jog, the range of an absolute jog and the hottest heated-bed target are read from `GET /api/safety-limits` instead of being kept in the app; an administrator edits them by model in **Ecosystem > Safety limits**, together with the optional arming of the jog (off by default; when on, a button arms the jog for a limited time) and the mandatory controller id. Each robot has a **Live / Sim** switch (Live by default): in Sim, nothing that moves the robot or switches something on is sent from that window, while STOP always goes through. A Work or an example with points the arm cannot reach is refused with the list of those points, and can be scaled to the reach of the model instead. The list of reservations is also pushed by the server on the WebSocket (the `claims` message, for connections that asked for `remoteApiVersion=2`), so the access bar shows a change at once instead of waiting for its next poll; the poll only runs now and then while the pushes arrive. Writes are conditional: each one carries the revision of the robot this window last saw (`If-Match`), and when someone else changed the robot in between the server answers 412, the robot is read again and the banner says so (Standard checks reservations, the table and the one-off commands; Strict checks everything but STOP; Off checks nothing; STOP is never checked). The XY table moves with the atomic `table` command, and administrators read the append-only audit record, with its SHA-256 chain verified, in **Ecosystem > Audit record**.
 
-## 🔐 Accounts & Access
+### Accounts & Access
 
 Every backend seeds one account on its own first-ever start - username `admin`, password `admin` - change it from **Config > Users** as soon as the server is reachable beyond a fully trusted LAN. That same tab lets an admin account create additional **operator** accounts: an operator can sign in, watch live state, and drive robots (jog/play/pause/stop/tool/valve/pump/speed), but can't overwrite global settings or manage other accounts. No account is required just to look around - the login screen's own "Continue read-only" skips straight to the dashboard with writes disabled. Full contract (roles, tokens, the `/api/users` routes) documented in [HYDRA-UMC-SERVER's own `docs/REMOTE_API.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md) sections 2a/2b. In production the first administrator comes from the deployment's bootstrap settings and the server refuses example secrets (see [HYDRA-UMC-SERVER's `docs/PRODUCTION_BOOTSTRAP.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/PRODUCTION_BOOTSTRAP.md)).
 
 Each of the 5 remote clients (SUITE, Android, iOS, Watch, DSI) self-identifies via an `X-Hydra-Client` request header, so **Config > Remote Access** can allow or block each one independently instead of one combined switch for all five.
 
----
-
-## 💾 Persistent State
+### Persistent State
 
 HYDRA-UMC STUDIO itself is a pure client - it holds no state of its own beyond what's in memory for the current session. All persistence (`settings.json`, `users.json`, saved trajectories under `WORKS/`, submitted models) lives on the separate **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** backend this app talks to over the network (see that project's own `data/` and README for the full picture) - state survives a page reload or this app's own redeploy, since neither of those touches the backend process at all. `settings.json` itself is deliberately excluded from that backend's static file serving (it holds controller IPs, CAN-OTA configuration, and full per-robot state), even though its `WORKS/` folder is served normally.
 
@@ -203,154 +198,71 @@ The same `GET`/`POST /api/settings` contract, plus a discovery endpoint (`GET /a
 
 `GET /api/system/metrics` powers the Overview dashboard footer: CPU load and memory usage are always real (Node's own `os` module); temperature reads real `vcgencmd measure_temp` output when running on an actual Raspberry Pi and falls back to a clearly-flagged mock otherwise (`temp_is_real` in the response); Wi-Fi/Ethernet/Bluetooth status are read from `/sys/class/net`/`/sys/class/bluetooth` (Linux-only, `null`/unknown on any other host rather than a guessed value).
 
----
+## 🔒 Security & Safety
 
-## 📂 Repository Structure
+| Threat | Defence | Where |
+|---|---|---|
+| Injected scripts running in the page | The build puts a Content-Security-Policy in the page: scripts only from the page itself (plus WebAssembly and the 3D decoder host), no objects, base and forms limited to the page; `HYDRA_STUDIO_CSP` can switch it off or replace it | `scripts/csp.ts`, `vite.config.ts` |
+| A sign-in token read back from storage | A login typed here lives in `sessionStorage` (it survives a reload, not closing the tab); `localStorage` only when "keep me signed in" is ticked. A token that arrives in the address goes to `sessionStorage` only, comes in the `#token=` fragment that a browser never sends, and is removed from the address as soon as it is read | `src/lib/session.ts` |
+| Two operators changing the same robot | Every robot has a revision: a write sends it with `If-Match` and a stale one is refused with 412; the table moves atomically; reservations and who may jog are decided by the server for every client | `src/lib/revisions.ts`, `src/lib/tableMove.ts`, `src/lib/robotEdits.ts` |
+| A stop that waits for a confirmation or a slow screen | The red STOP is global and asks nothing: one `POST /api/stop-all` stops every robot and switches every valve and pump off; if the route is rate limited or missing it falls back to the stop of each robot, and a robot that did not stop is shown in a banner | `src/lib/stopAll.ts`, `src/components/StopAll.tsx` |
+| An access option lowered by mistake (voice, MAVLink, Bluetooth, TLS...) | Server Admin shows where each value comes from and locks the ones the server's environment sets; lowering one asks for a confirmation and, once saved, a warning stays on screen: a voice reply that repeats what was said, a recognizer confidence of 0, unsigned MAVLink messages, or MAVLink signing off | `src/components/AdminServer.tsx`, `src/lib/serverSecurity.ts` |
+| A broken panel or a stale page after a redeploy blacking out the screen | Each tab sits in its own error boundary, and a stale chunk after a deploy triggers one automatic reload (guarded, so a really missing file cannot loop) | `src/main.tsx`, `src/components/ErrorBoundary.tsx` |
 
-```text
-HYDRA-UMC-STUDIO/
-├── docs/VACUUM_TABLE_MODELS.md
-├── docs/HEATED_BED_MODELS.md
-├── docs/RACK_MODELS.md
-├── docs/MACHINE_ASSETS.md
-├── public/models/machine-pnp/{juanenpnp}, machine-cnc/juanencnc, machine-laser/juanenlaser/ # STL + ATTRIBUTION + VARIANT.md
-├── src/machineAssets.ts
-├── tests/machineAssets.test.ts
-├── public/models/racks/default/        # Rack.scad + base/wall/guide/assembly STL
-├── src/racks.ts
-├── tests/racks.test.ts
-├── public/models/heatedbeds/default/   # catalog.json + HeatedBed.scad + 4 STL
-├── src/heatedBeds.ts
-├── src/components/3d/HeatedBedMesh.tsx
-├── tests/heatedBeds.test.ts
-├── public/models/vacuum-tables/default/  # catalog.json + 6 STL + 6 SCAD
-├── src/vacuumTables.ts
-├── src/components/3d/VacuumTableMesh.tsx
-├── tests/vacuumTables.test.ts
-├── src/
-│   ├── App.tsx, main.tsx, HydraProvider.tsx  # The router and layout, the entry point and the provider of the global state
-│   ├── Dashboard.tsx            # Top-level app shell - navigation, Overview panel, footer system metrics
-│   ├── store.ts                 # Global state: RobotModel/RobotState/HydraController/SystemSettings -
-│   │                             # talks to the separate HYDRA-UMC-SERVER backend over REST + WebSocket
-│   ├── motionSource.ts, robotCommandTransition.ts # What the drawn pose stands for (commanded or followed by the machine), and the pure state-transition core of sendRobotCommand()
-│   ├── i18n.ts                  # react-i18next setup - loads src/locales/*.json
-│   ├── hooks/                   # usePartColors.ts: per-part colour overrides saved by HYDRA-UMC-EDITOR-STL
-│   ├── assets/, index.css, App.css # The icon, the splash screen and the pictures of the app, and the global styles
-│   ├── assistant/               # Hydri, the assistant: answer engine, knowledge base (8 languages), mascot, preferences
-│   ├── components/
-│   │   ├── About.tsx, Config.tsx  # System Configuration and About dialogs - standalone components
-│   │   │                       # reading the same global store, not inlined into the dashboard shell
-│   │   ├── ConfirmDialog.tsx    # Shared yes/no confirmation modal
-│   │   ├── ErrorBoundary.tsx    # Backstop for any panel render crash - keyed by active tab, see 🛡️ Reliability
-│   │   ├── AuthGate.tsx, UsersPanel.tsx  # Login screen and the Config > Users admin/operator account manager
-│   │   ├── AdminServer.tsx, AdminLogs.tsx, AdminClients.tsx  # Ecosystem menu: Server Admin, Server
-│   │   │                       # Logs, and Connected Apps panels
-│   │   ├── RobotAccessBar.tsx, AdminSafety.tsx  # Per-robot access bar (Live/Sim, reservation, jog arming) and the Safety limits admin screen
-│   │   ├── AdminAudit.tsx  # Ecosystem > Audit record screen (administrators): filter, verify the chain, export
-│   │   ├── EcosystemServices.tsx, EcosystemTelemetry.tsx, AiFamilyStatus.tsx  # Ecosystem menu:
-│   │   │                       # Services, Telemetry, and AI Family status panels
-│   │   ├── SystemSupervisor.tsx  # Ecosystem menu: Netdata-style real-time CPU/memory/disk/temp/
-│   │   │                       # process supervisor, polling HYDRA-UMC-SERVER's GET /api/system/supervisor
-│   │   ├── RobotDetail.tsx      # Shared per-robot jog/trajectory/config implementation (the model
-│   │   │                       # picker lives here) - every robots/A*.tsx entry point below renders this
-│   │   ├── robots/A1.tsx .. A8.tsx  # Per-robot entry points - thin re-exports of RobotDetail.tsx, the
-│   │   │                       # place to grow any future robot-specific behavior without touching the
-│   │   │                       # other 7. A1 is the one exception already: RobotDetail.tsx's own
-│   │   │                       # `isFloatingLayout` branch (robot.id === 1) moves Speed/Acceleration/
-│   │   │                       # J1-J6/XYZ jog into a draggable overlay on the 3D viewport instead of
-│   │   │                       # the panel below it.
-│   │   ├── Joystick3D.tsx       # XYZ jog D-pad used by that floating overlay
-│   │   ├── VirtualKinematics.tsx  # The React Three Fiber <Canvas> scene host
-│   │   ├── KinematicBrainStage.tsx  # XY gantry / heated bed / ATC revolver / conveyor panel
-│   │   ├── Flasher.tsx, Tester.tsx  # CAN-OTA tools (URTC and HYDRA-UMC tiers)
-│   │   ├── ATCToolsConfig.tsx, RackConfigView.tsx, PickAndPlace.tsx, CNC.tsx, Laser.tsx,
-│   │   │   VacuumTableConfig.tsx, HeatedBedConfig.tsx, XYTableConfig.tsx
-│   │   │                       # Accessory/machine control panels
-│   │   ├── JuanenPnPConfig.tsx, LumenPnPConfig.tsx, JuanenCNCConfig.tsx, JuanenLaserConfig.tsx
-│   │   │                       # Machine-specific configuration variants - not yet wired into any
-│   │   │                       # navigation path (dead code)
-│   │   ├── CamerasView.tsx, GamepadConfig.tsx, GamepadController.tsx, HelpModal.tsx
-│   │   ├── BluetoothPairing.tsx, CameraMediaView.tsx, MjpegRecordingPlayer.tsx # Bluetooth pairing for the CM5 itself, the library of camera snapshots and recordings, and the player of a saved recording
-│   │   ├── StopAll.tsx, CommandIssueBanner.tsx, RobotsCatalogView.tsx, SubmittedModels.tsx # The global STOP (one click, every robot), the banner for a command that did not do what was asked, the robots catalogue, and the models the editors submitted
-│   │   ├── FuturisticSlider.tsx, RotaryKnob.tsx  # Shared jog control widgets
-│   │   └── 3d/
-│   │       ├── RobotArm.tsx     # Dispatches to the correct per-model rig by robot.model
-│   │       ├── Parol6Arm.tsx, Faze4Arm.tsx, AR3Arm.tsx, AR4Arm.tsx, EdoArm.tsx, Gen2Arm.tsx,
-│   │       │   Gen3LiteArm.tsx, Lite6Arm.tsx, M710icArm.tsx, PiperArm.tsx, SoArm100Arm.tsx,
-│   │       │   Vx300sArm.tsx, Wx250sArm.tsx, XArm6Arm.tsx, Z1Arm.tsx, KochArm.tsx,
-│   │       │   LumenPnPRig.tsx, GenericRobotArm.tsx
-│   │       │                   # Manufacturer-specific rigs, each hand-transcribed from its own real URDF
-│   │       ├── URArm.tsx, UrClassicArm.tsx  # Shared parametrized rigs for the e-Series/Classic Universal Robots lines
-│   │       ├── UR3eArm.tsx, UR5eArm.tsx, UR10eArm.tsx, UR16eArm.tsx, UR20Arm.tsx,
-│   │       │   Ur3ClassicArm.tsx, Ur5ClassicArm.tsx, Ur10ClassicArm.tsx
-│   │       │                   # Thin per-model wrappers around URArm.tsx / UrClassicArm.tsx
-│   │       ├── Shared3DEnvironment.tsx, SharedModule3DView.tsx, PathVisualizer.tsx,
-│   │       │   Toolhead.tsx, DraggableGizmo.tsx, ATC3DView.tsx, Rack3DView.tsx
-│   │       │                   # Scene environment, trajectory drawing, tool/gizmo rendering
-│   │       └── chains/                      # The joint chains (data) of the AR3, AR4, Edo, Faze4, Koch, M710ic, SoArm100, Vx300s, Wx250s and Z1 rigs, apart from the components
-│   ├── examples/
-│   │   ├── kinematics.ts, utils.ts, robotKinematicsDispatch.ts
-│   │   │                       # Shared generic 2-link kinematics + per-model dispatch
-│   │   ├── parol6Kinematics.ts, faze4Kinematics.ts, ar3Kinematics.ts, ar4Kinematics.ts,
-│   │   │   edoKinematics.ts, gen2Kinematics.ts, gen3LiteKinematics.ts, kochKinematics.ts,
-│   │   │   lite6Kinematics.ts, m710icKinematics.ts, piperKinematics.ts, soArm100Kinematics.ts,
-│   │   │   xarm6Kinematics.ts, z1Kinematics.ts
-│   │   │                       # Manufacturer-specific real FK/IK
-│   │   ├── jogSafety.ts, vx300sKinematics.ts, wx250sKinematics.ts # The jog safety rule for the base joint, and the Vx300s and Wx250s forward/inverse kinematics
-│   │   ├── urKinematicsShared.ts, urClassicKinematics.ts  # Shared FK/IK engine for the e-Series/Classic UR lines
-│   │   ├── ur3eKinematics.ts, ur5eKinematics.ts, ur10eKinematics.ts, ur16eKinematics.ts, ur20Kinematics.ts,
-│   │   │   ur3ClassicKinematics.ts, ur5ClassicKinematics.ts, ur10ClassicKinematics.ts
-│   │   │                       # Thin per-model UR chain/limits/home-pose data
-│   │   └── list/                # 26 canned example trajectories (circles, spirals, XY-table patterns, pick-and-place, ...)
-│   ├── lib/canOta.ts            # CAN-OTA simulation/protocol layer, GitHub firmware download
-│   ├── lib/apiBase.ts           # Backend URL resolution - relative+proxied in dev, VITE_API_BASE_URL in prod
-│   ├── lib/mediaTicket.ts       # Short-lived tickets for the camera pictures
-│   ├── lib/claims.ts, controllerSession.ts, accessApi.ts, accessStore.ts, safetyLimits.ts, liveSim.ts  # Reservations, controller id, safety limits read from the server, Live/Sim mode
-│   ├── lib/revisions.ts, tableMove.ts, audit.ts, auditApi.ts  # Revision of each robot (If-Match, 412), atomic table move, audit record and its chain check
-│   ├── lib/session.ts, serverSecurity.ts, serverErrors.ts, settingsSave.ts, sha256.ts # Session tokens, the access options of the server, operator-facing error texts, who may save the settings, SHA-256 without crypto.subtle
-│   ├── lib/stopAll.ts, commandResult.ts, robotEdits.ts, selectedRobot.ts, playbackStep.ts, reachCheck.ts, toolheadMount.ts, angles.ts # The global STOP, the answer of a robot command, the edits of a robot as commands, the selected robot, playback step numbering, the warning for unreachable trajectories, where a tool sits on the flange, shortest-path angles
-│   ├── lib/claimsFeed.ts, importValidation.ts, inputThrottle.ts, jogRepeater.ts, dialogKeys.ts, mjpegParser.ts, modelCatalog.ts # The live list of reservations, checks before a file is imported, throttling of held input, repeat of a held jog button, keyboard rules of dialogs, the parser of saved MJPEG recordings, the catalogue of models the editors submitted
-│   └── locales/                 # en/es/de/fr/it/ja/zh/pt translation files (react-i18next)
-├── public/
-│   ├── models/                  # Real 3D mesh assets: robots-5-dof, robots-6-dof and robots-7-dof (one folder per robot, each with its own ATTRIBUTION.txt - see the license table below), plus machine-*, racks, heatedbeds and vacuum-tables
-│   │                             # each with its own ATTRIBUTION.txt - see the license table below
-│   ├── WORKS/                   # Example saved trajectories, one folder per robot
-│   └── favicon.svg, icons.svg   # App icon and shared icon sprite
-├── images/                       # README banner
-├── tests/                        # Real Vitest suite (610 tests) - src/examples/ FK/IK math only, no React/DOM
-│   ├── utils.test.ts             # Shared generic-arm FK/IK pair + its 5 path generators
-│   ├── urKinematicsShared.test.ts  # Real DH-chain FK + Newton-Raphson IK engine (via the real UR5e chain)
-│   ├── parol6Kinematics.test.ts  # Parol6's own hard-coded real chain
-│   ├── robotKinematicsDispatch.test.ts  # One generic suite parametrized over all 24 real robot models
-│   └── ...                              # and one test file per module of src/lib, src/assistant and the rest, plus the i18n checks (keys, placeholders, quality, no literal UI text, lazy languages)
-├── tools/
-│   ├── build_test.py            # Non-versioning build/compile check
-│   ├── ci_validate.py           # Manifest/CHANGELOG/docs validation used by CI
-│   ├── extra_checks.py          # The checks of this repository beyond the shared validator
-│   ├── generate_portable_works.py  # Regenerates public/WORKS/'s example trajectories
-│   ├── _doc_policy.py              # Documentation rules shared by the family (a copy of HYDRA-UMC-SDK's, kept in sync)
-│   ├── _readme_parity.py           # Check that the eight READMEs share one structure (a copy of HYDRA-UMC-SDK's, kept in sync)
-│   └── hydra_project_tool.py       # The same commands in every repository: validate, test, ci, version, status, bump
-├── index.html                  # The page Vite builds the app from (the Content-Security-Policy is put in at build time)
-├── scripts/                    # bump-version.mjs (explicit version bump) and csp.ts (the Content-Security-Policy of the built page)
-├── example_trajectory.json       # Standalone example trajectory (joint-angle sequence, sample data)
-├── metadata.json                 # App name/description (used by the hosting platform)
-├── bump_manifest_version.py      # Syncs hydra-umc.project.json's version to the native one (--sync)
-├── build.sh / build.bat          # Install deps + production build
-├── build-test.sh / build-test.bat  # Non-versioning build/compile check
-├── dev.sh / dev.bat              # Install deps + start the Vite dev server
-├── vitest.config.ts              # Vitest config (tests/ only, real node environment - no DOM needed)
-├── tsconfig.test.json            # Standalone typecheck project for tests/ (kept separate from the app/node references)
-├── .env.example                  # VITE_API_BASE_URL template - see src/lib/apiBase.ts
-├── README.md                     # this file
-└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md / README_por.md  # translations
+**What it never does:** decide safety. It holds no state of its own and is not an emergency-stop path in hardware; the Kinematic Brain stage and the CAN-OTA tools have only run against the built-in simulation.
+
+## 🔌 Interfaces
+
+| Topic or route | What it carries |
+|---|---|
+| `/api/login`, `/api/refresh`, `/api/logout` | sign in, renew the token once when it expires and sign out |
+| `/api/settings`, `/api/robot/:id`, `/api/robot/:id/command` | the state tree and the typed commands (jog, play, tool, valve, pump, vision) with `If-Match` |
+| `/api/robot/:id/claim`, `/release`, `/jog-arm`, `/api/claims` | reserve a robot for this account and window, release it, arm the jog, list who holds what |
+| `/api/stop-all`, `/api/safety-limits` | the global stop and the safety limits the server enforces |
+| `/ws` | live push of the state (token as the `hydra.bearer` subprotocol, `remoteApiVersion=2`) |
+| `/api/camera/*`, `/api/cameras/status` | camera streams, snapshots, recordings, PTZ and the short-lived picture ticket |
+| `/api/hardware/canota/version`, `/api/hardware/canota/flash` | the CAN-OTA chain used by Flasher and Tester (a full simulation until real boards exist) |
+| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin: the access switches, the connected apps, the server log and the audit record (administrators) |
+
+## ⚙️ Configuration
+
+Two kinds of settings: the build and the browser of this app, and the access switches of the server that Server Admin edits (the environment of the server wins over what is saved; the screen shows which one applies and locks the others).
+
+| Variable | Default | What it sets |
+|---|---|---|
+| `HYDRA_STUDIO_CSP` | `default` | build time: `default`, `off` (no policy, for a host that sets the header itself) or a complete policy of your own |
+| `VITE_API_BASE_URL` | this page's host on port 3000 | build time: where the server is when it is not on the same host (see `.env.example`) |
+| `server.proxy` (`vite.config.ts`) | `localhost:3000` | dev server only: forwards `/api`, `/ws` and `/WORKS` to the server so no CORS setup is needed |
+| `aiAccess` | `open` | who may use the local AI relay: `open` is any signed-in account, `admin` only administrators |
+| `infoAuth` | off | ask for a sign-in on the read-only host information (metrics, process supervisor, ecosystem status) |
+| `tls.enabled` | off (plain HTTP) | HTTPS and WSS with the certificate and key you name; the screen shows the fingerprint of the certificate in use |
+| `ble.mode` | `off` | Bluetooth LE for phones near the server: `off`, `state` (publish the state only) or `commands` (also take commands); an unknown word means off |
+| `ble.requireEncryption` | on | the command characteristic is written, and the state read, only over an encrypted link; only `off` in the variable turns it off |
+| `mqtt.mode` | `off` | the MQTT bridge to the broker of the cell: `off`, `state` or `commands`, with its URL, prefix and users |
+| `voice.includeHeardText` | off | a voice reply repeats what was said; that is personal data, so it is off, and in the variable only the exact word `1` turns it on |
+| `voice.minConfidence` | `0.6` | the least confidence of the speech recognizer, from 0 to 1, to accept a request that starts a movement; 0 switches the check off, a stop is never held back, and a bad number in the variable is ignored |
+| `mavlink.signingKeyFile` | empty (no signing) | MAVLink 2 signing of the UAV bridge: the path of a file with the 32-byte key (32 raw bytes or 64 hexadecimal characters); only the path is saved, never the key, and the bridge reads it when it starts |
+| `mavlink.signingAllowUnsigned` | off | still accept messages that are not signed (a vehicle that does not sign yet); the screen warns while it is on |
+
+## 🚀 Quick start
+
+Requires Node.js 22 or newer with npm, and a running HYDRA-UMC-SERVER (port 3000): STUDIO is a pure client and has nothing to talk to without it.
+
+```bash
+npm install
+./dev.sh                           # Vite dev server on port 5173, proxying /api, /ws and /WORKS to the server on port 3000 (dev.bat on Windows)
+npm test                           # the Vitest suite
+npm run typecheck && npm run lint  # types and lint
+./build.sh                         # production build into dist/ (build.bat on Windows)
 ```
 
-The backend this app talks to (settings persistence, the REST/WebSocket API, `docs/REMOTE_API.md`) lives in the separate **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** repository, not in this one - see that project's own README for its structure and how to run it.
+## 🧪 Testing
 
----
+631 automated tests run with `npm test`. They need no hardware and nothing outside this machine.
 
-## 🛠️ Development Environment
+The CI runs `HYDRA_UMC_CI=1 python tools/ci_validate.py`, which checks the manifest, the documents, the eight READMEs and the pictures.
+
+## 🏗️ Build & Release
 
 ### Requirements
 - [Node.js](https://nodejs.org/) (v22 or higher)
@@ -372,11 +284,9 @@ Runs Vite's own dev server (plain `vite`, port `5173`) with live-reloading. `vit
 ### Automated Tests
 
 ```bash
-npm test          # vitest run - 610 real tests over src/examples/
+npm test          # vitest run - 631 tests
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
-
-Found while auditing the code: `src/examples/` (the FK/IK math for every one of the 24 real robot models `robotKinematicsDispatch.ts` fans out to - `utils.ts`'s shared generic-arm formula, `urKinematicsShared.ts`'s real DH-chain + Newton-Raphson engine shared by every UR-family model, `parol6Kinematics.ts`'s own hard-coded chain, and the 23 per-robot `*Kinematics.ts` files themselves) had zero automated test coverage. Fixed: `tests/` (new, Vitest) - 145 tests, most of them one generic, parametrized suite over `robotKinematicsDispatch.ts`'s own dispatch table rather than 23 near-duplicate bespoke files, so a new robot added to that table is covered automatically. Separately: `npm run typecheck` was *also* itself a silent no-op the whole time - `tsc --noEmit` alone against this repo's own solution-style root `tsconfig.json` (`"files": []`, only project `"references"`) checks nothing at all; the real fix needs project build mode (`tsc -b --noEmit`), which immediately surfaced 8 real, pre-existing type errors (now fixed) that had been silently accumulating since `vite build`'s own esbuild/SWC transpilation never type-checks. See [`CHANGELOG.md`](CHANGELOG.md) for the full breakdown.
 
 ### Production Build
 
@@ -393,9 +303,88 @@ Deploy the resulting `dist/` folder to any static host. By default the built app
 
 ### Versioning
 
-`bump_manifest_version.py` (repo root) is the single owner of both `hydra-umc.project.json` and `package.json`'s own `version` field - `npm run build` (`vite build`) is deliberately compilation-only so it can never create drift between them by bumping one and not the other. `scripts/bump-version.mjs` is a legacy native-only helper kept for reference; nothing in this repo calls it anymore. The scheme itself is still the ecosystem-wide base-10 "odometer": patch +1 per real bump, rolling over into minor (and minor into major) past 9 rather than ever reaching a two-digit segment (`0.0.9` -> `0.1.0`, not `0.0.10`). The running version is visible live in the **About** dialog (the Studio version is read from this app's own `package.json`; the server version shown next to it comes from `GET /api/hydra-info`), and the full history is in [`CHANGELOG.md`](CHANGELOG.md).
+`bump_manifest_version.py` (repo root) is the single owner of both `hydra-umc.project.json` and `package.json`'s own `version` field - `npm run build` (`vite build`) is deliberately compilation-only so it can never create drift between them by bumping one and not the other. `scripts/bump-version.mjs` is a legacy native-only helper kept for reference; nothing in this repo calls it anymore. The running version is visible live in the **About** dialog (the Studio version is read from this app's own `package.json`; the server version shown next to it comes from `GET /api/hydra-info`), and the full history is in [`CHANGELOG.md`](CHANGELOG.md).
 
----
+## 🩺 Troubleshooting
+
+| You see | Because | Do |
+|---|---|---|
+| The sign-in fails, or every call says the server cannot be reached | The server is not running, or the page looks for it on the wrong host | Start HYDRA-UMC-SERVER (port 3000 in development) or build with `VITE_API_BASE_URL` |
+| A jog or a command is refused because another account or window holds the robot | The server reserves a robot for the account and the window that asked first; jogging also has to be armed | Release it from the access bar of the robot, or wait; an administrator can see who holds it |
+| A save is refused with 412 | Another client changed the robot after you loaded it, so your revision is stale | Reload the robot and make the change again |
+| A switch of Server Admin is grey | The value comes from the environment of the server, which wins over what is saved | Change the variable of the server and restart it; the screen names the source of each value |
+| The page is blank after the server was redeployed | The open tab still points at chunks that no longer exist | The page reloads itself once; if it stays blank, reload by hand and rebuild if a file is really missing |
+
+## 📂 Repository Structure
+
+<p align="center">
+  <img src="images/repository-structure.svg" alt="Repository structure of HYDRA-UMC-STUDIO" width="100%">
+</p>
+
+<details>
+<summary>Text version of the tree</summary>
+
+```text
+HYDRA-UMC-STUDIO/
+├── src/                             source code
+│   ├── App.tsx                      The router and layout, the entry point and the provider of the global state
+│   ├── Dashboard.tsx                Top-level app shell - navigation, Overview panel, footer system metrics
+│   ├── store.ts                     Global state: RobotModel/RobotState/HydraController/SystemSettings -
+│   ├── motionSource.ts              What the drawn pose stands for (commanded or followed by the machine), and the pure state-transition core of sendRobotCommand()
+│   ├── i18n.ts                      react-i18next setup - loads src/locales/*.json
+│   ├── hooks/                       usePartColors.ts: per-part colour overrides saved by HYDRA-UMC-EDITOR-STL
+│   ├── assets/                      The icon, the splash screen and the pictures of the app, and the global styles
+│   ├── assistant/                   Hydri, the assistant: answer engine, knowledge base (8 languages), mascot, preferences
+│   ├── components/                  the screens and panels: robot detail, 3D scene, administration, CAN-OTA tools
+│   ├── examples/                    forward and inverse kinematics of the 24 real robot models
+│   ├── lib/canOta.ts                CAN-OTA simulation/protocol layer, GitHub firmware download
+│   ├── lib/apiBase.ts               Backend URL resolution - relative+proxied in dev, VITE_API_BASE_URL in prod
+│   ├── lib/mediaTicket.ts           Short-lived tickets for the camera pictures
+│   ├── lib/claims.ts                Reservations, controller id, safety limits read from the server, Live/Sim mode
+│   ├── lib/revisions.ts             Revision of each robot (If-Match, 412), atomic table move, audit record and its chain check
+│   ├── lib/session.ts               Session tokens, the access options of the server, operator-facing error texts, who may save the settings, SHA-256 without crypto.subtle
+│   ├── lib/stopAll.ts               The global STOP, the answer of a robot command, the edits of a robot as commands, the selected robot, playback step numbering, the warning for unreachable trajectories, where a tool sits on the flange, shortest-path angles
+│   ├── lib/claimsFeed.ts            The live list of reservations, checks before a file is imported, throttling of held input, repeat of a held jog button, keyboard rules of dialogs, the parser of saved MJPEG recordings, the catalogue of models the editors submitted
+│   └── locales/                     en/es/de/fr/it/ja/zh/pt translation files (react-i18next)
+├── docs/                            guides of the vacuum table, heated bed, rack and machine models
+├── public/                          3D models: robots, racks, heated beds, vacuum tables, machines (STL and OpenSCAD)
+├── images/                          README banner
+├── tests/                           Real Vitest suite (610 tests) - src/examples/ FK/IK math only, no React/DOM
+├── tools/                           project tools and CI checks
+├── scripts/                         bump-version.mjs (explicit version bump) and csp.ts (the Content-Security-Policy of the built page)
+├── .github/                         CI workflow and issue templates
+├── index.html                       The page Vite builds the app from (the Content-Security-Policy is put in at build time)
+├── example_trajectory.json          Standalone example trajectory (joint-angle sequence, sample data)
+├── metadata.json                    App name/description (used by the hosting platform)
+├── bump_manifest_version.py         Syncs hydra-umc.project.json's version to the native one (--sync)
+├── build.sh / build.bat             Install deps + production build
+├── build-test.sh / build-test.bat   Non-versioning build/compile check
+├── dev.sh / dev.bat                 Install deps + start the Vite dev server
+├── vitest.config.ts                 Vitest config (tests/ only, real node environment - no DOM needed)
+├── tsconfig.test.json               Standalone typecheck project for tests/ (kept separate from the app/node references)
+├── .env.example                     VITE_API_BASE_URL template - see src/lib/apiBase.ts
+├── CHANGELOG.md                     what changed in each version
+├── hydra-umc.project.json           manifest: version, maturity, family
+├── package.json                     package metadata and scripts
+└── test.sh                          runs the tests
+```
+
+</details>
+
+## 🗺️ Roadmap & Known limits
+
+**Known limits today**
+
+* The CAN-OTA chain (Flasher and Tester) and the Kinematic Brain stage have only run against the built-in simulation: no HYDRA-UMC controller board exists yet to flash or test.
+* Table, heated bed and rack sizes are visual settings, not robot calibration and not an electrical or manufacturing design.
+* The STOP goes through the server; there is no wireless emergency stop and no hardware stop path.
+* Anything that moves a robot is decided by the server (roles, limits, reservations); this app cannot make a move safe by itself.
+
+**Next:** every novelty of this app is ported to HYDRA-UMC-SUITE, and the CAN-OTA tools wait for the first real boards.
+
+## 🌍 Languages
+
+This README and the documents of the repository exist in eight languages: English, Spanish, German, French, Italian, Japanese, Chinese and Portuguese (Portugal). They are written together and checked in the CI so that the eight files have the same sections and the same links.
 
 ## 🔗 Related Projects
 
@@ -490,52 +479,26 @@ This project is part of the HYDRA-UMC robotics ecosystem by the same author (Jua
 - **[HYDRA-UMC-OPS-AGENT](https://github.com/JuanenRac/HYDRA-UMC-OPS-AGENT)** — maintenance-incident coordinator: a low-privilege edge role collects a sanitized inventory/health snapshot, a control-plane role renders it read-only and asks an AI provider to suggest a diagnosis - never applies a patch or deploys anything.
 - **[HYDRA-UMC-DEV-SERVER](https://github.com/JuanenRac/HYDRA-UMC-DEV-SERVER)** — reproducible development host (Raspberry Pi 5 / CM5) that stores the ecosystem's source and runs bounded build/test tasks under a durable queue; a dedicated dev role, explicitly not an operational CM5.
 
----
+## 📚 Documentation
 
-## 📚 Documentation & Community
+Where to read more:
 
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** — tech stack and coding guidelines for a pull request.
-- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** — the standards of behavior expected in this community.
-- **[SECURITY.md](SECURITY.md)** — how to report a vulnerability, and this project's own real security focus areas.
-- **[SUPPORT.md](SUPPORT.md)** — where to ask questions and report bugs.
-- **[LICENSE.md](LICENSE.md)** — this project's own license.
+* [Security baseline of the ecosystem](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/SECURITY_BASELINE.md)
+* [Threat model of the ecosystem](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/THREAT_MODEL.md)
+* [Changelog of this repository](CHANGELOG.md)
+* [License of this repository](LICENSE.md)
+
+## 🤝 Contributing & Community
+
+* Before a pull request run `HYDRA_UMC_CI=1 py -3 tools/ci_validate.py` (or `HYDRA_UMC_CI=1 python3 tools/ci_validate.py`): it must print `CI_VALIDATION=PASS`. Do not run `build.sh` or `build.bat` for this check; building is not a check.
+* The eight READMEs are written from one source in HYDRA-UMC-DOCS; do not edit them by hand. Change the source and write them again with `tools/make_readmes.py`.
+* Do not state in a README what has not run: say "simulated" or "not tried on hardware" where that is the truth.
+* See [CONTRIBUTING.md](CONTRIBUTING.md), the [code of conduct](CODE_OF_CONDUCT.md), [SECURITY.md](SECURITY.md) and [SUPPORT.md](SUPPORT.md).
 
 ## 👤 AUTHOR
-**JuanenRac** (Electro Hobby 3D)
-📧 electrohobby3d@gmail.com
-📺 [youtube.com/@electrohobby3d](https://youtube.com/@electrohobby3d)
+
+**JuanenRac (Electro Hobby 3D)** · electrohobby3d@gmail.com
 
 ## 📜 LICENSE
 
-HYDRA-UMC STUDIO is (c) 2026 JuanenRac (Electro Hobby 3D). This notice must be included in any distributions of this project or derivative works.
-
-The source code of this application is available under the **GNU General Public License v3.0 (GPL-3.0)**. Full text at https://www.gnu.org/licenses/gpl-3.0.html.
-
-The documentation (this README and its own translations - `README_spa.md`, `README_ita.md`, `README_fra.md`, `README_deu.md`, `README_zho.md`, `README_jpn.md`) is available under **Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**. Full text at https://creativecommons.org/licenses/by-sa/4.0/.
-
-**Third-party robot mesh assets:** the real 3D geometry under `public/models/` is NOT covered by the GPL-3.0 above - each robot model's own mesh files are separately-licensed, third-party assets, redistributed here under their own original terms:
-
-| Manufacturer | Models | License |
-|---|---|---|
-| Source Robotics | Parol6 | GPL-3.0 |
-| Source Robotics | Faze4 | MIT |
-| Annin Robotics | AR3, AR4 | MIT |
-| Universal Robots | UR3e, UR5e, UR10e, UR16e, UR20 | BSD-3-Clause |
-| UFACTORY | xArm6, Lite 6 | BSD-3-Clause |
-| Comau | e.DO | BSD-3-Clause |
-| Kinova | Gen3 Lite | BSD-3-Clause |
-| FANUC | M-710iC | BSD-3-Clause |
-| The Robot Studio | SO-ARM100 | Apache-2.0 |
-| Kinova | Gen2 (j2s6s200) | BSD-3-Clause |
-| AgileX | PiPER | Apache-2.0 |
-| Unitree | Z1 | BSD-3-Clause |
-| Trossen Robotics | ViperX 300, WidowX 250 | BSD-3-Clause |
-| Koch / Low-Cost Robot Arm | Koch v1.1 | Apache-2.0 |
-| Universal Robots (classic) | UR3, UR5, UR10 | BSD-3-Clause |
-| Opulo | LumenPnP v4 (also used for JuanenPnP) | CERN-OHL-W v2 |
-
-Each model's own exact source repository, path, and license text reference lives in that model's own `public/models/<category>/<slug>/ATTRIBUTION.txt` - consult that file before redistributing a specific mesh set, rather than assuming the table above is a substitute for it. LumenPnP's own `ATTRIBUTION.txt` is worth reading in full - unlike every robot arm above (a manufacturer's own pre-made STL files, downloaded verbatim), those 5 mesh files were generated in-house from Opulo's real FreeCAD source, not redistributed as-is.
-
-This dashboard is the web control panel for the [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) motherboard project - see that repository for its own hardware (CERN-OHL-S v2) and firmware (GPL-3.0) licensing, which this repository's own license doesn't extend to, and vice versa. It also implements CAN-OTA tooling against the [URTC](https://github.com/JuanenRac/URTC) protocol - see that project's own repository for its own separate license.
-
-If you build on this project, keep the licensing split in mind: code changes should stay GPL-3.0, documentation derivatives should stay CC BY-SA, and any redistribution of a specific robot's mesh assets should stay under that model's own original license - each with attribution back to this project and its author.
+GPL-3.0-or-later - [LICENSE](LICENSE).

@@ -1,0 +1,206 @@
+{
+  "repo": "HYDRA-UMC-STUDIO",
+  "ecosystem": "hydra",
+  "tagline": "A pure client: the 3D view and the controls are here, every decision about who may move what stays on the server.",
+  "description": "HYDRA-UMC-STUDIO draws the cell in 3D, turns the clicks and the gamepad into typed commands for HYDRA-UMC-SERVER, shows the answer robot by robot, and offers the administration, firmware and camera screens of the cell.",
+  "columns": [
+    "WHO USES IT",
+    "THIS REPOSITORY",
+    "WHAT IT TALKS TO"
+  ],
+  "nodes": [
+    {
+      "id": "op",
+      "column": 0,
+      "level": "tested",
+      "title": "The operator's browser",
+      "lines": [
+        "3D view, jog, works,",
+        "panels and administration"
+      ],
+      "code": [
+        "src/App.tsx"
+      ]
+    },
+    {
+      "id": "app",
+      "column": 0,
+      "level": "contract",
+      "title": "Phone and DSI apps",
+      "lines": [
+        "embed this 3D view in a",
+        "WebView, token in the fragment"
+      ],
+      "code": [
+        "src/lib/session.ts"
+      ]
+    },
+    {
+      "id": "srv",
+      "column": 2,
+      "level": "contract",
+      "title": "HYDRA-UMC-SERVER",
+      "lines": [
+        "REST /api/*, WebSocket /ws,",
+        "decides roles and limits"
+      ]
+    },
+    {
+      "id": "cam",
+      "column": 2,
+      "level": "contract",
+      "title": "Camera pictures",
+      "lines": [
+        "live feeds, photos and",
+        "recordings with a ticket"
+      ]
+    },
+    {
+      "id": "brd",
+      "column": 2,
+      "level": "untested",
+      "title": "Controller boards",
+      "lines": [
+        "CAN-OTA chain: simulation",
+        "only, no board yet"
+      ]
+    },
+    {
+      "id": "shell",
+      "column": 1,
+      "level": "tested",
+      "title": "shell",
+      "lines": [
+        "navigation, overview,",
+        "system metrics footer"
+      ],
+      "code": [
+        "src/Dashboard.tsx",
+        "src/App.tsx"
+      ]
+    },
+    {
+      "id": "sto",
+      "column": 1,
+      "level": "tested",
+      "title": "state",
+      "lines": [
+        "global store: REST and",
+        "WebSocket to the server"
+      ],
+      "code": [
+        "src/store.ts",
+        "src/HydraProvider.tsx"
+      ]
+    },
+    {
+      "id": "cmd",
+      "column": 1,
+      "level": "tested",
+      "title": "command layer",
+      "lines": [
+        "typed results, global stop,",
+        "If-Match revisions"
+      ],
+      "code": [
+        "src/lib/commandResult.ts",
+        "src/lib/stopAll.ts",
+        "src/lib/revisions.ts"
+      ]
+    },
+    {
+      "id": "scn",
+      "column": 1,
+      "level": "tested",
+      "title": "3D scene + kinematics",
+      "lines": [
+        "24 real robot models;",
+        "forward and inverse"
+      ],
+      "code": [
+        "src/components/VirtualKinematics.tsx",
+        "src/examples/kinematics.ts"
+      ]
+    },
+    {
+      "id": "adm",
+      "column": 1,
+      "level": "tested",
+      "title": "administration",
+      "lines": [
+        "Server Admin switches,",
+        "audit, logs, safety limits"
+      ],
+      "code": [
+        "src/components/AdminServer.tsx",
+        "src/lib/serverSecurity.ts",
+        "src/components/AdminAudit.tsx"
+      ]
+    },
+    {
+      "id": "otc",
+      "column": 1,
+      "level": "tested",
+      "title": "CAN-OTA tools",
+      "lines": [
+        "Flasher and Tester for",
+        "URTC and HYDRA-UMC tiers"
+      ],
+      "code": [
+        "src/components/Flasher.tsx",
+        "src/components/Tester.tsx",
+        "src/lib/canOta.ts"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "op",
+      "to": "shell",
+      "level": "tested"
+    },
+    {
+      "from": "app",
+      "to": "scn",
+      "level": "tested"
+    },
+    {
+      "from": "shell",
+      "to": "sto",
+      "level": "tested"
+    },
+    {
+      "from": "shell",
+      "to": "cmd",
+      "level": "tested"
+    },
+    {
+      "from": "sto",
+      "to": "scn",
+      "level": "tested"
+    },
+    {
+      "from": "sto",
+      "to": "srv",
+      "level": "contract",
+      "label": "REST + WS"
+    },
+    {
+      "from": "cmd",
+      "to": "srv",
+      "level": "contract"
+    },
+    {
+      "from": "otc",
+      "to": "brd",
+      "level": "untested",
+      "label": "simulated"
+    },
+    {
+      "from": "scn",
+      "to": "cam",
+      "level": "contract"
+    }
+  ],
+  "footer": "Tried in a browser against a live server; the board chain ran only against the built-in simulation."
+}

@@ -1,34 +1,35 @@
+<!-- =============================================================================
+HYDRA-UMC-STUDIO - Web control dashboard of the HYDRA-UMC multi-robot micro-factory
+Copyright (C) JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+GPL-3.0-or-later - see LICENSE
+============================================================================= -->
+
 <p align="center">
   <img src="images/HYDRA_UMC_BANNER.svg" alt="HYDRA-UMC-STUDIO banner" width="100%">
 </p>
 
-# 🖥️ HYDRA-UMC STUDIO
+# 🤖 HYDRA-UMC-STUDIO
 
-<p align="center">
-  <a href="README.md">🇺🇸 English</a> |
-  <a href="README_spa.md">🇪🇸 Español</a> |
-  <a href="README_fra.md">🇫🇷 Français</a> |
-  <a href="README_ita.md">🇮🇹 Italiano</a> |
-  <a href="README_deu.md">🇩🇪 Deutsch</a> |
-  <a href="README_zho.md">🇨🇳 简体中文</a> |
-  🇯🇵 <b>日本語</b>
-</p>
-
+<p align="center"><a href="README.md">🇺🇸 English</a> | <a href="README_spa.md">🇪🇸 Español</a> | <a href="README_fra.md">🇫🇷 Français</a> | <a href="README_ita.md">🇮🇹 Italiano</a> | <a href="README_deu.md">🇩🇪 Deutsch</a> | <a href="README_zho.md">🇨🇳 简体中文</a> | 🇯🇵 <b>日本語</b> | <a href="README_por.md">🇵🇹 Português</a></p>
 
 ### 🤖 HYDRA-UMC マルチロボット・マイクロファクトリー向け Web ベース制御ダッシュボード
 
 <p align="center">
-  <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
-  <img src="https://img.shields.io/badge/Framework-React%2019-61DAFB.svg" alt="React">
-  <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
-  <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="Three.js">
-  <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="TypeScript">
+  <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
+  <img src="https://img.shields.io/badge/Framework-React%2019-61DAFB.svg" alt="Framework">
+  <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
+  <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
+  <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
+  <img src="https://img.shields.io/badge/Tests-631%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Version-0.8.0.2-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
-
 
 ---
 
 > **安全性とセキュリティの現状:** このエコシステムは認証された安全システムではありません。ハードウェアの E-STOP 経路、ファームウェアが強制する制限やインターロック、検証済みの動作コマンドはまだありません。ファームウェアイメージは CRC32 と共有鍵の HMAC-SHA256 で検査しており、非対称署名ではありません。TLS と相互 TLS は任意で、既定では無効です。独自基板はまだ実装も試験もされていません。ここに書かれた内容を人の安全のために頼る前に、[セキュリティベースライン](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/SECURITY_BASELINE.md)と[脅威モデル](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/THREAT_MODEL.md)をお読みください。
+
+---
 
 ## 📋 ひと目で
 
@@ -36,9 +37,12 @@
 |---|---|
 | バージョン | `0.8.0.2` |
 | 成熟度 | 機能する |
+| テスト | 631 (`npm test`) |
 | 技術 | React 19 / Vite / Three.js / Tailwind CSS |
 | 対象 | HYDRA-UMC セルの Raspberry Pi CM5 |
 | 実機での確認 | まだです：このバージョンについて実機での動作記録はありません |
+
+**移動：** [概要](#-概要) · [アーキテクチャ](#-アーキテクチャ) · [機能](#-機能) · [セキュリティと安全](#-セキュリティと安全) · [インターフェース](#-インターフェース) · [設定](#-設定) · [クイックスタート](#-クイックスタート) · [テスト](#-テスト) · [トラブルシューティング](#-トラブルシューティング) · [リポジトリの構成](#-リポジトリの構成) · [関連プロジェクト](#-関連プロジェクト)
 
 ## 🚦 プロジェクトの状況
 
@@ -49,7 +53,7 @@
 | 領域 | 状態 | ここでの意味 |
 |---|---|---|
 | ソフトウェア | 🟡 | 主な目的では動作します。足りない点は上の正直さの確認に書かれています |
-| テスト | 🟠 | このリポジトリのテスト件数はまだ記録されていません |
+| テスト | 🟢 | 自動テスト 631 件。変更のたびに実行されます |
 | 実機 | 🔴 | まだです：このバージョンについて実機での動作記録はありません |
 | ドキュメント | 🟢 | 8 言語の README。変更のたびにマニフェストと照合されます |
 
@@ -61,9 +65,19 @@
 
 **React 19**、**Vite**、**Three.js**（`@react-three/fiber`/`@react-three/drei` 経由）、そして **TypeScript** で構築されています——自身のバックエンドコードを持たない純粋なクライアントです。永続化された状態は、本アプリがネットワーク越しに通信する別個のバックエンド **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** 上に存在します。
 
----
+## 🧩 HYDRA-UMC での役割
 
-## 🦾 マルチロボット 3D 制御
+**HYDRA-UMC-STUDIO** はセルの Web 制御ダッシュボードです。実際の運動学で各ロボットを 3D 表示し、ジョグと軌道の記録を行い、アクセサリーや機械のパネルを操作し、CAN-OTA チェーンでファームウェアの書き込みと試験を行い、サーバーを管理します（8 言語）。独自の状態は持たず、安全に関する判断もしません。ロール、制限、予約、停止は HYDRA-UMC-SERVER が決めます。
+
+## 🏛️ アーキテクチャ
+
+<p align="center">
+  <img src="images/architecture.svg" alt="HYDRA-UMC-STUDIO architecture" width="100%">
+</p>
+
+## ✨ 機能
+
+### マルチロボット 3D 制御
 
 複数の独立した 6 自由度ロボットを同時に管理でき、それぞれが独自の実際の 3D モデル、運動学、ジョグ／軌道状態を持ちます。モデルピッカー（RobotDetail → Config タブ）は、利用可能なすべてのロボットをメーカーごとにグループ化します：
 
@@ -86,9 +100,7 @@
 
 各ロボットのジョグ制御には、各軸に対する**速度**と**加速度**両方のロータリーノブ＋スライダーが含まれ、CAN-OTA が実機ハードウェアに接続されると、完全なエンドストップ/ステータス表示とともに、実時間の「ロボットコントローラーボード」ステータスカードが表示されます。各ノブ／スライダーは、連続的に動くのではなく、それぞれのコンボボックスで選択されたジョグ**ステップ**値（0.1° から 100°/mm まで）にスナップします。ロボット **A1** は、異なるレイアウトの実験的な概念実証です：その速度／加速度／J1-J6／XYZ ジョグ制御は、他のすべてのロボットが引き続き使用する下部パネルではなく、3D ビューポート自体の上にあるドラッグ可能なフローティングパネル内にあります（XYZ パッドは `Joystick3D.tsx`）——`src/components/robots/A1.tsx` を参照してください。
 
----
-
-## 🏭 Kinematic Brain ステージ
+### Kinematic Brain ステージ
 
 HYDRA-UMC マザーボード自身のローカル運動サブシステム——STACK A 上の分散ロボットアームとは別の、STM32H745 が直接駆動する軸——専用の制御パネルです：
 
@@ -98,9 +110,7 @@ HYDRA-UMC マザーボード自身のローカル運動サブシステム——S
 - 🎢 **コンベア** —— E1 駆動の搬送ベルトのための設置／稼働／速度制御
 - 🛑 完全な 12 系統のエンドストップグリッド、3 系統のファンチャンネル、プロセス流体用の 10 個のポンプ／10 個のバルブ
 
----
-
-## 🎛️ アクセサリ・機械制御パネル
+### アクセサリ・機械制御パネル
 
 ロボットセルに付随する機械やアクセサリ専用のパネル：**XY テーブル**、**ATC ツール**、**ラックマネージャー**、**ピック＆プレース**（JuanenPnP/LumenPnP 固有の設定を含む）、**CNC**（JuanenCNC 固有の設定を含む）、**レーザー**（JuanenLaser 固有の設定を含む）、**真空テーブル**、**ヒートベッド**。
 
@@ -130,16 +140,13 @@ JuanenPnP、JuanenCNC、JuanenLaser は独立した STL コピーを使用し、
 
 [独立した機械モデル — STL](docs/MACHINE_ASSETS.md).
 
-
 これらのオリジナルJuanenPNP / HYDRA-UMCモデルとSCADソースはGPL-3.0です。Opulo製マシンのCADではありません。
 
-## 🔄 作業と軌道
+### 作業と軌道
 
 既定のサンプル軌道を読み込む、あるいは自分自身のポイントをリアルタイムでジョグ＆記録する、またはロボットごとに複雑な多点軌道（JSON）を読み込み／保存／編集／再生します。軌道はロボットモデル間で移植可能です——記録された各ポイントは、それをたまたま記録したロボットに対して固定されるのではなく、読み込み／描画／再生の時点でその特定のロボット自身の実際の運動学（`src/examples/robotKinematicsDispatch.ts`）を通じて解決されるため、同じ軌道ファイルが Parol6 と UR10e それぞれの実際に到達可能なジオメトリに沿って正しく駆動します。
 
----
-
-## 🛠️ CAN-OTA ファームウェアツール
+### CAN-OTA ファームウェアツール
 
 HYDRA-UMC + URTC の CAN-OTA チェーン全体を、1 つのダッシュボードから 2 つの専用エントリポイントで書き込み・自己診断します：
 
@@ -148,52 +155,40 @@ HYDRA-UMC + URTC の CAN-OTA チェーン全体を、1 つのダッシュボー�
 
 いずれも `URTC` または `HYDRA-UMC` リポジトリ向けの実際のファームウェアリリースを、GitHub から直接ダウンロードできます（`firmware_manifest.json` に基づき、CRC32 で検証済み）。上記のとおり、実際の STM32H745 ファームウェアが実機ハードウェア上に存在して通信できるようになるまで、トランスポート自体は完全な内蔵シミュレーションに対して動作します。
 
----
-
-## 🎮 ゲームパッド対応
+### ゲームパッド対応
 
 USB および Bluetooth コントローラーの統合、ボタン／軸ごとのカスタムマッピングにより、マウス／キーボードなしでロボットやアクセサリをジョグできます。リアルタイムのアクション(ジョイント/テーブルのジョグ、E-STOP、START/STOP、再生速度)は、ロボット詳細パネルのジョグボタンが使うのと同じアトミックな `sendRobotCommand()` パスを発火させます。デバウンスされた設定保存ではありません - `GamepadController.tsx` を参照。
 
----
-
-## 📹 カメラ統合
+### カメラ統合
 
 最大 8 系統の同時ライブ映像（USB ビジョンまたは MLX90640/41/42 系列のサーマルセンサー）に加え、録画状態と推論状態を表示します——これは HYDRA-UMC 自身のデュアル USB 3.0 ハブサブシステムが構築の中心に据えているカメラマトリクスです。
 
----
-
-## 🌐 多言語インターフェース
+### 多言語インターフェース
 
 **英語、スペイン語、ドイツ語、フランス語、イタリア語、簡体字中国語、日本語、ポルトガル語**でインターフェース全体を翻訳しています（`src/locales/`）。アプリ内のヘルプメニューとそのステップ別ガイド、アシスタント、バージョン情報ダイアログ（バージョン／作者／ライセンス）、システム設定ダイアログの各タブを含みます。すべての画面を100%網羅しているわけではなく、いくつかの独立したアクセサリパネルはまだ英語固定です。
 
----
-
-## 🤖 ヘルプ、ガイド、アシスタント
+### ヘルプ、ガイド、アシスタント
 
 ヘルプ画面には**ステップ別ガイド**タブがあります。作業ごとに1つのガイド（コントローラの追加、ロボットの移動、軌道の記録、カメラの利用、ファームウェアの書き込み、ユーザー管理、リモートアクセス、セキュリティなど）があり、それぞれにレベル（基本・上級・技術）、検索ボックス、作業を行う画面へ移動するボタンが付いています。アシスタントの**Hydri**は、ダッシュボードの上に浮かぶ小さなアニメーションのマスコットです。今いる画面を説明し、作業を手順ごとに案内し、サーバーもAIモデルも使わずに言葉で入力した質問に（8言語のどれでも）答え、ブラウザ自身の音声で回答を読み上げ、好きな場所へドラッグして固定でき、ヘルプ画面でオン／オフを切り替えられます。設定はブラウザに保存されます（`src/assistant/`）。
 
----
-
-## ℹ️ About とシステム設定
+### ℹ️ About とシステム設定
 
 ヘッダー（`Config`/`About` ボタン）からアクセスできる 2 つの独立したダイアログ：**About** は、現在実行中のアプリバージョン（`GET /api/hydra-info` からリアルタイムに読み取り）、作者、ライセンスを表示します。**Config** は、サーバーの身元、コントローラー/ノード管理、UI テーマ + 言語、ロボットの改名、競合検出付きのカメラ↔ロボットマッピング、カスタム URDF ライブラリ、サードパーティソフトウェア統合（OpenPnP/CNC/レーザーバックエンド）、クライアントごとのリモートアクセス（SUITE/Android/iOS それぞれ独立したスイッチ）、ユーザーアカウント、ロボットごとの作業ディレクトリ、CAN-OTA トランスポート、ゲームパッドマッピングをカバーします——それぞれが独自のタブです。両方とも独立したコンポーネントであり（`src/components/About.tsx`、`src/components/Config.tsx`）、メインダッシュボードシェルにインライン化されてはいません。
 
-## 🛡️ 信頼性
+### 信頼性
 
 このアプリは、実際の本番インシデント(再デプロイ後にキオスク画面が真っ黒になった件)から生まれた、2種類の異なる実行時障害から自身を守っています。`src/main.tsx` は Vite 自身の `vite:preloadError` イベントをリッスンします——再デプロイをまたいで開いたままのブラウザタブが、古いハッシュの下ではもう存在しない `React.lazy()` で読み込まれるパネルチャンク(`vite.config.ts` によりコンテンツハッシュ化された `Dashboard.tsx` の各パネル)を取得しようとしたときに発生します——そして自動的に1回だけページをリロードするため、長時間開いたままのキオスクタブやバックグラウンドの古いタブが、誰にも気づかれずに自己修復します。`sessionStorage` によるガードが、何か別の理由で本当にチャンクが欠落している場合に永遠にリロードループに陥るのを防ぎます。別途、`src/components/ErrorBoundary.tsx` は `<Suspense>` パネル領域を、それ以外のレンダリングクラッシュに対するバックストップとしてラップしています。アクティブなタブでキー管理されているため、クラッシュしたパネルから離れると実際に次のパネルを再試行し、ダッシュボード全体がフォールバック画面で固まったままになることはありません。
 コマンドは黙って失敗しません。ジョグ、再生、電源、ビジョン、ツールの各コマンドは型付きの結果を返し、期限切れのセッションは一度更新して再送され、それでも拒否されたものはバナーに表示されます。赤い **STOP** ボタンはグローバルです。ワンクリックで確認なしに、すべてのコントローラーの全ロボットを停止し、すべてのバルブとポンプを 1 回の呼び出しでオフにします(`POST /api/stop-all`)。ヘッダーとフッター、ロボットパネル、リモート操作オーバーレイにあり、Ctrl+Shift+Space でキーボードからも押せます(誤って入力されない組み合わせで、キーを押し続けても無視されます)。結果はロボットごとに一覧表示され(停止しなかったロボットや保存できなかった停止は警告、他のアカウントが予約中のロボットには印)、ネットワーク障害は一度再試行され、制限超過(429)やルートのないサーバー(404)にはロボットごとの停止で対応し、後の STOP が応答を得るまで「STOP 未確認」の警告が残ります。ジョイスティックのジョグはデッドマン方式です(ポインターのキャンセル、ウィンドウのフォーカス喪失、タブが非表示になったとき、または 8 秒後に終了)。J1 の移動は最も近い等価角度にとどまり、20 度を超えるジョグステップは拒否されます。ゲームパッドは画面で選択したロボットに追従し、送信頻度が制限されます。リリースのファームウェアは CAN-OTA の書き込み前に sha256 で検証され、ブートローダーイメージは任意で、取り込んだ軌道とシーンは共有状態に入る前に検証されます。
 
 どのクライアントについても、ロボットを誰がどこまで動かせるかはサーバーが決めます。ロボットは、要求したアカウントとウィンドウ(ウィンドウごとに選ばれるコントローラ ID)のために**予約**できます。同じアカウントでも別のウィンドウからの操作や別のアカウントは、どの場合かを示すメッセージ(`other-controller`、`other-account`、`controller-id-required`)付きで拒否され、予約の一覧は `GET /api/claims` から取得され、管理者はロボットを引き継げます。ジョグの大きさ、絶対ジョグの範囲、ベッドの最高目標温度は、アプリ内に持たず `GET /api/safety-limits` から読み取ります。管理者は **エコシステム > 安全上限** でモデルごとに編集でき、任意のジョグのアーム(既定ではオフ。オンにするとボタンで一定時間ジョグをアームします)と必須のコントローラ ID も設定できます。各ロボットには **Live / Sim** スイッチがあり(既定は Live)、Sim ではそのウィンドウからロボットを動かすものや何かをオンにするものは送信されず、STOP は常に通ります。アームが到達できない点を含む Work やサンプルは、その点の一覧とともに拒否され、代わりにモデルの到達範囲に合わせて縮小できます。 予約の一覧はサーバーが WebSocket(`remoteApiVersion=2` を要求した接続向けの `claims` メッセージ)でも送るため、アクセスバーは次のポーリングを待たずに変更をすぐ表示します。送信が届いている間、ポーリングはときどきしか動きません。 書き込みは条件付きです。各書き込みには、このウィンドウが最後に見たロボットのリビジョン(`If-Match`)が付き、その間に他の人がロボットを変更していた場合、サーバーは 412 を返し、ロボットが読み直されてバナーで知らされます(標準は予約、テーブル、単発のコマンドを確認、厳格は STOP 以外すべてを確認、オフは何も確認せず、STOP は確認されません)。XY テーブルはアトミックな `table` コマンドで動き、管理者は **エコシステム > 監査記録** で、SHA-256 チェーンを検証した追記専用の監査記録を読めます。
 
-## 🔐 アカウントとアクセス
+### アカウントとアクセス
 
 各バックエンドは、自身の初回起動時に 1 つのアカウントを準備します——ユーザー名 `admin`、パスワード `admin`——サーバーが完全に信頼された LAN の外からアクセス可能になったら、すぐに **Config > Users** から変更してください。同じタブでは、管理者アカウントが追加の**オペレーター**アカウントを作成できます：オペレーターはログインし、リアルタイムの状態を確認し、ロボットを駆動できます（ジョグ／再生／一時停止／停止／ツール／バルブ／ポンプ／速度）が、グローバル設定を上書きしたり他のアカウントを管理したりすることはできません。見て回るだけならアカウントは一切不要です——ログイン画面自身の「読み取り専用で続行」を選ぶと、書き込みが無効化された状態でダッシュボードに直接進みます。完全な契約（役割、トークン、`/api/users` ルート）は [HYDRA-UMC-SERVER 自身の `docs/REMOTE_API.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/REMOTE_API.md) の第 2a/2b 節に記載されています。 本番では、最初の管理者はデプロイのブートストラップ設定から作られ、サーバーは例のシークレットを拒否します（[HYDRA-UMC-SERVER の `docs/PRODUCTION_BOOTSTRAP.md`](https://github.com/JuanenRac/HYDRA-UMC-SERVER/blob/main/docs/PRODUCTION_BOOTSTRAP.md) を参照）。
 
 5 つのリモートクライアント（SUITE、Android、iOS、Watch、DSI）はそれぞれ `X-Hydra-Client` リクエストヘッダーで自己識別するため、**Config > Remote Access** は、5 つすべてに対する 1 つの結合スイッチではなく、それぞれを独立して許可またはブロックできます。
 
----
-
-## 💾 永続化された状態
+### 永続化された状態
 
 HYDRA-UMC STUDIO 自体は純粋なクライアントです——現在のセッションのためにメモリ上にあるもの以外、自身の状態は一切保持しません。すべての永続化データ（`settings.json`、`users.json`、`WORKS/` 下に保存された軌道、提出されたモデル）は、本アプリがネットワーク越しに通信する別個のバックエンド **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** 上に存在します（全体像は同プロジェクト自身の `data/` と README を参照）——どちらもバックエンドプロセスに一切触れないため、状態はページの再読み込みや本アプリ自身の再デプロイを経ても失われません。`settings.json` 自体は、そのバックエンドの静的ファイル配信から意図的に除外されています（コントローラーの IP、CAN-OTA 設定、ロボットごとの完全な状態を保持しているため）が、その `WORKS/` フォルダは通常どおり配信されます。
 
@@ -203,153 +198,71 @@ HYDRA-UMC STUDIO 自体は純粋なクライアントです——現在のセッ
 
 `GET /api/system/metrics` は概要ダッシュボードのフッターを駆動します：CPU 負荷とメモリ使用率は常に実際の値です（Node 自身の `os` モジュール）。温度は、実際の Raspberry Pi 上で動作している場合は実際の `vcgencmd measure_temp` の出力を読み取り、そうでない場合は明確にフラグ付けされたモック値にフォールバックします（レスポンス内の `temp_is_real`）。Wi-Fi/イーサネット/Bluetooth の状態は `/sys/class/net`/`/sys/class/bluetooth` から読み取られます（Linux 専用、それ以外のホストでは推測値ではなく `null`／不明）。
 
----
+## 🔒 セキュリティと安全
 
-## 📂 リポジトリ構成
+| 脅威 | 防御 | 場所 |
+|---|---|---|
+| ページ内で実行される注入スクリプト | ビルドはページに Content-Security-Policy を入れます。スクリプトはページ自身（と WebAssembly、3D デコーダーのホスト）のみ、オブジェクト禁止、base とフォームはページに限定。`HYDRA_STUDIO_CSP` で無効化や置き換えができます | `scripts/csp.ts`, `vite.config.ts` |
+| ストレージから読み出されるサインイントークン | ここで入力したログインは `sessionStorage` に保存され（再読み込みでは残り、タブを閉じると消える）、「サインインを維持」を選んだときだけ `localStorage` に保存されます。アドレスで届いたトークンは `sessionStorage` のみに入り、ブラウザが送信しない `#token=` フラグメントで届き、読み取り後すぐアドレスから消されます | `src/lib/session.ts` |
+| 2 人のオペレーターが同じロボットを変更する | ロボットごとにリビジョンがあり、書き込みは `If-Match` で送り、古いものは 412 で拒否されます。テーブルは原子的に動き、予約と動かせる人はサーバーがすべてのクライアントに対して決めます | `src/lib/revisions.ts`, `src/lib/tableMove.ts`, `src/lib/robotEdits.ts` |
+| 確認や遅い画面を待つ停止 | 赤い STOP はグローバルで確認を求めません。`POST /api/stop-all` を 1 回送ると全ロボットが停止し、全バルブとポンプがオフになります。ルートが制限されているか無い場合はロボットごとの停止に切り替え、止まらなかったロボットはバナーに表示されます | `src/lib/stopAll.ts`, `src/components/StopAll.tsx` |
+| アクセスオプションを誤って弱める（音声、MAVLink、Bluetooth、TLS など） | Server Admin は各値の出どころを示し、サーバーの環境変数が決めた値はロックします。弱める操作には確認が入り、保存後も警告が画面に残ります。対象は、話した内容を繰り返す音声返答、認識信頼度 0、署名のない MAVLink メッセージ、MAVLink 署名オフです | `src/components/AdminServer.tsx`, `src/lib/serverSecurity.ts` |
+| 壊れたパネルや再デプロイ後の古いページで画面が真っ暗になる | 各タブは独自のエラー境界に入り、デプロイ後の古いチャンクは自動再読み込みを 1 回起こします（本当に無いファイルでループしないようガード付き） | `src/main.tsx`, `src/components/ErrorBoundary.tsx` |
 
-```text
-HYDRA-UMC-STUDIO/
-├── docs/VACUUM_TABLE_MODELS.md
-├── docs/HEATED_BED_MODELS.md
-├── docs/RACK_MODELS.md
-├── docs/MACHINE_ASSETS.md
-├── public/models/machine-pnp/{juanenpnp}, machine-cnc/juanencnc, machine-laser/juanenlaser/ # STL + ATTRIBUTION + VARIANT.md
-├── src/machineAssets.ts
-├── tests/machineAssets.test.ts
-├── public/models/racks/default/        # Rack.scad + base/wall/guide/assembly STL
-├── src/racks.ts
-├── tests/racks.test.ts
-├── public/models/heatedbeds/default/   # catalog.json + HeatedBed.scad + 4 STL
-├── src/heatedBeds.ts
-├── src/components/3d/HeatedBedMesh.tsx
-├── tests/heatedBeds.test.ts
-├── public/models/vacuum-tables/default/  # catalog.json + 6 STL + 6 SCAD
-├── src/vacuumTables.ts
-├── src/components/3d/VacuumTableMesh.tsx
-├── tests/vacuumTables.test.ts
-├── src/
-│   ├── App.tsx, main.tsx, HydraProvider.tsx  # ルーターとレイアウト、エントリポイント、グローバル状態のプロバイダー
-│   ├── Dashboard.tsx            # トップレベルのアプリシェル——ナビゲーション、概要パネル、フッターのシステム指標
-│   ├── store.ts                 # グローバル状態：RobotModel/RobotState/HydraController/SystemSettings ——
-│   │                             # REST + WebSocket 経由で別個の HYDRA-UMC-SERVER バックエンドと通信
-│   ├── motionSource.ts, robotCommandTransition.ts # 描画されたポーズが表すもの (指令値か、機械が追従した値か)、および sendRobotCommand() の純粋な状態遷移の中核
-│   ├── i18n.ts                  # react-i18next の設定——src/locales/*.json を読み込み
-│   ├── hooks/                   # usePartColors.ts: HYDRA-UMC-EDITOR-STL が保存したパーツごとの色の上書き
-│   ├── assets/, index.css, App.css # アプリのアイコン、スプラッシュ画面、画像と、グローバルなスタイル
-│   ├── assistant/               # Hydri アシスタント：回答エンジン、知識ベース（8言語）、マスコット、設定
-│   ├── components/
-│   │   ├── About.tsx, Config.tsx  # システム設定と About ダイアログ——同じグローバルストアを読み取る
-│   │   │                       # 独立したコンポーネント、ダッシュボードシェルにはインライン化されていない
-│   │   ├── ConfirmDialog.tsx    # 共有の Yes/No 確認モーダル
-│   │   ├── ErrorBoundary.tsx    # パネルのレンダリングクラッシュに対するバックストップ - アクティブなタブでキー管理、🛡️ 信頼性を参照
-│   │   ├── AuthGate.tsx, UsersPanel.tsx  # ログイン画面と Config > Users の管理者/オペレーターアカウント管理
-│   │   ├── AdminServer.tsx, AdminLogs.tsx, AdminClients.tsx  # Ecosystem メニュー：サーバー管理、
-│   │   │                       # サーバーログ、接続アプリのパネル
-│   │   ├── RobotAccessBar.tsx, AdminSafety.tsx  # ロボットごとのアクセスバー(Live/Sim、予約、ジョグのアーム)と安全上限の管理画面
-│   │   ├── AdminAudit.tsx  # エコシステム > 監査記録の画面(管理者):絞り込み、チェーンの検証、エクスポート
-│   │   ├── EcosystemServices.tsx, EcosystemTelemetry.tsx, AiFamilyStatus.tsx  # Ecosystem メニュー：
-│   │   │                       # サービス、テレメトリ、AI ファミリー状態のパネル
-│   │   ├── SystemSupervisor.tsx  # Ecosystem メニュー：CPU/メモリ/ディスク/温度/プロセスの Netdata 風
-│   │   │                       # リアルタイムスーパーバイザー、HYDRA-UMC-SERVER の GET /api/system/supervisor をポーリング
-│   │   ├── RobotDetail.tsx      # 共有のロボットごとのジョグ／軌道／設定実装（モデルピッカーはここにある）——
-│   │   │                       # 下記の各 robots/A*.tsx エントリポイントはこれをレンダリングする
-│   │   ├── robots/A1.tsx .. A8.tsx  # ロボットごとのエントリポイント——RobotDetail.tsx の薄い再エクスポート、
-│   │   │                       # 他の 7 つに触れることなく将来のロボット固有の挙動を追加する場所。A1 は
-│   │   │                       # すでに唯一の例外：RobotDetail.tsx 自身の `isFloatingLayout` 分岐
-│   │   │                       # （robot.id === 1）が、速度/加速度/J1-J6/XYZ ジョグを、その下のパネルではなく
-│   │   │                       # 3D ビューポート上のドラッグ可能なオーバーレイへ移動する。
-│   │   ├── Joystick3D.tsx       # そのフローティングオーバーレイが使用する XYZ ジョグ D パッド
-│   │   ├── VirtualKinematics.tsx  # React Three Fiber の <Canvas> シーンホスト
-│   │   ├── KinematicBrainStage.tsx  # XY ガントリー／ヒートベッド／ATC リボルバー／コンベアパネル
-│   │   ├── Flasher.tsx, Tester.tsx  # CAN-OTA ツール（URTC と HYDRA-UMC の両階層）
-│   │   ├── ATCToolsConfig.tsx, RackConfigView.tsx, PickAndPlace.tsx, CNC.tsx, Laser.tsx,
-│   │   │   VacuumTableConfig.tsx, HeatedBedConfig.tsx, XYTableConfig.tsx
-│   │   │                       # アクセサリ／機械制御パネル
-│   │   ├── JuanenPnPConfig.tsx, LumenPnPConfig.tsx, JuanenCNCConfig.tsx, JuanenLaserConfig.tsx
-│   │   │                       # 機械固有の設定バリエーション——まだどのナビゲーションパスにも
-│   │   │                       # 接続されていない（デッドコード）
-│   │   ├── CamerasView.tsx, GamepadConfig.tsx, GamepadController.tsx, HelpModal.tsx
-│   │   ├── BluetoothPairing.tsx, CameraMediaView.tsx, MjpegRecordingPlayer.tsx # CM5 自身の Bluetooth ペアリング、カメラのスナップショットと録画のライブラリ、保存した録画のプレーヤー
-│   │   ├── StopAll.tsx, CommandIssueBanner.tsx, RobotsCatalogView.tsx, SubmittedModels.tsx # グローバル STOP (1クリックで全ロボット)、要求どおりに動かなかったコマンドのバナー、ロボットカタログ、エディターが提出したモデル
-│   │   ├── FuturisticSlider.tsx, RotaryKnob.tsx  # 共有のジョグ制御ウィジェット
-│   │   └── 3d/
-│   │       ├── RobotArm.tsx     # robot.model に応じて正しいモデルごとのリグへディスパッチ
-│   │       ├── Parol6Arm.tsx, Faze4Arm.tsx, AR3Arm.tsx, AR4Arm.tsx, EdoArm.tsx, Gen2Arm.tsx,
-│   │       │   Gen3LiteArm.tsx, Lite6Arm.tsx, M710icArm.tsx, PiperArm.tsx, SoArm100Arm.tsx,
-│   │       │   Vx300sArm.tsx, Wx250sArm.tsx, XArm6Arm.tsx, Z1Arm.tsx, KochArm.tsx,
-│   │       │   LumenPnPRig.tsx, GenericRobotArm.tsx
-│   │       │                   # メーカー固有のリグ、それぞれが自身の実際の URDF から手作業で転写されたもの
-│   │       ├── URArm.tsx, UrClassicArm.tsx  # e-Series/クラシック Universal Robots ラインの共有パラメータ化リグ
-│   │       ├── UR3eArm.tsx, UR5eArm.tsx, UR10eArm.tsx, UR16eArm.tsx, UR20Arm.tsx,
-│   │       │   Ur3ClassicArm.tsx, Ur5ClassicArm.tsx, Ur10ClassicArm.tsx
-│   │       │                   # URArm.tsx / UrClassicArm.tsx を薄くラップしたモデルごとの実装
-│   │       ├── Shared3DEnvironment.tsx, SharedModule3DView.tsx, PathVisualizer.tsx,
-│   │       │   Toolhead.tsx, DraggableGizmo.tsx, ATC3DView.tsx, Rack3DView.tsx
-│   │       │                   # シーン環境、軌道描画、ツール/ギズモのレンダリング
-│   │       └── chains/                      # AR3、AR4、Edo、Faze4、Koch、M710ic、SoArm100、Vx300s、Wx250s、Z1 リグの関節チェーン (データ)。コンポーネントとは分離
-│   ├── examples/
-│   │   ├── kinematics.ts, utils.ts, robotKinematicsDispatch.ts
-│   │   │                       # 共有の汎用 2 リンク運動学 + モデルごとのディスパッチ
-│   │   ├── parol6Kinematics.ts, faze4Kinematics.ts, ar3Kinematics.ts, ar4Kinematics.ts,
-│   │   │   edoKinematics.ts, gen2Kinematics.ts, gen3LiteKinematics.ts, kochKinematics.ts,
-│   │   │   lite6Kinematics.ts, m710icKinematics.ts, piperKinematics.ts, soArm100Kinematics.ts,
-│   │   │   xarm6Kinematics.ts, z1Kinematics.ts
-│   │   │                       # メーカー固有の実際の FK/IK
-│   │   ├── jogSafety.ts, vx300sKinematics.ts, wx250sKinematics.ts # ベース関節のジョグ安全規則と、Vx300s・Wx250s の順/逆運動学
-│   │   ├── urKinematicsShared.ts, urClassicKinematics.ts  # e-Series/クラシック UR ラインの共有 FK/IK エンジン
-│   │   ├── ur3eKinematics.ts, ur5eKinematics.ts, ur10eKinematics.ts, ur16eKinematics.ts, ur20Kinematics.ts,
-│   │   │   ur3ClassicKinematics.ts, ur5ClassicKinematics.ts, ur10ClassicKinematics.ts
-│   │   │                       # 薄いモデルごとの UR チェーン/限位/ホームポーズデータ
-│   │   └── list/                # 26 個の既定サンプル軌道（円、螺旋、XY テーブルパターン、ピック＆プレースなど）
-│   ├── lib/canOta.ts            # CAN-OTA シミュレーション/プロトコル層、GitHub ファームウェアダウンロード
-│   ├── lib/apiBase.ts           # バックエンド URL の解決——開発環境では相対パス+プロキシ、本番環境では VITE_API_BASE_URL
-│   ├── lib/mediaTicket.ts       # カメラ映像用の短寿命チケット
-│   ├── lib/claims.ts, controllerSession.ts, accessApi.ts, accessStore.ts, safetyLimits.ts, liveSim.ts  # 予約、コントローラ ID、サーバーから読む安全上限、Live/Sim モード
-│   ├── lib/revisions.ts, tableMove.ts, audit.ts, auditApi.ts  # ロボットごとのリビジョン(If-Match、412)、テーブルのアトミックな移動、監査記録とそのチェーン検証
-│   ├── lib/session.ts, serverSecurity.ts, serverErrors.ts, settingsSave.ts, sha256.ts # セッショントークン、サーバーのアクセスオプション、オペレーター向けエラー文言、設定を保存できる人、crypto.subtle を使わない SHA-256
-│   ├── lib/stopAll.ts, commandResult.ts, robotEdits.ts, selectedRobot.ts, playbackStep.ts, reachCheck.ts, toolheadMount.ts, angles.ts # グローバル STOP、ロボットコマンドへの応答、ロボットの編集をコマンド化したもの、選択中のロボット、再生ステップの番号付け、到達不能な軌道の警告、フランジ上のツールの位置、最短経路の角度
-│   ├── lib/claimsFeed.ts, importValidation.ts, inputThrottle.ts, jogRepeater.ts, dialogKeys.ts, mjpegParser.ts, modelCatalog.ts # 予約のライブ一覧、ファイル取り込み前の検査、押し続け入力の間引き、押し続けたジョグボタンの繰り返し、ダイアログのキーボード規則、保存した MJPEG 録画のパーサー、エディターが提出したモデルのカタログ
-│   └── locales/                 # en/es/de/fr/it/zh/ja/pt 翻訳ファイル（react-i18next）
-├── public/
-│   ├── models/                  # 実在の 3D メッシュ: robots-5-dof、robots-6-dof、robots-7-dof (ロボットごとに1フォルダー、それぞれ ATTRIBUTION.txt 付き。下のライセンス表を参照) と、machine-*、racks、heatedbeds、vacuum-tables
-│   │                             # それぞれ自身の ATTRIBUTION.txt を持つ——下記のライセンス表を参照
-│   ├── WORKS/                   # サンプル保存軌道、ロボットごとに 1 フォルダ
-│   └── favicon.svg, icons.svg   # アプリアイコンと共有アイコンスプライト
-├── images/                       # README バナー
-├── tests/                        # 実際の Vitest スイート(610 件のテスト)—— src/examples/ の FK/IK 数学のみ、React/DOM は不使用
-│   ├── utils.test.ts             # 共有の汎用アーム FK/IK ペアとその 5 つのパスジェネレーター
-│   ├── urKinematicsShared.test.ts  # 実際の DH チェーン FK + Newton-Raphson IK エンジン(実際の UR5e チェーンを通じて検証)
-│   ├── parol6Kinematics.test.ts  # Parol6 自身のハードコードされた実際のチェーン
-│   ├── robotKinematicsDispatch.test.ts  # 24 の実在するロボットモデルすべてにわたる単一の汎用パラメータ化スイート
-│   └── ...                              # src/lib、src/assistant などのモジュールごとに1つのテストファイル、および i18n の検査 (キー、プレースホルダー、品質、UI の直書きテキストなし、遅延読み込み言語)
-├── tools/
-│   ├── build_test.py            # バージョンを更新しないビルド/コンパイル確認
-│   ├── ci_validate.py           # CI が使用する manifest/CHANGELOG/docs の検証
-│   ├── extra_checks.py          # 共通バリデーターに加えた、このリポジトリ固有の検査
-│   ├── generate_portable_works.py  # public/WORKS/ のサンプル軌道を再生成
-│   ├── _doc_policy.py              # ファミリー共通のドキュメント規則 (HYDRA-UMC-SDK のコピーで、同期を維持)
-│   ├── _readme_parity.py           # 8つの README が同じ構造であることの検査 (HYDRA-UMC-SDK のコピーで、同期を維持)
-│   └── hydra_project_tool.py       # すべてのリポジトリで共通のコマンド: validate、test、ci、version、status、bump
-├── index.html                  # Vite がアプリをビルドする元のページ (Content-Security-Policy はビルド時に埋め込まれる)
-├── scripts/                    # bump-version.mjs (明示的なバージョン更新) と csp.ts (ビルドされたページの Content-Security-Policy)
-├── example_trajectory.json       # 独立したサンプル軌道（関節角シーケンス、サンプルデータ）
-├── metadata.json                 # アプリ名/説明（ホスティングプラットフォームが使用）
-├── bump_manifest_version.py      # hydra-umc.project.json のバージョンをネイティブ側と同期（--sync）
-├── build.sh / build.bat          # 依存関係のインストール + プロダクションビルド
-├── build-test.sh / build-test.bat  # バージョンを更新しないビルド/コンパイル確認
-├── dev.sh / dev.bat              # 依存関係のインストール + Vite 開発サーバーの起動
-├── vitest.config.ts              # Vitest 設定(tests/ のみ、実際の node 環境 —— DOM は不要)
-├── tsconfig.test.json            # tests/ 用の独立した型チェックプロジェクト(app/node の参照とは分離)
-├── .env.example                  # VITE_API_BASE_URL テンプレート——src/lib/apiBase.ts を参照
-├── README.md                     # 本ファイル
-└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md / README_por.md  # 翻訳
+**絶対にしないこと：** 安全の判断。独自の状態を持たず、ハードウェアの非常停止経路でもありません。運動学ブレインのステージと CAN-OTA ツールは内蔵シミュレーションに対してのみ動かしています。
+
+## 🔌 インターフェース
+
+| トピックまたはルート | 内容 |
+|---|---|
+| `/api/login`, `/api/refresh`, `/api/logout` | サインイン、期限切れ時にトークンを 1 回更新、サインアウト |
+| `/api/settings`, `/api/robot/:id`, `/api/robot/:id/command` | 状態ツリーと型付きコマンド（ジョグ、再生、ツール、バルブ、ポンプ、ビジョン）。`If-Match` 付き |
+| `/api/robot/:id/claim`, `/release`, `/jog-arm`, `/api/claims` | このアカウントとウィンドウ用にロボットを予約・解放、ジョグの有効化、誰が何を持つかの一覧 |
+| `/api/stop-all`, `/api/safety-limits` | 全体停止と、サーバーが強制する安全制限 |
+| `/ws` | 状態のライブ配信（トークンは `hydra.bearer` サブプロトコル、`remoteApiVersion=2`） |
+| `/api/camera/*`, `/api/cameras/status` | カメラのストリーム、スナップショット、録画、PTZ、短命の画像チケット |
+| `/api/hardware/canota/version`, `/api/hardware/canota/flash` | Flasher と Tester が使う CAN-OTA チェーン（実機ができるまでは完全なシミュレーション） |
+| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin：アクセスのスイッチ、接続中のアプリ、サーバーログ、監査記録（管理者） |
+
+## ⚙️ 設定
+
+設定は 2 種類あります。このアプリのビルドとブラウザーの設定と、Server Admin が編集するサーバーのアクセススイッチです（サーバーの環境変数が保存値より優先され、画面はどちらが有効かを示して他をロックします）。
+
+| 変数 | 既定値 | 設定する内容 |
+|---|---|---|
+| `HYDRA_STUDIO_CSP` | `default` | ビルド時：`default`、`off`（ヘッダーをホストが設定する場合のポリシーなし）、または独自の完全なポリシー |
+| `VITE_API_BASE_URL` | このページのホストのポート 3000 | ビルド時：サーバーが別のホストにあるときの場所（`.env.example` を参照） |
+| `server.proxy` (`vite.config.ts`) | `localhost:3000` | 開発サーバーのみ：`/api`、`/ws`、`/WORKS` をサーバーへ転送し、CORS 設定は不要 |
+| `aiAccess` | `open` | ローカル AI リレーを使える人。`open` はサインイン済みの全アカウント、`admin` は管理者のみ |
+| `infoAuth` | オフ | 読み取り専用のホスト情報（メトリクス、プロセス監視、エコシステム状態）にサインインを要求する |
+| `tls.enabled` | オフ（平文 HTTP） | 指定した証明書と鍵で HTTPS / WSS にする。使用中の証明書のフィンガープリントを画面に表示 |
+| `ble.mode` | `off` | サーバー近くのスマートフォン向け Bluetooth LE：`off`、`state`（状態の公開のみ）、`commands`（コマンドも受付）。不明な語はオフ扱い |
+| `ble.requireEncryption` | オン | コマンド用キャラクタリスティックへの書き込みと状態の読み出しは暗号化されたリンクのみ。変数が `off` のときだけ無効 |
+| `mqtt.mode` | `off` | セルのブローカーへの MQTT ブリッジ：`off`、`state`、`commands`。URL・プレフィックス・ユーザーも設定 |
+| `voice.includeHeardText` | オフ | 音声の返答が話した内容を繰り返す。個人データなので既定はオフで、変数では `1` という語だけがオンにします |
+| `voice.minConfidence` | `0.6` | 動作を始める要求を受け付ける音声認識の最小信頼度（0〜1）。0 で確認をオフにし、停止は決して保留されません。変数の不正な数値は無視されます |
+| `mavlink.signingKeyFile` | 空（署名なし） | UAV ブリッジの MAVLink 2 署名：32 バイトの鍵（生の 32 バイトまたは 16 進 64 文字）を入れたファイルのパス。保存するのはパスだけで鍵は保存せず、ブリッジは起動時に読みます |
+| `mavlink.signingAllowUnsigned` | オフ | 署名のないメッセージも受け付ける（まだ署名しない機体向け）。オンの間は画面が警告します |
+
+## 🚀 クイックスタート
+
+Node.js 22 以上と npm、そして起動中の HYDRA-UMC-SERVER（ポート 3000）が必要です。STUDIO は純粋なクライアントで、サーバーがなければ通信相手がありません。
+
+```bash
+npm install
+./dev.sh                           # Vite dev server on port 5173, proxying /api, /ws and /WORKS to the server on port 3000 (dev.bat on Windows)
+npm test                           # the Vitest suite
+npm run typecheck && npm run lint  # types and lint
+./build.sh                         # production build into dist/ (build.bat on Windows)
 ```
 
-本アプリが通信するバックエンド（設定の永続化、REST/WebSocket API、`docs/REMOTE_API.md`）は、本リポジトリではなく別個の **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** リポジトリにあります——その構成と実行方法は同プロジェクト自身の README を参照してください。
+## 🧪 テスト
 
----
+`npm test` で自動テスト 631 件を実行します。 ハードウェアも、このマシンの外にあるものも必要ありません。
 
-## 🛠️ 開発環境
+CI は `HYDRA_UMC_CI=1 python tools/ci_validate.py` を実行し、マニフェスト、文書、8 つの README、図を検査します。
+
+## 🏗️ ビルドとリリース
 
 ### 必要環境
 - [Node.js](https://nodejs.org/)（v22 以上）
@@ -371,11 +284,8 @@ Vite 自身の開発サーバー（純粋な `vite`、ポート `5173`）をラ�
 ### 自動テスト
 
 ```bash
-npm test          # vitest run —— src/examples/ に対する 610 件の実際のテスト
 npm run typecheck # tsc -b --noEmit（src/）+ tsc -p tsconfig.test.json --noEmit（tests/）
 ```
-
-コードを監査していて発見:`src/examples/`(`robotKinematicsDispatch.ts` が振り分ける 24 の実在するロボットモデルすべての FK/IK 数学 —— `utils.ts` の共有汎用フォーミュラ、UR ファミリーの全モデルが共有する `urKinematicsShared.ts` の実際の DH チェーン + Newton-Raphson エンジン、`parol6Kinematics.ts` 自身のハードコードされたチェーン、そしてロボットごとの 23 個の `*Kinematics.ts` ファイル)には自動テストのカバレッジが一切ありませんでした。修正済み:`tests/`(新規、Vitest)—— 145 件のテストのうち、その大半は `robotKinematicsDispatch.ts` 自身のディスパッチテーブルに対する単一の汎用的なパラメータ化テストスイートとしてまとめられており、23 個のほぼ重複したテストファイルを書く代わりに、そのテーブルに新しいロボットが追加されれば自動的にカバーされます。別件として:`npm run typecheck` もまた、ずっと静かに何もしていない no-op でした —— このリポジトリ自身のソリューション形式のルート `tsconfig.json`(`"files": []`、プロジェクトの `"references"` のみ)に対して単独の `tsc --noEmit` を実行しても、実際には何もチェックされません。本当の修正にはプロジェクトのビルドモード(`tsc -b --noEmit`)が必要で、これを実行すると、`vite build` 自身の esbuild/SWC トランスパイルが型チェックを一切行わないために静かに蓄積していた、8 件の実在する既存の型エラー(現在は修正済み)が即座に明らかになりました。詳細な内訳は [`CHANGELOG.md`](CHANGELOG.md) を参照してください。
 
 ### プロダクションビルド
 
@@ -392,9 +302,88 @@ npm run preview
 
 ### バージョン管理
 
-`bump_manifest_version.py`(リポジトリのルート)が `hydra-umc.project.json` と `package.json` 自身の `version` フィールド両方の唯一の所有者です—— `npm run build`(`vite build`)は意図的にコンパイルのみを行い、片方だけをインクリメントして両者がずれることが決してないようにしています。`scripts/bump-version.mjs` はレガシーなネイティブ専用のヘルパーで、参考としてのみ残されています——このリポジトリのどこからももう呼び出されません。方式自体はエコシステム全体で共通の10進法の「オドメーター」方式のままです:実際にインクリメントするたびに patch を +1 し、9 を超えると minor へ（minor が 9 を超えると major へ）繰り上がります。2 桁の数字を持つセグメントには決して到達しません（`0.0.9` -> `0.1.0` であり、`0.0.10` にはなりません）。現在実行中のバージョンは **About** ダイアログでリアルタイムに確認でき（Studio のバージョンはこのアプリ自身の `package.json` から読み取られ、隣に表示されるサーバーのバージョンは `GET /api/hydra-info` から取得されます）、完全な履歴は [`CHANGELOG.md`](CHANGELOG.md) にあります。
+`bump_manifest_version.py`(リポジトリのルート)が `hydra-umc.project.json` と `package.json` 自身の `version` フィールド両方の唯一の所有者です—— `npm run build`(`vite build`)は意図的にコンパイルのみを行い、片方だけをインクリメントして両者がずれることが決してないようにしています。`scripts/bump-version.mjs` はレガシーなネイティブ専用のヘルパーで、参考としてのみ残されています——このリポジトリのどこからももう呼び出されません。2 桁の数字を持つセグメントには決して到達しません（`0.0.9` -> `0.1.0` であり、`0.0.10` にはなりません）。現在実行中のバージョンは **About** ダイアログでリアルタイムに確認でき（Studio のバージョンはこのアプリ自身の `package.json` から読み取られ、隣に表示されるサーバーのバージョンは `GET /api/hydra-info` から取得されます）、完全な履歴は [`CHANGELOG.md`](CHANGELOG.md) にあります。
 
----
+## 🩺 トラブルシューティング
+
+| 表示 | 原因 | 対処 |
+|---|---|---|
+| サインインに失敗する、またはすべての呼び出しがサーバーに届かないと言う | サーバーが動いていない、またはページが別のホストを探している | HYDRA-UMC-SERVER を起動する（開発ではポート 3000）、または `VITE_API_BASE_URL` を付けてビルド |
+| 別のアカウントまたはウィンドウがロボットを保持しているためジョグやコマンドが拒否される | サーバーは最初に要求したアカウントとウィンドウにロボットを予約します。ジョグの有効化も必要です | ロボットのアクセスバーから解放するか待つ。管理者は誰が保持しているか確認できます |
+| 保存が 412 で拒否される | 読み込み後に別のクライアントがロボットを変更したため、リビジョンが古い | ロボットを再読み込みして、もう一度変更する |
+| Server Admin のスイッチがグレーになっている | 値はサーバーの環境変数から来ており、保存値より優先される | サーバーの環境変数を変えて再起動する。各値の出どころは画面に表示される |
+| サーバーを再デプロイしたらページが空白になる | 開いているタブがもう存在しないチャンクを指している | ページは 1 回自動で再読み込みします。空白のままなら手動で再読み込みし、本当にファイルが無ければ再ビルドしてください |
+
+## 📂 リポジトリの構成
+
+<p align="center">
+  <img src="images/repository-structure.svg" alt="Repository structure of HYDRA-UMC-STUDIO" width="100%">
+</p>
+
+<details>
+<summary>ツリーのテキスト版</summary>
+
+```text
+HYDRA-UMC-STUDIO/
+├── src/                             ソースコード
+│   ├── App.tsx                      ルーターとレイアウト、エントリポイント、グローバル状態のプロバイダー
+│   ├── Dashboard.tsx                トップレベルのアプリシェル——ナビゲーション、概要パネル、フッターのシステム指標
+│   ├── store.ts                     グローバル状態：RobotModel/RobotState/HydraController/SystemSettings ——
+│   ├── motionSource.ts              描画されたポーズが表すもの (指令値か、機械が追従した値か)、および sendRobotCommand() の純粋な状態遷移の中核
+│   ├── i18n.ts                      react-i18next の設定——src/locales/*.json を読み込み
+│   ├── hooks/                       usePartColors.ts: HYDRA-UMC-EDITOR-STL が保存したパーツごとの色の上書き
+│   ├── assets/                      アプリのアイコン、スプラッシュ画面、画像と、グローバルなスタイル
+│   ├── assistant/                   Hydri アシスタント：回答エンジン、知識ベース（8言語）、マスコット、設定
+│   ├── components/                  画面とパネル：ロボット詳細、3D シーン、管理、CAN-OTA ツール
+│   ├── examples/                    実在する 24 のロボットモデルの順・逆運動学
+│   ├── lib/canOta.ts                CAN-OTA シミュレーション/プロトコル層、GitHub ファームウェアダウンロード
+│   ├── lib/apiBase.ts               バックエンド URL の解決——開発環境では相対パス+プロキシ、本番環境では VITE_API_BASE_URL
+│   ├── lib/mediaTicket.ts           カメラ映像用の短寿命チケット
+│   ├── lib/claims.ts                予約、コントローラ ID、サーバーから読む安全上限、Live/Sim モード
+│   ├── lib/revisions.ts             ロボットごとのリビジョン(If-Match、412)、テーブルのアトミックな移動、監査記録とそのチェーン検証
+│   ├── lib/session.ts               セッショントークン、サーバーのアクセスオプション、オペレーター向けエラー文言、設定を保存できる人、crypto.subtle を使わない SHA-256
+│   ├── lib/stopAll.ts               グローバル STOP、ロボットコマンドへの応答、ロボットの編集をコマンド化したもの、選択中のロボット、再生ステップの番号付け、到達不能な軌道の警告、フランジ上のツールの位置、最短経路の角度
+│   ├── lib/claimsFeed.ts            予約のライブ一覧、ファイル取り込み前の検査、押し続け入力の間引き、押し続けたジョグボタンの繰り返し、ダイアログのキーボード規則、保存した MJPEG 録画のパーサー、エディターが提出したモデルのカタログ
+│   └── locales/                     en/es/de/fr/it/zh/ja/pt 翻訳ファイル（react-i18next）
+├── docs/                            真空テーブル・ヒートベッド・ラック・機械モデルのガイド
+├── public/                          3D モデル：ロボット、ラック、ヒートベッド、真空テーブル、機械（STL と OpenSCAD）
+├── images/                          README バナー
+├── tests/                           実際の Vitest スイート(610 件のテスト)—— src/examples/ の FK/IK 数学のみ、React/DOM は不使用
+├── tools/                           プロジェクトのツールと CI の検査
+├── scripts/                         bump-version.mjs (明示的なバージョン更新) と csp.ts (ビルドされたページの Content-Security-Policy)
+├── .github/                         CI ワークフローと Issue テンプレート
+├── index.html                       Vite がアプリをビルドする元のページ (Content-Security-Policy はビルド時に埋め込まれる)
+├── example_trajectory.json          独立したサンプル軌道（関節角シーケンス、サンプルデータ）
+├── metadata.json                    アプリ名/説明（ホスティングプラットフォームが使用）
+├── bump_manifest_version.py         hydra-umc.project.json のバージョンをネイティブ側と同期（--sync）
+├── build.sh / build.bat             依存関係のインストール + プロダクションビルド
+├── build-test.sh / build-test.bat   バージョンを更新しないビルド/コンパイル確認
+├── dev.sh / dev.bat                 依存関係のインストール + Vite 開発サーバーの起動
+├── vitest.config.ts                 Vitest 設定(tests/ のみ、実際の node 環境 —— DOM は不要)
+├── tsconfig.test.json               tests/ 用の独立した型チェックプロジェクト(app/node の参照とは分離)
+├── .env.example                     VITE_API_BASE_URL テンプレート——src/lib/apiBase.ts を参照
+├── CHANGELOG.md                     各バージョンの変更点
+├── hydra-umc.project.json           マニフェスト：バージョン、成熟度、ファミリー
+├── package.json                     パッケージのメタデータとスクリプト
+└── test.sh                          テストを実行
+```
+
+</details>
+
+## 🗺️ ロードマップと既知の制限
+
+**現時点の既知の制限**
+
+* CAN-OTA チェーン（Flasher と Tester）と運動学ブレインのステージは内蔵シミュレーションに対してのみ動かしています。書き込みや試験の対象となる HYDRA-UMC コントローラーボードはまだありません。
+* テーブル、ヒートベッド、ラックのサイズは見た目の設定であり、ロボットのキャリブレーションでも電気設計や製造設計でもありません。
+* STOP はサーバー経由で、無線の非常停止やハードウェアの停止経路はありません。
+* ロボットを動かすことはすべてサーバー（ロール、制限、予約）が決めます。このアプリだけで動作を安全にすることはできません。
+
+**次：** このアプリの新機能はすべて HYDRA-UMC-SUITE に移植し、CAN-OTA ツールは最初の実機ボードを待ちます。
+
+## 🌍 言語
+
+この README とリポジトリの文書は、英語・スペイン語・ドイツ語・フランス語・イタリア語・日本語・中国語・ポルトガル語（ポルトガル）の 8 言語で提供されています。8 つのファイルは同時に書かれ、同じ節と同じリンクを持つことを CI が確認します。
 
 ## 🔗 関連プロジェクト
 
@@ -491,52 +480,26 @@ npm run preview
 
 全体として、この著者のエコシステムは本プロジェクトをはるかに超えて広がっています——上記は地図であり、網羅的な機能一覧ではありません。各リポジトリが今日実際に何を行っているかは、それぞれ自身の README を確認してください。
 
----
+## 📚 ドキュメント
 
-## 📚 ドキュメント & コミュニティ
+さらに読むには：
 
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** —— プルリクエストのための技術スタックとコーディング指針。
-- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** —— このコミュニティで期待される行動規範。
-- **[SECURITY.md](SECURITY.md)** —— 脆弱性の報告方法と、このプロジェクトの実際のセキュリティ重点領域。
-- **[SUPPORT.md](SUPPORT.md)** —— 質問の投稿先とバグの報告先。
-- **[LICENSE.md](LICENSE.md)** —— このプロジェクト自身のライセンス。
+* [エコシステムのセキュリティ基準](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/SECURITY_BASELINE.md)
+* [エコシステムの脅威モデル](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/THREAT_MODEL.md)
+* [このリポジトリの変更履歴](CHANGELOG.md)
+* [このリポジトリのライセンス](LICENSE.md)
+
+## 🤝 コントリビュートとコミュニティ
+
+* プルリクエストの前に `HYDRA_UMC_CI=1 py -3 tools/ci_validate.py`（または `HYDRA_UMC_CI=1 python3 tools/ci_validate.py`）を実行してください。`CI_VALIDATION=PASS` と表示される必要があります。この確認に `build.sh` や `build.bat` は使わないでください。ビルドは検査ではありません。
+* 8 つの README は HYDRA-UMC-DOCS の 1 つのソースから書かれます。手で編集しないでください。ソースを変更し、`tools/make_readmes.py` で書き直します。
+* 実行していないことを README に書かないでください。事実であれば「シミュレーションのみ」「実機では未確認」と書きます。
+* [CONTRIBUTING.md](CONTRIBUTING.md)、[行動規範](CODE_OF_CONDUCT.md)、[SECURITY.md](SECURITY.md)、[SUPPORT.md](SUPPORT.md) を参照してください。
 
 ## 👤 作者
-**JuanenRac** (Electro Hobby 3D)
-📧 electrohobby3d@gmail.com
-📺 [youtube.com/@electrohobby3d](https://youtube.com/@electrohobby3d)
+
+**JuanenRac (Electro Hobby 3D)** · electrohobby3d@gmail.com
 
 ## 📜 ライセンス
 
-HYDRA-UMC STUDIO の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰属します。本プロジェクトまたはその派生物を配布する際は、この表示を必ず含めてください。
-
-本アプリケーションのソースコードは、**GNU General Public License v3.0（GPL-3.0）** の下で提供されます。全文は https://www.gnu.org/licenses/gpl-3.0.html を参照してください。
-
-ドキュメント（本 README およびその自身の翻訳版——`README_spa.md`、`README_ita.md`、`README_fra.md`、`README_deu.md`、`README_zho.md`、`README_jpn.md`）は、**クリエイティブ・コモンズ 表示-継承 4.0 国際（CC BY-SA 4.0）** の下で提供されます。全文は https://creativecommons.org/licenses/by-sa/4.0/ を参照してください。
-
-**サードパーティのロボットメッシュアセット：** `public/models/` 配下の実際の 3D ジオメトリは、上記の GPL-3.0 の対象では **ありません**——各ロボットモデル自身のメッシュファイルは、それぞれ別個にライセンスされたサードパーティのアセットであり、それぞれ独自の原本の条件のもとで本リポジトリで再配布されています：
-
-| メーカー | モデル | ライセンス |
-|---|---|---|
-| Source Robotics | Parol6 | GPL-3.0 |
-| Source Robotics | Faze4 | MIT |
-| Annin Robotics | AR3, AR4 | MIT |
-| Universal Robots | UR3e, UR5e, UR10e, UR16e, UR20 | BSD-3-Clause |
-| UFACTORY | xArm6, Lite 6 | BSD-3-Clause |
-| Comau | e.DO | BSD-3-Clause |
-| Kinova | Gen3 Lite | BSD-3-Clause |
-| FANUC | M-710iC | BSD-3-Clause |
-| The Robot Studio | SO-ARM100 | Apache-2.0 |
-| Kinova | Gen2 (j2s6s200) | BSD-3-Clause |
-| AgileX | PiPER | Apache-2.0 |
-| Unitree | Z1 | BSD-3-Clause |
-| Trossen Robotics | ViperX 300, WidowX 250 | BSD-3-Clause |
-| Koch / Low-Cost Robot Arm | Koch v1.1 | Apache-2.0 |
-| Universal Robots (classic) | UR3, UR5, UR10 | BSD-3-Clause |
-| Opulo | LumenPnP v4（JuanenPnP でも使用） | CERN-OHL-W v2 |
-
-各モデル自身の正確な参照元リポジトリ、パス、ライセンス条文は、そのモデル自身の `public/models/<category>/<slug>/ATTRIBUTION.txt` に記載されています——特定のメッシュセットを再配布する前に、上記の表がその代わりになると想定せず、必ずそのファイルを確認してください。LumenPnP 自身の `ATTRIBUTION.txt` は全文を読む価値があります——上記の他のすべてのロボットアーム（メーカー自身が用意した既製の STL ファイルを、そのままダウンロードしたもの）とは異なり、その 5 つのメッシュファイルは Opulo の実際の FreeCAD ソースから社内で生成されたものであり、そのまま再配布されたものではありません。
-
-本ダッシュボードは [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) マザーボードプロジェクトの Web 制御パネルです——その自身のハードウェア（CERN-OHL-S v2）およびファームウェア（GPL-3.0）のライセンスは同リポジトリを参照してください。本リポジトリ自身のライセンスはそちらには及ばず、その逆も同様です。また、[URTC](https://github.com/JuanenRac/URTC) プロトコルに対する CAN-OTA ツールも実装しています——その自身の独立したライセンスは同プロジェクト自身のリポジトリを参照してください。
-
-本プロジェクトを基に開発を行う際は、このライセンス区分を念頭に置いてください：コードの変更は GPL-3.0 を維持し、ドキュメントの派生物は CC BY-SA を維持し、特定のロボットのメッシュアセットの再配布は、そのモデル自身の原本ライセンスを維持してください——いずれも本プロジェクトおよびその作者への帰属表示を伴う必要があります。
+GPL-3.0-or-later - [LICENSE](LICENSE).

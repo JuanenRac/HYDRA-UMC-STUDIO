@@ -1,0 +1,955 @@
+{
+  "repo": "HYDRA-UMC-STUDIO",
+  "ecosystem": "hydra",
+  "svg": "en",
+  "exempt": [
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "SUPPORT.md",
+    "LICENSE",
+    "LICENSE.md",
+    "package-lock.json",
+    "test.bat",
+    "tsconfig.app.json",
+    "tsconfig.json",
+    "tsconfig.node.json",
+    "vite.config.ts"
+  ],
+  "cards": [
+    {
+      "name": "src/",
+      "span": 3,
+      "accent": "a",
+      "rows": [
+        {
+          "name": "App.tsx",
+          "desc": {
+            "en": "The router and layout",
+            "es": "El enrutador y la maquetación",
+            "de": "Router und Layout",
+            "fr": "Le routeur et la mise en page",
+            "it": "Il router e il layout",
+            "ja": "ルーターとレイアウト、エントリポイント、グロ",
+            "zh": "路由与布局、入口点以及全局状态提供者",
+            "pt": "O encaminhador e a disposição"
+          },
+          "tree_desc": {
+            "en": "The router and layout, the entry point and the provider of the global state",
+            "es": "El enrutador y la maquetación, el punto de entrada y el proveedor del estado global",
+            "de": "Router und Layout, der Einstiegspunkt und der Anbieter des globalen Zustands",
+            "fr": "Le routeur et la mise en page, le point d'entrée et le fournisseur de l'état global",
+            "it": "Il router e il layout, il punto di ingresso e il provider dello stato globale",
+            "ja": "ルーターとレイアウト、エントリポイント、グローバル状態のプロバイダー",
+            "zh": "路由与布局、入口点以及全局状态提供者",
+            "pt": "O encaminhador e a disposição, o ponto de entrada e o fornecedor do estado global"
+          }
+        },
+        {
+          "name": "Dashboard.tsx",
+          "desc": {
+            "en": "Top-level app shell",
+            "es": "Shell principal de la app",
+            "de": "App-Shell oberster Ebene",
+            "fr": "Coquille principale de l'application",
+            "it": "Shell principale dell'app",
+            "ja": "トップレベルのアプリシェル——ナビゲーション",
+            "zh": "顶层应用外壳——导航、概览面板、页脚系统指标",
+            "pt": "Estrutura principal da app"
+          },
+          "tree_desc": {
+            "en": "Top-level app shell - navigation, Overview panel, footer system metrics",
+            "es": "Shell principal de la app - navegación, panel Overview, métricas del sistema en el pie",
+            "de": "App-Shell oberster Ebene - Navigation, Overview-Panel, Systemmetriken in der Fußzeile",
+            "fr": "Coquille principale de l'application - navigation, panneau Overview, métriques système en pied de page",
+            "it": "Shell principale dell'app - navigazione, pannello Overview, metriche di sistema nel footer",
+            "ja": "トップレベルのアプリシェル——ナビゲーション、概要パネル、フッターのシステム指標",
+            "zh": "顶层应用外壳——导航、概览面板、页脚系统指标",
+            "pt": "Estrutura principal da app - navegação, painel Resumo, métricas do sistema no rodapé"
+          }
+        },
+        {
+          "name": "store.ts",
+          "desc": {
+            "en": "Global state",
+            "es": "Estado global",
+            "de": "Globaler Zustand",
+            "fr": "État global",
+            "it": "Stato globale",
+            "ja": "グローバル状態：RobotModel/Rob",
+            "zh": "全局状态：RobotModel/RobotS",
+            "pt": "Estado global"
+          },
+          "tree_desc": {
+            "en": "Global state: RobotModel/RobotState/HydraController/SystemSettings -",
+            "es": "Estado global: RobotModel/RobotState/HydraController/SystemSettings -",
+            "de": "Globaler Zustand: RobotModel/RobotState/HydraController/SystemSettings -",
+            "fr": "État global : RobotModel/RobotState/HydraController/SystemSettings -",
+            "it": "Stato globale: RobotModel/RobotState/HydraController/SystemSettings -",
+            "ja": "グローバル状態：RobotModel/RobotState/HydraController/SystemSettings ——",
+            "zh": "全局状态：RobotModel/RobotState/HydraController/SystemSettings ——",
+            "pt": "Estado global: RobotModel/RobotState/HydraController/SystemSettings -"
+          }
+        },
+        {
+          "name": "motionSource.ts",
+          "desc": {
+            "en": "What the drawn pose stands for",
+            "es": "Qué representa la pose dibujada",
+            "de": "Wofür die gezeichnete Pose steht",
+            "fr": "Ce que représente la pose dessinée",
+            "it": "Cosa rappresenta la posa disegnata",
+            "ja": "描画されたポーズが表すもの (指令値か",
+            "zh": "所绘姿态代表什么 (指令值还是机器实际跟随的",
+            "pt": "O que a pose desenhada representa"
+          },
+          "tree_desc": {
+            "en": "What the drawn pose stands for (commanded or followed by the machine), and the pure state-transition core of sendRobotCommand()",
+            "es": "Qué representa la pose dibujada (ordenada o seguida por la máquina) y el núcleo puro de transición de estado de sendRobotCommand()",
+            "de": "Wofür die gezeichnete Pose steht (befohlen oder von der Maschine befolgt) und der reine Zustandsübergangskern von sendRobotCommand()",
+            "fr": "Ce que représente la pose dessinée (commandée ou suivie par la machine) et le noyau pur de transition d'état de sendRobotCommand()",
+            "it": "Cosa rappresenta la posa disegnata (comandata o seguita dalla macchina) e il nucleo puro di transizione di stato di sendRobotCommand()",
+            "ja": "描画されたポーズが表すもの (指令値か、機械が追従した値か)、および sendRobotCommand() の純粋な状態遷移の中核",
+            "zh": "所绘姿态代表什么 (指令值还是机器实际跟随的值),以及 sendRobotCommand() 的纯状态转换核心",
+            "pt": "O que a pose desenhada representa (comandada ou seguida pela máquina) e o núcleo puro de transição de estado de sendRobotCommand()"
+          }
+        },
+        {
+          "name": "i18n.ts",
+          "desc": {
+            "en": "react-i18next setup",
+            "es": "Configuración de react-i18next",
+            "de": "react-i18next-Setup",
+            "fr": "Configuration react-i18next",
+            "it": "Configurazione react-i18next",
+            "ja": "react-i18next の設定——src",
+            "zh": "react-i18next 配置——加载 s",
+            "pt": "Configuração do react-i18next"
+          },
+          "tree_desc": {
+            "en": "react-i18next setup - loads src/locales/*.json",
+            "es": "Configuración de react-i18next - carga src/locales/*.json",
+            "de": "react-i18next-Setup - lädt src/locales/*.json",
+            "fr": "Configuration react-i18next - charge src/locales/*.json",
+            "it": "Configurazione react-i18next - carica src/locales/*.json",
+            "ja": "react-i18next の設定——src/locales/*.json を読み込み",
+            "zh": "react-i18next 配置——加载 src/locales/*.json",
+            "pt": "Configuração do react-i18next - carrega src/locales/*.json"
+          }
+        },
+        {
+          "name": "hooks/",
+          "desc": {
+            "en": "usePartColors.ts",
+            "es": "usePartColors.ts",
+            "de": "usePartColors.ts",
+            "fr": "usePartColors.ts",
+            "it": "usePartColors.ts",
+            "ja": "usePartColors.ts",
+            "zh": "usePartColors.ts",
+            "pt": "usePartColors.ts"
+          },
+          "tree_desc": {
+            "en": "usePartColors.ts: per-part colour overrides saved by HYDRA-UMC-EDITOR-STL",
+            "es": "usePartColors.ts: colores por pieza guardados por HYDRA-UMC-EDITOR-STL",
+            "de": "usePartColors.ts: Farbüberschreibungen pro Teil, gespeichert von HYDRA-UMC-EDITOR-STL",
+            "fr": "usePartColors.ts : couleurs par pièce enregistrées par HYDRA-UMC-EDITOR-STL",
+            "it": "usePartColors.ts: colori per pezzo salvati da HYDRA-UMC-EDITOR-STL",
+            "ja": "usePartColors.ts: HYDRA-UMC-EDITOR-STL が保存したパーツごとの色の上書き",
+            "zh": "usePartColors.ts: 由 HYDRA-UMC-EDITOR-STL 保存的按零件颜色覆盖",
+            "pt": "usePartColors.ts: cores por peça guardadas pelo HYDRA-UMC-EDITOR-STL"
+          }
+        },
+        {
+          "name": "assets/",
+          "desc": {
+            "en": "The icon, the splash screen",
+            "es": "El icono, la pantalla de arranque y las",
+            "de": "Das Symbol, der Startbildschirm und die",
+            "fr": "L'icône, l'écran de démarrage et les images",
+            "it": "L'icona, la schermata di avvio e le",
+            "ja": "アプリのアイコン、スプラッシュ画面、画像と",
+            "zh": "应用的图标、启动画面和图片,以及全局样式",
+            "pt": "O ícone, o ecrã de arranque e as imagens da"
+          },
+          "tree_desc": {
+            "en": "The icon, the splash screen and the pictures of the app, and the global styles",
+            "es": "El icono, la pantalla de arranque y las imágenes de la app, y los estilos globales",
+            "de": "Das Symbol, der Startbildschirm und die Bilder der App sowie die globalen Stile",
+            "fr": "L'icône, l'écran de démarrage et les images de l'app, et les styles globaux",
+            "it": "L'icona, la schermata di avvio e le immagini dell'app, e gli stili globali",
+            "ja": "アプリのアイコン、スプラッシュ画面、画像と、グローバルなスタイル",
+            "zh": "应用的图标、启动画面和图片,以及全局样式",
+            "pt": "O ícone, o ecrã de arranque e as imagens da app, e os estilos globais"
+          }
+        },
+        {
+          "name": "assistant/",
+          "desc": {
+            "en": "Hydri, the assistant",
+            "es": "Hydri, el asistente",
+            "de": "Hydri, der Assistent",
+            "fr": "Hydri, l'assistant",
+            "it": "Hydri, l'assistente",
+            "ja": "Hydri アシスタント：回答エンジン",
+            "zh": "助手 Hydri：回答引擎、知识库",
+            "pt": "Hydri, o assistente"
+          },
+          "tree_desc": {
+            "en": "Hydri, the assistant: answer engine, knowledge base (8 languages), mascot, preferences",
+            "es": "Hydri, el asistente: motor de respuestas, base de conocimiento (8 idiomas), mascota, preferencias",
+            "de": "Hydri, der Assistent: Antwortmaschine, Wissensbasis (8 Sprachen), Maskottchen, Einstellungen",
+            "fr": "Hydri, l'assistant : moteur de réponses, base de connaissances (8 langues), mascotte, préférences",
+            "it": "Hydri, l'assistente: motore di risposte, base di conoscenza (8 lingue), mascotte, preferenze",
+            "ja": "Hydri アシスタント：回答エンジン、知識ベース（8言語）、マスコット、設定",
+            "zh": "助手 Hydri：回答引擎、知识库（8 种语言）、吉祥物、偏好设置",
+            "pt": "Hydri, o assistente: motor de respostas, base de conhecimento (8 idiomas), mascote, preferências"
+          }
+        },
+        {
+          "name": "components/",
+          "desc": {
+            "en": "screens and panels",
+            "es": "pantallas y paneles",
+            "de": "Ansichten und Panels",
+            "fr": "écrans et panneaux",
+            "it": "schermate e pannelli",
+            "ja": "画面とパネル",
+            "zh": "界面和面板",
+            "pt": "ecrãs e painéis"
+          },
+          "tree_desc": {
+            "en": "the screens and panels: robot detail, 3D scene, administration, CAN-OTA tools",
+            "es": "las pantallas y paneles: detalle de robot, escena 3D, administración, herramientas CAN-OTA",
+            "de": "die Ansichten und Panels: Roboterdetail, 3D-Szene, Administration, CAN-OTA-Werkzeuge",
+            "fr": "les écrans et panneaux : détail du robot, scène 3D, administration, outils CAN-OTA",
+            "it": "le schermate e i pannelli: dettaglio robot, scena 3D, amministrazione, strumenti CAN-OTA",
+            "ja": "画面とパネル：ロボット詳細、3D シーン、管理、CAN-OTA ツール",
+            "zh": "界面和面板：机器人详情、3D 场景、管理、CAN-OTA 工具",
+            "pt": "os ecrãs e painéis: detalhe do robô, cena 3D, administração, ferramentas CAN-OTA"
+          }
+        },
+        {
+          "name": "examples/",
+          "desc": {
+            "en": "robot kinematics",
+            "es": "cinemática de robots",
+            "de": "Roboterkinematik",
+            "fr": "cinématique des robots",
+            "it": "cinematica dei robot",
+            "ja": "ロボットの運動学",
+            "zh": "机器人运动学",
+            "pt": "cinemática dos robôs"
+          },
+          "tree_desc": {
+            "en": "forward and inverse kinematics of the 24 real robot models",
+            "es": "cinemática directa e inversa de los 24 modelos reales de robot",
+            "de": "Vorwärts- und Rückwärtskinematik der 24 echten Robotermodelle",
+            "fr": "cinématique directe et inverse des 24 vrais modèles de robots",
+            "it": "cinematica diretta e inversa dei 24 modelli reali di robot",
+            "ja": "実在する 24 のロボットモデルの順・逆運動学",
+            "zh": "24 个真实机器人模型的正逆运动学",
+            "pt": "cinemática direta e inversa dos 24 modelos reais de robô"
+          }
+        },
+        {
+          "name": "lib/canOta.ts",
+          "desc": {
+            "en": "CAN-OTA simulation/protocol layer",
+            "es": "Capa de simulación/protocolo CAN-OTA",
+            "de": "CAN-OTA-Simulations-/Protokollschicht",
+            "fr": "Couche de simulation/protocole CAN-OTA",
+            "it": "Livello di simulazione/protocollo CAN-OTA",
+            "ja": "CAN-OTA シミュレーション/プロトコル",
+            "zh": "CAN-OTA 仿真/协议层",
+            "pt": "Camada de simulação/protocolo CAN-OTA"
+          },
+          "tree_desc": {
+            "en": "CAN-OTA simulation/protocol layer, GitHub firmware download",
+            "es": "Capa de simulación/protocolo CAN-OTA, descarga de firmware desde GitHub",
+            "de": "CAN-OTA-Simulations-/Protokollschicht, GitHub-Firmware-Download",
+            "fr": "Couche de simulation/protocole CAN-OTA, téléchargement de firmware depuis GitHub",
+            "it": "Livello di simulazione/protocollo CAN-OTA, download firmware da GitHub",
+            "ja": "CAN-OTA シミュレーション/プロトコル層、GitHub ファームウェアダウンロード",
+            "zh": "CAN-OTA 仿真/协议层，GitHub 固件下载",
+            "pt": "Camada de simulação/protocolo CAN-OTA, descarga de firmware do GitHub"
+          }
+        },
+        {
+          "name": "lib/apiBase.ts",
+          "desc": {
+            "en": "Backend URL resolution",
+            "es": "Resolución de la URL del backend",
+            "de": "Backend-URL-Auflösung",
+            "fr": "Résolution de l'URL du backend",
+            "it": "Risoluzione dell'URL del backend",
+            "ja": "バックエンド URL の解決——開発環境では",
+            "zh": "后端 URL 解析——开发环境中相对路径+代",
+            "pt": "Resolução do URL do back-end"
+          },
+          "tree_desc": {
+            "en": "Backend URL resolution - relative+proxied in dev, VITE_API_BASE_URL in prod",
+            "es": "Resolución de la URL del backend - relativa+proxeada en dev, VITE_API_BASE_URL en prod",
+            "de": "Backend-URL-Auflösung - relativ+geproxyt im Dev, VITE_API_BASE_URL in Prod",
+            "fr": "Résolution de l'URL du backend - relative+proxifiée en dev, VITE_API_BASE_URL en prod",
+            "it": "Risoluzione dell'URL del backend - relativa+proxata in dev, VITE_API_BASE_URL in prod",
+            "ja": "バックエンド URL の解決——開発環境では相対パス+プロキシ、本番環境では VITE_API_BASE_URL",
+            "zh": "后端 URL 解析——开发环境中相对路径+代理，生产环境使用 VITE_API_BASE_URL",
+            "pt": "Resolução do URL do back-end - relativo+proxy em dev, VITE_API_BASE_URL em prod"
+          }
+        },
+        {
+          "name": "lib/mediaTicket.ts",
+          "desc": {
+            "en": "Short-lived tickets for the camera pictures",
+            "es": "Tickets de vida corta para las imágenes de",
+            "de": "Kurzlebige Tickets für die Kamerabilder",
+            "fr": "Tickets de courte durée pour les images des",
+            "it": "Ticket di breve durata per le immagini",
+            "ja": "カメラ映像用の短寿命チケット",
+            "zh": "摄像头画面用的短时效票据",
+            "pt": "Tickets de vida curta para as imagens das"
+          },
+          "tree_desc": {
+            "en": "Short-lived tickets for the camera pictures",
+            "es": "Tickets de vida corta para las imágenes de las cámaras",
+            "de": "Kurzlebige Tickets für die Kamerabilder",
+            "fr": "Tickets de courte durée pour les images des caméras",
+            "it": "Ticket di breve durata per le immagini delle telecamere",
+            "ja": "カメラ映像用の短寿命チケット",
+            "zh": "摄像头画面用的短时效票据",
+            "pt": "Tickets de vida curta para as imagens das câmaras"
+          }
+        },
+        {
+          "name": "lib/claims.ts",
+          "desc": {
+            "en": "Reservations, controller id, safety limits",
+            "es": "Reservas, identificador de controlador",
+            "de": "Reservierungen",
+            "fr": "Réservations, identifiant de contrôleur",
+            "it": "Prenotazioni, identificatore di controller",
+            "ja": "予約、コントローラ ID、サーバーから読む安",
+            "zh": "预留、控制器 ID、从服务器读取的安全限制",
+            "pt": "Reservas, identificador de controlador"
+          },
+          "tree_desc": {
+            "en": "Reservations, controller id, safety limits read from the server, Live/Sim mode",
+            "es": "Reservas, identificador de controlador, límites de seguridad leídos del servidor, modo Live/Sim",
+            "de": "Reservierungen, Controller-ID, vom Server gelesene Sicherheitsgrenzen, Live/Sim-Modus",
+            "fr": "Réservations, identifiant de contrôleur, limites de sécurité lues du serveur, mode Live/Sim",
+            "it": "Prenotazioni, identificatore di controller, limiti di sicurezza letti dal server, modalità Live/Sim",
+            "ja": "予約、コントローラ ID、サーバーから読む安全上限、Live/Sim モード",
+            "zh": "预留、控制器 ID、从服务器读取的安全限制、Live/Sim 模式",
+            "pt": "Reservas, identificador de controlador, limites de segurança lidos do servidor, modo Live/Sim"
+          }
+        },
+        {
+          "name": "lib/revisions.ts",
+          "desc": {
+            "en": "Revision of each robot",
+            "es": "Revisión de cada robot",
+            "de": "Revision jedes Roboters",
+            "fr": "Révision de chaque robot",
+            "it": "Revisione di ogni robot",
+            "ja": "ロボットごとのリビジョン(If-Match",
+            "zh": "每个机器人的修订号(If-Match",
+            "pt": "Revisão de cada robô"
+          },
+          "tree_desc": {
+            "en": "Revision of each robot (If-Match, 412), atomic table move, audit record and its chain check",
+            "es": "Revisión de cada robot (If-Match, 412), movimiento atómico de la mesa, registro de auditoría y comprobación de su cadena",
+            "de": "Revision jedes Roboters (If-Match, 412), atomare Tischbewegung, Audit-Protokoll und Prüfung seiner Kette",
+            "fr": "Révision de chaque robot (If-Match, 412), déplacement atomique de la table, journal d'audit et vérification de sa chaîne",
+            "it": "Revisione di ogni robot (If-Match, 412), movimento atomico della tavola, registro di audit e verifica della sua catena",
+            "ja": "ロボットごとのリビジョン(If-Match、412)、テーブルのアトミックな移動、監査記録とそのチェーン検証",
+            "zh": "每个机器人的修订号(If-Match、412)、工作台原子移动、审计记录及其链校验",
+            "pt": "Revisão de cada robô (If-Match, 412), movimento atómico da mesa, registo de auditoria e verificação da sua cadeia"
+          }
+        },
+        {
+          "name": "lib/session.ts",
+          "desc": {
+            "en": "Session tokens",
+            "es": "Tokens de sesión",
+            "de": "Sitzungs-Token",
+            "fr": "Jetons de session",
+            "it": "Token di sessione",
+            "ja": "セッショントークン、サーバーのアクセスオプシ",
+            "zh": "会话令牌、服务器访问选项、面向操作员的错误文",
+            "pt": "Tokens de sessão"
+          },
+          "tree_desc": {
+            "en": "Session tokens, the access options of the server, operator-facing error texts, who may save the settings, SHA-256 without crypto.subtle",
+            "es": "Tokens de sesión, opciones de acceso del servidor, textos de error para el operador, quién puede guardar los ajustes, SHA-256 sin crypto.subtle",
+            "de": "Sitzungs-Token, die Zugriffsoptionen des Servers, Fehlertexte für den Bediener, wer die Einstellungen speichern darf, SHA-256 ohne crypto.subtle",
+            "fr": "Jetons de session, options d'accès du serveur, textes d'erreur pour l'opérateur, qui peut enregistrer les réglages, SHA-256 sans crypto.subtle",
+            "it": "Token di sessione, opzioni di accesso del server, testi d'errore per l'operatore, chi può salvare le impostazioni, SHA-256 senza crypto.subtle",
+            "ja": "セッショントークン、サーバーのアクセスオプション、オペレーター向けエラー文言、設定を保存できる人、crypto.subtle を使わない SHA-256",
+            "zh": "会话令牌、服务器访问选项、面向操作员的错误文字、谁可以保存设置、不依赖 crypto.subtle 的 SHA-256",
+            "pt": "Tokens de sessão, opções de acesso do servidor, textos de erro para o operador, quem pode guardar as definições, SHA-256 sem crypto.subtle"
+          }
+        },
+        {
+          "name": "lib/stopAll.ts",
+          "desc": {
+            "en": "The global STOP",
+            "es": "El STOP global",
+            "de": "Der globale STOP",
+            "fr": "Le STOP global",
+            "it": "Lo STOP globale",
+            "ja": "グローバル STOP、ロボットコマンドへの応",
+            "zh": "全局 STOP、机器人命令的应答、把机器人的",
+            "pt": "O STOP global, a resposta a um comando de"
+          },
+          "tree_desc": {
+            "en": "The global STOP, the answer of a robot command, the edits of a robot as commands, the selected robot, playback step numbering, the warning for unreachable trajectories, where a tool sits on the flange, shortest-path angles",
+            "es": "El STOP global, la respuesta a una orden de robot, las ediciones de un robot como órdenes, el robot seleccionado, la numeración de pasos de reproducción, el aviso de trayectorias inalcanzables, dónde va la herramienta en la brida, ángulos por el camino más corto",
+            "de": "Der globale STOP, die Antwort auf einen Roboterbefehl, die Änderungen eines Roboters als Befehle, der gewählte Roboter, die Nummerierung der Wiedergabeschritte, die Warnung vor unerreichbaren Trajektorien, wo ein Werkzeug am Flansch sitzt, Winkel auf kürzestem Weg",
+            "fr": "Le STOP global, la réponse à une commande de robot, les modifications d'un robot comme commandes, le robot sélectionné, la numérotation des pas de lecture, l'avertissement des trajectoires inatteignables, où l'outil se place sur la bride, angles par le plus court chemin",
+            "it": "Lo STOP globale, la risposta a un comando del robot, le modifiche di un robot come comandi, il robot selezionato, la numerazione dei passi di riproduzione, l'avviso di traiettorie irraggiungibili, dove sta l'utensile sulla flangia, angoli per il percorso più breve",
+            "ja": "グローバル STOP、ロボットコマンドへの応答、ロボットの編集をコマンド化したもの、選択中のロボット、再生ステップの番号付け、到達不能な軌道の警告、フランジ上のツールの位置、最短経路の角度",
+            "zh": "全局 STOP、机器人命令的应答、把机器人的编辑转为命令、所选机器人、回放步骤编号、不可达轨迹的警告、工具在法兰上的位置、最短路径角度",
+            "pt": "O STOP global, a resposta a um comando de robô, as edições de um robô como comandos, o robô selecionado, a numeração dos passos de reprodução, o aviso de trajetórias inalcançáveis, onde a ferramenta fica no flange, ângulos pelo caminho mais curto"
+          }
+        },
+        {
+          "name": "lib/claimsFeed.ts",
+          "desc": {
+            "en": "The live list of reservations",
+            "es": "La lista en vivo de reservas",
+            "de": "Die Live-Liste der Reservierungen",
+            "fr": "La liste en direct des réservations",
+            "it": "L'elenco in tempo reale delle prenotazioni",
+            "ja": "予約のライブ一覧、ファイル取り込み前の検査",
+            "zh": "预约的实时列表、导入文件前的检查、对持续输入",
+            "pt": "A lista em direto das reservas"
+          },
+          "tree_desc": {
+            "en": "The live list of reservations, checks before a file is imported, throttling of held input, repeat of a held jog button, keyboard rules of dialogs, the parser of saved MJPEG recordings, the catalogue of models the editors submitted",
+            "es": "La lista en vivo de reservas, comprobaciones antes de importar un fichero, limitación de la entrada mantenida, repetición de un botón de jog mantenido, reglas de teclado de los diálogos, el analizador de grabaciones MJPEG guardadas, el catálogo de modelos enviados por los editores",
+            "de": "Die Live-Liste der Reservierungen, Prüfungen vor dem Import einer Datei, Drosselung gehaltener Eingaben, Wiederholung einer gehaltenen Jog-Taste, Tastaturregeln der Dialoge, der Parser gespeicherter MJPEG-Aufnahmen, der Katalog der von den Editoren eingereichten Modelle",
+            "fr": "La liste en direct des réservations, contrôles avant l'import d'un fichier, limitation des entrées maintenues, répétition d'un bouton de jog maintenu, règles clavier des dialogues, l'analyseur des enregistrements MJPEG, le catalogue des modèles soumis par les éditeurs",
+            "it": "L'elenco in tempo reale delle prenotazioni, controlli prima dell'importazione di un file, limitazione dell'input mantenuto, ripetizione di un pulsante di jog tenuto premuto, regole di tastiera dei dialoghi, il parser delle registrazioni MJPEG, il catalogo dei modelli inviati dagli editor",
+            "ja": "予約のライブ一覧、ファイル取り込み前の検査、押し続け入力の間引き、押し続けたジョグボタンの繰り返し、ダイアログのキーボード規則、保存した MJPEG 録画のパーサー、エディターが提出したモデルのカタログ",
+            "zh": "预约的实时列表、导入文件前的检查、对持续输入的限流、持续按住点动按钮的重复、对话框的键盘规则、已保存 MJPEG 录像的解析器、编辑器提交的模型目录",
+            "pt": "A lista em direto das reservas, verificações antes de importar um ficheiro, limitação da entrada mantida, repetição de um botão de jog mantido, regras de teclado dos diálogos, o analisador das gravações MJPEG, o catálogo de modelos submetidos pelos editores"
+          }
+        },
+        {
+          "name": "locales/",
+          "desc": {
+            "en": "en/es/de/fr/it/ja/zh/pt translation files",
+            "es": "Archivos de traducción",
+            "de": "en/es/de/fr/it/ja/zh/pt-Übersetzungsdateien",
+            "fr": "Fichiers de traduction",
+            "it": "File di traduzione en/es/de/fr/it/ja/zh/pt",
+            "ja": "en/es/de/fr/it/zh/ja/p",
+            "zh": "en/es/de/fr/it/zh/ja/p",
+            "pt": "Ficheiros de tradução"
+          },
+          "tree_desc": {
+            "en": "en/es/de/fr/it/ja/zh/pt translation files (react-i18next)",
+            "es": "Archivos de traducción en/es/de/fr/it/ja/zh/pt (react-i18next)",
+            "de": "en/es/de/fr/it/ja/zh/pt-Übersetzungsdateien (react-i18next)",
+            "fr": "Fichiers de traduction en/es/de/fr/it/ja/zh/pt (react-i18next)",
+            "it": "File di traduzione en/es/de/fr/it/ja/zh/pt (react-i18next)",
+            "ja": "en/es/de/fr/it/zh/ja/pt 翻訳ファイル（react-i18next）",
+            "zh": "en/es/de/fr/it/zh/ja/pt 翻译文件（react-i18next）",
+            "pt": "Ficheiros de tradução en/es/de/fr/it/ja/zh/pt (react-i18next)"
+          }
+        }
+      ],
+      "tree_head": {
+        "en": "source code",
+        "es": "código fuente",
+        "de": "Quellcode",
+        "fr": "code source",
+        "it": "codice sorgente",
+        "ja": "ソースコード",
+        "zh": "源代码",
+        "pt": "código-fonte"
+      },
+      "sub": {
+        "en": "source code",
+        "es": "código fuente",
+        "de": "Quellcode",
+        "fr": "code source",
+        "it": "codice sorgente",
+        "ja": "ソースコード",
+        "zh": "源代码",
+        "pt": "código-fonte"
+      },
+      "columns": 2
+    },
+    {
+      "name": {
+        "en": "folders",
+        "es": "carpetas",
+        "de": "Ordner",
+        "fr": "dossiers",
+        "it": "cartelle",
+        "ja": "フォルダ",
+        "zh": "文件夹",
+        "pt": "pastas"
+      },
+      "kind": "group",
+      "span": 3,
+      "accent": "b",
+      "columns": 2,
+      "rows": [
+        {
+          "name": "docs/",
+          "desc": {
+            "en": "model guides",
+            "es": "guías de modelos",
+            "de": "Modell-Anleitungen",
+            "fr": "guides des modèles",
+            "it": "guide ai modelli",
+            "ja": "モデルのガイド",
+            "zh": "模型指南",
+            "pt": "guias dos modelos"
+          },
+          "tree_desc": {
+            "en": "guides of the vacuum table, heated bed, rack and machine models",
+            "es": "guías de los modelos de mesa de vacío, cama caliente, rack y máquinas",
+            "de": "Anleitungen zu Vakuumtisch-, Heizbett-, Rack- und Maschinenmodellen",
+            "fr": "guides des modèles de table à vide, lit chauffant, rack et machines",
+            "it": "guida ai modelli di tavolo a vuoto, piano riscaldato, rack e macchine",
+            "ja": "真空テーブル・ヒートベッド・ラック・機械モデルのガイド",
+            "zh": "真空台、热床、机架和机器模型的指南",
+            "pt": "guias dos modelos de mesa de vácuo, cama aquecida, rack e máquinas"
+          }
+        },
+        {
+          "name": "public/",
+          "desc": {
+            "en": "3D models (STL, OpenSCAD)",
+            "es": "modelos 3D (STL, OpenSCAD)",
+            "de": "3D-Modelle (STL, OpenSCAD)",
+            "fr": "modèles 3D (STL, OpenSCAD)",
+            "it": "modelli 3D (STL, OpenSCAD)",
+            "ja": "3D モデル",
+            "zh": "3D 模型",
+            "pt": "modelos 3D (STL, OpenSCAD)"
+          },
+          "tree_desc": {
+            "en": "3D models: robots, racks, heated beds, vacuum tables, machines (STL and OpenSCAD)",
+            "es": "modelos 3D: robots, racks, camas calientes, mesas de vacío, máquinas (STL y OpenSCAD)",
+            "de": "3D-Modelle: Roboter, Racks, Heizbetten, Vakuumtische, Maschinen (STL und OpenSCAD)",
+            "fr": "modèles 3D : robots, racks, lits chauffants, tables à vide, machines (STL et OpenSCAD)",
+            "it": "modelli 3D: robot, rack, piani riscaldati, tavoli a vuoto, macchine (STL e OpenSCAD)",
+            "ja": "3D モデル：ロボット、ラック、ヒートベッド、真空テーブル、機械（STL と OpenSCAD）",
+            "zh": "3D 模型：机器人、机架、热床、真空台、机器（STL 和 OpenSCAD）",
+            "pt": "modelos 3D: robôs, racks, camas aquecidas, mesas de vácuo, máquinas (STL e OpenSCAD)"
+          }
+        },
+        {
+          "name": "images/",
+          "desc": {
+            "en": "README banner",
+            "es": "Banner del README",
+            "de": "README-Banner",
+            "fr": "Bannière du README",
+            "it": "Banner del README",
+            "ja": "README バナー",
+            "zh": "README 横幅",
+            "pt": "Faixa do README"
+          },
+          "tree_desc": {
+            "en": "README banner",
+            "es": "Banner del README",
+            "de": "README-Banner",
+            "fr": "Bannière du README",
+            "it": "Banner del README",
+            "ja": "README バナー",
+            "zh": "README 横幅",
+            "pt": "Faixa do README"
+          }
+        },
+        {
+          "name": "tests/",
+          "desc": {
+            "en": "Real Vitest suite",
+            "es": "Suite real de Vitest",
+            "de": "Echte Vitest-Suite",
+            "fr": "Vraie suite Vitest",
+            "it": "Vera suite Vitest",
+            "ja": "実際の Vitest スイート(610 件の",
+            "zh": "真实的 Vitest 套件(610 个测试)",
+            "pt": "Suite Vitest real"
+          },
+          "tree_desc": {
+            "en": "Real Vitest suite (610 tests) - src/examples/ FK/IK math only, no React/DOM",
+            "es": "Suite real de Vitest (610 pruebas) - solo la matematica FK/IK de src/examples/, sin React/DOM",
+            "de": "Echte Vitest-Suite (610 Tests) - nur die FK/IK-Mathematik aus src/examples/, ohne React/DOM",
+            "fr": "Vraie suite Vitest (610 tests) - uniquement les maths FK/IK de src/examples/, sans React/DOM",
+            "it": "Vera suite Vitest (610 test) - solo la matematica FK/IK di src/examples/, senza React/DOM",
+            "ja": "実際の Vitest スイート(610 件のテスト)—— src/examples/ の FK/IK 数学のみ、React/DOM は不使用",
+            "zh": "真实的 Vitest 套件(610 个测试)——只测 src/examples/ 的 FK/IK 数学逻辑,不涉及 React/DOM",
+            "pt": "Suite Vitest real - matemática FK/IK de src/examples/, o assistente, as traduções, sem React/DOM"
+          }
+        },
+        {
+          "name": "tools/",
+          "desc": {
+            "en": "project tools and CI checks",
+            "es": "herramientas del proyecto y comprobaciones",
+            "de": "Projektwerkzeuge und CI-Prüfungen",
+            "fr": "outils du projet et vérifications de la CI",
+            "it": "strumenti del progetto e controlli della CI",
+            "ja": "プロジェクトのツールと CI の検査",
+            "zh": "项目工具和 CI 检查",
+            "pt": "ferramentas do projeto e verificações da CI"
+          },
+          "tree_desc": {
+            "en": "project tools and CI checks",
+            "es": "herramientas del proyecto y comprobaciones del CI",
+            "de": "Projektwerkzeuge und CI-Prüfungen",
+            "fr": "outils du projet et vérifications de la CI",
+            "it": "strumenti del progetto e controlli della CI",
+            "ja": "プロジェクトのツールと CI の検査",
+            "zh": "项目工具和 CI 检查",
+            "pt": "ferramentas do projeto e verificações da CI"
+          }
+        },
+        {
+          "name": "scripts/",
+          "desc": {
+            "en": "bump-version.mjs",
+            "es": "bump-version.mjs",
+            "de": "bump-version.mjs",
+            "fr": "bump-version.mjs",
+            "it": "bump-version.mjs",
+            "ja": "bump-version.mjs",
+            "zh": "bump-version.mjs",
+            "pt": "bump-version.mjs"
+          },
+          "tree_desc": {
+            "en": "bump-version.mjs (explicit version bump) and csp.ts (the Content-Security-Policy of the built page)",
+            "es": "bump-version.mjs (subida de versión explícita) y csp.ts (la política de seguridad de contenido de la página compilada)",
+            "de": "bump-version.mjs (ausdrückliche Versionserhöhung) und csp.ts (die Content-Security-Policy der gebauten Seite)",
+            "fr": "bump-version.mjs (montée de version explicite) et csp.ts (la politique de sécurité du contenu de la page compilée)",
+            "it": "bump-version.mjs (incremento di versione esplicito) e csp.ts (la Content-Security-Policy della pagina compilata)",
+            "ja": "bump-version.mjs (明示的なバージョン更新) と csp.ts (ビルドされたページの Content-Security-Policy)",
+            "zh": "bump-version.mjs (显式升版) 和 csp.ts (构建后页面的内容安全策略)",
+            "pt": "bump-version.mjs (subida de versão explícita) e csp.ts (a política de segurança de conteúdo da página compilada)"
+          }
+        },
+        {
+          "name": ".github/",
+          "desc": {
+            "en": "CI workflow and issue templates",
+            "es": "flujo de CI y plantillas de incidencias",
+            "de": "CI-Workflow und Issue-Vorlagen",
+            "fr": "workflow de CI et modèles de tickets",
+            "it": "workflow di CI e modelli di segnalazione",
+            "ja": "CI ワークフローと Issue テンプレート",
+            "zh": "CI 工作流和 Issue 模板",
+            "pt": "fluxo de CI e modelos de problemas"
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "en": "project files",
+        "es": "ficheros del proyecto",
+        "de": "Projektdateien",
+        "fr": "fichiers du projet",
+        "it": "file del progetto",
+        "ja": "プロジェクトのファイル",
+        "zh": "项目文件",
+        "pt": "ficheiros do projeto"
+      },
+      "kind": "group",
+      "span": 3,
+      "accent": "c",
+      "columns": 2,
+      "rows": [
+        {
+          "name": "index.html",
+          "desc": {
+            "en": "The page Vite builds the app from",
+            "es": "La página desde la que Vite construye la app",
+            "de": "Die Seite, aus der Vite die App baut",
+            "fr": "La page à partir de laquelle Vite construit",
+            "it": "La pagina da cui Vite costruisce l'app",
+            "ja": "Vite がアプリをビルドする元のページ",
+            "zh": "Vite 构建应用所用的页面",
+            "pt": "A página a partir da qual o Vite constrói a"
+          },
+          "tree_desc": {
+            "en": "The page Vite builds the app from (the Content-Security-Policy is put in at build time)",
+            "es": "La página desde la que Vite construye la app (la política de seguridad de contenido se inserta al compilar)",
+            "de": "Die Seite, aus der Vite die App baut (die Content-Security-Policy wird beim Build eingesetzt)",
+            "fr": "La page à partir de laquelle Vite construit l'app (la politique de sécurité du contenu est insérée à la compilation)",
+            "it": "La pagina da cui Vite costruisce l'app (la Content-Security-Policy viene inserita in fase di build)",
+            "ja": "Vite がアプリをビルドする元のページ (Content-Security-Policy はビルド時に埋め込まれる)",
+            "zh": "Vite 构建应用所用的页面 (内容安全策略在构建时写入)",
+            "pt": "A página a partir da qual o Vite constrói a app (a política de segurança de conteúdo é inserida na compilação)"
+          }
+        },
+        {
+          "name": "example_trajectory.json",
+          "desc": {
+            "en": "Standalone example trajectory",
+            "es": "Trayectoria de ejemplo independiente",
+            "de": "Eigenständige Beispiel-Trajektorie",
+            "fr": "Trajectoire d'exemple autonome",
+            "it": "Traiettoria di esempio autonoma",
+            "ja": "独立したサンプル軌道（関節角シーケンス",
+            "zh": "独立的示例轨迹（关节角序列，示例数据）",
+            "pt": "Trajetória de exemplo independente"
+          },
+          "tree_desc": {
+            "en": "Standalone example trajectory (joint-angle sequence, sample data)",
+            "es": "Trayectoria de ejemplo independiente (secuencia de ángulos de junta, datos de muestra)",
+            "de": "Eigenständige Beispiel-Trajektorie (Gelenkwinkel-Sequenz, Beispieldaten)",
+            "fr": "Trajectoire d'exemple autonome (séquence d'angles articulaires, données d'exemple)",
+            "it": "Traiettoria di esempio autonoma (sequenza di angoli di giunto, dati campione)",
+            "ja": "独立したサンプル軌道（関節角シーケンス、サンプルデータ）",
+            "zh": "独立的示例轨迹（关节角序列，示例数据）",
+            "pt": "Trajetória de exemplo independente (sequência de ângulos de articulação, dados de exemplo)"
+          }
+        },
+        {
+          "name": "metadata.json",
+          "desc": {
+            "en": "App name/description",
+            "es": "Nombre/descripción de la app",
+            "de": "App-Name/-Beschreibung",
+            "fr": "Nom/description de l'app",
+            "it": "Nome/descrizione app",
+            "ja": "アプリ名/説明（ホスティングプラットフォーム",
+            "zh": "应用名称/描述（由托管平台使用）",
+            "pt": "Nome/descrição da app"
+          },
+          "tree_desc": {
+            "en": "App name/description (used by the hosting platform)",
+            "es": "Nombre/descripción de la app (usado por la plataforma de hosting)",
+            "de": "App-Name/-Beschreibung (verwendet von der Hosting-Plattform)",
+            "fr": "Nom/description de l'app (utilisé par la plateforme d'hébergement)",
+            "it": "Nome/descrizione app (usato dalla piattaforma di hosting)",
+            "ja": "アプリ名/説明（ホスティングプラットフォームが使用）",
+            "zh": "应用名称/描述（由托管平台使用）",
+            "pt": "Nome/descrição da app (usado pela plataforma de alojamento)"
+          }
+        },
+        {
+          "name": "bump_manifest_version.py",
+          "desc": {
+            "en": "Syncs hydra-umc.project.json's version",
+            "es": "Sincroniza la versión de",
+            "de": "Synchronisiert die Version von",
+            "fr": "Synchronise la version de",
+            "it": "Sincronizza la versione di",
+            "ja": "hydra-umc.project.json",
+            "zh": "将 hydra-umc.project.js",
+            "pt": "Sincroniza a versão de"
+          },
+          "tree_desc": {
+            "en": "Syncs hydra-umc.project.json's version to the native one (--sync)",
+            "es": "Sincroniza la versión de hydra-umc.project.json con la nativa (--sync)",
+            "de": "Synchronisiert die Version von hydra-umc.project.json mit der nativen (--sync)",
+            "fr": "Synchronise la version de hydra-umc.project.json avec la version native (--sync)",
+            "it": "Sincronizza la versione di hydra-umc.project.json con quella nativa (--sync)",
+            "ja": "hydra-umc.project.json のバージョンをネイティブ側と同期（--sync）",
+            "zh": "将 hydra-umc.project.json 的版本与原生版本同步（--sync）",
+            "pt": "Sincroniza a versão de hydra-umc.project.json com a nativa (--sync)"
+          }
+        },
+        {
+          "name": "build.sh / build.bat",
+          "desc": {
+            "en": "Install deps + production build",
+            "es": "Instala dependencias + build de producción",
+            "de": "Installiert Abhängigkeiten +",
+            "fr": "Installe les dépendances + build de",
+            "it": "Installa dipendenze + build di produzione",
+            "ja": "依存関係のインストール + プロダクションビ",
+            "zh": "安装依赖 + 生产构建",
+            "pt": "Instala dependências + compilação de"
+          },
+          "tree_desc": {
+            "en": "Install deps + production build",
+            "es": "Instala dependencias + build de producción",
+            "de": "Installiert Abhängigkeiten + Produktions-Build",
+            "fr": "Installe les dépendances + build de production",
+            "it": "Installa dipendenze + build di produzione",
+            "ja": "依存関係のインストール + プロダクションビルド",
+            "zh": "安装依赖 + 生产构建",
+            "pt": "Instala dependências + compilação de produção"
+          }
+        },
+        {
+          "name": "build-test.sh / build-test.bat",
+          "desc": {
+            "en": "Non-versioning build/compile check",
+            "es": "Comprobación de build/compilación sin subir",
+            "de": "Build-/Kompilierprüfung ohne",
+            "fr": "Contrôle build/compilation sans gestion de",
+            "it": "Controllo build/compilazione senza",
+            "ja": "バージョンを更新しないビルド/コンパイル確認",
+            "zh": "不递增版本号的构建/编译检查",
+            "pt": "Verificação de compilação sem versão"
+          },
+          "tree_desc": {
+            "en": "Non-versioning build/compile check",
+            "es": "Comprobación de build/compilación sin subir versión",
+            "de": "Build-/Kompilierprüfung ohne Versionserhöhung",
+            "fr": "Contrôle build/compilation sans gestion de version",
+            "it": "Controllo build/compilazione senza incremento di versione",
+            "ja": "バージョンを更新しないビルド/コンパイル確認",
+            "zh": "不递增版本号的构建/编译检查",
+            "pt": "Verificação de compilação sem versão"
+          }
+        },
+        {
+          "name": "dev.sh / dev.bat",
+          "desc": {
+            "en": "Install deps + start the Vite dev server",
+            "es": "Instala dependencias + inicia el servidor",
+            "de": "Installiert Abhängigkeiten + startet den",
+            "fr": "Installe les dépendances + démarre le",
+            "it": "Installa dipendenze + avvia il dev server",
+            "ja": "依存関係のインストール + Vite 開発サ",
+            "zh": "安装依赖 + 启动 Vite 开发服务器",
+            "pt": "Instala dependências + inicia o servidor de"
+          },
+          "tree_desc": {
+            "en": "Install deps + start the Vite dev server",
+            "es": "Instala dependencias + inicia el servidor de desarrollo de Vite",
+            "de": "Installiert Abhängigkeiten + startet den Vite-Dev-Server",
+            "fr": "Installe les dépendances + démarre le serveur de dev Vite",
+            "it": "Installa dipendenze + avvia il dev server Vite",
+            "ja": "依存関係のインストール + Vite 開発サーバーの起動",
+            "zh": "安装依赖 + 启动 Vite 开发服务器",
+            "pt": "Instala dependências + inicia o servidor de desenvolvimento do Vite"
+          }
+        },
+        {
+          "name": "vitest.config.ts",
+          "desc": {
+            "en": "Vitest config (tests/ only",
+            "es": "Configuracion de Vitest",
+            "de": "Vitest-Konfiguration",
+            "fr": "Configuration Vitest",
+            "it": "Configurazione Vitest",
+            "ja": "Vitest 設定(tests/ のみ",
+            "zh": "Vitest 配置(仅针对 tests/,真",
+            "pt": "Configuração do Vitest"
+          },
+          "tree_desc": {
+            "en": "Vitest config (tests/ only, real node environment - no DOM needed)",
+            "es": "Configuracion de Vitest (solo tests/, entorno node real - no hace falta DOM)",
+            "de": "Vitest-Konfiguration (nur tests/, echte Node-Umgebung - kein DOM noetig)",
+            "fr": "Configuration Vitest (tests/ uniquement, vrai environnement node - pas besoin de DOM)",
+            "it": "Configurazione Vitest (solo tests/, vero ambiente node - DOM non necessario)",
+            "ja": "Vitest 設定(tests/ のみ、実際の node 環境 —— DOM は不要)",
+            "zh": "Vitest 配置(仅针对 tests/,真实的 node 环境——不需要 DOM)",
+            "pt": "Configuração do Vitest (só tests/, ambiente node real - sem DOM)"
+          }
+        },
+        {
+          "name": "tsconfig.test.json",
+          "desc": {
+            "en": "Standalone typecheck project for tests/",
+            "es": "Proyecto de verificacion de tipos",
+            "de": "Eigenstaendiges Typpruefungsprojekt fuer",
+            "fr": "Projet de verification de types autonome",
+            "it": "Progetto di type-check autonomo per tests/",
+            "ja": "tests/ 用の独立した型チェックプロジェ",
+            "zh": "tests/ 独立的类型检查项目(与 app",
+            "pt": "Projeto de verificação de tipos"
+          },
+          "tree_desc": {
+            "en": "Standalone typecheck project for tests/ (kept separate from the app/node references)",
+            "es": "Proyecto de verificacion de tipos independiente para tests/ (separado de las referencias app/node)",
+            "de": "Eigenstaendiges Typpruefungsprojekt fuer tests/ (getrennt von den App-/Node-Referenzen)",
+            "fr": "Projet de verification de types autonome pour tests/ (separe des references app/node)",
+            "it": "Progetto di type-check autonomo per tests/ (separato dai riferimenti app/node)",
+            "ja": "tests/ 用の独立した型チェックプロジェクト(app/node の参照とは分離)",
+            "zh": "tests/ 独立的类型检查项目(与 app/node 的引用配置分开)",
+            "pt": "Projeto de verificação de tipos independente para tests/ (separado das referências app/node)"
+          }
+        },
+        {
+          "name": ".env.example",
+          "desc": {
+            "en": "VITE_API_BASE_URL template",
+            "es": "Plantilla de VITE_API_BASE_URL",
+            "de": "VITE_API_BASE_URL-Vorlage",
+            "fr": "Modèle de VITE_API_BASE_URL",
+            "it": "Template di VITE_API_BASE_URL",
+            "ja": "VITE_API_BASE_URL テンプレ",
+            "zh": "VITE_API_BASE_URL 模板",
+            "pt": "Modelo de VITE_API_BASE_URL"
+          },
+          "tree_desc": {
+            "en": "VITE_API_BASE_URL template - see src/lib/apiBase.ts",
+            "es": "Plantilla de VITE_API_BASE_URL - ver src/lib/apiBase.ts",
+            "de": "VITE_API_BASE_URL-Vorlage - siehe src/lib/apiBase.ts",
+            "fr": "Modèle de VITE_API_BASE_URL - voir src/lib/apiBase.ts",
+            "it": "Template di VITE_API_BASE_URL - vedi src/lib/apiBase.ts",
+            "ja": "VITE_API_BASE_URL テンプレート——src/lib/apiBase.ts を参照",
+            "zh": "VITE_API_BASE_URL 模板——见 src/lib/apiBase.ts",
+            "pt": "Modelo de VITE_API_BASE_URL - veja src/lib/apiBase.ts"
+          }
+        },
+        {
+          "name": "CHANGELOG.md",
+          "desc": {
+            "en": "what changed in each version",
+            "es": "qué cambió en cada versión",
+            "de": "was sich in jeder Version geändert hat",
+            "fr": "ce qui a changé à chaque version",
+            "it": "cosa è cambiato in ogni versione",
+            "ja": "各バージョンの変更点",
+            "zh": "每个版本的变更",
+            "pt": "o que mudou em cada versão"
+          }
+        },
+        {
+          "name": "hydra-umc.project.json",
+          "desc": {
+            "en": "manifest: version, maturity, family",
+            "es": "manifiesto: versión, madurez, familia",
+            "de": "Manifest: Version, Reifegrad, Familie",
+            "fr": "manifeste : version, maturité, famille",
+            "it": "manifesto: versione, maturità, famiglia",
+            "ja": "マニフェスト：バージョン、成熟度、ファミリー",
+            "zh": "清单：版本、成熟度、系列",
+            "pt": "manifesto: versão, maturidade, família"
+          }
+        },
+        {
+          "name": "package.json",
+          "desc": {
+            "en": "package metadata and scripts",
+            "es": "metadatos y scripts del paquete",
+            "de": "Paketmetadaten und Skripte",
+            "fr": "métadonnées et scripts du paquet",
+            "it": "metadati e script del pacchetto",
+            "ja": "パッケージのメタデータとスクリプト",
+            "zh": "包的元数据和脚本",
+            "pt": "metadados e scripts do pacote"
+          }
+        },
+        {
+          "name": "test.sh",
+          "desc": {
+            "en": "runs the tests",
+            "es": "ejecuta las pruebas",
+            "de": "führt die Tests aus",
+            "fr": "lance les tests",
+            "it": "esegue i test",
+            "ja": "テストを実行",
+            "zh": "运行测试",
+            "pt": "executa os testes"
+          }
+        }
+      ]
+    }
+  ]
+}
