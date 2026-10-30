@@ -5,6 +5,7 @@ All notable changes to this project are documented here.
 ## [Unreleased]
 
 - **Safe mode of a robot:** the robot bar has a Disable button (the robot stops, its valves and pumps go off and the server refuses everything but STOP; a `Safe mode - disabled` badge shows it) and, for an administrator, an Enable button that asks first. The server keeps enabling off by default, so Server Admin has a new switch (`Allow a client to enable a robot that is in safe mode`, with a confirmation before it is turned on); a refused command says in its own sentence why (robot disabled, enabling not allowed, administrator required), in the eight languages.
+- **The unit of the meshes is declared by each model:** the `metadata.json` of every model in `public/models` says `mm` or `m`, the same declaration that SUITE and the URDF editor read.
 
 ## [0.8.0.3] - Two-step sign-in screens, numbered motion commands and three more switches in Server Admin
 
