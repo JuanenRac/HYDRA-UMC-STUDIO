@@ -47,6 +47,10 @@ export interface SecurityState {
     includeHeardText: { value: boolean; source: SecuritySource };
     minConfidence: { value: number; source: SecuritySource };
   } | null;
+  /** Absent when the server predates safe mode. */
+  robots: {
+    allowEnable: { value: boolean; source: SecuritySource };
+  } | null;
   /** Absent when the server predates the MAVLink options. The key itself is never sent, only where its file is. */
   mavlink: {
     signingKeyFile: { value: string; source: SecuritySource };
@@ -90,6 +94,13 @@ function parseVoice(raw: any): SecurityState['voice'] {
     includeHeardText: { value: heard.value, source: heard.source },
     minConfidence: { value: confidence.value, source: confidence.source },
   };
+}
+
+function parseRobots(raw: any): SecurityState['robots'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const allow = raw.allowEnable;
+  if (!allow || typeof allow.value !== 'boolean' || !isSource(allow.source)) return null;
+  return { allowEnable: { value: allow.value, source: allow.source } };
 }
 
 function parseMavlink(raw: any): SecurityState['mavlink'] {
@@ -147,6 +158,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     ble: parseBle(raw.ble),
     mqtt: parseMqtt(raw.mqtt),
     voice: parseVoice(raw.voice),
+    robots: parseRobots(raw.robots),
     mavlink: parseMavlink(raw.mavlink),
   };
 }
@@ -218,6 +230,18 @@ export function voiceChangeNeedsConfirmation(current: { includeHeardText: boolea
   return (!current.includeHeardText && next.includeHeardText) || (current.minConfidence > 0 && next.minConfidence === 0);
 }
 
+export type RobotsPatchBody = { robots: { allowEnable: boolean } };
+
+/** The request body for the option that lets a client bring a disabled robot back (off by default). */
+export function robotsPatch(allowEnable: boolean): RobotsPatchBody {
+  return { robots: { allowEnable } };
+}
+
+/** Allowing a client to enable a robot lowers the protection of safe mode: ask first. Turning it off never asks. */
+export function robotsChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
+  return !current && next;
+}
+
 export type MavlinkPatchBody = { mavlink: { signingKeyFile: string; signingAllowUnsigned: boolean } };
 
 /** The request body for the MAVLink signing options: only the path of the key file travels, never the key. */
@@ -234,6 +258,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'mavlink_unsigned_allowed', 'mavlink_signing_off'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'mavlink_unsigned_allowed', 'mavlink_signing_off'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }

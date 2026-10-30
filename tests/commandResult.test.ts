@@ -61,3 +61,21 @@ describe('summarizeBulk', () => {
     expect(summary.detail).toBe('Failed to fetch');
   });
 });
+
+describe('the answers of safe mode', () => {
+  it('tells a disabled robot from the refusals of enable', () => {
+    expect(interpretCommandResponse(423, false, { error: 'robot 1 is disabled', code: 'robot-disabled' }).code).toBe('robot_disabled');
+    expect(interpretCommandResponse(423, false, null).code).toBe('robot_disabled');
+    expect(interpretCommandResponse(403, false, { error: 'x', code: 'enable-not-allowed' }).code).toBe('enable_not_allowed');
+    expect(interpretCommandResponse(403, false, { error: 'x', code: 'admin-required' }).code).toBe('admin_required');
+    expect(interpretCommandResponse(403, false, { error: 'x' }).code).toBe('forbidden');
+  });
+
+  it('puts the refusal of enabling ahead of a plain refusal in a bulk summary', () => {
+    const summary = summarizeBulk([
+      { robotId: 1, result: interpretCommandResponse(409, false, { code: 'other-account' }) },
+      { robotId: 2, result: interpretCommandResponse(403, false, { code: 'enable-not-allowed' }) },
+    ]);
+    expect(summary.code).toBe('enable_not_allowed');
+  });
+});

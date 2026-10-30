@@ -26,7 +26,7 @@ import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
 
 interface HydraInfo {
   product?: string;
@@ -69,6 +69,8 @@ export function AdminServer() {
   const [voiceHeard, setVoiceHeard] = useState(false);
   const [voiceConfidence, setVoiceConfidence] = useState('0.6');
   const [pendingVoice, setPendingVoice] = useState<VoicePatchBody | null>(null);
+  const [robotsAllowEnable, setRobotsAllowEnable] = useState(false);
+  const [pendingRobots, setPendingRobots] = useState(false);
   const [mavlinkKey, setMavlinkKey] = useState('');
   const [mavlinkUnsigned, setMavlinkUnsigned] = useState(false);
   const [pendingMavlink, setPendingMavlink] = useState<MavlinkPatchBody | null>(null);
@@ -86,6 +88,7 @@ export function AdminServer() {
         setVoiceHeard(state.voice.includeHeardText.value);
         setVoiceConfidence(String(state.voice.minConfidence.value));
       }
+      if (state.robots) setRobotsAllowEnable(state.robots.allowEnable.value);
       if (state.mavlink) {
         setMavlinkKey(state.mavlink.signingKeyFile.value);
         setMavlinkUnsigned(state.mavlink.signingAllowUnsigned.value);
@@ -113,6 +116,7 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('mqtt_commands_on')) setWarning(t('ecosystem.admin_security_mqtt_commands_warning'));
       if (knownWarnings(data.warnings).includes('voice_heard_text_on')) setWarning(t('ecosystem.admin_security_voice_heard_warning'));
       if (knownWarnings(data.warnings).includes('voice_confidence_off')) setWarning(t('ecosystem.admin_security_voice_confidence_warning'));
+      if (knownWarnings(data.warnings).includes('robot_enable_allowed')) setWarning(t('ecosystem.admin_security_robots_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_unsigned_allowed')) setWarning(t('ecosystem.admin_security_mavlink_unsigned_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_signing_off')) setWarning(t('ecosystem.admin_security_mavlink_off_warning'));
       setNotice(t('ecosystem.admin_security_saved'));
@@ -146,6 +150,12 @@ export function AdminServer() {
     if (!patch || !security?.voice) { setError(t('ecosystem.admin_security_voice_invalid')); return; }
     if (voiceChangeNeedsConfirmation({ includeHeardText: security.voice.includeHeardText.value, minConfidence: security.voice.minConfidence.value }, patch.voice)) setPendingVoice(patch);
     else void saveSecurity(patch);
+  };
+
+  const saveRobots = () => {
+    if (!security?.robots) return;
+    if (robotsChangeNeedsConfirmation(security.robots.allowEnable.value, robotsAllowEnable)) setPendingRobots(true);
+    else void saveSecurity(robotsPatch(robotsAllowEnable));
   };
 
   const saveMavlink = () => {
@@ -445,6 +455,27 @@ export function AdminServer() {
             </div>
           )}
 
+          {security.robots && (
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_robots_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="robots-allow-enable"
+                  checked={robotsAllowEnable}
+                  disabled={saving || isLocked(security.robots.allowEnable.source)}
+                  onChange={e => setRobotsAllowEnable(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_robots_enable_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.robots.allowEnable.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_robots_help')}</div>
+              <button onClick={saveRobots} disabled={saving || isLocked(security.robots.allowEnable.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                <Save size={14} /> {t('ecosystem.admin_security_robots_save')}
+              </button>
+            </div>
+          )}
+
           {security.mavlink && (
             <div className="space-y-2">
               <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_mavlink_title')}</h5>
@@ -484,6 +515,13 @@ export function AdminServer() {
         message={t('ecosystem.admin_security_voice_confirm')}
         onConfirm={() => { const next = pendingVoice; setPendingVoice(null); if (next) void saveSecurity(next); }}
         onCancel={() => setPendingVoice(null)}
+      />
+
+      <ConfirmDialog
+        open={pendingRobots}
+        message={t('ecosystem.admin_security_robots_confirm')}
+        onConfirm={() => { setPendingRobots(false); void saveSecurity(robotsPatch(robotsAllowEnable)); }}
+        onCancel={() => setPendingRobots(false)}
       />
 
       <ConfirmDialog

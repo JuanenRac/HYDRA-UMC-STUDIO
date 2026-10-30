@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Safe mode of a robot:** the robot bar has a Disable button (the robot stops, its valves and pumps go off and the server refuses everything but STOP; a `Safe mode - disabled` badge shows it) and, for an administrator, an Enable button that asks first. The server keeps enabling off by default, so Server Admin has a new switch (`Allow a client to enable a robot that is in safe mode`, with a confirmation before it is turned on); a refused command says in its own sentence why (robot disabled, enabling not allowed, administrator required), in the eight languages.
+
 ## [0.8.0.3] - Two-step sign-in screens, numbered motion commands and three more switches in Server Admin
 
 - **Two-step sign-in screens:** Server Admin has a Two-step sign-in card for the signed-in account (it is off until its owner turns it on): the password, then a QR code of the otpauth address and the key to type by hand (the QR code is drawn by a small encoder in src/lib/qrCode.ts, no extra package), the first code, and the ten one-time recovery codes shown once. Turning it off asks for the password and a current or recovery code. The sign-in form asks for the code when the account has the second step on, and Config > Users has a button that removes the second step of an account that lost both the phone and the recovery codes. In the eight languages; 22 new tests.

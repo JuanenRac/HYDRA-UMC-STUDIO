@@ -20,6 +20,9 @@ export type CommandFailureCode =
   | 'claim_other_controller'  // 409 other-controller: this account holds it from another window or device
   | 'claim_controller_required' // 409 or 400 controller-id-required: the reservation names a controller and this request sent none
   | 'jog_not_armed'  // 403 jog-not-armed: the jog has to be armed first
+  | 'robot_disabled' // 423 robot-disabled: the robot is in safe mode; only STOP, disable and enable work on it
+  | 'enable_not_allowed' // 403 enable-not-allowed: the server option that lets a client enable a robot is off
+  | 'admin_required' // 403 admin-required: only an administrator may enable a robot
   | 'stale_sequence'   // 409 stale-sequence: a newer numbered motion command already reached the robot (this one arrived out of order)
   | 'revision_changed' // 412 revision-mismatch: the robot changed since this window read it
   | 'rejected'        // any other 4xx: the server refused the command
@@ -49,6 +52,9 @@ export function failureCodeFor(status: number, serverCode: string | null): Comma
   if (serverCode === 'other-controller') return 'claim_other_controller';
   if (serverCode === 'controller-id-required') return 'claim_controller_required';
   if (serverCode === 'jog-not-armed') return 'jog_not_armed';
+  if (serverCode === 'robot-disabled' || status === 423) return 'robot_disabled';
+  if (serverCode === 'enable-not-allowed') return 'enable_not_allowed';
+  if (serverCode === 'admin-required') return 'admin_required';
   if (serverCode === 'stale-sequence') return 'stale_sequence';
   if (serverCode === 'revision-mismatch' || status === 412) return 'revision_changed';
   return failureCodeForStatus(status);
@@ -107,7 +113,7 @@ export interface CommandIssue {
 export function summarizeBulk(results: { robotId: number; result: CommandResult }[]): { failed: number[]; code: CommandFailureCode | null; detail: string | null } {
   const failed = results.filter((r) => !r.result.ok);
   if (failed.length === 0) return { failed: [], code: null, detail: null };
-  const order: CommandFailureCode[] = ['network', 'session_expired', 'forbidden', 'jog_not_armed', 'revision_changed', 'stale_sequence', 'server', 'claim_other_account', 'claim_other_controller', 'claim_controller_required', 'claimed', 'not_found', 'rejected'];
+  const order: CommandFailureCode[] = ['network', 'session_expired', 'forbidden', 'enable_not_allowed', 'admin_required', 'robot_disabled', 'jog_not_armed', 'revision_changed', 'stale_sequence', 'server', 'claim_other_account', 'claim_other_controller', 'claim_controller_required', 'claimed', 'not_found', 'rejected'];
   const present = new Set(failed.map((r) => r.result.code));
   const code = order.find((c) => present.has(c)) ?? 'rejected';
   const detail = failed.find((r) => r.result.code === code)?.result.detail ?? null;

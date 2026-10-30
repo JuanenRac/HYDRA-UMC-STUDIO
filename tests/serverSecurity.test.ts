@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch } from '../src/lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, tlsPatch } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -155,5 +155,26 @@ describe('the voice and MAVLink signing options', () => {
 
   it('knows the new warnings and drops the rest', () => {
     expect(knownWarnings(['voice_heard_text_on', 'voice_confidence_off', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'x', 5])).toEqual(['voice_heard_text_on', 'voice_confidence_off', 'mavlink_unsigned_allowed', 'mavlink_signing_off']);
+  });
+});
+
+describe('the safe mode option of the robots', () => {
+  it('reads the option the server reports and shows nothing for a server that predates it', () => {
+    expect(parseSecurityState({ ...answer, robots: { allowEnable: { value: false, source: 'default' } } })?.robots).toEqual({ allowEnable: { value: false, source: 'default' } });
+    expect(parseSecurityState(answer)?.robots).toBeNull();
+    expect(parseSecurityState({ ...answer, robots: { allowEnable: { value: 'yes', source: 'default' } } })?.robots).toBeNull();
+    expect(parseSecurityState({ ...answer, robots: { allowEnable: { value: true, source: 'nowhere' } } })?.robots).toBeNull();
+  });
+
+  it('builds the request and asks only before allowing', () => {
+    expect(robotsPatch(true)).toEqual({ robots: { allowEnable: true } });
+    expect(robotsChangeNeedsConfirmation(false, true)).toBe(true);
+    expect(robotsChangeNeedsConfirmation(true, false)).toBe(false);
+    expect(robotsChangeNeedsConfirmation(true, true)).toBe(false);
+    expect(robotsChangeNeedsConfirmation(false, false)).toBe(false);
+  });
+
+  it('knows the warning of allowing it', () => {
+    expect(knownWarnings(['robot_enable_allowed', 'other'])).toEqual(['robot_enable_allowed']);
   });
 });

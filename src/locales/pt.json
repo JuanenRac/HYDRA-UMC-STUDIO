@@ -42,7 +42,10 @@
     "temperature_limit": "O servidor reduziu a temperatura alvo da cama ({{detail}} °C) para o limite deste modelo.",
     "jog_server_limit": "O servidor não aplicou o jog: {{detail}}",
     "revision_changed": "O robô {{robots}} mudou desde a última vez que esta janela o leu (outro operador ou outra janela) - o comando {{command}} NÃO foi aplicado. O robô foi lido de novo a partir do servidor: verifique-o e repita o comando se ainda for o que pretende.",
-    "stale_sequence": "Um comando de movimento mais recente desta janela já tinha chegado ao robô {{robots}} - o comando {{command}} NÃO foi aplicado porque chegou fora de ordem. Repita-o se ainda o quiser."
+    "stale_sequence": "Um comando de movimento mais recente desta janela já tinha chegado ao robô {{robots}} - o comando {{command}} NÃO foi aplicado porque chegou fora de ordem. Repita-o se ainda o quiser.",
+    "robot_disabled": "O robô {{robots}} está em modo seguro (desativado) - o comando {{command}} não foi aplicado. Só o STOP funciona até um administrador o ativar de novo. {{detail}}",
+    "enable_not_allowed": "O servidor não permite ativar um robô a partir de um cliente (a opção está desligada). Um administrador pode ligá-la no ecrã de administração do servidor. {{detail}}",
+    "admin_required": "Só um administrador pode ativar o robô {{robots}}. {{detail}}"
   },
   "motion_source": {
     "offline": "Offline",
@@ -1064,7 +1067,13 @@
     "admin_server_stat_robots": "Robôs",
     "admin_server_stat_host": "Anfitrião",
     "menu_safety": "Limites de segurança",
-    "menu_audit": "Registo de auditoria"
+    "menu_audit": "Registo de auditoria",
+    "admin_security_robots_title": "Modo seguro dos robôs",
+    "admin_security_robots_enable_label": "Permitir que um cliente ative um robô em modo seguro (só administradores; desligado por omissão)",
+    "admin_security_robots_help": "Desativar um robô é sempre possível, como uma paragem. Sem esta opção, um robô desativado só se recupera nas definições de um administrador.",
+    "admin_security_robots_save": "Guardar opções dos robôs",
+    "admin_security_robots_confirm": "Permitir que os clientes ativem robôs em modo seguro? Um administrador poderá recuperar um robô com um clique.",
+    "admin_security_robots_warning": "Os administradores já podem ativar robôs a partir de um cliente."
   },
   "auth": {
     "title": "Acesso ao HYDRA-UMC STUDIO",
@@ -1255,7 +1264,13 @@
     "conditional_standard": "Padrão: reservas, mesa e comandos pontuais",
     "conditional_strict": "Estrito: todos os comandos exceto STOP",
     "conditional_off": "Desligado: enviar sem verificar",
-    "conditional_hint": "Cada escrita leva a revisão do robô que esta janela viu pela última vez; se outra pessoa mudou o robô entretanto, o servidor recusa (412) e o robô é lido de novo. O jog e a velocidade não são verificados no modo Padrão porque se repetem muitas vezes por segundo. O STOP nunca é verificado."
+    "conditional_hint": "Cada escrita leva a revisão do robô que esta janela viu pela última vez; se outra pessoa mudou o robô entretanto, o servidor recusa (412) e o robô é lido de novo. O jog e a velocidade não são verificados no modo Padrão porque se repetem muitas vezes por segundo. O STOP nunca é verificado.",
+    "safe_mode_badge": "Modo seguro - desativado",
+    "safe_mode_disable": "Desativar",
+    "safe_mode_enable": "Ativar",
+    "safe_mode_disable_hint": "Coloca o robô em modo seguro: pára, as válvulas e bombas desligam-se e o servidor recusa os seus comandos, exceto STOP.",
+    "safe_mode_enable_hint": "Tira o robô do modo seguro. Nada recomeça e o jog tem de ser armado de novo.",
+    "safe_mode_confirm_enable": "Ativar o robô {{robot}}? Continua parado e volta a aceitar comandos."
   },
   "safety": {
     "admin_only": "Só os administradores podem alterar os limites de segurança.",

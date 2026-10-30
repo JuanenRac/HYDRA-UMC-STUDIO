@@ -42,7 +42,10 @@
     "temperature_limit": "The server lowered the bed target ({{detail}} °C) to the limit of this model.",
     "jog_server_limit": "The server did not apply the jog: {{detail}}",
     "revision_changed": "Robot {{robots}} changed since this window last read it (another operator or window) - the {{command}} command was NOT applied. The robot was read again from the server: check it and repeat the command if it is still what you want.",
-    "stale_sequence": "A newer motion command of this window had already reached robot {{robots}} - the {{command}} command was NOT applied because it arrived out of order. Repeat it if you still want it."
+    "stale_sequence": "A newer motion command of this window had already reached robot {{robots}} - the {{command}} command was NOT applied because it arrived out of order. Repeat it if you still want it.",
+    "robot_disabled": "Robot {{robots}} is in safe mode (disabled) - the {{command}} command was not applied. Only STOP works on it until an administrator enables it again. {{detail}}",
+    "enable_not_allowed": "The server does not allow enabling a robot from a client (the option is off). An administrator can turn it on in the Server Admin screen. {{detail}}",
+    "admin_required": "Only an administrator can enable robot {{robots}}. {{detail}}"
   },
   "motion_source": {
     "offline": "Offline",
@@ -1064,7 +1067,13 @@
     "admin_server_stat_robots": "Robots",
     "admin_server_stat_host": "Host",
     "menu_safety": "Safety limits",
-    "menu_audit": "Audit record"
+    "menu_audit": "Audit record",
+    "admin_security_robots_title": "Safe mode of the robots",
+    "admin_security_robots_enable_label": "Allow a client to enable a robot that is in safe mode (administrators only; off by default)",
+    "admin_security_robots_help": "Disabling a robot is always possible, like a stop. Without this option a disabled robot can only be brought back from the settings of an administrator.",
+    "admin_security_robots_save": "Save robot options",
+    "admin_security_robots_confirm": "Allow clients to enable robots that are in safe mode? An administrator will be able to bring a robot back with one click.",
+    "admin_security_robots_warning": "Administrators can now enable robots from a client."
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Access",
@@ -1255,7 +1264,13 @@
     "conditional_standard": "Standard: reservations, table and one-off commands",
     "conditional_strict": "Strict: every command except STOP",
     "conditional_off": "Off: send commands without checking",
-    "conditional_hint": "Each write carries the revision of the robot this window last saw; if someone else changed the robot in between, the server refuses it (412) and the robot is read again. Jog and speed are not checked in Standard because they repeat many times a second. STOP is never checked."
+    "conditional_hint": "Each write carries the revision of the robot this window last saw; if someone else changed the robot in between, the server refuses it (412) and the robot is read again. Jog and speed are not checked in Standard because they repeat many times a second. STOP is never checked.",
+    "safe_mode_badge": "Safe mode - disabled",
+    "safe_mode_disable": "Disable",
+    "safe_mode_enable": "Enable",
+    "safe_mode_disable_hint": "Puts the robot in safe mode: it stops, its valves and pumps go off and the server refuses its commands except STOP.",
+    "safe_mode_enable_hint": "Brings the robot out of safe mode. Nothing restarts and the jog has to be armed again.",
+    "safe_mode_confirm_enable": "Enable robot {{robot}}? It stays stopped and accepts commands again."
   },
   "safety": {
     "admin_only": "Only administrators can change the safety limits.",

@@ -13,7 +13,7 @@
 // =============================================================================
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Hand, Lock, ShieldCheck, Unlock } from 'lucide-react';
+import { Hand, Lock, Power, ShieldCheck, Unlock } from 'lucide-react';
 import { useHydraStore, type RobotState } from '../store';
 import { useModeState, useSafetyState, setRobotMode, setDefaultRobotMode, setSafetyState } from '../lib/accessStore';
 import { modeOf } from '../lib/liveSim';
@@ -68,7 +68,7 @@ export function ClaimsList({ claims, robotNames, myUsername }: { claims: ClaimEn
 
 export function RobotAccessBar({ robot }: { robot: RobotState }) {
   const { t } = useTranslation();
-  const { authToken, isAdmin, robots, reportCommandIssue, refreshRobotFromServer } = useHydraStore();
+  const { authToken, isAdmin, robots, reportCommandIssue, refreshRobotFromServer, sendRobotCommand } = useHydraStore();
   const modes = useModeState();
   const safety = useSafetyState();
   const mode = modeOf(modes, robot.id);
@@ -81,6 +81,7 @@ export function RobotAccessBar({ robot }: { robot: RobotState }) {
   const [busy, setBusy] = useState(false);
   const [showList, setShowList] = useState(false);
   const [confirmForce, setConfirmForce] = useState(false);
+  const [confirmEnable, setConfirmEnable] = useState(false);
   const [conditionalMode, setConditionalMode] = useState<ConditionalMode>(() => robotRevisions.mode());
 
   const mine = claims.find((c) => c.robotId === robot.id);
@@ -143,6 +144,28 @@ export function RobotAccessBar({ robot }: { robot: RobotState }) {
       const result = await action();
       report(command, result);
       await refresh();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Safe mode of the robot: `disable` stops it and the server refuses its motion commands until it is enabled again; `enable`
+  // brings it back (the server option is off by default and only an administrator may use it).
+  const disabled = robot.enabled === false;
+  const setSafeMode = async (enable: boolean) => {
+    setBusy(true);
+    try {
+      const command = enable ? 'enable' : 'disable';
+      const result = await sendRobotCommand(
+        robot.id,
+        command,
+        undefined,
+        (r) => (enable
+          ? { enabled: true }
+          : { enabled: false, playbackState: { ...(r.playbackState || {}), isPlaying: false, activeStep: -1, isPaused: false, paused: false, isFinished: false } }),
+        [robot.id],
+      );
+      report(command, result);
     } finally {
       setBusy(false);
     }
@@ -230,6 +253,20 @@ export function RobotAccessBar({ robot }: { robot: RobotState }) {
           </button>
         )}
 
+        {disabled && (
+          <span data-testid="safe-mode-badge" className="text-xs px-2 py-1 rounded-md uppercase font-bold tracking-wider bg-rose-950 text-rose-300">{t('access.safe_mode_badge')}</span>
+        )}
+        {!disabled && (
+          <button type="button" disabled={busy} data-testid="safe-mode-disable" onClick={() => { void setSafeMode(false); }} title={t('access.safe_mode_disable_hint')} className={buttonClass + ' border-rose-600 text-rose-300 hover:bg-rose-950'}>
+            <Power size={12} />{t('access.safe_mode_disable')}
+          </button>
+        )}
+        {disabled && isAdmin && (
+          <button type="button" disabled={busy} data-testid="safe-mode-enable" onClick={() => setConfirmEnable(true)} title={t('access.safe_mode_enable_hint')} className={buttonClass + ' border-emerald-600 text-emerald-300 hover:bg-emerald-950'}>
+            <Power size={12} />{t('access.safe_mode_enable')}
+          </button>
+        )}
+
         <button type="button" onClick={() => setShowList((v) => !v)} aria-expanded={showList} className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 underline">
           {t('access.list_toggle', { count: claims.length })}
         </button>
@@ -257,6 +294,13 @@ export function RobotAccessBar({ robot }: { robot: RobotState }) {
           </label>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmEnable}
+        message={t('access.safe_mode_confirm_enable', { robot: robot.name })}
+        onConfirm={() => { setConfirmEnable(false); void setSafeMode(true); }}
+        onCancel={() => setConfirmEnable(false)}
+      />
 
       <ConfirmDialog
         open={confirmForce}

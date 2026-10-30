@@ -272,6 +272,8 @@ export interface RobotState {
   id: number;
   name: string;
   online: boolean;
+  /** false while the robot is in safe mode (the server refuses everything but STOP, disable and enable); absent means enabled. */
+  enabled?: boolean;
   model: RobotModel;
   role: RobotRole;
   tool: ToolType;

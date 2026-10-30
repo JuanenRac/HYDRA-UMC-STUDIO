@@ -42,7 +42,10 @@
     "temperature_limit": "Le serveur a abaissé la consigne du plateau chauffant ({{detail}} °C) à la limite de ce modèle.",
     "jog_server_limit": "Le serveur n'a pas appliqué le jog : {{detail}}",
     "revision_changed": "Le robot {{robots}} a changé depuis la dernière lecture de cette fenêtre (autre opérateur ou autre fenêtre) - la commande {{command}} n'a PAS été appliquée. Le robot a été relu depuis le serveur : vérifiez-le et répétez la commande si c'est toujours ce que vous voulez.",
-    "stale_sequence": "Une commande de mouvement plus récente de cette fenêtre avait déjà atteint le robot {{robots}} - la commande {{command}} n'a PAS été appliquée car elle est arrivée dans le désordre. Répétez-la si vous la voulez encore."
+    "stale_sequence": "Une commande de mouvement plus récente de cette fenêtre avait déjà atteint le robot {{robots}} - la commande {{command}} n'a PAS été appliquée car elle est arrivée dans le désordre. Répétez-la si vous la voulez encore.",
+    "robot_disabled": "Le robot {{robots}} est en mode sécurisé (désactivé) - la commande {{command}} n'a pas été appliquée. Seul STOP fonctionne tant qu'un administrateur ne le réactive pas. {{detail}}",
+    "enable_not_allowed": "Le serveur n'autorise pas l'activation d'un robot depuis un client (l'option est désactivée). Un administrateur peut l'activer dans l'écran d'administration du serveur. {{detail}}",
+    "admin_required": "Seul un administrateur peut activer le robot {{robots}}. {{detail}}"
   },
   "motion_source": {
     "offline": "Hors ligne",
@@ -1064,7 +1067,13 @@
     "admin_server_stat_robots": "Robots",
     "admin_server_stat_host": "Hôte",
     "menu_safety": "Limites de sécurité",
-    "menu_audit": "Journal d'audit"
+    "menu_audit": "Journal d'audit",
+    "admin_security_robots_title": "Mode sécurisé des robots",
+    "admin_security_robots_enable_label": "Permettre à un client d'activer un robot en mode sécurisé (administrateurs seulement ; désactivé par défaut)",
+    "admin_security_robots_help": "Désactiver un robot est toujours possible, comme un arrêt. Sans cette option, un robot désactivé ne se récupère que depuis les réglages d'un administrateur.",
+    "admin_security_robots_save": "Enregistrer les options des robots",
+    "admin_security_robots_confirm": "Permettre aux clients d'activer des robots en mode sécurisé ? Un administrateur pourra récupérer un robot en un clic.",
+    "admin_security_robots_warning": "Les administrateurs peuvent maintenant activer des robots depuis un client."
   },
   "auth": {
     "title": "Accès HYDRA-UMC STUDIO",
@@ -1255,7 +1264,13 @@
     "conditional_standard": "Standard : réservations, table et commandes ponctuelles",
     "conditional_strict": "Strict : toutes les commandes sauf STOP",
     "conditional_off": "Désactivé : envoyer sans vérifier",
-    "conditional_hint": "Chaque écriture porte la révision du robot que cette fenêtre a vue en dernier ; si quelqu'un a modifié le robot entre-temps, le serveur refuse (412) et le robot est relu. Le jog et la vitesse ne sont pas vérifiés en Standard car ils se répètent plusieurs fois par seconde. STOP n'est jamais vérifié."
+    "conditional_hint": "Chaque écriture porte la révision du robot que cette fenêtre a vue en dernier ; si quelqu'un a modifié le robot entre-temps, le serveur refuse (412) et le robot est relu. Le jog et la vitesse ne sont pas vérifiés en Standard car ils se répètent plusieurs fois par seconde. STOP n'est jamais vérifié.",
+    "safe_mode_badge": "Mode sécurisé - désactivé",
+    "safe_mode_disable": "Désactiver",
+    "safe_mode_enable": "Activer",
+    "safe_mode_disable_hint": "Met le robot en mode sécurisé : il s'arrête, ses vannes et pompes sont coupées et le serveur refuse ses commandes sauf STOP.",
+    "safe_mode_enable_hint": "Sort le robot du mode sécurisé. Rien ne redémarre et le jog doit être armé de nouveau.",
+    "safe_mode_confirm_enable": "Activer le robot {{robot}} ? Il reste à l'arrêt et accepte de nouveau les commandes."
   },
   "safety": {
     "admin_only": "Seuls les administrateurs peuvent modifier les limites de sécurité.",

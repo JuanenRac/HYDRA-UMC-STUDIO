@@ -42,7 +42,10 @@
     "temperature_limit": "Il server ha abbassato la temperatura obiettivo del piatto ({{detail}} °C) al limite di questo modello.",
     "jog_server_limit": "Il server non ha applicato il jog: {{detail}}",
     "revision_changed": "Il robot {{robots}} è cambiato da quando questa finestra lo ha letto l'ultima volta (un altro operatore o un'altra finestra) - il comando {{command}} NON è stato applicato. Il robot è stato riletto dal server: controllalo e ripeti il comando se è ancora quello che vuoi.",
-    "stale_sequence": "Un comando di movimento più recente di questa finestra aveva già raggiunto il robot {{robots}} - il comando {{command}} NON è stato applicato perché è arrivato fuori ordine. Ripetilo se lo vuoi ancora."
+    "stale_sequence": "Un comando di movimento più recente di questa finestra aveva già raggiunto il robot {{robots}} - il comando {{command}} NON è stato applicato perché è arrivato fuori ordine. Ripetilo se lo vuoi ancora.",
+    "robot_disabled": "Il robot {{robots}} è in modalità sicura (disabilitato) - il comando {{command}} non è stato applicato. Funziona solo STOP finché un amministratore non lo abilita di nuovo. {{detail}}",
+    "enable_not_allowed": "Il server non permette di abilitare un robot da un client (l'opzione è disattivata). Un amministratore può attivarla nella schermata di amministrazione del server. {{detail}}",
+    "admin_required": "Solo un amministratore può abilitare il robot {{robots}}. {{detail}}"
   },
   "motion_source": {
     "offline": "Offline",
@@ -1064,7 +1067,13 @@
     "admin_server_stat_robots": "Robot",
     "admin_server_stat_host": "Host",
     "menu_safety": "Limiti di sicurezza",
-    "menu_audit": "Registro di audit"
+    "menu_audit": "Registro di audit",
+    "admin_security_robots_title": "Modalità sicura dei robot",
+    "admin_security_robots_enable_label": "Consenti a un client di abilitare un robot in modalità sicura (solo amministratori; disattivato per impostazione predefinita)",
+    "admin_security_robots_help": "Disabilitare un robot è sempre possibile, come un arresto. Senza questa opzione un robot disabilitato si recupera solo dalle impostazioni di un amministratore.",
+    "admin_security_robots_save": "Salva le opzioni dei robot",
+    "admin_security_robots_confirm": "Consentire ai client di abilitare robot in modalità sicura? Un amministratore potrà recuperare un robot con un clic.",
+    "admin_security_robots_warning": "Gli amministratori ora possono abilitare i robot da un client."
   },
   "auth": {
     "title": "Accesso a HYDRA-UMC STUDIO",
@@ -1255,7 +1264,13 @@
     "conditional_standard": "Standard: prenotazioni, tavola e comandi singoli",
     "conditional_strict": "Rigoroso: tutti i comandi tranne STOP",
     "conditional_off": "Disattivato: invia senza verificare",
-    "conditional_hint": "Ogni scrittura porta la revisione del robot che questa finestra ha visto per ultima; se qualcuno ha modificato il robot nel frattempo, il server rifiuta (412) e il robot viene riletto. Il jog e la velocità non sono verificati in Standard perché si ripetono molte volte al secondo. STOP non è mai verificato."
+    "conditional_hint": "Ogni scrittura porta la revisione del robot che questa finestra ha visto per ultima; se qualcuno ha modificato il robot nel frattempo, il server rifiuta (412) e il robot viene riletto. Il jog e la velocità non sono verificati in Standard perché si ripetono molte volte al secondo. STOP non è mai verificato.",
+    "safe_mode_badge": "Modalità sicura - disabilitato",
+    "safe_mode_disable": "Disabilita",
+    "safe_mode_enable": "Abilita",
+    "safe_mode_disable_hint": "Mette il robot in modalità sicura: si ferma, valvole e pompe si spengono e il server rifiuta i suoi comandi tranne STOP.",
+    "safe_mode_enable_hint": "Toglie il robot dalla modalità sicura. Niente riparte e il jog va armato di nuovo.",
+    "safe_mode_confirm_enable": "Abilitare il robot {{robot}}? Resta fermo e accetta di nuovo i comandi."
   },
   "safety": {
     "admin_only": "Solo gli amministratori possono modificare i limiti di sicurezza.",

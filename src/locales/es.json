@@ -42,7 +42,10 @@
     "temperature_limit": "El servidor redujo la temperatura objetivo de la cama ({{detail}} °C) al límite de este modelo.",
     "jog_server_limit": "El servidor no aplicó el jog: {{detail}}",
     "revision_changed": "El robot {{robots}} cambió desde que esta ventana lo leyó por última vez (otro operador u otra ventana): el comando {{command}} NO se aplicó. Se ha vuelto a leer el robot del servidor: compruébalo y repite el comando si sigue siendo lo que quieres.",
-    "stale_sequence": "Un comando de movimiento más reciente de esta ventana ya había llegado al robot {{robots}}: el comando {{command}} NO se aplicó porque llegó fuera de orden. Repítelo si aún lo quieres."
+    "stale_sequence": "Un comando de movimiento más reciente de esta ventana ya había llegado al robot {{robots}}: el comando {{command}} NO se aplicó porque llegó fuera de orden. Repítelo si aún lo quieres.",
+    "robot_disabled": "El robot {{robots}} está en modo seguro (deshabilitado): no se aplicó el comando {{command}}. Solo funciona STOP hasta que un administrador lo habilite de nuevo. {{detail}}",
+    "enable_not_allowed": "El servidor no permite habilitar un robot desde un cliente (la opción está desactivada). Un administrador puede activarla en la pantalla de administración del servidor. {{detail}}",
+    "admin_required": "Solo un administrador puede habilitar el robot {{robots}}. {{detail}}"
   },
   "motion_source": {
     "offline": "Sin conexión",
@@ -1064,7 +1067,13 @@
     "admin_server_stat_robots": "Robots",
     "admin_server_stat_host": "Host",
     "menu_safety": "Límites de seguridad",
-    "menu_audit": "Registro de auditoría"
+    "menu_audit": "Registro de auditoría",
+    "admin_security_robots_title": "Modo seguro de los robots",
+    "admin_security_robots_enable_label": "Permitir que un cliente habilite un robot en modo seguro (solo administradores; desactivado por defecto)",
+    "admin_security_robots_help": "Deshabilitar un robot siempre es posible, como una parada. Sin esta opción, un robot deshabilitado solo se recupera desde los ajustes de un administrador.",
+    "admin_security_robots_save": "Guardar opciones de robots",
+    "admin_security_robots_confirm": "¿Permitir que los clientes habiliten robots en modo seguro? Un administrador podrá recuperar un robot con un clic.",
+    "admin_security_robots_warning": "Los administradores ya pueden habilitar robots desde un cliente."
   },
   "auth": {
     "title": "Acceso a HYDRA-UMC STUDIO",
@@ -1255,7 +1264,13 @@
     "conditional_standard": "Estándar: reservas, mesa y comandos puntuales",
     "conditional_strict": "Estricto: todos los comandos salvo STOP",
     "conditional_off": "Desactivado: enviar sin comprobar",
-    "conditional_hint": "Cada escritura lleva la revisión del robot que esta ventana vio por última vez; si otra persona cambió el robot entretanto, el servidor la rechaza (412) y se vuelve a leer el robot. El jog y la velocidad no se comprueban en Estándar porque se repiten muchas veces por segundo. STOP nunca se comprueba."
+    "conditional_hint": "Cada escritura lleva la revisión del robot que esta ventana vio por última vez; si otra persona cambió el robot entretanto, el servidor la rechaza (412) y se vuelve a leer el robot. El jog y la velocidad no se comprueban en Estándar porque se repiten muchas veces por segundo. STOP nunca se comprueba.",
+    "safe_mode_badge": "Modo seguro - deshabilitado",
+    "safe_mode_disable": "Deshabilitar",
+    "safe_mode_enable": "Habilitar",
+    "safe_mode_disable_hint": "Pone el robot en modo seguro: se detiene, sus válvulas y bombas se apagan y el servidor rechaza sus comandos salvo STOP.",
+    "safe_mode_enable_hint": "Saca el robot del modo seguro. Nada se reinicia y hay que armar el jog de nuevo.",
+    "safe_mode_confirm_enable": "¿Habilitar el robot {{robot}}? Sigue detenido y vuelve a aceptar comandos."
   },
   "safety": {
     "admin_only": "Solo los administradores pueden cambiar los límites de seguridad.",

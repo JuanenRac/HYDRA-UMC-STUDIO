@@ -42,7 +42,10 @@
     "temperature_limit": "服务器已将热床目标温度（{{detail}} °C）降至此型号的上限。",
     "jog_server_limit": "服务器未执行该点动：{{detail}}",
     "revision_changed": "自此窗口上次读取以来,机器人 {{robots}} 已发生变化(其他操作员或其他窗口)-{{command}} 命令未被应用。已从服务器重新读取该机器人:请检查,如仍需要请重新发送命令。",
-    "stale_sequence": "此窗口较新的运动命令已先到达机器人 {{robots}},因此顺序错乱到达的 {{command}} 命令未被应用。如仍需要,请重新执行。"
+    "stale_sequence": "此窗口较新的运动命令已先到达机器人 {{robots}},因此顺序错乱到达的 {{command}} 命令未被应用。如仍需要,请重新执行。",
+    "robot_disabled": "机器人 {{robots}} 处于安全模式（已禁用），{{command}} 命令未执行。在管理员重新启用之前，只有 STOP 可用。{{detail}}",
+    "enable_not_allowed": "服务器不允许从客户端启用机器人（该选项已关闭）。管理员可以在服务器管理界面中打开它。{{detail}}",
+    "admin_required": "只有管理员才能启用机器人 {{robots}}。{{detail}}"
   },
   "motion_source": {
     "offline": "离线",
@@ -1064,7 +1067,13 @@
     "admin_server_stat_robots": "机器人",
     "admin_server_stat_host": "主机",
     "menu_safety": "安全限制",
-    "menu_audit": "审计记录"
+    "menu_audit": "审计记录",
+    "admin_security_robots_title": "机器人的安全模式",
+    "admin_security_robots_enable_label": "允许客户端启用处于安全模式的机器人（仅管理员；默认关闭）",
+    "admin_security_robots_help": "禁用机器人随时可以进行，如同停止。没有此选项时，已禁用的机器人只能通过管理员的设置恢复。",
+    "admin_security_robots_save": "保存机器人选项",
+    "admin_security_robots_confirm": "允许客户端启用处于安全模式的机器人吗？管理员将可以一键恢复机器人。",
+    "admin_security_robots_warning": "管理员现在可以从客户端启用机器人。"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO 访问",
@@ -1255,7 +1264,13 @@
     "conditional_standard": "标准:预约、工作台和一次性命令",
     "conditional_strict": "严格:除 STOP 外的所有命令",
     "conditional_off": "关闭:不检查直接发送",
-    "conditional_hint": "每次写入都带有此窗口最后看到的机器人修订号;如果期间有人修改了机器人,服务器会拒绝(412)并重新读取机器人。点动和速度在标准模式下不检查,因为它们每秒重复多次。STOP 永远不检查。"
+    "conditional_hint": "每次写入都带有此窗口最后看到的机器人修订号;如果期间有人修改了机器人,服务器会拒绝(412)并重新读取机器人。点动和速度在标准模式下不检查,因为它们每秒重复多次。STOP 永远不检查。",
+    "safe_mode_badge": "安全模式 - 已禁用",
+    "safe_mode_disable": "禁用",
+    "safe_mode_enable": "启用",
+    "safe_mode_disable_hint": "让机器人进入安全模式：它会停止，阀门和泵关闭，服务器拒绝它除 STOP 以外的命令。",
+    "safe_mode_enable_hint": "让机器人退出安全模式。不会自动重新开始，点动需要重新启用。",
+    "safe_mode_confirm_enable": "启用机器人 {{robot}}？它保持停止，并重新接受命令。"
   },
   "safety": {
     "admin_only": "只有管理员可以更改安全限制。",
