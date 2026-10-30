@@ -75,6 +75,16 @@ Built with **React 19**, **Vite**, **Three.js** (via `@react-three/fiber`/`@reac
   <img src="images/architecture.svg" alt="HYDRA-UMC-STUDIO architecture" width="100%">
 </p>
 
+## 🖼️ Screenshots
+
+Captured at 1920×1080 on a test bench, with sample data and no real installation behind them.
+
+<table>
+<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Overview: the eight robot nodes of the micro-factory with their role, model and tooling, and the machine status in the bar below." width="100%"><br><sub>Overview: the eight robot nodes of the micro-factory with their role, model and tooling, and the machine status in the bar below.</sub></td><td width="50%" valign="top"><img src="images/screenshots/robot-view.png" alt="Robot view: joint controls, XYZ jog, the 3D model of the arm and the trajectory panel with the recorded points." width="100%"><br><sub>Robot view: joint controls, XYZ jog, the 3D model of the arm and the trajectory panel with the recorded points.</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/xy-table.png" alt="XY table: the size of the table, the jog buttons with their step and the live 3D view of the axes." width="100%"><br><sub>XY table: the size of the table, the jog buttons with their step and the live 3D view of the axes.</sub></td><td width="50%" valign="top"><img src="images/screenshots/flasher-studio.png" alt="Flasher Studio: pick the board and the robot slot, choose a firmware file and flash it over CAN; here in simulation, so nothing is sent to a board." width="100%"><br><sub>Flasher Studio: pick the board and the robot slot, choose a firmware file and flash it over CAN; here in simulation, so nothing is sent to a board.</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/tester-center.png" alt="Tester Center: the status LED, the persistence check, the tool telemetry, the self-test and the raw bus monitor of a board." width="100%"><br><sub>Tester Center: the status LED, the persistence check, the tool telemetry, the self-test and the raw bus monitor of a board.</sub></td><td width="50%" valign="top"><img src="images/screenshots/safety-limits.png" alt="Safety limits: arming of the jog, the reservation rule and the jog and bed-temperature ceilings per robot model, kept in the server." width="100%"><br><sub>Safety limits: arming of the jog, the reservation rule and the jog and bed-temperature ceilings per robot model, kept in the server.</sub></td></tr>
+</table>
+
 ## ✨ Features
 
 ### Multi-Robot 3D Control

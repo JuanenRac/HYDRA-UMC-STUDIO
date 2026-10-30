@@ -75,6 +75,16 @@ Construido con **React 19**, **Vite**, **Three.js** (vía `@react-three/fiber`/`
   <img src="images/architecture.svg" alt="HYDRA-UMC-STUDIO architecture" width="100%">
 </p>
 
+## 🖼️ Capturas de pantalla
+
+Capturadas a 1920×1080 en un banco de pruebas, con datos de ejemplo y sin ninguna instalación real detrás.
+
+<table>
+<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Resumen: los ocho nodos robot de la microfábrica con su función, modelo y herramienta, y el estado de la máquina en la barra inferior." width="100%"><br><sub>Resumen: los ocho nodos robot de la microfábrica con su función, modelo y herramienta, y el estado de la máquina en la barra inferior.</sub></td><td width="50%" valign="top"><img src="images/screenshots/robot-view.png" alt="Vista de robot: controles de articulaciones, jog XYZ, el modelo 3D del brazo y el panel de trayectorias con los puntos grabados." width="100%"><br><sub>Vista de robot: controles de articulaciones, jog XYZ, el modelo 3D del brazo y el panel de trayectorias con los puntos grabados.</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/xy-table.png" alt="Mesa XY: el tamaño de la mesa, los botones de jog con su paso y la vista 3D en vivo de los ejes." width="100%"><br><sub>Mesa XY: el tamaño de la mesa, los botones de jog con su paso y la vista 3D en vivo de los ejes.</sub></td><td width="50%" valign="top"><img src="images/screenshots/flasher-studio.png" alt="Flasher Studio: elige la placa y la ranura del robot, escoge un fichero de firmware y flashéalo por CAN; aquí en simulación, así que no se envía nada a ninguna placa." width="100%"><br><sub>Flasher Studio: elige la placa y la ranura del robot, escoge un fichero de firmware y flashéalo por CAN; aquí en simulación, así que no se envía nada a ninguna placa.</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/tester-center.png" alt="Tester Center: el LED de estado, la comprobación de persistencia, la telemetría de la herramienta, el autotest y el monitor de bus en bruto de una placa." width="100%"><br><sub>Tester Center: el LED de estado, la comprobación de persistencia, la telemetría de la herramienta, el autotest y el monitor de bus en bruto de una placa.</sub></td><td width="50%" valign="top"><img src="images/screenshots/safety-limits.png" alt="Límites de seguridad: armado del jog, regla de reservas y los techos de jog y de temperatura de cama por modelo de robot, guardados en el servidor." width="100%"><br><sub>Límites de seguridad: armado del jog, regla de reservas y los techos de jog y de temperatura de cama por modelo de robot, guardados en el servidor.</sub></td></tr>
+</table>
+
 ## ✨ Funciones
 
 ### Control 3D Multi-Robot

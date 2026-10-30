@@ -75,6 +75,16 @@ Gebaut mit **React 19**, **Vite**, **Three.js** (über `@react-three/fiber`/`@re
   <img src="images/architecture.svg" alt="HYDRA-UMC-STUDIO architecture" width="100%">
 </p>
 
+## 🖼️ Screenshots
+
+Aufgenommen mit 1920×1080 auf einem Prüfstand, mit Beispieldaten und ohne eine echte Anlage dahinter.
+
+<table>
+<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Übersicht: die acht Roboterknoten der Mikrofabrik mit Rolle, Modell und Werkzeug und der Maschinenstatus in der unteren Leiste." width="100%"><br><sub>Übersicht: die acht Roboterknoten der Mikrofabrik mit Rolle, Modell und Werkzeug und der Maschinenstatus in der unteren Leiste.</sub></td><td width="50%" valign="top"><img src="images/screenshots/robot-view.png" alt="Roboteransicht: Gelenksteuerung, XYZ-Jog, das 3D-Modell des Arms und das Trajektorienfeld mit den aufgezeichneten Punkten." width="100%"><br><sub>Roboteransicht: Gelenksteuerung, XYZ-Jog, das 3D-Modell des Arms und das Trajektorienfeld mit den aufgezeichneten Punkten.</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/xy-table.png" alt="XY-Tisch: die Größe des Tisches, die Jog-Tasten mit ihrer Schrittweite und die 3D-Live-Ansicht der Achsen." width="100%"><br><sub>XY-Tisch: die Größe des Tisches, die Jog-Tasten mit ihrer Schrittweite und die 3D-Live-Ansicht der Achsen.</sub></td><td width="50%" valign="top"><img src="images/screenshots/flasher-studio.png" alt="Flasher Studio: Platine und Roboterplatz wählen, eine Firmware-Datei auswählen und per CAN flashen; hier in der Simulation, es wird also nichts an eine Platine gesendet." width="100%"><br><sub>Flasher Studio: Platine und Roboterplatz wählen, eine Firmware-Datei auswählen und per CAN flashen; hier in der Simulation, es wird also nichts an eine Platine gesendet.</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/tester-center.png" alt="Tester Center: die Status-LED, die Persistenzprüfung, die Werkzeugtelemetrie, der Selbsttest und der Rohbus-Monitor einer Platine." width="100%"><br><sub>Tester Center: die Status-LED, die Persistenzprüfung, die Werkzeugtelemetrie, der Selbsttest und der Rohbus-Monitor einer Platine.</sub></td><td width="50%" valign="top"><img src="images/screenshots/safety-limits.png" alt="Sicherheitsgrenzen: Scharfschaltung des Jogs, Reservierungsregel und die Jog- und Betttemperatur-Obergrenzen je Robotermodell, im Server gespeichert." width="100%"><br><sub>Sicherheitsgrenzen: Scharfschaltung des Jogs, Reservierungsregel und die Jog- und Betttemperatur-Obergrenzen je Robotermodell, im Server gespeichert.</sub></td></tr>
+</table>
+
 ## ✨ Funktionen
 
 ### Multi-Roboter-3D-Steuerung

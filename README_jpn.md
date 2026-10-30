@@ -75,6 +75,16 @@ GPL-3.0-or-later - see LICENSE
   <img src="images/architecture.svg" alt="HYDRA-UMC-STUDIO architecture" width="100%">
 </p>
 
+## 🖼️ スクリーンショット
+
+テストベンチで 1920×1080 で撮影。サンプルデータを使用しており、実際の設備は接続されていません。
+
+<table>
+<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="概要：マイクロファクトリーの 8 台のロボットノードと、その役割・モデル・ツール。下のバーにマシンの状態を表示します。" width="100%"><br><sub>概要：マイクロファクトリーの 8 台のロボットノードと、その役割・モデル・ツール。下のバーにマシンの状態を表示します。</sub></td><td width="50%" valign="top"><img src="images/screenshots/robot-view.png" alt="ロボットビュー：関節コントロール、XYZ ジョグ、アームの 3D モデル、記録済みポイントを含む軌道パネル。" width="100%"><br><sub>ロボットビュー：関節コントロール、XYZ ジョグ、アームの 3D モデル、記録済みポイントを含む軌道パネル。</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/xy-table.png" alt="XY テーブル：テーブルのサイズ、ステップ付きのジョグボタン、各軸のライブ 3D ビュー。" width="100%"><br><sub>XY テーブル：テーブルのサイズ、ステップ付きのジョグボタン、各軸のライブ 3D ビュー。</sub></td><td width="50%" valign="top"><img src="images/screenshots/flasher-studio.png" alt="Flasher Studio：ボードとロボットスロットを選び、ファームウェアファイルを選んで CAN で書き込みます。ここはシミュレーションで、ボードには何も送信されません。" width="100%"><br><sub>Flasher Studio：ボードとロボットスロットを選び、ファームウェアファイルを選んで CAN で書き込みます。ここはシミュレーションで、ボードには何も送信されません。</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/tester-center.png" alt="Tester Center：ボードのステータス LED、永続性チェック、ツールテレメトリ、セルフテスト、生バスモニター。" width="100%"><br><sub>Tester Center：ボードのステータス LED、永続性チェック、ツールテレメトリ、セルフテスト、生バスモニター。</sub></td><td width="50%" valign="top"><img src="images/screenshots/safety-limits.png" alt="安全制限：ジョグの有効化、予約ルール、ロボットモデルごとのジョグとベッド温度の上限。サーバーに保存されます。" width="100%"><br><sub>安全制限：ジョグの有効化、予約ルール、ロボットモデルごとのジョグとベッド温度の上限。サーバーに保存されます。</sub></td></tr>
+</table>
+
 ## ✨ 機能
 
 ### マルチロボット 3D 制御

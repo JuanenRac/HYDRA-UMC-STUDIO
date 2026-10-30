@@ -75,6 +75,16 @@ O **HYDRA-UMC-STUDIO** é o painel web de controlo da célula: desenha cada rob�
   <img src="images/architecture.svg" alt="HYDRA-UMC-STUDIO architecture" width="100%">
 </p>
 
+## 🖼️ Capturas de ecrã
+
+Capturadas a 1920×1080 numa bancada de testes, com dados de exemplo e sem qualquer instalação real por trás.
+
+<table>
+<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Resumo: os oito nós de robô da microfábrica com a função, o modelo e a ferramenta, e o estado da máquina na barra inferior." width="100%"><br><sub>Resumo: os oito nós de robô da microfábrica com a função, o modelo e a ferramenta, e o estado da máquina na barra inferior.</sub></td><td width="50%" valign="top"><img src="images/screenshots/robot-view.png" alt="Vista do robô: controlos das articulações, jog XYZ, o modelo 3D do braço e o painel de trajetórias com os pontos gravados." width="100%"><br><sub>Vista do robô: controlos das articulações, jog XYZ, o modelo 3D do braço e o painel de trajetórias com os pontos gravados.</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/xy-table.png" alt="Mesa XY: o tamanho da mesa, os botões de jog com o seu passo e a vista 3D em direto dos eixos." width="100%"><br><sub>Mesa XY: o tamanho da mesa, os botões de jog com o seu passo e a vista 3D em direto dos eixos.</sub></td><td width="50%" valign="top"><img src="images/screenshots/flasher-studio.png" alt="Flasher Studio: escolha a placa e a ranhura do robô, escolha um ficheiro de firmware e grave-o por CAN; aqui em simulação, por isso nada é enviado a nenhuma placa." width="100%"><br><sub>Flasher Studio: escolha a placa e a ranhura do robô, escolha um ficheiro de firmware e grave-o por CAN; aqui em simulação, por isso nada é enviado a nenhuma placa.</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/tester-center.png" alt="Tester Center: o LED de estado, a verificação de persistência, a telemetria da ferramenta, o autoteste e o monitor de barramento em bruto de uma placa." width="100%"><br><sub>Tester Center: o LED de estado, a verificação de persistência, a telemetria da ferramenta, o autoteste e o monitor de barramento em bruto de uma placa.</sub></td><td width="50%" valign="top"><img src="images/screenshots/safety-limits.png" alt="Limites de segurança: armação do jog, regra de reservas e os tetos de jog e de temperatura da cama por modelo de robô, guardados no servidor." width="100%"><br><sub>Limites de segurança: armação do jog, regra de reservas e os tetos de jog e de temperatura da cama por modelo de robô, guardados no servidor.</sub></td></tr>
+</table>
+
 ## ✨ Funcionalidades
 
 ### Controlo 3D multirrobô

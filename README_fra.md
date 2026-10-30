@@ -75,6 +75,16 @@ Construit avec **React 19**, **Vite**, **Three.js** (via `@react-three/fiber`/`@
   <img src="images/architecture.svg" alt="HYDRA-UMC-STUDIO architecture" width="100%">
 </p>
 
+## 🖼️ Captures d'écran
+
+Capturées en 1920×1080 sur un banc d'essai, avec des données d'exemple et sans installation réelle derrière.
+
+<table>
+<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Vue d'ensemble : les huit nœuds robot de la micro-usine avec leur rôle, leur modèle et leur outil, et l'état de la machine dans la barre du bas." width="100%"><br><sub>Vue d'ensemble : les huit nœuds robot de la micro-usine avec leur rôle, leur modèle et leur outil, et l'état de la machine dans la barre du bas.</sub></td><td width="50%" valign="top"><img src="images/screenshots/robot-view.png" alt="Vue robot : commandes des articulations, jog XYZ, le modèle 3D du bras et le panneau des trajectoires avec les points enregistrés." width="100%"><br><sub>Vue robot : commandes des articulations, jog XYZ, le modèle 3D du bras et le panneau des trajectoires avec les points enregistrés.</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/xy-table.png" alt="Table XY : la taille de la table, les boutons de jog avec leur pas et la vue 3D en direct des axes." width="100%"><br><sub>Table XY : la taille de la table, les boutons de jog avec leur pas et la vue 3D en direct des axes.</sub></td><td width="50%" valign="top"><img src="images/screenshots/flasher-studio.png" alt="Flasher Studio : choisissez la carte et l'emplacement du robot, un fichier de firmware, et flashez-le par CAN ; ici en simulation, donc rien n'est envoyé à une carte." width="100%"><br><sub>Flasher Studio : choisissez la carte et l'emplacement du robot, un fichier de firmware, et flashez-le par CAN ; ici en simulation, donc rien n'est envoyé à une carte.</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/tester-center.png" alt="Tester Center : la LED d'état, le contrôle de persistance, la télémétrie de l'outil, l'autotest et le moniteur de bus brut d'une carte." width="100%"><br><sub>Tester Center : la LED d'état, le contrôle de persistance, la télémétrie de l'outil, l'autotest et le moniteur de bus brut d'une carte.</sub></td><td width="50%" valign="top"><img src="images/screenshots/safety-limits.png" alt="Limites de sécurité : armement du jog, règle de réservation et plafonds de jog et de température du plateau par modèle de robot, conservés dans le serveur." width="100%"><br><sub>Limites de sécurité : armement du jog, règle de réservation et plafonds de jog et de température du plateau par modèle de robot, conservés dans le serveur.</sub></td></tr>
+</table>
+
 ## ✨ Fonctionnalités
 
 ### Contrôle 3D Multi-Robots

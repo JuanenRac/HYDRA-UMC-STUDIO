@@ -75,6 +75,16 @@ GPL-3.0-or-later - see LICENSE
   <img src="images/architecture.svg" alt="HYDRA-UMC-STUDIO architecture" width="100%">
 </p>
 
+## 🖼️ 屏幕截图
+
+在测试台上以 1920×1080 截取，使用示例数据，背后没有真实的安装。
+
+<table>
+<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="概览：微型工厂的八个机器人节点，包含其角色、型号和工具，底部状态栏显示机器状态。" width="100%"><br><sub>概览：微型工厂的八个机器人节点，包含其角色、型号和工具，底部状态栏显示机器状态。</sub></td><td width="50%" valign="top"><img src="images/screenshots/robot-view.png" alt="机器人视图：关节控制、XYZ 点动、机械臂的 3D 模型，以及带有已记录点位的轨迹面板。" width="100%"><br><sub>机器人视图：关节控制、XYZ 点动、机械臂的 3D 模型，以及带有已记录点位的轨迹面板。</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/xy-table.png" alt="XY 工作台：工作台尺寸、带步长的点动按钮和各轴的实时 3D 视图。" width="100%"><br><sub>XY 工作台：工作台尺寸、带步长的点动按钮和各轴的实时 3D 视图。</sub></td><td width="50%" valign="top"><img src="images/screenshots/flasher-studio.png" alt="Flasher Studio：选择开发板和机器人插槽，选择固件文件并通过 CAN 烧录；此处为模拟模式，不会向任何板子发送数据。" width="100%"><br><sub>Flasher Studio：选择开发板和机器人插槽，选择固件文件并通过 CAN 烧录；此处为模拟模式，不会向任何板子发送数据。</sub></td></tr>
+<tr><td width="50%" valign="top"><img src="images/screenshots/tester-center.png" alt="Tester Center：开发板的状态 LED、持久化检查、工具遥测、自检和原始总线监视器。" width="100%"><br><sub>Tester Center：开发板的状态 LED、持久化检查、工具遥测、自检和原始总线监视器。</sub></td><td width="50%" valign="top"><img src="images/screenshots/safety-limits.png" alt="安全限制：点动的启用、预约规则，以及按机器人型号设置的点动和热床温度上限，均保存在服务器中。" width="100%"><br><sub>安全限制：点动的启用、预约规则，以及按机器人型号设置的点动和热床温度上限，均保存在服务器中。</sub></td></tr>
+</table>
+
 ## ✨ 功能
 
 ### 多机器人 3D 控制
