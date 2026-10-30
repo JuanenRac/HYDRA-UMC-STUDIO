@@ -26,6 +26,11 @@ export function loginFailureText(serverMessage: unknown): string {
   return typeof serverMessage === 'string' && serverMessage ? serverMessage : i18n.t('serverErrors.login_failed');
 }
 
+/** The sign-in of an account with the second step on, answered before a code was sent. */
+export function totpNeededText(): string {
+  return i18n.t('auth.totp_needed');
+}
+
 export function unreachableText(): string {
   return i18n.t('serverErrors.cannot_reach_server');
 }

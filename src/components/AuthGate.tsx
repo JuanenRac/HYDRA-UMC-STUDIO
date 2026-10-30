@@ -14,7 +14,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Lock, User, LogIn, Power, RotateCcw, LayoutDashboard } from 'lucide-react';
+import { Lock, User, LogIn, Power, RotateCcw, LayoutDashboard, ShieldCheck } from 'lucide-react';
 import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -23,9 +23,10 @@ import HydraIcon from '../assets/HYDRA_UMC_ICON.svg';
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
-  const { authToken, login, loginError, reportCommandIssue } = useHydraStore();
+  const { authToken, login, loginError, loginNeedsCode, reportCommandIssue } = useHydraStore();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [totpCode, setTotpCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [readOnly, setReadOnly] = useState(false);
   // Off by default: the session then lasts as long as the tab. On keeps it across browser restarts.
@@ -41,7 +42,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await login(username, password, keepSignedIn);
+    await login(username, password, keepSignedIn, loginNeedsCode ? totpCode : undefined);
     setIsSubmitting(false);
   };
 
@@ -103,6 +104,22 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
             />
           </div>
         </div>
+
+        {loginNeedsCode && (
+          <div className="w-full flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 focus-within:border-sky-400 transition-all">
+            <ShieldCheck size={16} className="text-slate-500 shrink-0" />
+            <input
+              value={totpCode}
+              onChange={e => setTotpCode(e.target.value)}
+              placeholder={t('auth.totp_code')}
+              aria-label={t('auth.totp_code')}
+              autoComplete="one-time-code"
+              inputMode="text"
+              autoFocus
+              className="bg-transparent outline-none text-sm text-slate-100 flex-1"
+            />
+          </div>
+        )}
 
         <label className="w-full flex items-start gap-2 text-xs text-slate-400 cursor-pointer">
           <input

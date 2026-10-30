@@ -1084,7 +1084,9 @@
     "restarting": "Wird neu gestartet…",
     "confirm_shutdown": "Dieses Gerät jetzt herunterfahren?",
     "confirm_restart": "Dieses Gerät jetzt neu starten?",
-    "server_admin": "Server-Verwaltung"
+    "server_admin": "Server-Verwaltung",
+    "totp_needed": "Dieses Konto verlangt einen zweiten Schritt. Geben Sie Ihren Code ein.",
+    "totp_code": "Code für zwei Schritte oder Wiederherstellungscode"
   },
   "gamepad_config": {
     "title": "Gamepad-Controller",
@@ -1330,5 +1332,42 @@
     "type_jog_arm": "Jog-Scharfschaltung",
     "type_safety_limits": "Sicherheitsgrenzen",
     "type_stop_all": "Globaler STOP"
+  },
+  "totp": {
+    "title": "Anmeldung in zwei Schritten",
+    "intro": "Fragt nach dem Passwort einen Code aus einer Authenticator-App ab. Sie ist aus, bis Sie sie einschalten, und schützt nur Ihr eigenes Konto.",
+    "loading": "Der Zustand Ihres Kontos wird gelesen...",
+    "status_off": "Für Ihr Konto aus.",
+    "status_on": "Für Ihr Konto an. Übrige Wiederherstellungscodes: {{count}}.",
+    "password_label": "Ihr Passwort",
+    "start": "Einrichtung starten",
+    "scan": "Scannen Sie diesen QR-Code mit Ihrer Authenticator-App oder geben Sie den Schlüssel dort von Hand ein.",
+    "qr_label": "QR-Code mit dem Schlüssel des zweiten Schritts",
+    "qr_too_long": "Die Adresse ist für einen QR-Code zu lang. Geben Sie den Schlüssel von Hand ein.",
+    "key_label": "Schlüssel",
+    "copy": "Schlüssel kopieren",
+    "copied": "Schlüssel kopiert.",
+    "code_label": "Von der App angezeigter Code (6 Ziffern)",
+    "confirm": "Bestätigen und einschalten",
+    "cancel": "Abbrechen",
+    "recovery_title": "Wiederherstellungscodes",
+    "recovery_hint": "Bewahren Sie sie sicher auf. Jeder gilt nur einmal, falls Sie das Telefon verlieren. Sie werden nicht noch einmal angezeigt.",
+    "recovery_saved": "Ich habe sie gesichert",
+    "turn_off_code": "Aktueller Code oder ein unbenutzter Wiederherstellungscode",
+    "turn_off": "Ausschalten",
+    "done_on": "Die Anmeldung in zwei Schritten ist an.",
+    "done_off": "Die Anmeldung in zwei Schritten ist aus.",
+    "error_unsupported": "Dieser Server bietet keine Anmeldung in zwei Schritten an.",
+    "error_password": "Das Passwort ist nicht richtig.",
+    "error_code": "Dieser Code ist nicht richtig.",
+    "error_wait": "Zu viele falsche Codes. Warten Sie {{seconds}} s und versuchen Sie es erneut.",
+    "error_already": "Sie ist schon an. Schalten Sie sie zuerst aus.",
+    "error_forbidden": "Dieses Konto darf seine Anmeldung nicht ändern.",
+    "error_http": "Der Server hat die Anfrage abgelehnt (HTTP {{status}}).",
+    "error_network": "Der Server ist nicht erreichbar.",
+    "reset_button": "Anmeldung in zwei Schritten entfernen",
+    "reset_confirm": "Die Anmeldung in zwei Schritten von {{user}} entfernen? Danach kann sie wieder eingeschaltet werden.",
+    "reset_done": "Anmeldung in zwei Schritten für {{user}} entfernt.",
+    "reset_error": "Die Anmeldung in zwei Schritten konnte nicht entfernt werden."
   }
 }

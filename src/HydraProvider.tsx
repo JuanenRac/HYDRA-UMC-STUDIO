@@ -7,7 +7,8 @@
 import { publishClaimsEvent } from './lib/claimsFeed';
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { apiUrl, wsUrl } from './lib/apiBase';
-import { loginFailureText, saveFailureText, unreachableText } from './lib/serverErrors';
+import { loginFailureText, saveFailureText, totpNeededText, unreachableText } from './lib/serverErrors';
+import { loginNeedsCode as loginNeedsCodeFrom, normalizeCode } from './lib/totpApi';
 import { applyRobotCommandMutation, rollbackRobotCommand } from './robotCommandTransition';
 import {
   type CommandIssue,
@@ -160,6 +161,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return readToken();
   });
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginNeedsCode, setLoginNeedsCode] = useState(false);
   const role = useMemo(() => decodeJwtRole(authToken), [authToken]);
   const isAdmin = role === 'admin';
   const localOnly = settingsLocalOnly(role, operatorEdited);
@@ -177,17 +179,21 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // this lives here rather than as AdminLogs.tsx's own local state.
   const [logsClearedAt, setLogsClearedAt] = useState<{ anchor: string | null } | null>(null);
 
-  const login = useCallback(async (username: string, password: string, keepSignedIn = false) => {
+  const login = useCallback(async (username: string, password: string, keepSignedIn = false, totp?: string) => {
     setLoginError(null);
     try {
       const res = await fetch(apiUrl('/api/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(totp ? { username, password, totp: normalizeCode(totp) } : { username, password }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.token) {
-        setLoginError(loginFailureText(data.error));
+        // An account with the second step on answers 401 {totpRequired}: the form then asks for the code. A wrong code
+        // answers the same way, so the form stays on the code field.
+        if (loginNeedsCodeFrom(res.status, data)) setLoginNeedsCode(true);
+        // First answer without a code: say what is needed, in the language of the screen, not the server's English line.
+        setLoginError(!totp && loginNeedsCodeFrom(res.status, data) ? totpNeededText() : loginFailureText(data.error));
         return false;
       }
       // The refresh token returned beside the access token lets a later WS 1008 close (or a 401 on a command)
@@ -1204,7 +1210,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       commandIssue, dismissCommandIssue, reportCommandIssue,
       saveKinematics, loadKinematics, addController, removeController,
       exportScene, importScene, factoryReset,
-      authToken, role, isAdmin, login, logout, loginError,
+      authToken, role, isAdmin, login, logout, loginError, loginNeedsCode,
       canotaProgress,
       logsClearedAt, setLogsClearedAt,
       serverReachable, settingsSaveError, settingsLocalOnly: localOnly, settingsLoadError

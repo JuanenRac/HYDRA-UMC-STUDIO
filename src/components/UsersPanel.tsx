@@ -16,10 +16,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Users as UsersIcon, Trash2, KeyRound, UserPlus, ShieldCheck } from 'lucide-react';
+import { Users as UsersIcon, Trash2, KeyRound, UserPlus, ShieldCheck, ShieldOff } from 'lucide-react';
 import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { ConfirmDialog } from './ConfirmDialog';
+import { totpApi } from '../lib/totpApi';
 
 interface StoredUserSummary {
   username: string;
@@ -43,6 +44,7 @@ export function UsersPanel() {
   const [renamePassword, setRenamePassword] = useState('');
 
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [totpResetTarget, setTotpResetTarget] = useState<string | null>(null);
 
   const authHeaders = () => ({ 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) });
 
@@ -128,6 +130,14 @@ export function UsersPanel() {
 
   const handleDelete = (username: string) => setDeleteTarget(username);
 
+  // For an account that lost its phone and its recovery codes: the second step is removed and the owner can turn it on again.
+  const doTotpReset = async (username: string) => {
+    setError(''); setNotice('');
+    const result = await totpApi.reset(username);
+    if (result.ok) setNotice(t('totp.reset_done', { user: username }));
+    else setError(t('totp.reset_error'));
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       <div>
@@ -158,6 +168,7 @@ export function UsersPanel() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
+                  <button onClick={() => setTotpResetTarget(u.username)} title={t('totp.reset_button')} aria-label={t('totp.reset_button')} className="text-slate-600 hover:text-amber-400 transition-colors mr-3"><ShieldOff size={16} /></button>
                   <button onClick={() => handleDelete(u.username)} className="text-slate-600 hover:text-rose-500 transition-colors"><Trash2 size={16} /></button>
                 </td>
               </tr>
@@ -207,6 +218,12 @@ export function UsersPanel() {
         message={deleteTarget ? t('config.users_delete_confirm', { username: deleteTarget }) : ''}
         onConfirm={() => { if (deleteTarget) doDelete(deleteTarget); setDeleteTarget(null); }}
         onCancel={() => setDeleteTarget(null)}
+      />
+      <ConfirmDialog
+        open={totpResetTarget !== null}
+        message={totpResetTarget ? t('totp.reset_confirm', { user: totpResetTarget }) : ''}
+        onConfirm={() => { if (totpResetTarget) void doTotpReset(totpResetTarget); setTotpResetTarget(null); }}
+        onCancel={() => setTotpResetTarget(null)}
       />
     </div>
   );

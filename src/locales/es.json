@@ -1084,7 +1084,9 @@
     "restarting": "Reiniciando…",
     "confirm_shutdown": "¿Apagar este dispositivo ahora?",
     "confirm_restart": "¿Reiniciar este dispositivo ahora?",
-    "server_admin": "Panel del Servidor"
+    "server_admin": "Panel del Servidor",
+    "totp_needed": "Esta cuenta pide un segundo paso. Escribe tu código.",
+    "totp_code": "Código de dos pasos o de recuperación"
   },
   "gamepad_config": {
     "title": "Controlador de Mando",
@@ -1330,5 +1332,42 @@
     "type_jog_arm": "Armado del jog",
     "type_safety_limits": "Límites de seguridad",
     "type_stop_all": "STOP global"
+  },
+  "totp": {
+    "title": "Inicio de sesión en dos pasos",
+    "intro": "Pide un código de una app de autenticación después de la contraseña. Está desactivado hasta que lo actives y solo protege tu propia cuenta.",
+    "loading": "Leyendo el estado de tu cuenta...",
+    "status_off": "Desactivado en tu cuenta.",
+    "status_on": "Activado en tu cuenta. Códigos de recuperación que quedan: {{count}}.",
+    "password_label": "Tu contraseña",
+    "start": "Empezar la configuración",
+    "scan": "Escanea este código QR con tu app de autenticación o escribe la clave a mano en ella.",
+    "qr_label": "Código QR con la clave del segundo paso",
+    "qr_too_long": "La dirección es demasiado larga para un código QR. Escribe la clave a mano.",
+    "key_label": "Clave",
+    "copy": "Copiar clave",
+    "copied": "Clave copiada.",
+    "code_label": "Código que muestra la app (6 dígitos)",
+    "confirm": "Confirmar y activar",
+    "cancel": "Cancelar",
+    "recovery_title": "Códigos de recuperación",
+    "recovery_hint": "Guárdalos en un sitio seguro. Cada uno sirve una sola vez si pierdes el móvil. No se vuelven a mostrar.",
+    "recovery_saved": "Ya los he guardado",
+    "turn_off_code": "Código actual o un código de recuperación sin usar",
+    "turn_off": "Desactivar",
+    "done_on": "El inicio de sesión en dos pasos está activado.",
+    "done_off": "El inicio de sesión en dos pasos está desactivado.",
+    "error_unsupported": "Este servidor no ofrece el inicio de sesión en dos pasos.",
+    "error_password": "La contraseña no es correcta.",
+    "error_code": "Ese código no es correcto.",
+    "error_wait": "Demasiados códigos erróneos. Espera {{seconds}} s e inténtalo de nuevo.",
+    "error_already": "Ya está activado. Desactívalo primero.",
+    "error_forbidden": "Esta cuenta no puede cambiar su inicio de sesión.",
+    "error_http": "El servidor rechazó la petición (HTTP {{status}}).",
+    "error_network": "No se pudo contactar con el servidor.",
+    "reset_button": "Quitar el inicio de sesión en dos pasos",
+    "reset_confirm": "¿Quitar el inicio de sesión en dos pasos de {{user}}? Podrá volver a activarlo después.",
+    "reset_done": "Inicio de sesión en dos pasos quitado a {{user}}.",
+    "reset_error": "No se pudo quitar el inicio de sesión en dos pasos."
   }
 }

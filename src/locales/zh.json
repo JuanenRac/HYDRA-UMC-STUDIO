@@ -1084,7 +1084,9 @@
     "restarting": "正在重启…",
     "confirm_shutdown": "现在关闭此设备吗？",
     "confirm_restart": "现在重启此设备吗？",
-    "server_admin": "服务器管理"
+    "server_admin": "服务器管理",
+    "totp_needed": "此账户需要第二步验证。请输入验证码。",
+    "totp_code": "两步验证码或恢复码"
   },
   "gamepad_config": {
     "title": "手柄控制器",
@@ -1330,5 +1332,42 @@
     "type_jog_arm": "点动解锁",
     "type_safety_limits": "安全限制",
     "type_stop_all": "全局 STOP"
+  },
+  "totp": {
+    "title": "两步登录",
+    "intro": "输入密码后再要求验证器应用的验证码。开启之前默认关闭,且只保护您自己的账户。",
+    "loading": "正在读取您账户的状态...",
+    "status_off": "您的账户未开启。",
+    "status_on": "您的账户已开启。剩余恢复码:{{count}}。",
+    "password_label": "您的密码",
+    "start": "开始设置",
+    "scan": "用验证器应用扫描此二维码,或在应用中手动输入密钥。",
+    "qr_label": "含第二步密钥的二维码",
+    "qr_too_long": "地址过长,无法生成二维码。请手动输入密钥。",
+    "key_label": "密钥",
+    "copy": "复制密钥",
+    "copied": "密钥已复制。",
+    "code_label": "应用显示的验证码(6 位数字)",
+    "confirm": "确认并开启",
+    "cancel": "取消",
+    "recovery_title": "恢复码",
+    "recovery_hint": "请妥善保管。丢失手机时,每个恢复码只能使用一次。之后不会再次显示。",
+    "recovery_saved": "我已保存",
+    "turn_off_code": "当前验证码或一个未使用的恢复码",
+    "turn_off": "关闭",
+    "done_on": "两步登录已开启。",
+    "done_off": "两步登录已关闭。",
+    "error_unsupported": "此服务器不提供两步登录。",
+    "error_password": "密码不正确。",
+    "error_code": "验证码不正确。",
+    "error_wait": "错误验证码过多。请等待 {{seconds}} 秒后重试。",
+    "error_already": "已经开启。请先关闭。",
+    "error_forbidden": "此账户无权更改其登录方式。",
+    "error_http": "服务器拒绝了请求(HTTP {{status}})。",
+    "error_network": "无法连接到服务器。",
+    "reset_button": "移除两步登录",
+    "reset_confirm": "移除 {{user}} 的两步登录?之后可以重新开启。",
+    "reset_done": "已移除 {{user}} 的两步登录。",
+    "reset_error": "无法移除两步登录。"
   }
 }

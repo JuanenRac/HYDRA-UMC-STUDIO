@@ -1084,7 +1084,9 @@
     "restarting": "Restarting…",
     "confirm_shutdown": "Shut down this device now?",
     "confirm_restart": "Restart this device now?",
-    "server_admin": "Server Admin"
+    "server_admin": "Server Admin",
+    "totp_needed": "This account asks for a second step. Enter your code.",
+    "totp_code": "Two-step code or recovery code"
   },
   "gamepad_config": {
     "title": "Gamepad Controller",
@@ -1330,5 +1332,42 @@
     "type_jog_arm": "Jog arming",
     "type_safety_limits": "Safety limits",
     "type_stop_all": "Global STOP"
+  },
+  "totp": {
+    "title": "Two-step sign-in",
+    "intro": "Ask for a code from an authenticator app after the password. It is off until you turn it on, and it only protects your own account.",
+    "loading": "Reading the state of your account...",
+    "status_off": "Off for your account.",
+    "status_on": "On for your account. Recovery codes left: {{count}}.",
+    "password_label": "Your password",
+    "start": "Start setup",
+    "scan": "Scan this QR code with your authenticator app, or type the key into it by hand.",
+    "qr_label": "QR code with the key of the second step",
+    "qr_too_long": "The address is too long for a QR code. Type the key by hand.",
+    "key_label": "Key",
+    "copy": "Copy key",
+    "copied": "Key copied.",
+    "code_label": "Code shown by the app (6 digits)",
+    "confirm": "Confirm and turn on",
+    "cancel": "Cancel",
+    "recovery_title": "Recovery codes",
+    "recovery_hint": "Keep them somewhere safe. Each one works once if you lose the phone. They are not shown again.",
+    "recovery_saved": "I have saved them",
+    "turn_off_code": "Current code or an unused recovery code",
+    "turn_off": "Turn off",
+    "done_on": "Two-step sign-in is on.",
+    "done_off": "Two-step sign-in is off.",
+    "error_unsupported": "This server does not offer two-step sign-in.",
+    "error_password": "The password is not right.",
+    "error_code": "That code is not right.",
+    "error_wait": "Too many wrong codes. Wait {{seconds}} s and try again.",
+    "error_already": "It is already on. Turn it off first.",
+    "error_forbidden": "This account may not change its sign-in.",
+    "error_http": "The server refused the request (HTTP {{status}}).",
+    "error_network": "Could not reach the server.",
+    "reset_button": "Remove two-step sign-in",
+    "reset_confirm": "Remove the two-step sign-in of {{user}}? They can turn it on again afterwards.",
+    "reset_done": "Two-step sign-in removed for {{user}}.",
+    "reset_error": "Could not remove the two-step sign-in."
   }
 }

@@ -791,9 +791,11 @@ interface HydraStoreContextType {
   /** `role === 'admin'` - gates the Ecosystem > Connected Apps / Server Logs / Server Admin panels the same way server.ts's own requireAdmin already gates their backing routes (GET /api/admin/*), so a logged-in non-admin session never sees a menu entry that would just 403. */
   isAdmin: boolean;
   /** [keepSignedIn] keeps the session across browser restarts (localStorage); by default it lasts as long as the tab (sessionStorage). */
-  login: (username: string, password: string, keepSignedIn?: boolean) => Promise<boolean>;
+  login: (username: string, password: string, keepSignedIn?: boolean, totp?: string) => Promise<boolean>;
   logout: () => void;
   loginError: string | null;
+  /** True once a sign-in was answered with 	otpRequired: the account has the second step on and the form must ask for its code. */
+  loginNeedsCode: boolean;
   /** Real, live per-page progress from a real POST /api/hardware/canota/flash cycle, pushed over WS as `{type: "canota_progress", payload}` (server.ts's own comment). Null until the first real message arrives; Flasher.tsx owns interpreting/clearing it, same as it already owns phase/percent for the mock transport. */
   canotaProgress: Record<string, unknown> | null;
   /** Real feedback from live testing: AdminLogs.tsx (Server Logs) is conditionally mounted (`{activeTab === 'adminLogs' && <AdminLogs />}` in Dashboard.tsx), so its own local state was wiped every time the operator navigated away and back - clicking Clear, then leaving and returning, showed everything again. Lifted here so it survives navigation for the life of this session. `anchor` is the newest log line at the moment Clear was pressed (or null if the log was empty then) - AdminLogs.tsx only displays what comes after it in each later poll. Null (the default) means "never cleared this session". */

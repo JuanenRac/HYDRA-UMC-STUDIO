@@ -1084,7 +1084,9 @@
     "restarting": "Riavvio…",
     "confirm_shutdown": "Spegnere questo dispositivo ora?",
     "confirm_restart": "Riavviare questo dispositivo ora?",
-    "server_admin": "Amministrazione Server"
+    "server_admin": "Amministrazione Server",
+    "totp_needed": "Questo account richiede un secondo passaggio. Inserisci il codice.",
+    "totp_code": "Codice a due passaggi o di recupero"
   },
   "gamepad_config": {
     "title": "Controller Gamepad",
@@ -1330,5 +1332,42 @@
     "type_jog_arm": "Armamento del jog",
     "type_safety_limits": "Limiti di sicurezza",
     "type_stop_all": "STOP globale"
+  },
+  "totp": {
+    "title": "Accesso in due passaggi",
+    "intro": "Chiede un codice di un'app di autenticazione dopo la password. È disattivato finché non lo attivi e protegge solo il tuo account.",
+    "loading": "Lettura dello stato del tuo account...",
+    "status_off": "Disattivato per il tuo account.",
+    "status_on": "Attivo per il tuo account. Codici di recupero rimasti: {{count}}.",
+    "password_label": "La tua password",
+    "start": "Avvia la configurazione",
+    "scan": "Scansiona questo codice QR con la tua app di autenticazione oppure digita la chiave a mano.",
+    "qr_label": "Codice QR con la chiave del secondo passaggio",
+    "qr_too_long": "L'indirizzo è troppo lungo per un codice QR. Digita la chiave a mano.",
+    "key_label": "Chiave",
+    "copy": "Copia la chiave",
+    "copied": "Chiave copiata.",
+    "code_label": "Codice mostrato dall'app (6 cifre)",
+    "confirm": "Conferma e attiva",
+    "cancel": "Annulla",
+    "recovery_title": "Codici di recupero",
+    "recovery_hint": "Conservali in un posto sicuro. Ognuno vale una sola volta se perdi il telefono. Non vengono mostrati di nuovo.",
+    "recovery_saved": "Li ho salvati",
+    "turn_off_code": "Codice attuale o un codice di recupero non usato",
+    "turn_off": "Disattiva",
+    "done_on": "L'accesso in due passaggi è attivo.",
+    "done_off": "L'accesso in due passaggi è disattivato.",
+    "error_unsupported": "Questo server non offre l'accesso in due passaggi.",
+    "error_password": "La password non è corretta.",
+    "error_code": "Quel codice non è corretto.",
+    "error_wait": "Troppi codici errati. Attendi {{seconds}} s e riprova.",
+    "error_already": "È già attivo. Disattivalo prima.",
+    "error_forbidden": "Questo account non può cambiare il proprio accesso.",
+    "error_http": "Il server ha rifiutato la richiesta (HTTP {{status}}).",
+    "error_network": "Impossibile raggiungere il server.",
+    "reset_button": "Rimuovi l'accesso in due passaggi",
+    "reset_confirm": "Rimuovere l'accesso in due passaggi di {{user}}? Potrà riattivarlo in seguito.",
+    "reset_done": "Accesso in due passaggi rimosso per {{user}}.",
+    "reset_error": "Impossibile rimuovere l'accesso in due passaggi."
   }
 }

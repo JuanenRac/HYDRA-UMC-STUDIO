@@ -1084,7 +1084,9 @@
     "restarting": "Redémarrage…",
     "confirm_shutdown": "Éteindre cet appareil maintenant ?",
     "confirm_restart": "Redémarrer cet appareil maintenant ?",
-    "server_admin": "Administration du Serveur"
+    "server_admin": "Administration du Serveur",
+    "totp_needed": "Ce compte demande une deuxième étape. Saisissez votre code.",
+    "totp_code": "Code en deux étapes ou code de récupération"
   },
   "gamepad_config": {
     "title": "Contrôleur de Manette",
@@ -1330,5 +1332,42 @@
     "type_jog_arm": "Armement du jog",
     "type_safety_limits": "Limites de sécurité",
     "type_stop_all": "STOP global"
+  },
+  "totp": {
+    "title": "Connexion en deux étapes",
+    "intro": "Demande un code d'une application d'authentification après le mot de passe. Elle est désactivée tant que vous ne l'activez pas et ne protège que votre propre compte.",
+    "loading": "Lecture de l'état de votre compte...",
+    "status_off": "Désactivée pour votre compte.",
+    "status_on": "Activée pour votre compte. Codes de récupération restants : {{count}}.",
+    "password_label": "Votre mot de passe",
+    "start": "Commencer la configuration",
+    "scan": "Scannez ce code QR avec votre application d'authentification ou saisissez-y la clé à la main.",
+    "qr_label": "Code QR avec la clé de la deuxième étape",
+    "qr_too_long": "L'adresse est trop longue pour un code QR. Saisissez la clé à la main.",
+    "key_label": "Clé",
+    "copy": "Copier la clé",
+    "copied": "Clé copiée.",
+    "code_label": "Code affiché par l'application (6 chiffres)",
+    "confirm": "Confirmer et activer",
+    "cancel": "Annuler",
+    "recovery_title": "Codes de récupération",
+    "recovery_hint": "Conservez-les en lieu sûr. Chacun ne sert qu'une fois si vous perdez le téléphone. Ils ne sont plus affichés ensuite.",
+    "recovery_saved": "Je les ai enregistrés",
+    "turn_off_code": "Code actuel ou code de récupération non utilisé",
+    "turn_off": "Désactiver",
+    "done_on": "La connexion en deux étapes est activée.",
+    "done_off": "La connexion en deux étapes est désactivée.",
+    "error_unsupported": "Ce serveur ne propose pas la connexion en deux étapes.",
+    "error_password": "Le mot de passe n'est pas correct.",
+    "error_code": "Ce code n'est pas correct.",
+    "error_wait": "Trop de codes erronés. Attendez {{seconds}} s puis réessayez.",
+    "error_already": "Elle est déjà activée. Désactivez-la d'abord.",
+    "error_forbidden": "Ce compte ne peut pas modifier sa connexion.",
+    "error_http": "Le serveur a refusé la requête (HTTP {{status}}).",
+    "error_network": "Impossible de joindre le serveur.",
+    "reset_button": "Retirer la connexion en deux étapes",
+    "reset_confirm": "Retirer la connexion en deux étapes de {{user}} ? Elle pourra la réactiver ensuite.",
+    "reset_done": "Connexion en deux étapes retirée pour {{user}}.",
+    "reset_error": "Impossible de retirer la connexion en deux étapes."
   }
 }

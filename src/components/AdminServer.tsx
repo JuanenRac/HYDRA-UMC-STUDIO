@@ -25,6 +25,7 @@ import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
+import { TotpPanel } from './TotpPanel';
 import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
 
 interface HydraInfo {
@@ -274,6 +275,10 @@ export function AdminServer() {
         <button onClick={() => setConfirmRestart(true)} className="self-start flex items-center gap-1.5 px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
           <Power size={14} /> {t('ecosystem.admin_server_restart')}
         </button>
+      </div>
+
+      <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+        <TotpPanel />
       </div>
 
       {security && (
