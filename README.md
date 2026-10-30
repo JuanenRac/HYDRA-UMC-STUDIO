@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-637%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-659%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.0.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Version | `0.8.0.2` |
 | Maturity | Functional |
-| Tests | 637 (`npm test`) |
+| Tests | 659 (`npm test`) |
 | Stack | React 19 / Vite / Three.js / Tailwind CSS |
 | Target | The Raspberry Pi CM5 of a HYDRA-UMC cell |
 | On real hardware | Not yet: no run on real hardware is recorded for this version |
@@ -53,7 +53,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟡 | Works for its main purpose; the honesty check above lists what is still missing |
-| Tests | 🟢 | 637 automated tests, run on every change |
+| Tests | 🟢 | 659 automated tests, run on every change |
 | Real hardware | 🔴 | Not yet: no run on real hardware is recorded for this version |
 | Documentation | 🟢 | README in eight languages, checked against the manifest on every change |
 
@@ -188,6 +188,8 @@ Every backend seeds one account on its own first-ever start - username `admin`, 
 
 Each of the 5 remote clients (SUITE, Android, iOS, Watch, DSI) self-identifies via an `X-Hydra-Client` request header, so **Config > Remote Access** can allow or block each one independently instead of one combined switch for all five.
 
+**Server Admin** has a **Two-step sign-in** card for the account you are logged in with (off until its owner turns it on): the password, a QR code of the otpauth address (drawn in the app, no extra package) and the key to type by hand, the first code from the authenticator app, and ten one-time recovery codes shown once. The sign-in form then asks for the code of an account that has it on, and **Config > Users** lets an administrator remove the second step of an account that lost both its phone and its recovery codes.
+
 ### Persistent State
 
 HYDRA-UMC STUDIO itself is a pure client - it holds no state of its own beyond what's in memory for the current session. All persistence (`settings.json`, `users.json`, saved trajectories under `WORKS/`, submitted models) lives on the separate **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** backend this app talks to over the network (see that project's own `data/` and README for the full picture) - state survives a page reload or this app's own redeploy, since neither of those touches the backend process at all. `settings.json` itself is deliberately excluded from that backend's static file serving (it holds controller IPs, CAN-OTA configuration, and full per-robot state), even though its `WORKS/` folder is served normally.
@@ -258,7 +260,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Testing
 
-637 automated tests run with `npm test`. They need no hardware and nothing outside this machine.
+659 automated tests run with `npm test`. They need no hardware and nothing outside this machine.
 
 The CI runs `HYDRA_UMC_CI=1 python tools/ci_validate.py`, which checks the manifest, the documents, the eight READMEs and the pictures.
 
@@ -284,7 +286,7 @@ Runs Vite's own dev server (plain `vite`, port `5173`) with live-reloading. `vit
 ### Automated Tests
 
 ```bash
-npm test          # vitest run - 637 tests
+npm test          # vitest run - 659 tests
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

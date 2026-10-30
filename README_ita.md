@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-637%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-659%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.0.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Versione | `0.8.0.2` |
 | Maturità | Funzionale |
-| Test | 637 (`npm test`) |
+| Test | 659 (`npm test`) |
 | Tecnologia | React 19 / Vite / Three.js / Tailwind CSS |
 | Destinazione | Il Raspberry Pi CM5 di una cella HYDRA-UMC |
 | Su hardware reale | Non ancora: per questa versione non risulta alcuna esecuzione su hardware reale |
@@ -53,7 +53,7 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 | Area | Stato | Cosa significa qui |
 |---|---|---|
 | Software | 🟡 | Funziona per il suo scopo principale; la verifica di onestà qui sopra elenca ciò che manca ancora |
-| Test | 🟢 | 637 test automatici, eseguiti a ogni modifica |
+| Test | 🟢 | 659 test automatici, eseguiti a ogni modifica |
 | Hardware reale | 🔴 | Non ancora: per questa versione non risulta alcuna esecuzione su hardware reale |
 | Documentazione | 🟢 | README in otto lingue, verificato rispetto al manifesto a ogni modifica |
 
@@ -188,6 +188,8 @@ Ogni server crea un account al proprio primo avvio in assoluto - utente `admin`,
 
 Ciascuno dei 5 client remoti (SUITE, Android, iOS, Watch, DSI) si auto-identifica tramite un header di richiesta `X-Hydra-Client`, così **Config > Remote Access** può consentire o bloccare ciascuno in modo indipendente invece di un unico interruttore combinato per tutti e cinque.
 
+**Server Admin** ha una scheda **Accesso in due passaggi** per l'account con cui sei entrato (disattivato finché il suo proprietario non lo attiva): la password, un codice QR dell'indirizzo otpauth (disegnato nell'app, senza pacchetti aggiuntivi) e la chiave da digitare a mano, il primo codice dell'app di autenticazione e dieci codici di recupero monouso mostrati una sola volta. Il modulo di accesso chiede poi il codice di un account che lo ha attivato, e **Config > Users** permette a un amministratore di rimuovere il secondo passaggio di un account che ha perso telefono e codici di recupero.
+
 ### Stato Persistente
 
 HYDRA-UMC STUDIO in sé è un client puro - non mantiene alcuno stato proprio oltre a ciò che è in memoria per la sessione corrente. Tutta la persistenza (`settings.json`, `users.json`, traiettorie salvate sotto `WORKS/`, modelli inviati) vive nel backend separato **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** con cui questa app comunica in rete (vedi il proprio `data/` e README di quel progetto per il quadro completo) - lo stato sopravvive a un ricaricamento della pagina o a un nuovo deployment di questa app, poiché nessuno dei due tocca il processo del backend in alcun modo. `settings.json` stesso è deliberatamente escluso dal servizio di file statici di quel backend (contiene IP dei controller, configurazione CAN-OTA, e lo stato completo per robot), sebbene la sua cartella `WORKS/` venga servita normalmente.
@@ -258,7 +260,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Test
 
-637 test automatici si eseguono con `npm test`. Non richiedono hardware né nulla al di fuori di questa macchina.
+659 test automatici si eseguono con `npm test`. Non richiedono hardware né nulla al di fuori di questa macchina.
 
 La CI esegue `HYDRA_UMC_CI=1 python tools/ci_validate.py`, che controlla il manifesto, i documenti, gli otto README e le immagini.
 
@@ -284,7 +286,7 @@ Esegue il proprio dev server di Vite (`vite` semplice, porta `5173`) con ricaric
 ### Test Automatizzati
 
 ```bash
-npm test          # vitest run - 637 test reali su src/examples/
+npm test          # vitest run - 659 test reali su src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

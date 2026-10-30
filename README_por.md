@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-637%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-659%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.0.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Versão | `0.8.0.2` |
 | Maturidade | Funcional |
-| Testes | 637 (`npm test`) |
+| Testes | 659 (`npm test`) |
 | Tecnologia | React 19 / Vite / Three.js / Tailwind CSS |
 | Destino | O Raspberry Pi CM5 de uma célula HYDRA-UMC |
 | Em hardware real | Ainda não: não há registo de execução em hardware real para esta versão |
@@ -53,7 +53,7 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 | Área | Estado | O que significa aqui |
 |---|---|---|
 | Software | 🟡 | Funciona para o seu propósito principal; a verificação de honestidade acima lista o que ainda falta |
-| Testes | 🟢 | 637 testes automáticos, executados a cada alteração |
+| Testes | 🟢 | 659 testes automáticos, executados a cada alteração |
 | Hardware real | 🔴 | Ainda não: não há registo de execução em hardware real para esta versão |
 | Documentação | 🟢 | README em oito idiomas, verificado contra o manifesto a cada alteração |
 
@@ -188,6 +188,8 @@ Cada back-end cria uma conta no seu primeiríssimo arranque - utilizador `admin`
 
 Cada um dos 5 clientes remotos (SUITE, Android, iOS, Watch, DSI) identifica-se através do cabeçalho de pedido `X-Hydra-Client`, pelo que **Config > Acesso remoto** pode permitir ou bloquear cada um de forma independente em vez de um único interruptor combinado para os cinco.
 
+O **Server Admin** tem um cartão de **início de sessão em dois passos** para a conta com que entrou (desativado até o seu dono o ativar): a palavra-passe, um código QR do endereço otpauth (desenhado na aplicação, sem pacotes adicionais) e a chave para escrever à mão, o primeiro código da aplicação de autenticação e dez códigos de recuperação de uso único mostrados uma vez. O formulário de início de sessão pede então o código de uma conta que o tenha ativado, e em **Config > Users** um administrador pode remover o segundo passo de uma conta que perdeu o telemóvel e os códigos de recuperação.
+
 ### Estado persistente
 
 O próprio HYDRA-UMC STUDIO é um cliente puro - não guarda estado próprio para além do que está em memória na sessão atual. Toda a persistência (`settings.json`, `users.json`, trajetórias guardadas em `WORKS/`, modelos submetidos) vive no back-end separado **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** com o qual esta app comunica pela rede (veja o `data/` e o README desse projeto para o quadro completo) - o estado sobrevive a uma recarga da página ou à reimplantação desta app, já que nenhuma delas toca no processo do back-end. O próprio `settings.json` fica deliberadamente excluído do serviço de ficheiros estáticos desse back-end (contém IPs de controladores, a configuração CAN-OTA e o estado completo por robô), embora a sua pasta `WORKS/` seja servida normalmente.
@@ -258,7 +260,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Testes
 
-637 testes automáticos correm com `npm test`. Não precisam de hardware nem de nada fora desta máquina.
+659 testes automáticos correm com `npm test`. Não precisam de hardware nem de nada fora desta máquina.
 
 A CI executa `HYDRA_UMC_CI=1 python tools/ci_validate.py`, que verifica o manifesto, os documentos, os oito README e as imagens.
 

@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-637%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-659%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.0.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | 版本 | `0.8.0.2` |
 | 成熟度 | 可用 |
-| 测试 | 637 (`npm test`) |
+| 测试 | 659 (`npm test`) |
 | 技术栈 | React 19 / Vite / Three.js / Tailwind CSS |
 | 目标 | HYDRA-UMC 工作单元的 Raspberry Pi CM5 |
 | 真实硬件 | 尚未：此版本没有在真实硬件上运行的记录 |
@@ -53,7 +53,7 @@ GPL-3.0-or-later - see LICENSE
 | 领域 | 状态 | 在这里的含义 |
 |---|---|---|
 | 软件 | 🟡 | 主要用途可用；上面的诚实性检查列出了仍然缺少的内容 |
-| 测试 | 🟢 | 637 项自动测试，每次变更都会运行 |
+| 测试 | 🟢 | 659 项自动测试，每次变更都会运行 |
 | 真实硬件 | 🔴 | 尚未：此版本没有在真实硬件上运行的记录 |
 | 文档 | 🟢 | 八种语言的 README，每次变更都会与清单核对 |
 
@@ -188,6 +188,8 @@ JuanenPnP、JuanenCNC 和 JuanenLaser 使用独立的 STL 副本，LumenPnP 保�
 
 5 个远程客户端（SUITE、Android、iOS、Watch、DSI）中的每一个都通过 `X-Hydra-Client` 请求头自我标识，因此 **Config > Remote Access** 可以独立允许或阻止每一个,而不是所有五者共用一个开关。
 
+**Server Admin** 有一张**两步登录**卡片，用于您当前登录的账户(在其所有者开启之前是关闭的):密码、otpauth 地址的二维码(在应用内绘制，无需额外软件包)和可手动输入的密钥、验证器应用的第一个验证码，以及只显示一次的十个一次性恢复码。已开启的账户在登录表单中会被要求输入验证码，管理员可以在 **Config > Users** 中为同时丢失手机和恢复码的账户移除第二步。
+
 ### 持久化状态
 
 HYDRA-UMC STUDIO 本身是一个纯客户端——除了当前会话在内存中的内容外，它不持有任何自身的状态。所有持久化数据（`settings.json`、`users.json`、`WORKS/` 下保存的轨迹、已提交的模型）都存放在本应用通过网络通信的独立后端 **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** 上（完整情况参见该项目自身的 `data/` 目录和 README）——状态在页面重新加载或本应用自身重新部署后依然保留,因为这两者都完全不会触碰后端进程。`settings.json` 本身被刻意排除在该后端的静态文件服务之外（它保存控制器 IP、CAN-OTA 配置和每个机器人的完整状态），即便其 `WORKS/` 文件夹是正常提供服务的。
@@ -258,7 +260,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 测试
 
-运行 `npm test` 会执行 637 个自动测试。 不需要硬件，也不需要这台机器以外的任何东西。
+运行 `npm test` 会执行 659 个自动测试。 不需要硬件，也不需要这台机器以外的任何东西。
 
 CI 运行 `HYDRA_UMC_CI=1 python tools/ci_validate.py`，检查清单、文档、八个 README 和图片。
 

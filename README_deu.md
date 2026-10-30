@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-637%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-659%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.0.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Version | `0.8.0.2` |
 | Reifegrad | Funktionsfähig |
-| Tests | 637 (`npm test`) |
+| Tests | 659 (`npm test`) |
 | Technik | React 19 / Vite / Three.js / Tailwind CSS |
 | Ziel | Der Raspberry Pi CM5 einer HYDRA-UMC-Zelle |
 | Auf echter Hardware | Noch nicht: für diese Version ist kein Lauf auf echter Hardware vermerkt |
@@ -53,7 +53,7 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 | Bereich | Stand | Was das hier bedeutet |
 |---|---|---|
 | Software | 🟡 | Funktioniert für seinen Hauptzweck; die Ehrlichkeitsprüfung oben nennt, was noch fehlt |
-| Tests | 🟢 | 637 automatische Tests, bei jeder Änderung ausgeführt |
+| Tests | 🟢 | 659 automatische Tests, bei jeder Änderung ausgeführt |
 | Echte Hardware | 🔴 | Noch nicht: für diese Version ist kein Lauf auf echter Hardware vermerkt |
 | Dokumentation | 🟢 | README in acht Sprachen, bei jeder Änderung gegen das Manifest geprüft |
 
@@ -188,6 +188,8 @@ Jeder Server legt bei seinem eigenen allerersten Start ein Konto an - Benutzerna
 
 Jeder der 5 Remote-Clients (SUITE, Android, iOS, Watch, DSI) identifiziert sich selbst über einen `X-Hydra-Client`-Anfrage-Header, sodass **Config > Remote Access** jeden unabhängig erlauben oder blockieren kann, statt eines einzigen kombinierten Schalters für alle fünf.
 
+**Server Admin** hat eine Karte **Anmeldung in zwei Schritten** für das Konto, mit dem Sie angemeldet sind (aus, bis sein Besitzer sie einschaltet): das Passwort, ein QR-Code der otpauth-Adresse (in der App gezeichnet, ohne zusätzliches Paket) und der Schlüssel zum Abtippen, der erste Code der Authenticator-App und zehn einmalige Wiederherstellungscodes, die einmal angezeigt werden. Das Anmeldeformular fragt dann den Code eines Kontos ab, das ihn eingeschaltet hat, und unter **Config > Users** kann ein Administrator den zweiten Schritt eines Kontos entfernen, das Telefon und Wiederherstellungscodes verloren hat.
+
 ### Persistenter Zustand
 
 HYDRA-UMC STUDIO selbst ist ein reiner Client - er hält keinen eigenen Zustand über das hinaus, was für die aktuelle Sitzung im Speicher liegt. Die gesamte Persistenz (`settings.json`, `users.json`, gespeicherte Trajektorien unter `WORKS/`, eingereichte Modelle) lebt auf dem separaten **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)**-Backend, mit dem diese App über das Netzwerk kommuniziert (siehe das eigene `data/` und README dieses Projekts für das vollständige Bild) - der Zustand überlebt ein Neuladen der Seite oder ein erneutes Deployment dieser App, da keines von beiden den Backend-Prozess überhaupt berührt. `settings.json` selbst ist bewusst von der statischen Dateiauslieferung dieses Backends ausgeschlossen (es enthält Controller-IPs, CAN-OTA-Konfiguration, und den vollständigen Zustand pro Roboter), obwohl dessen `WORKS/`-Ordner normal ausgeliefert wird.
@@ -258,7 +260,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Tests
 
-637 automatische Tests laufen mit `npm test`. Sie brauchen weder Hardware noch etwas außerhalb dieses Rechners.
+659 automatische Tests laufen mit `npm test`. Sie brauchen weder Hardware noch etwas außerhalb dieses Rechners.
 
 Die CI führt `HYDRA_UMC_CI=1 python tools/ci_validate.py` aus; das prüft das Manifest, die Dokumente, die acht READMEs und die Bilder.
 
@@ -284,7 +286,7 @@ Führt den eigenen Dev-Server von Vite aus (einfaches `vite`, Port `5173`) mit L
 ### Automatisierte Tests
 
 ```bash
-npm test          # vitest run - 637 echte Tests über src/examples/
+npm test          # vitest run - 659 echte Tests über src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-637%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-659%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.0.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | バージョン | `0.8.0.2` |
 | 成熟度 | 機能する |
-| テスト | 637 (`npm test`) |
+| テスト | 659 (`npm test`) |
 | 技術 | React 19 / Vite / Three.js / Tailwind CSS |
 | 対象 | HYDRA-UMC セルの Raspberry Pi CM5 |
 | 実機での確認 | まだです：このバージョンについて実機での動作記録はありません |
@@ -53,7 +53,7 @@ GPL-3.0-or-later - see LICENSE
 | 領域 | 状態 | ここでの意味 |
 |---|---|---|
 | ソフトウェア | 🟡 | 主な目的では動作します。足りない点は上の正直さの確認に書かれています |
-| テスト | 🟢 | 自動テスト 637 件。変更のたびに実行されます |
+| テスト | 🟢 | 自動テスト 659 件。変更のたびに実行されます |
 | 実機 | 🔴 | まだです：このバージョンについて実機での動作記録はありません |
 | ドキュメント | 🟢 | 8 言語の README。変更のたびにマニフェストと照合されます |
 
@@ -188,6 +188,8 @@ USB および Bluetooth コントローラーの統合、ボタン／軸ごと�
 
 5 つのリモートクライアント（SUITE、Android、iOS、Watch、DSI）はそれぞれ `X-Hydra-Client` リクエストヘッダーで自己識別するため、**Config > Remote Access** は、5 つすべてに対する 1 つの結合スイッチではなく、それぞれを独立して許可またはブロックできます。
 
+**Server Admin** には、ログイン中のアカウント用の**2段階サインイン**カードがあります(所有者が有効にするまでオフ)。パスワード、otpauth アドレスの QR コード(アプリ内で描画し、追加パッケージは不要)と手入力用のキー、認証アプリの最初のコード、そして一度だけ表示される 10 個の使い切りリカバリーコードを扱います。有効なアカウントではサインイン画面がそのコードを求め、**Config > Users** では、電話とリカバリーコードの両方を失ったアカウントの 2 段階目を管理者が解除できます。
+
 ### 永続化された状態
 
 HYDRA-UMC STUDIO 自体は純粋なクライアントです——現在のセッションのためにメモリ上にあるもの以外、自身の状態は一切保持しません。すべての永続化データ（`settings.json`、`users.json`、`WORKS/` 下に保存された軌道、提出されたモデル）は、本アプリがネットワーク越しに通信する別個のバックエンド **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** 上に存在します（全体像は同プロジェクト自身の `data/` と README を参照）——どちらもバックエンドプロセスに一切触れないため、状態はページの再読み込みや本アプリ自身の再デプロイを経ても失われません。`settings.json` 自体は、そのバックエンドの静的ファイル配信から意図的に除外されています（コントローラーの IP、CAN-OTA 設定、ロボットごとの完全な状態を保持しているため）が、その `WORKS/` フォルダは通常どおり配信されます。
@@ -258,7 +260,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 テスト
 
-`npm test` で自動テスト 637 件を実行します。 ハードウェアも、このマシンの外にあるものも必要ありません。
+`npm test` で自動テスト 659 件を実行します。 ハードウェアも、このマシンの外にあるものも必要ありません。
 
 CI は `HYDRA_UMC_CI=1 python tools/ci_validate.py` を実行し、マニフェスト、文書、8 つの README、図を検査します。
 

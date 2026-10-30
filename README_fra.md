@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-637%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-659%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.0.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Version | `0.8.0.2` |
 | Maturité | Fonctionnel |
-| Tests | 637 (`npm test`) |
+| Tests | 659 (`npm test`) |
 | Technologie | React 19 / Vite / Three.js / Tailwind CSS |
 | Cible | Le Raspberry Pi CM5 d'une cellule HYDRA-UMC |
 | Sur matériel réel | Pas encore : aucune exécution sur du matériel réel n'est consignée pour cette version |
@@ -53,7 +53,7 @@ Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'
 | Domaine | État | Ce que cela veut dire ici |
 |---|---|---|
 | Logiciel | 🟡 | Fonctionne pour son usage principal ; la vérification d'honnêteté ci-dessus liste ce qui manque encore |
-| Tests | 🟢 | 637 tests automatiques, exécutés à chaque modification |
+| Tests | 🟢 | 659 tests automatiques, exécutés à chaque modification |
 | Matériel réel | 🔴 | Pas encore : aucune exécution sur du matériel réel n'est consignée pour cette version |
 | Documentation | 🟢 | README en huit langues, vérifié par rapport au manifeste à chaque modification |
 
@@ -188,6 +188,8 @@ Chaque serveur crée un compte lors de son tout premier démarrage - identifiant
 
 Chacun des 5 clients distants (SUITE, Android, iOS, Watch, DSI) s'auto-identifie via un en-tête de requête `X-Hydra-Client`, de sorte que **Config > Remote Access** peut autoriser ou bloquer chacun indépendamment plutôt qu'un seul interrupteur combiné pour les cinq.
 
+**Server Admin** a une carte **Connexion en deux étapes** pour le compte avec lequel vous êtes connecté (désactivée tant que son propriétaire ne l'active pas) : le mot de passe, un code QR de l'adresse otpauth (dessiné dans l'application, sans paquet supplémentaire) et la clé à saisir à la main, le premier code de l'application d'authentification et dix codes de récupération à usage unique montrés une fois. Le formulaire de connexion demande alors le code d'un compte qui l'a activée, et **Config > Users** permet à un administrateur de retirer la deuxième étape d'un compte qui a perdu son téléphone et ses codes de récupération.
+
 ### État Persistant
 
 HYDRA-UMC STUDIO lui-même est un client pur - il ne conserve aucun état propre au-delà de ce qui est en mémoire pour la session en cours. Toute la persistance (`settings.json`, `users.json`, trajectoires enregistrées sous `WORKS/`, modèles envoyés) vit sur le backend séparé **[HYDRA-UMC SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** avec lequel cette application communique sur le réseau (voir le propre `data/` et README de ce projet pour la vue d'ensemble complète) - l'état survit à un rechargement de page ou à un redéploiement de cette application, puisqu'aucun des deux ne touche le processus backend. `settings.json` lui-même est délibérément exclu du service de fichiers statiques de ce backend (il contient les IP des contrôleurs, la configuration CAN-OTA, et l'état complet par robot), même si le reste de son dossier `WORKS/` est servi normalement.
@@ -258,7 +260,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Tests
 
-637 tests automatiques s'exécutent avec `npm test`. Ils n'ont besoin ni de matériel ni de rien en dehors de cette machine.
+659 tests automatiques s'exécutent avec `npm test`. Ils n'ont besoin ni de matériel ni de rien en dehors de cette machine.
 
 La CI exécute `HYDRA_UMC_CI=1 python tools/ci_validate.py`, qui vérifie le manifeste, les documents, les huit README et les images.
 
@@ -284,7 +286,7 @@ Exécute le propre serveur de développement de Vite (`vite` simple, port `5173`
 ### Tests Automatisés
 
 ```bash
-npm test          # vitest run - 637 vrais tests sur src/examples/
+npm test          # vitest run - 659 vrais tests sur src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 
