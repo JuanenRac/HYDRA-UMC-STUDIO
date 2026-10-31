@@ -210,6 +210,12 @@ HYDRA-UMC STUDIO 本身是一个纯客户端——除了当前会话在内存中
 
 `GET /api/system/metrics` 驱动概览仪表盘页脚：CPU 负载和内存使用始终是真实的（Node 自身的 `os` 模块）；在真实的 Raspberry Pi 上运行时,温度读取真实的 `vcgencmd measure_temp` 输出,否则回退为明确标记的模拟值（响应中的 `temp_is_real`）；Wi-Fi/以太网/蓝牙状态读取自 `/sys/class/net`/`/sys/class/bluetooth`（仅限 Linux,在任何其他主机上为 `null`/未知,而非猜测值）。
 
+### 谁在连接，以及 Server Admin 的访问选项
+
+- **Connected Apps 中的连接历史：** 在实时连接列表下方，用简单视图显示谁登录过服务器：服务器见过的客户端（类型、用户、版本、本地或外部、当前打开的会话、成功或被拒绝的登录），以及最近的登录、被拒绝的登录、登出和已结束的会话，数据来自 `GET /api/connections/clients` 和 `GET /api/connections/events`。服务器太旧而无法提供时，会明确说明。两个列表都不含密码或令牌；只有在告知服务器保存地址时才会显示地址。
+- **Server Admin 中的七个访问开关**（仅管理员）：`health.open`（无需登录的健康检查路由）、`safety.publishGlobalStop`（在 MQTT 桥上通告全局停止）、`connections.recordAddress`（在历史中保留每个客户端的地址）、`camera.open`（无需票据的摄像头画面）、`websocket.allowQueryToken`（WebSocket 地址中的令牌）、`logging.redactSecrets`（遮蔽日志中的机密）和 `voice.requireSignature`（对已确认的语音请求要求经过验证的签名）。全部以保守值开始，每个开关都显示其值的来源（默认、从界面保存，或由服务器环境固定并因此被锁定），只发送发生变化的部分，凡是降低保护的更改都会先询问，服务器不提供的选项不会显示。参见 HYDRA-UMC-SERVER 的 `docs/REMOTE_API.md`。
+- **网格来自单一软件包：** `meshes.pack.json` 固定软件包以及与 HYDRA-UMC-SUITE 共享的每个网格的 SHA-256，`npm run meshes -- status | check | ensure | prepare` 会使 `public/models/` 达到该状态。来源为 `local`（默认：不改变任何内容，也不下载任何内容）、`auto` 或 `download`，在 `mesh_pack.config.json` 中或用 `HYDRA_UMC_MESH_SOURCE` 选择；不匹配的软件包不会安装任何东西，且只接受 `https` 地址。参见 [`docs/MESH_PACKAGE.md`](docs/MESH_PACKAGE.md)。
+
 ## 🔒 安全与防护
 
 | 威胁 | 防御 | 位置 |
@@ -498,6 +504,11 @@ HYDRA-UMC-STUDIO/
 
 更多阅读：
 
+* **[docs/MESH_PACKAGE.md](docs/MESH_PACKAGE.md)** — 以固定校验和的单一软件包提供的 3D 网格：来源 `local`、`auto` 和 `download`，以及检查和获取它们的命令。
+* **[docs/MACHINE_ASSETS.md](docs/MACHINE_ASSETS.md)** — 独立的机器模型：如何选择模型以及它归谁所有。
+* **[docs/RACK_MODELS.md](docs/RACK_MODELS.md)** — 可配置的输入和输出料架：配置与兼容性。
+* **[docs/HEATED_BED_MODELS.md](docs/HEATED_BED_MODELS.md)** — 热床模型：四个预设的选择和尺寸。
+* **[docs/VACUUM_TABLE_MODELS.md](docs/VACUUM_TABLE_MODELS.md)** — 真空台模型：如何为机器人选择。
 * [生态系统的安全基线](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/SECURITY_BASELINE.md)
 * [生态系统的威胁模型](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/THREAT_MODEL.md)
 * [本仓库的更新日志](CHANGELOG.md)

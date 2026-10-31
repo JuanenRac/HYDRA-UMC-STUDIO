@@ -210,6 +210,12 @@ The same `GET`/`POST /api/settings` contract, plus a discovery endpoint (`GET /a
 
 `GET /api/system/metrics` powers the Overview dashboard footer: CPU load and memory usage are always real (Node's own `os` module); temperature reads real `vcgencmd measure_temp` output when running on an actual Raspberry Pi and falls back to a clearly-flagged mock otherwise (`temp_is_real` in the response); Wi-Fi/Ethernet/Bluetooth status are read from `/sys/class/net`/`/sys/class/bluetooth` (Linux-only, `null`/unknown on any other host rather than a guessed value).
 
+### Who Connects and Server Admin Access Options
+
+- **Connection history in Connected Apps:** under the list of live connections, a simple view of who has signed in to the server: the clients it has seen (kind, user, version, local or from outside, the sessions open now, the sign-ins that worked or were refused) and the latest sign-ins, refused sign-ins, sign-outs and ended sessions, read from `GET /api/connections/clients` and `GET /api/connections/events`. It says so plainly when the server is too old to offer them. No password or token is in either list; an address appears only if the server was told to keep it.
+- **Seven access switches in Server Admin** (administrators only): `health.open` (the health route without a sign-in), `safety.publishGlobalStop` (announce the global stop on the MQTT bridge), `connections.recordAddress` (keep the address of each client in the history), `camera.open` (camera pictures without a ticket), `websocket.allowQueryToken` (a token in the WebSocket address), `logging.redactSecrets` (blanking of secrets in the log) and `voice.requireSignature` (a verified signature on a confirmed spoken request). All start on the conservative value, each shows where its value comes from (default, saved from a screen, or fixed by the environment of the server, which locks it), only what changed is sent, every change that lowers the protection asks first, and a server that does not offer an option does not show it. See `docs/REMOTE_API.md` of HYDRA-UMC-SERVER.
+- **Meshes from one package:** `meshes.pack.json` pins the SHA-256 of a package and of every mesh shared with HYDRA-UMC-SUITE, and `npm run meshes -- status | check | ensure | prepare` brings `public/models/` to that state. The source is `local` (the default: nothing changes and nothing is downloaded), `auto` or `download`, chosen in `mesh_pack.config.json` or with `HYDRA_UMC_MESH_SOURCE`; a package that does not match installs nothing and only `https` addresses are accepted. See [`docs/MESH_PACKAGE.md`](docs/MESH_PACKAGE.md).
+
 ## 🔒 Security & Safety
 
 | Threat | Defence | Where |
@@ -497,6 +503,11 @@ This project is part of the HYDRA-UMC robotics ecosystem by the same author (Jua
 
 Where to read more:
 
+* **[docs/MESH_PACKAGE.md](docs/MESH_PACKAGE.md)** — the 3D meshes as one package with a pinned checksum: sources `local`, `auto` and `download`, and the commands that check and fetch them.
+* **[docs/MACHINE_ASSETS.md](docs/MACHINE_ASSETS.md)** — independent machine models: how a model is selected and who owns it.
+* **[docs/RACK_MODELS.md](docs/RACK_MODELS.md)** — configurable input and output racks: configuration and compatibility.
+* **[docs/HEATED_BED_MODELS.md](docs/HEATED_BED_MODELS.md)** — heated bed models: selection and dimensions of the four presets.
+* **[docs/VACUUM_TABLE_MODELS.md](docs/VACUUM_TABLE_MODELS.md)** — vacuum table models: how to select one for a robot.
 * [Security baseline of the ecosystem](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/SECURITY_BASELINE.md)
 * [Threat model of the ecosystem](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/THREAT_MODEL.md)
 * [Changelog of this repository](CHANGELOG.md)

@@ -210,6 +210,12 @@ Lo stesso contratto `GET`/`POST /api/settings`, più un endpoint di discovery (`
 
 `GET /api/system/metrics` alimenta il footer del dashboard Overview: il carico CPU e l'uso di memoria sono sempre reali (il modulo `os` proprio di Node); la temperatura legge l'output reale di `vcgencmd measure_temp` quando in esecuzione su una vera Raspberry Pi e ricade su un valore simulato chiaramente contrassegnato altrimenti (`temp_is_real` nella risposta); lo stato di Wi-Fi/Ethernet/Bluetooth viene letto da `/sys/class/net`/`/sys/class/bluetooth` (solo Linux, `null`/sconosciuto su qualsiasi altro host invece di un valore indovinato).
 
+### Chi si connette e opzioni di accesso in Server Admin
+
+- **Cronologia delle connessioni in Connected Apps:** sotto l'elenco delle connessioni attive, una vista semplice di chi ha effettuato l'accesso al server: i client visti (tipo, utente, versione, locale o dall'esterno, sessioni aperte ora, accessi riusciti o rifiutati) e gli ultimi accessi, accessi rifiutati, uscite e sessioni terminate, letti da `GET /api/connections/clients` e `GET /api/connections/events`. Lo dice chiaramente quando il server è troppo vecchio per offrirli. Nessun elenco contiene password o token; un indirizzo compare solo se al server è stato detto di conservarlo.
+- **Sette interruttori di accesso in Server Admin** (solo amministratori): `health.open` (la route di salute senza accesso), `safety.publishGlobalStop` (annunciare l'arresto globale sul ponte MQTT), `connections.recordAddress` (conservare l'indirizzo di ogni client nella cronologia), `camera.open` (immagini della telecamera senza ticket), `websocket.allowQueryToken` (un token nell'indirizzo del WebSocket), `logging.redactSecrets` (oscurare i segreti nel registro) e `voice.requireSignature` (una firma verificata su una richiesta vocale confermata). Tutti partono dal valore prudente, ciascuno mostra da dove viene il suo valore (predefinito, salvato da una schermata o fissato dall'ambiente del server, che lo blocca), si invia solo ciò che è cambiato, ogni modifica che abbassa la protezione chiede prima conferma e un server che non offre un'opzione non la mostra. Vedi `docs/REMOTE_API.md` di HYDRA-UMC-SERVER.
+- **Mesh da un unico pacchetto:** `meshes.pack.json` fissa lo SHA-256 di un pacchetto e di ogni mesh condivisa con HYDRA-UMC-SUITE, e `npm run meshes -- status | check | ensure | prepare` porta `public/models/` a quello stato. L'origine è `local` (predefinita: nulla cambia e nulla viene scaricato), `auto` o `download`, scelta in `mesh_pack.config.json` o con `HYDRA_UMC_MESH_SOURCE`; un pacchetto che non corrisponde non installa nulla e sono accettati solo indirizzi `https`. Vedi [`docs/MESH_PACKAGE.md`](docs/MESH_PACKAGE.md).
+
 ## 🔒 Sicurezza e protezione
 
 | Minaccia | Difesa | Dove |
@@ -499,6 +505,11 @@ Nel complesso, l'ecosistema di questo autore comprende molti progetti oltre a qu
 
 Dove leggere di più:
 
+* **[docs/MESH_PACKAGE.md](docs/MESH_PACKAGE.md)** — le mesh 3D come un unico pacchetto con checksum fissato: origini `local`, `auto` e `download`, e i comandi che le verificano e le scaricano.
+* **[docs/MACHINE_ASSETS.md](docs/MACHINE_ASSETS.md)** — modelli di macchina indipendenti: come si sceglie un modello e a chi appartiene.
+* **[docs/RACK_MODELS.md](docs/RACK_MODELS.md)** — rack di ingresso e uscita configurabili: configurazione e compatibilità.
+* **[docs/HEATED_BED_MODELS.md](docs/HEATED_BED_MODELS.md)** — modelli di piano riscaldato: scelta e dimensioni dei quattro preset.
+* **[docs/VACUUM_TABLE_MODELS.md](docs/VACUUM_TABLE_MODELS.md)** — modelli di tavolo a vuoto: come sceglierne uno per un robot.
 * [Base di sicurezza dell'ecosistema](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/SECURITY_BASELINE.md)
 * [Modello delle minacce dell'ecosistema](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/THREAT_MODEL.md)
 * [Registro delle modifiche di questo repository](CHANGELOG.md)

@@ -210,6 +210,12 @@ HYDRA-UMC STUDIO 自体は純粋なクライアントです——現在のセッ
 
 `GET /api/system/metrics` は概要ダッシュボードのフッターを駆動します：CPU 負荷とメモリ使用率は常に実際の値です（Node 自身の `os` モジュール）。温度は、実際の Raspberry Pi 上で動作している場合は実際の `vcgencmd measure_temp` の出力を読み取り、そうでない場合は明確にフラグ付けされたモック値にフォールバックします（レスポンス内の `temp_is_real`）。Wi-Fi/イーサネット/Bluetooth の状態は `/sys/class/net`/`/sys/class/bluetooth` から読み取られます（Linux 専用、それ以外のホストでは推測値ではなく `null`／不明）。
 
+### 接続者と Server Admin のアクセスオプション
+
+- **Connected Apps の接続履歴：** ライブ接続の一覧の下に、サーバーにサインインした相手を簡単に示します。サーバーが見たクライアント（種類、ユーザー、バージョン、ローカルか外部か、現在開いているセッション、成功または拒否されたサインイン）と、最近のサインイン、拒否されたサインイン、サインアウト、終了したセッションを `GET /api/connections/clients` と `GET /api/connections/events` から読みます。サーバーが古くて提供できない場合は、その旨をはっきり表示します。どちらの一覧にもパスワードやトークンは含まれず、アドレスはサーバーに保存を指示した場合だけ表示されます。
+- **Server Admin の 7 つのアクセススイッチ**（管理者のみ）：`health.open`（サインインなしのヘルスルート）、`safety.publishGlobalStop`（MQTT ブリッジでグローバル停止を通知）、`connections.recordAddress`（各クライアントのアドレスを履歴に残す）、`camera.open`（チケットなしのカメラ映像）、`websocket.allowQueryToken`（WebSocket アドレス内のトークン）、`logging.redactSecrets`（ログの秘密情報の伏せ字）、`voice.requireSignature`（確認済みの音声リクエストに検証済み署名を要求）。すべて保守的な値で始まり、それぞれ値の出どころ（既定、画面から保存、またはサーバーの環境で固定されロックされる）を表示し、変更した分だけを送り、保護を下げる変更は先に確認を求め、サーバーが提供しないオプションは表示しません。HYDRA-UMC-SERVER の `docs/REMOTE_API.md` を参照してください。
+- **メッシュを 1 つのパッケージから：** `meshes.pack.json` はパッケージと HYDRA-UMC-SUITE と共有する各メッシュの SHA-256 を固定し、`npm run meshes -- status | check | ensure | prepare` で `public/models/` をその状態にします。取得元は `local`（既定：何も変えず何もダウンロードしない）、`auto`、`download` から `mesh_pack.config.json` または `HYDRA_UMC_MESH_SOURCE` で選びます。一致しないパッケージは何もインストールせず、`https` のアドレスだけを受け付けます。[`docs/MESH_PACKAGE.md`](docs/MESH_PACKAGE.md) を参照してください。
+
 ## 🔒 セキュリティと安全
 
 | 脅威 | 防御 | 場所 |
@@ -498,6 +504,11 @@ HYDRA-UMC-STUDIO/
 
 さらに読むには：
 
+* **[docs/MESH_PACKAGE.md](docs/MESH_PACKAGE.md)** — チェックサムを固定した 1 つのパッケージとしての 3D メッシュ。取得元 `local`、`auto`、`download` と、検証・取得のコマンド。
+* **[docs/MACHINE_ASSETS.md](docs/MACHINE_ASSETS.md)** — 独立した機械モデル：モデルの選び方と所有者。
+* **[docs/RACK_MODELS.md](docs/RACK_MODELS.md)** — 設定可能な入力・出力ラック：設定と互換性。
+* **[docs/HEATED_BED_MODELS.md](docs/HEATED_BED_MODELS.md)** — ヒートベッドのモデル：4 つのプリセットの選択と寸法。
+* **[docs/VACUUM_TABLE_MODELS.md](docs/VACUUM_TABLE_MODELS.md)** — 真空テーブルのモデル：ロボットに割り当てる方法。
 * [エコシステムのセキュリティ基準](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/SECURITY_BASELINE.md)
 * [エコシステムの脅威モデル](https://github.com/JuanenRac/HYDRA-UMC-DOCS/blob/main/docs/THREAT_MODEL.md)
 * [このリポジトリの変更履歴](CHANGELOG.md)
