@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Four more security switches in Server Admin:** a new "Exposure and logs" card lets an administrator open the camera pictures without a ticket, accept a token in the WebSocket address, stop blanking secrets in the log and require a verified signature on a confirmed spoken request. All four start on the safe side, show where their value comes from, are locked when the server environment fixes them, appear only when the server offers them, send only what changed and ask before anything that lowers the protection. Texts in the eight languages.
+
 ## [0.8.0.4] - The history of connections in Connected Apps, two more switches in Server Admin, safe mode of a robot, the routes the app calls fixed by a test and the unit of the meshes declared by each model
 
 - **The routes the app calls are fixed by a test:** `tests/restPaths.test.ts` lists every server route used by the sources in `tests/fixtures/rest_routes.json` (a route can only be added or dropped on purpose) and, when the shared contracts sit next to this repository, checks that each one exists in the server contract.

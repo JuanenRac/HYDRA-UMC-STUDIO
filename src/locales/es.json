@@ -1089,7 +1089,18 @@
     "admin_security_stop_title": "Anuncio de parada global",
     "admin_security_stop_label": "Anunciar una parada global en el puente MQTT (SAFE_STOP retenido)",
     "admin_security_stop_help": "Desactivado por defecto. Requiere el puente MQTT activo. El estado permanece hasta que un administrador lo libere.",
-    "admin_security_stop_save": "Guardar anuncio de parada"
+    "admin_security_stop_save": "Guardar anuncio de parada",
+    "admin_security_exposure_title": "Exposición y registros",
+    "admin_security_exposure_camera_label": "Dejar las imágenes de las cámaras abiertas sin ticket ni inicio de sesión",
+    "admin_security_exposure_ws_label": "Aceptar un token en la dirección del WebSocket (/ws?token=)",
+    "admin_security_exposure_log_label": "Tachar los secretos en el registro",
+    "admin_security_exposure_voice_label": "Exigir una firma verificada en una petición hablada confirmada",
+    "admin_security_exposure_help": "Valores seguros: las imágenes piden ticket, sin token en la dirección, secretos tachados, firma no exigida (actívala cuando el servicio de voz comparta su clave). Un valor fijado por el entorno del servidor no se puede cambiar aquí.",
+    "admin_security_exposure_save": "Guardar opciones de exposición",
+    "admin_security_exposure_camera_warning": "Las imágenes de las cámaras están ahora abiertas a toda la red.",
+    "admin_security_exposure_ws_warning": "Ahora se acepta un token en la dirección del WebSocket; los proxies y servidores pueden registrarlo.",
+    "admin_security_exposure_log_warning": "Los secretos ya no se tachan en el registro.",
+    "admin_security_exposure_confirm": "Esto reduce la protección del servidor (imágenes de cámara abiertas, un token en la dirección, secretos en el registro o sin firma en las confirmaciones habladas). ¿Continuar?"
   },
   "auth": {
     "title": "Acceso a HYDRA-UMC STUDIO",

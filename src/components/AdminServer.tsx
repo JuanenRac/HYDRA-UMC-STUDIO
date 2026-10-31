@@ -26,7 +26,7 @@ import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, healthChangeNeedsConfirmation, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, exposurePatch, exposureChangeNeedsConfirmation, healthChangeNeedsConfirmation, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
 
 interface HydraInfo {
   product?: string;
@@ -76,6 +76,8 @@ export function AdminServer() {
   const [healthOpen, setHealthOpen] = useState(false);
   const [pendingHealth, setPendingHealth] = useState(false);
   const [safetyPublish, setSafetyPublish] = useState(false);
+  const [exposure, setExposure] = useState<ExposureValues>({ cameraOpen: false, wsQueryToken: false, logRedaction: true, voiceSignature: false });
+  const [pendingExposure, setPendingExposure] = useState<ExposurePatchBody | null>(null);
   const [mavlinkKey, setMavlinkKey] = useState('');
   const [mavlinkUnsigned, setMavlinkUnsigned] = useState(false);
   const [pendingMavlink, setPendingMavlink] = useState<MavlinkPatchBody | null>(null);
@@ -97,6 +99,7 @@ export function AdminServer() {
       if (state.connections) setConnectionsRecordAddress(state.connections.recordAddress.value);
       if (state.health) setHealthOpen(state.health.open.value);
       if (state.safety) setSafetyPublish(state.safety.publishGlobalStop.value);
+      if (state.exposure) setExposure({ cameraOpen: state.exposure.cameraOpen.value, wsQueryToken: state.exposure.wsQueryToken.value, logRedaction: state.exposure.logRedaction.value, voiceSignature: state.exposure.voiceSignature.value });
       if (state.mavlink) {
         setMavlinkKey(state.mavlink.signingKeyFile.value);
         setMavlinkUnsigned(state.mavlink.signingAllowUnsigned.value);
@@ -127,6 +130,9 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('robot_enable_allowed')) setWarning(t('ecosystem.admin_security_robots_warning'));
       if (knownWarnings(data.warnings).includes('connection_address_recorded')) setWarning(t('ecosystem.admin_security_connections_warning'));
       if (knownWarnings(data.warnings).includes('health_open')) setWarning(t('ecosystem.admin_security_health_warning'));
+      if (knownWarnings(data.warnings).includes('camera_open')) setWarning(t('ecosystem.admin_security_exposure_camera_warning'));
+      if (knownWarnings(data.warnings).includes('ws_query_token_allowed')) setWarning(t('ecosystem.admin_security_exposure_ws_warning'));
+      if (knownWarnings(data.warnings).includes('log_redaction_off')) setWarning(t('ecosystem.admin_security_exposure_log_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_unsigned_allowed')) setWarning(t('ecosystem.admin_security_mavlink_unsigned_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_signing_off')) setWarning(t('ecosystem.admin_security_mavlink_off_warning'));
       setNotice(t('ecosystem.admin_security_saved'));
@@ -178,6 +184,20 @@ export function AdminServer() {
     if (!security?.health) return;
     if (healthChangeNeedsConfirmation(security.health.open.value, healthOpen)) setPendingHealth(true);
     else void saveSecurity(healthPatch(healthOpen));
+  };
+
+  const currentExposure = (): ExposureValues | null =>
+    security?.exposure
+      ? { cameraOpen: security.exposure.cameraOpen.value, wsQueryToken: security.exposure.wsQueryToken.value, logRedaction: security.exposure.logRedaction.value, voiceSignature: security.exposure.voiceSignature.value }
+      : null;
+
+  const saveExposure = () => {
+    const current = currentExposure();
+    if (!current) return;
+    const body = exposurePatch(current, exposure);
+    if (!body) return;
+    if (exposureChangeNeedsConfirmation(current, exposure)) setPendingExposure(body);
+    else void saveSecurity(body);
   };
 
   const saveMavlink = () => {
@@ -540,6 +560,60 @@ export function AdminServer() {
             </div>
           )}
 
+          {security.exposure && (
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_exposure_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="exposure-camera-open"
+                  checked={exposure.cameraOpen}
+                  disabled={saving || isLocked(security.exposure.cameraOpen.source)}
+                  onChange={e => setExposure({ ...exposure, cameraOpen: e.target.checked })}
+                />
+                {t('ecosystem.admin_security_exposure_camera_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.exposure.cameraOpen.source)}</span>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="exposure-ws-query-token"
+                  checked={exposure.wsQueryToken}
+                  disabled={saving || isLocked(security.exposure.wsQueryToken.source)}
+                  onChange={e => setExposure({ ...exposure, wsQueryToken: e.target.checked })}
+                />
+                {t('ecosystem.admin_security_exposure_ws_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.exposure.wsQueryToken.source)}</span>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="exposure-log-redaction"
+                  checked={exposure.logRedaction}
+                  disabled={saving || isLocked(security.exposure.logRedaction.source)}
+                  onChange={e => setExposure({ ...exposure, logRedaction: e.target.checked })}
+                />
+                {t('ecosystem.admin_security_exposure_log_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.exposure.logRedaction.source)}</span>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="exposure-voice-signature"
+                  checked={exposure.voiceSignature}
+                  disabled={saving || isLocked(security.exposure.voiceSignature.source)}
+                  onChange={e => setExposure({ ...exposure, voiceSignature: e.target.checked })}
+                />
+                {t('ecosystem.admin_security_exposure_voice_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.exposure.voiceSignature.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_exposure_help')}</div>
+              <button onClick={saveExposure} disabled={saving} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                <Save size={14} /> {t('ecosystem.admin_security_exposure_save')}
+              </button>
+            </div>
+          )}
+
           {security.safety && (
             <div className="space-y-2">
               <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_stop_title')}</h5>
@@ -614,6 +688,13 @@ export function AdminServer() {
         message={t('ecosystem.admin_security_connections_confirm')}
         onConfirm={() => { setPendingConnections(false); void saveSecurity(connectionsPatch(connectionsRecordAddress)); }}
         onCancel={() => setPendingConnections(false)}
+      />
+
+      <ConfirmDialog
+        open={pendingExposure !== null}
+        message={t('ecosystem.admin_security_exposure_confirm')}
+        onConfirm={() => { const body = pendingExposure; setPendingExposure(null); if (body) void saveSecurity(body); }}
+        onCancel={() => setPendingExposure(null)}
       />
 
       <ConfirmDialog

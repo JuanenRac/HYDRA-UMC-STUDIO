@@ -1089,7 +1089,18 @@
     "admin_security_stop_title": "Ankündigung des globalen Stopps",
     "admin_security_stop_label": "Einen globalen Stopp auf der MQTT-Brücke ankündigen (gehaltenes SAFE_STOP)",
     "admin_security_stop_help": "Standardmäßig aus. Die MQTT-Brücke muss eingeschaltet sein. Der Zustand bleibt, bis ein Administrator ihn freigibt.",
-    "admin_security_stop_save": "Stopp-Ankündigung speichern"
+    "admin_security_stop_save": "Stopp-Ankündigung speichern",
+    "admin_security_exposure_title": "Freigabe und Protokolle",
+    "admin_security_exposure_camera_label": "Kamerabilder ohne Ticket oder Anmeldung freigeben",
+    "admin_security_exposure_ws_label": "Ein Token in der WebSocket-Adresse akzeptieren (/ws?token=)",
+    "admin_security_exposure_log_label": "Geheimnisse im Protokoll schwärzen",
+    "admin_security_exposure_voice_label": "Eine geprüfte Signatur bei einer bestätigten gesprochenen Anfrage verlangen",
+    "admin_security_exposure_help": "Sichere Voreinstellungen: Bilder verlangen ein Ticket, kein Token in der Adresse, Geheimnisse geschwärzt, Signatur nicht verlangt (einschalten, sobald der Sprachdienst seinen Schlüssel teilt). Ein von der Umgebung des Servers festgelegter Wert lässt sich hier nicht ändern.",
+    "admin_security_exposure_save": "Freigabeoptionen speichern",
+    "admin_security_exposure_camera_warning": "Die Kamerabilder sind jetzt für das ganze Netzwerk offen.",
+    "admin_security_exposure_ws_warning": "Ein Token in der WebSocket-Adresse wird jetzt akzeptiert; Proxys und Server können ihn aufzeichnen.",
+    "admin_security_exposure_log_warning": "Geheimnisse werden im Protokoll nicht mehr geschwärzt.",
+    "admin_security_exposure_confirm": "Das senkt den Schutz des Servers (offene Kamerabilder, ein Token in der Adresse, Geheimnisse im Protokoll oder keine Signatur bei gesprochenen Bestätigungen). Fortfahren?"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Zugang",

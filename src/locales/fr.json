@@ -1089,7 +1089,18 @@
     "admin_security_stop_title": "Annonce de l'arrêt global",
     "admin_security_stop_label": "Annoncer un arrêt global sur le pont MQTT (SAFE_STOP retenu)",
     "admin_security_stop_help": "Désactivé par défaut. Nécessite le pont MQTT actif. L'état reste jusqu'à ce qu'un administrateur le libère.",
-    "admin_security_stop_save": "Enregistrer l'annonce d'arrêt"
+    "admin_security_stop_save": "Enregistrer l'annonce d'arrêt",
+    "admin_security_exposure_title": "Exposition et journaux",
+    "admin_security_exposure_camera_label": "Laisser les images des caméras ouvertes sans ticket ni connexion",
+    "admin_security_exposure_ws_label": "Accepter un jeton dans l'adresse du WebSocket (/ws?token=)",
+    "admin_security_exposure_log_label": "Masquer les secrets dans le journal",
+    "admin_security_exposure_voice_label": "Exiger une signature vérifiée sur une demande vocale confirmée",
+    "admin_security_exposure_help": "Valeurs sûres : les images demandent un ticket, pas de jeton dans l'adresse, secrets masqués, signature non exigée (à activer quand le service vocal partage sa clé). Une valeur fixée par l'environnement du serveur ne peut pas être modifiée ici.",
+    "admin_security_exposure_save": "Enregistrer les options d'exposition",
+    "admin_security_exposure_camera_warning": "Les images des caméras sont maintenant ouvertes à tout le réseau.",
+    "admin_security_exposure_ws_warning": "Un jeton dans l'adresse du WebSocket est maintenant accepté ; les proxys et serveurs peuvent l'enregistrer.",
+    "admin_security_exposure_log_warning": "Les secrets ne sont plus masqués dans le journal.",
+    "admin_security_exposure_confirm": "Cela réduit la protection du serveur (images de caméra ouvertes, un jeton dans l'adresse, secrets dans le journal ou aucune signature sur les confirmations vocales). Continuer ?"
   },
   "auth": {
     "title": "Accès HYDRA-UMC STUDIO",

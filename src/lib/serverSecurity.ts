@@ -63,6 +63,13 @@ export interface SecurityState {
   safety: {
     publishGlobalStop: { value: boolean; source: SecuritySource };
   } | null;
+  /** Absent when the server predates the exposure options (camera pictures, token in the WebSocket address, blanking of secrets in the log, signature of a spoken confirmation). */
+  exposure: {
+    cameraOpen: { value: boolean; source: SecuritySource };
+    wsQueryToken: { value: boolean; source: SecuritySource };
+    logRedaction: { value: boolean; source: SecuritySource };
+    voiceSignature: { value: boolean; source: SecuritySource };
+  } | null;
   /** Absent when the server predates the MAVLink options. The key itself is never sent, only where its file is. */
   mavlink: {
     signingKeyFile: { value: string; source: SecuritySource };
@@ -127,6 +134,17 @@ function parseHealth(raw: any): SecurityState['health'] {
   const open = raw.open;
   if (!open || typeof open.value !== 'boolean' || !isSource(open.source)) return null;
   return { open: { value: open.value, source: open.source } };
+}
+
+function parseExposure(raw: any): SecurityState['exposure'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const pick = (value: any) => (value && typeof value.value === 'boolean' && isSource(value.source) ? { value: value.value as boolean, source: value.source as SecuritySource } : null);
+  const cameraOpen = pick(raw.camera?.open);
+  const wsQueryToken = pick(raw.websocket?.allowQueryToken);
+  const logRedaction = pick(raw.logging?.redactSecrets);
+  const voiceSignature = pick(raw.voice?.requireSignature);
+  if (!cameraOpen || !wsQueryToken || !logRedaction || !voiceSignature) return null;
+  return { cameraOpen, wsQueryToken, logRedaction, voiceSignature };
 }
 
 function parseSafety(raw: any): SecurityState['safety'] {
@@ -195,6 +213,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     connections: parseConnections(raw.connections),
     health: parseHealth(raw.health),
     safety: parseSafety(raw.safety),
+    exposure: parseExposure(raw),
     mavlink: parseMavlink(raw.mavlink),
   };
 }
@@ -302,6 +321,35 @@ export function healthChangeNeedsConfirmation(current: boolean, next: boolean): 
   return !current && next;
 }
 
+export interface ExposureValues {
+  cameraOpen: boolean;
+  wsQueryToken: boolean;
+  logRedaction: boolean;
+  voiceSignature: boolean;
+}
+
+export type ExposurePatchBody = {
+  camera?: { open: boolean };
+  websocket?: { allowQueryToken: boolean };
+  logging?: { redactSecrets: boolean };
+  voice?: { requireSignature: boolean };
+};
+
+/** The request body for the exposure options: only what changed (an option fixed by the server environment must not be sent again); null when nothing changed. */
+export function exposurePatch(current: ExposureValues, next: ExposureValues): ExposurePatchBody | null {
+  const body: ExposurePatchBody = {};
+  if (current.cameraOpen !== next.cameraOpen) body.camera = { open: next.cameraOpen };
+  if (current.wsQueryToken !== next.wsQueryToken) body.websocket = { allowQueryToken: next.wsQueryToken };
+  if (current.logRedaction !== next.logRedaction) body.logging = { redactSecrets: next.logRedaction };
+  if (current.voiceSignature !== next.voiceSignature) body.voice = { requireSignature: next.voiceSignature };
+  return Object.keys(body).length === 0 ? null : body;
+}
+
+/** Opening the camera pictures, accepting a token in the WebSocket address, writing secrets in the log or dropping the signature of a spoken confirmation lowers the protection: ask first. The other direction never asks. */
+export function exposureChangeNeedsConfirmation(current: ExposureValues, next: ExposureValues): boolean {
+  return (!current.cameraOpen && next.cameraOpen) || (!current.wsQueryToken && next.wsQueryToken) || (current.logRedaction && !next.logRedaction) || (current.voiceSignature && !next.voiceSignature);
+}
+
 export type SafetyPatchBody = { safety: { publishGlobalStop: boolean } };
 
 /** The request body for the option that announces a global stop on the MQTT bridge (off by default). Announcing a stop is the safe direction: it never asks. */
@@ -325,6 +373,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }

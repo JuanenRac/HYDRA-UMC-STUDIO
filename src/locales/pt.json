@@ -1089,7 +1089,18 @@
     "admin_security_stop_title": "Anúncio da paragem global",
     "admin_security_stop_label": "Anunciar uma paragem global na ponte MQTT (SAFE_STOP retido)",
     "admin_security_stop_help": "Desativado por predefinição. Requer a ponte MQTT ativa. O estado mantém-se até um administrador o libertar.",
-    "admin_security_stop_save": "Guardar anúncio de paragem"
+    "admin_security_stop_save": "Guardar anúncio de paragem",
+    "admin_security_exposure_title": "Exposição e registos",
+    "admin_security_exposure_camera_label": "Deixar as imagens das câmaras abertas sem bilhete nem início de sessão",
+    "admin_security_exposure_ws_label": "Aceitar um token no endereço do WebSocket (/ws?token=)",
+    "admin_security_exposure_log_label": "Ocultar os segredos no registo",
+    "admin_security_exposure_voice_label": "Exigir uma assinatura verificada num pedido falado confirmado",
+    "admin_security_exposure_help": "Valores seguros: as imagens pedem um bilhete, sem token no endereço, segredos ocultados, assinatura não exigida (ative-a quando o serviço de voz partilhar a sua chave). Um valor fixado pelo ambiente do servidor não pode ser alterado aqui.",
+    "admin_security_exposure_save": "Guardar as opções de exposição",
+    "admin_security_exposure_camera_warning": "As imagens das câmaras estão agora abertas a toda a rede.",
+    "admin_security_exposure_ws_warning": "Passa a aceitar-se um token no endereço do WebSocket; os proxies e servidores podem registá-lo.",
+    "admin_security_exposure_log_warning": "Os segredos já não são ocultados no registo.",
+    "admin_security_exposure_confirm": "Isto reduz a proteção do servidor (imagens de câmara abertas, um token no endereço, segredos no registo ou sem assinatura nas confirmações faladas). Continuar?"
   },
   "auth": {
     "title": "Acesso ao HYDRA-UMC STUDIO",

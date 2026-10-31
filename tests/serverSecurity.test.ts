@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, tlsPatch } from '../src/lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -221,5 +221,52 @@ describe('the health route and the global stop announcement options', () => {
 
   it('knows the warnings of both', () => {
     expect(knownWarnings(['health_open', 'global_stop_published', 'other'])).toEqual(['health_open', 'global_stop_published']);
+  });
+});
+
+describe('the exposure options (camera pictures, token in the WebSocket address, secrets in the log, signature of a spoken confirmation)', () => {
+  const safe = { cameraOpen: false, wsQueryToken: false, logRedaction: true, voiceSignature: false };
+  const reported = {
+    camera: { open: { value: false, source: 'default' } },
+    websocket: { allowQueryToken: { value: false, source: 'env' } },
+    logging: { redactSecrets: { value: true, source: 'config' } },
+    voice: { requireSignature: { value: true, source: 'default' } },
+  };
+
+  it('reads the four values and shows nothing for a server that predates any of them', () => {
+    expect(parseSecurityState({ ...answer, ...reported })?.exposure).toEqual({
+      cameraOpen: { value: false, source: 'default' },
+      wsQueryToken: { value: false, source: 'env' },
+      logRedaction: { value: true, source: 'config' },
+      voiceSignature: { value: true, source: 'default' },
+    });
+    expect(parseSecurityState(answer)?.exposure).toBeNull();
+    expect(parseSecurityState({ ...answer, ...reported, camera: undefined })?.exposure).toBeNull();
+    expect(parseSecurityState({ ...answer, ...reported, logging: { redactSecrets: { value: 'yes', source: 'config' } } })?.exposure).toBeNull();
+  });
+
+  it('sends only what changed, so an option fixed by the environment is never sent again', () => {
+    expect(exposurePatch(safe, safe)).toBeNull();
+    expect(exposurePatch(safe, { ...safe, cameraOpen: true })).toEqual({ camera: { open: true } });
+    expect(exposurePatch(safe, { cameraOpen: true, wsQueryToken: true, logRedaction: false, voiceSignature: true })).toEqual({
+      camera: { open: true },
+      websocket: { allowQueryToken: true },
+      logging: { redactSecrets: false },
+      voice: { requireSignature: true },
+    });
+  });
+
+  it('asks before lowering the protection and never before raising it', () => {
+    expect(exposureChangeNeedsConfirmation(safe, { ...safe, cameraOpen: true })).toBe(true);
+    expect(exposureChangeNeedsConfirmation(safe, { ...safe, wsQueryToken: true })).toBe(true);
+    expect(exposureChangeNeedsConfirmation(safe, { ...safe, logRedaction: false })).toBe(true);
+    expect(exposureChangeNeedsConfirmation({ ...safe, voiceSignature: true }, safe)).toBe(true);
+    expect(exposureChangeNeedsConfirmation(safe, { ...safe, voiceSignature: true })).toBe(false);
+    expect(exposureChangeNeedsConfirmation({ ...safe, cameraOpen: true, wsQueryToken: true, logRedaction: false }, safe)).toBe(false);
+    expect(exposureChangeNeedsConfirmation(safe, safe)).toBe(false);
+  });
+
+  it('knows the warnings', () => {
+    expect(knownWarnings(['camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'other'])).toEqual(['camera_open', 'ws_query_token_allowed', 'log_redaction_off']);
   });
 });

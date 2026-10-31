@@ -1089,7 +1089,18 @@
     "admin_security_stop_title": "Global stop announcement",
     "admin_security_stop_label": "Announce a global stop on the MQTT bridge (retained SAFE_STOP)",
     "admin_security_stop_help": "Off by default. Needs the MQTT bridge on. The state stays until an administrator releases it.",
-    "admin_security_stop_save": "Save stop announcement"
+    "admin_security_stop_save": "Save stop announcement",
+    "admin_security_exposure_title": "Exposure and logs",
+    "admin_security_exposure_camera_label": "Let the camera pictures open without a ticket or a sign-in",
+    "admin_security_exposure_ws_label": "Accept a token in the WebSocket address (/ws?token=)",
+    "admin_security_exposure_log_label": "Blank out secrets in the log",
+    "admin_security_exposure_voice_label": "Require a verified signature on a confirmed spoken request",
+    "admin_security_exposure_help": "Safe defaults: pictures ask for a ticket, no token in the address, secrets blanked out, signature not required (turn it on once the voice service shares its key). A value fixed by the server environment cannot be changed here.",
+    "admin_security_exposure_save": "Save exposure options",
+    "admin_security_exposure_camera_warning": "The camera pictures are now open to the whole network.",
+    "admin_security_exposure_ws_warning": "A token in the WebSocket address is now accepted; proxies and servers may record it.",
+    "admin_security_exposure_log_warning": "Secrets are no longer blanked out of the log.",
+    "admin_security_exposure_confirm": "This lowers the protection of the server (open camera pictures, a token in the address, secrets in the log or no signature on spoken confirmations). Continue?"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Access",

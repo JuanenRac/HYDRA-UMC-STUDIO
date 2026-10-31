@@ -1089,7 +1089,18 @@
     "admin_security_stop_title": "Annuncio dell'arresto globale",
     "admin_security_stop_label": "Annunciare un arresto globale sul bridge MQTT (SAFE_STOP trattenuto)",
     "admin_security_stop_help": "Disattivato per impostazione predefinita. Richiede il bridge MQTT attivo. Lo stato resta finché un amministratore lo rilascia.",
-    "admin_security_stop_save": "Salva annuncio di arresto"
+    "admin_security_stop_save": "Salva annuncio di arresto",
+    "admin_security_exposure_title": "Esposizione e registri",
+    "admin_security_exposure_camera_label": "Lasciare le immagini delle telecamere aperte senza ticket né accesso",
+    "admin_security_exposure_ws_label": "Accettare un token nell'indirizzo del WebSocket (/ws?token=)",
+    "admin_security_exposure_log_label": "Oscurare i segreti nel registro",
+    "admin_security_exposure_voice_label": "Richiedere una firma verificata su una richiesta vocale confermata",
+    "admin_security_exposure_help": "Valori sicuri: le immagini richiedono un ticket, nessun token nell'indirizzo, segreti oscurati, firma non richiesta (attivala quando il servizio vocale condivide la sua chiave). Un valore fissato dall'ambiente del server non può essere cambiato qui.",
+    "admin_security_exposure_save": "Salva le opzioni di esposizione",
+    "admin_security_exposure_camera_warning": "Le immagini delle telecamere sono ora aperte a tutta la rete.",
+    "admin_security_exposure_ws_warning": "Ora un token nell'indirizzo del WebSocket viene accettato; proxy e server possono registrarlo.",
+    "admin_security_exposure_log_warning": "I segreti non vengono più oscurati nel registro.",
+    "admin_security_exposure_confirm": "Questo riduce la protezione del server (immagini delle telecamere aperte, un token nell'indirizzo, segreti nel registro o nessuna firma sulle conferme vocali). Continuare?"
   },
   "auth": {
     "title": "Accesso a HYDRA-UMC STUDIO",
