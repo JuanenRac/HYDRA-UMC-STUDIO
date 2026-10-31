@@ -19,6 +19,8 @@ export interface MeshSettings {
   source: string;
   url: string;
   timeout: number;
+  cache?: string;
+  package?: string;
 }
 export class MeshPackError extends Error {
   key: string;
@@ -30,6 +32,16 @@ export function say(key: string, lang?: string, fields?: Record<string, unknown>
 export function loadSettings(configPath?: string, env?: Record<string, string | undefined>): MeshSettings;
 export function loadManifest(manifestPath?: string): MeshManifest;
 export function scan(manifest: MeshManifest, meshDir?: string, deep?: boolean): MeshEntry[];
+export function defaultCacheDir(): string;
+export function packageMatches(file: string, pack: MeshManifest['pack']): boolean;
+export function obtainPackage(
+  settings: MeshSettings,
+  pack: MeshManifest['pack'],
+  url: string,
+  workDir: string,
+  log: (line: string) => void,
+  lang?: string,
+): Promise<string>;
 export function checkUrl(url: string): void;
 export function downloadPackage(url: string, pack: MeshManifest['pack'], dest: string, timeoutSeconds?: number): Promise<void>;
 export function installFromPackage(packageFile: string, entries: MeshEntry[], meshDir?: string): Promise<number>;

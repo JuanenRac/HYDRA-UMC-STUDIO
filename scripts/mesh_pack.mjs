@@ -15,6 +15,9 @@
 //   source = download  every mesh is verified by its hash and the wrong ones are replaced.
 //
 // Set it in mesh_pack.config.json or with HYDRA_UMC_MESH_SOURCE / HYDRA_UMC_MESH_URL.
+// The downloaded package is kept in a cache folder outside the repository (~/.cache/hydra-umc/meshes, or
+// HYDRA_UMC_MESH_CACHE) and reused while it still matches the pinned checksum. Without network, put the package
+// there or point HYDRA_UMC_MESH_PACKAGE at the file: it is verified the same way.
 //   node scripts/mesh_pack.mjs status | check | prepare | ensure [--source auto|download]
 // Node standard library only.
 // =============================================================================
@@ -51,6 +54,9 @@ export const MESSAGES = {
     bad_source: 'Unknown source {value}; use local, auto or download.',
     failed: 'Download failed: {error}',
     insecure: 'Only https addresses are accepted (http only for 127.0.0.1 and localhost).',
+    cached: 'Using the package already stored at {path}.',
+    hint_network: 'Without network: download {file} once on a computer with Internet ({url}), copy it to {cache} (or set HYDRA_UMC_MESH_PACKAGE to its path) and run this again.',
+    package_file_bad: 'The package file {path} is missing or does not match the pinned manifest; nothing was installed.',
   },
   es: {
     local: 'Paquete de mallas: el origen es local, se usan las mallas del árbol de trabajo; no se descarga nada.',
@@ -65,6 +71,9 @@ export const MESSAGES = {
     bad_source: 'Origen desconocido {value}; usa local, auto o download.',
     failed: 'Falló la descarga: {error}',
     insecure: 'Solo se aceptan direcciones https (http solo para 127.0.0.1 y localhost).',
+    cached: 'Se usa el paquete ya guardado en {path}.',
+    hint_network: 'Sin red: descarga {file} una vez en un equipo con Internet ({url}), cópialo a {cache} (o pon en HYDRA_UMC_MESH_PACKAGE su ruta) y vuelve a ejecutar.',
+    package_file_bad: 'El fichero del paquete {path} no existe o no coincide con el manifiesto fijado; no se instaló nada.',
   },
   de: {
     local: 'Netzpaket: Quelle ist lokal, die Netze des Arbeitsverzeichnisses werden verwendet; es wird nichts heruntergeladen.',
@@ -79,6 +88,9 @@ export const MESSAGES = {
     bad_source: 'Unbekannte Quelle {value}; verwende local, auto oder download.',
     failed: 'Download fehlgeschlagen: {error}',
     insecure: 'Nur https-Adressen werden akzeptiert (http nur für 127.0.0.1 und localhost).',
+    cached: 'Das bereits unter {path} gespeicherte Paket wird verwendet.',
+    hint_network: 'Ohne Netzwerk: Lade {file} einmal auf einem Rechner mit Internet herunter ({url}), kopiere es nach {cache} (oder setze HYDRA_UMC_MESH_PACKAGE auf seinen Pfad) und starte erneut.',
+    package_file_bad: 'Die Paketdatei {path} fehlt oder passt nicht zum festgelegten Manifest; es wurde nichts installiert.',
   },
   fr: {
     local: "Paquet de maillages : la source est locale, les maillages de l'arborescence sont utilisés ; rien n'est téléchargé.",
@@ -93,6 +105,9 @@ export const MESSAGES = {
     bad_source: 'Source inconnue {value} ; utilisez local, auto ou download.',
     failed: 'Échec du téléchargement : {error}',
     insecure: 'Seules les adresses https sont acceptées (http uniquement pour 127.0.0.1 et localhost).',
+    cached: 'Utilisation du paquet déjà enregistré dans {path}.',
+    hint_network: 'Sans réseau : téléchargez {file} une fois sur un ordinateur avec Internet ({url}), copiez-le dans {cache} (ou placez son chemin dans HYDRA_UMC_MESH_PACKAGE) puis relancez.',
+    package_file_bad: "Le fichier du paquet {path} est absent ou ne correspond pas au manifeste fixé ; rien n'a été installé.",
   },
   it: {
     local: "Pacchetto di mesh: la sorgente è locale, si usano le mesh dell'albero di lavoro; non viene scaricato nulla.",
@@ -107,6 +122,9 @@ export const MESSAGES = {
     bad_source: 'Sorgente sconosciuta {value}; usa local, auto o download.',
     failed: 'Download non riuscito: {error}',
     insecure: 'Sono accettati solo indirizzi https (http solo per 127.0.0.1 e localhost).',
+    cached: 'Si usa il pacchetto già salvato in {path}.',
+    hint_network: 'Senza rete: scarica {file} una volta su un computer con Internet ({url}), copialo in {cache} (oppure imposta HYDRA_UMC_MESH_PACKAGE sul suo percorso) e riavvia.',
+    package_file_bad: 'Il file del pacchetto {path} manca o non corrisponde al manifesto fissato; non è stato installato nulla.',
   },
   ja: {
     local: 'メッシュパッケージ：ソースはローカルです。作業ツリーのメッシュを使用し、ダウンロードは行いません。',
@@ -121,6 +139,9 @@ export const MESSAGES = {
     bad_source: '不明なソース {value}。local、auto、download のいずれかを指定してください。',
     failed: 'ダウンロードに失敗しました：{error}',
     insecure: 'https のアドレスのみ使用できます（http は 127.0.0.1 と localhost のみ）。',
+    cached: '{path} に保存済みのパッケージを使用します。',
+    hint_network: 'ネットワークがない場合：インターネットに接続できるコンピューターで {file} を一度ダウンロードし（{url}）、{cache} にコピーして（または HYDRA_UMC_MESH_PACKAGE にそのパスを設定して）もう一度実行してください。',
+    package_file_bad: 'パッケージファイル {path} が存在しないか、固定されたマニフェストと一致しません。何もインストールされませんでした。',
   },
   zh: {
     local: '网格包：来源为本地，使用工作树中的网格；不会下载任何内容。',
@@ -135,6 +156,9 @@ export const MESSAGES = {
     bad_source: '未知来源 {value}；请使用 local、auto 或 download。',
     failed: '下载失败：{error}',
     insecure: '只接受 https 地址（仅 127.0.0.1 和 localhost 可用 http）。',
+    cached: '使用已保存在 {path} 的软件包。',
+    hint_network: '没有网络时：在可联网的电脑上下载一次 {file}（{url}），复制到 {cache}（或将 HYDRA_UMC_MESH_PACKAGE 设为其路径），然后重新运行。',
+    package_file_bad: '软件包文件 {path} 不存在或与固定的清单不符；未安装任何内容。',
   },
   pt: {
     local: 'Pacote de malhas: a origem é local, usam-se as malhas da árvore de trabalho; não se transfere nada.',
@@ -149,6 +173,9 @@ export const MESSAGES = {
     bad_source: 'Origem desconhecida {value}; use local, auto ou download.',
     failed: 'A transferência falhou: {error}',
     insecure: 'Só são aceites endereços https (http apenas para 127.0.0.1 e localhost).',
+    cached: 'A usar o pacote já guardado em {path}.',
+    hint_network: 'Sem rede: transfira {file} uma vez num computador com Internet ({url}), copie-o para {cache} (ou defina HYDRA_UMC_MESH_PACKAGE com o seu caminho) e execute novamente.',
+    package_file_bad: 'O ficheiro do pacote {path} não existe ou não corresponde ao manifesto fixado; não foi instalado nada.',
   },
 };
 
@@ -174,17 +201,69 @@ export function say(key, lang, fields = {}) {
 }
 
 export function loadSettings(configPath = CONFIG_PATH, env = process.env) {
-  let data = { source: 'local', url: '', timeout_seconds: 60 };
+  let data = { source: 'auto', url: '', timeout_seconds: 60, cache_dir: '', package: '' };
   try {
     const loaded = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     if (loaded && typeof loaded === 'object' && !Array.isArray(loaded)) data = { ...data, ...loaded };
   } catch {
     // a missing or damaged file falls back to the conservative default
   }
-  const source = String(env.HYDRA_UMC_MESH_SOURCE || data.source || 'local').trim().toLowerCase();
+  const source = String(env.HYDRA_UMC_MESH_SOURCE || data.source || 'auto').trim().toLowerCase();
   const url = String(env.HYDRA_UMC_MESH_URL || data.url || '').trim();
   const timeout = Number(data.timeout_seconds) > 0 ? Number(data.timeout_seconds) : 60;
-  return { source, url, timeout };
+  const cache = String(env.HYDRA_UMC_MESH_CACHE || data.cache_dir || '').trim();
+  const pkg = String(env.HYDRA_UMC_MESH_PACKAGE || data.package || '').trim();
+  return { source, url, timeout, cache, package: pkg };
+}
+
+export function defaultCacheDir() {
+  return path.join(os.homedir(), '.cache', 'hydra-umc', 'meshes');
+}
+
+/** True when the file is the pinned package (size and SHA-256). */
+export function packageMatches(file, pack) {
+  try {
+    if (fs.statSync(file).size !== pack.size) return false;
+    return sha256File(file) === pack.sha256;
+  } catch {
+    return false;
+  }
+}
+
+/** The verified package file: the one given by path, the cached one, or a fresh download kept in the cache. */
+export async function obtainPackage(settings, pack, url, workDir, log, lang) {
+  if (settings.package) {
+    const given = path.resolve(settings.package.replace(/^~(?=$|[\\/])/, os.homedir()));
+    if (!packageMatches(given, pack)) throw new MeshPackError('package_file_bad', { path: given });
+    log(say('cached', lang, { path: given }));
+    return given;
+  }
+  const cache = settings.cache ? path.resolve(settings.cache.replace(/^~(?=$|[\\/])/, os.homedir())) : defaultCacheDir();
+  const name = pack.file || 'package.tgz';
+  const cached = path.join(cache, name);
+  if (packageMatches(cached, pack)) {
+    log(say('cached', lang, { path: cached }));
+    return cached;
+  }
+  log(say('downloading', lang, { size: (pack.size / 2 ** 20).toFixed(1), url }));
+  let targetDir = cache;
+  try {
+    fs.mkdirSync(cache, { recursive: true });
+  } catch {
+    targetDir = workDir; // the cache cannot be written: still install, keep nothing
+  }
+  const part = path.join(targetDir, `${name}.part`);
+  try {
+    await downloadPackage(url, pack, part, settings.timeout);
+  } catch (error) {
+    fs.rmSync(part, { force: true });
+    if (error instanceof MeshPackError && error.key === 'failed') Object.assign(error.fields, { file: name, url, cache });
+    throw error;
+  }
+  const final = path.join(targetDir, name);
+  fs.renameSync(part, final);
+  log(say('package_ok', lang));
+  return final;
 }
 
 function safeRelative(rel) {
@@ -373,15 +452,12 @@ export async function ensure({
     return 0;
   }
   log(say('needed', lang, { count: bad.length }));
-  const url = settings.url || manifest.pack.url || '';
-  if (!url) throw new MeshPackError('no_url');
   const pack = manifest.pack;
-  log(say('downloading', lang, { size: (pack.size / 2 ** 20).toFixed(1), url }));
+  const url = settings.url || pack.url || '';
+  if (!url && !settings.package) throw new MeshPackError('no_url');
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hydra-meshes-'));
   try {
-    const packageFile = path.join(tmp, 'package.tgz');
-    await downloadPackage(url, pack, packageFile, settings.timeout);
-    log(say('package_ok', lang));
+    const packageFile = await obtainPackage(settings, pack, url, tmp, log, lang);
     const count = await installFromPackage(packageFile, bad, meshDir);
     log(say('installed', lang, { count }));
     return count;
@@ -415,8 +491,12 @@ export async function main(args = process.argv.slice(2)) {
       return 0;
     }
     if (command === 'prepare') {
-      // silent under the default source, so npm can call it before every dev run and build
-      if (loadSettings().source !== 'local') await ensure();
+            const settings = loadSettings();
+      if (settings.source !== 'local') {
+        // quiet when nothing is missing, so npm can call it before every dev run and build
+        if (settings.source === 'auto' && scan(loadManifest(), MESH_DIR).length === 0) return 0;
+        await ensure({ settings });
+      }
       return 0;
     }
     console.log('usage: node scripts/mesh_pack.mjs status | check | prepare | ensure [--source auto|download]');
@@ -424,6 +504,7 @@ export async function main(args = process.argv.slice(2)) {
   } catch (error) {
     if (error instanceof MeshPackError) {
       console.error(say(error.key, lang, error.fields));
+      if (error.key === 'failed' && 'cache' in error.fields) console.error(say('hint_network', lang, error.fields));
       return 1;
     }
     throw error;

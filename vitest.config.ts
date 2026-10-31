@@ -15,6 +15,8 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    // The tests read the 3D models, which are not in the repository tree: they come from one verified package.
+    globalSetup: ['tests/setup/meshes.ts'],
     environment: 'node',
     include: ['tests/**/*.test.{ts,tsx}'],
   },

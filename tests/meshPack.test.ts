@@ -19,12 +19,15 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
+  MESH_DIR,
   MESSAGES,
   MeshPackError,
+  defaultCacheDir,
   ensure,
   languageCode,
   loadManifest,
   loadSettings,
+  packageMatches,
   say,
   scan,
   type MeshEntry,
@@ -97,7 +100,15 @@ function writeManifest(payload: Buffer, files: MeshEntry[] = entries): string {
   );
   return manifestPath;
 }
-const settings = (source: string, url: string): MeshSettings => ({ source, url, timeout: 10 });
+// every call keeps its package cache inside the temporary folder (never in the home folder of whoever runs the tests)
+let cacheCounter = 0;
+const settings = (source: string, url: string, cache?: string, pkgPath = ''): MeshSettings => ({
+  source,
+  url,
+  timeout: 10,
+  cache: cache ?? path.join(tmp, `cache-${cacheCounter++}`),
+  package: pkgPath,
+});
 
 beforeAll(() => {
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'meshpack-test-'));
@@ -111,12 +122,14 @@ describe('the pinned manifest', () => {
     expect(manifest.files.length).toBeGreaterThan(100);
     const paths = manifest.files.map((f) => f.path);
     expect(paths).toEqual([...new Set(paths)].sort());
-    expect(scan(manifest, undefined, true)).toEqual([]);
+    // a file that is present must be the pinned one; the missing ones are brought by `ensure` (the test setup calls it)
+    const present = scan(manifest, undefined, true).filter((e) => fs.existsSync(path.join(MESH_DIR, ...e.path.split('/'))));
+    expect(present).toEqual([]);
     expect((manifest.pack.url ?? '').startsWith('https://')).toBe(true);
   }, 120_000);
 
-  it('defaults to the local source', () => {
-    expect(loadSettings().source).toBe('local');
+  it('defaults to the auto source (the tree does not carry the meshes)', () => {
+    expect(loadSettings(undefined, {}).source).toBe('auto');
   });
 });
 
@@ -146,7 +159,7 @@ describe('messages and settings', () => {
       url: 'https://e.invalid/x',
     });
     fs.writeFileSync(cfg, 'not json');
-    expect(loadSettings(cfg, {}).source).toBe('local');
+    expect(loadSettings(cfg, {}).source).toBe('auto');
   });
 });
 
@@ -154,35 +167,94 @@ describe('ensure against a local server', () => {
   it('local never touches the network or the disk; auto fetches only what is missing; download repairs', async () => {
     const man = writeManifest(pkg);
     const dir = path.join(tmp, 'meshes');
+    const cacheMain = path.join(tmp, 'cache-main');
     const server = await serve(pkg);
     try {
       const logs: string[] = [];
-      expect(await ensure({ settings: settings('local', server.url), manifestPath: man, meshDir: dir, log: (l) => logs.push(l), lang: 'en' })).toBe(0);
+      expect(await ensure({ settings: settings('local', server.url, cacheMain), manifestPath: man, meshDir: dir, log: (l) => logs.push(l), lang: 'en' })).toBe(0);
       expect(server.state.hits).toBe(0);
       expect(fs.existsSync(dir)).toBe(false);
 
-      expect(await ensure({ settings: settings('auto', server.url), manifestPath: man, meshDir: dir, log: (l) => logs.push(l), lang: 'en' })).toBe(3);
+      expect(await ensure({ settings: settings('auto', server.url, cacheMain), manifestPath: man, meshDir: dir, log: (l) => logs.push(l), lang: 'en' })).toBe(3);
       expect(fs.readFileSync(path.join(dir, 'robots/y/a.stl')).equals(a)).toBe(true);
       expect(fs.readFileSync(path.join(dir, 'machine/b.glb')).equals(b)).toBe(true);
       expect(server.state.hits).toBe(1);
       expect(logs.some((l) => l.includes('Installed'))).toBe(true);
 
-      expect(await ensure({ settings: settings('auto', server.url), manifestPath: man, meshDir: dir, log: silent })).toBe(0);
+      expect(await ensure({ settings: settings('auto', server.url, cacheMain), manifestPath: man, meshDir: dir, log: silent })).toBe(0);
       expect(server.state.hits).toBe(1);
 
       fs.writeFileSync(path.join(dir, 'machine/b.glb'), Buffer.alloc(b.length, 120));
-      expect(await ensure({ settings: settings('auto', server.url), manifestPath: man, meshDir: dir, log: silent })).toBe(0);
-      expect(await ensure({ settings: settings('download', server.url), manifestPath: man, meshDir: dir, log: silent })).toBe(1);
+      expect(await ensure({ settings: settings('auto', server.url, cacheMain), manifestPath: man, meshDir: dir, log: silent })).toBe(0);
+      expect(await ensure({ settings: settings('download', server.url, cacheMain), manifestPath: man, meshDir: dir, log: silent })).toBe(1);
       expect(fs.readFileSync(path.join(dir, 'machine/b.glb')).equals(b)).toBe(true);
-      expect(server.state.hits).toBe(2);
+      expect(server.state.hits).toBe(1); // the cached package serves the repair
 
       fs.unlinkSync(path.join(dir, 'robots/x/a.stl'));
-      expect(await ensure({ settings: settings('auto', server.url), manifestPath: man, meshDir: dir, log: silent })).toBe(1);
+      expect(await ensure({ settings: settings('auto', server.url, cacheMain), manifestPath: man, meshDir: dir, log: silent })).toBe(1);
       const leftovers = fs.readdirSync(dir, { recursive: true }).filter((f) => String(f).endsWith('.part'));
       expect(leftovers).toEqual([]);
+
+      // the package stays in the cache and is reused with no network
+      expect(fs.existsSync(path.join(cacheMain, 'p.tgz'))).toBe(true);
+      expect(fs.readdirSync(cacheMain).filter((f) => f.endsWith('.part'))).toEqual([]);
+      fs.rmSync(dir, { recursive: true });
+      logs.length = 0;
+      expect(await ensure({ settings: settings('auto', server.url, cacheMain), manifestPath: man, meshDir: dir, log: (l) => logs.push(l), lang: 'en' })).toBe(3);
+      expect(server.state.hits).toBe(1);
+      expect(logs.some((l) => l.includes('already stored'))).toBe(true);
+
+      // a damaged cached package is thrown away and fetched again
+      fs.writeFileSync(path.join(cacheMain, 'p.tgz'), 'junk');
+      fs.rmSync(dir, { recursive: true });
+      expect(await ensure({ settings: settings('auto', server.url, cacheMain), manifestPath: man, meshDir: dir, log: silent })).toBe(3);
+      expect(server.state.hits).toBe(2);
+      expect(packageMatches(path.join(cacheMain, 'p.tgz'), JSON.parse(fs.readFileSync(man, 'utf8')).pack)).toBe(true);
     } finally {
       await server.close();
     }
+  });
+});
+
+describe('working offline', () => {
+  const dead = 'http://127.0.0.1:9/none.tgz';
+
+  it('a package given by path installs with no network and no cache', async () => {
+    const man = writeManifest(pkg);
+    const given = path.join(tmp, 'given.tgz');
+    fs.writeFileSync(given, pkg);
+    const cache = path.join(tmp, 'nocache');
+    const dir = path.join(tmp, 'offline-meshes');
+    expect(await ensure({ settings: settings('auto', dead, cache, given), manifestPath: man, meshDir: dir, log: silent })).toBe(3);
+    expect(fs.existsSync(cache)).toBe(false);
+  });
+
+  it('a wrong or missing package file is refused and installs nothing', async () => {
+    const man = writeManifest(pkg);
+    const wrong = path.join(tmp, 'wrong.tgz');
+    fs.writeFileSync(wrong, Buffer.concat([pkg, Buffer.from('0')]));
+    for (const file of [wrong, path.join(tmp, 'missing.tgz')]) {
+      const dir = path.join(tmp, `off-${path.basename(file)}`);
+      await expect(ensure({ settings: settings('auto', dead, undefined, file), manifestPath: man, meshDir: dir, log: silent })).rejects.toMatchObject({ key: 'package_file_bad' });
+      expect(fs.existsSync(dir)).toBe(false);
+    }
+  });
+
+  it('no network and no cache fails with the way out, leaving nothing half written', async () => {
+    const man = writeManifest(pkg);
+    const cache = path.join(tmp, 'empty-cache');
+    const error = await ensure({ settings: settings('auto', dead, cache), manifestPath: man, meshDir: path.join(tmp, 'off4'), log: silent }).catch((e) => e);
+    expect(error).toBeInstanceOf(MeshPackError);
+    expect(error.key).toBe('failed');
+    expect(Object.keys(error.fields)).toEqual(expect.arrayContaining(['file', 'url', 'cache']));
+    expect(say('hint_network', 'en', error.fields)).toContain('HYDRA_UMC_MESH_PACKAGE');
+    expect(fs.readdirSync(cache).filter((f) => f.endsWith('.part'))).toEqual([]);
+  });
+
+  it('the cache folder and the package path come from the environment', () => {
+    const s = loadSettings(path.join(tmp, 'none.json'), { HYDRA_UMC_MESH_CACHE: '/c', HYDRA_UMC_MESH_PACKAGE: '/p.tgz' });
+    expect(s).toMatchObject({ cache: '/c', package: '/p.tgz' });
+    expect(defaultCacheDir().startsWith(os.homedir())).toBe(true);
   });
 });
 
