@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { Radio, RefreshCw, ShieldCheck, User } from 'lucide-react';
 import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
+import { ConnectionHistory } from './ConnectionHistory';
 
 interface ClientInfo {
   username: string | null;
@@ -146,6 +147,8 @@ export function AdminClients() {
       )}
 
       <p className="text-[10px] text-slate-600">{t('ecosystem.clients_refresh_note', { seconds: POLL_MS / 1000 })}</p>
+
+      <ConnectionHistory />
     </div>
   );
 }

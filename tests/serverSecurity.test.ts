@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, tlsPatch } from '../src/lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, tlsPatch } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -176,5 +176,26 @@ describe('the safe mode option of the robots', () => {
 
   it('knows the warning of allowing it', () => {
     expect(knownWarnings(['robot_enable_allowed', 'other'])).toEqual(['robot_enable_allowed']);
+  });
+});
+
+describe('the address option of the connection history', () => {
+  it('reads the option the server reports and shows nothing for a server that predates it', () => {
+    expect(parseSecurityState({ ...answer, connections: { recordAddress: { value: false, source: 'default' } } })?.connections).toEqual({ recordAddress: { value: false, source: 'default' } });
+    expect(parseSecurityState(answer)?.connections).toBeNull();
+    expect(parseSecurityState({ ...answer, connections: { recordAddress: { value: 'yes', source: 'default' } } })?.connections).toBeNull();
+    expect(parseSecurityState({ ...answer, connections: { recordAddress: { value: true, source: 'nowhere' } } })?.connections).toBeNull();
+  });
+
+  it('builds the request and asks only before keeping the addresses', () => {
+    expect(connectionsPatch(true)).toEqual({ connections: { recordAddress: true } });
+    expect(connectionsChangeNeedsConfirmation(false, true)).toBe(true);
+    expect(connectionsChangeNeedsConfirmation(true, false)).toBe(false);
+    expect(connectionsChangeNeedsConfirmation(true, true)).toBe(false);
+    expect(connectionsChangeNeedsConfirmation(false, false)).toBe(false);
+  });
+
+  it('knows the warning of keeping them', () => {
+    expect(knownWarnings(['connection_address_recorded', 'other'])).toEqual(['connection_address_recorded']);
   });
 });

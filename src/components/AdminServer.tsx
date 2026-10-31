@@ -26,7 +26,7 @@ import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
 
 interface HydraInfo {
   product?: string;
@@ -71,6 +71,8 @@ export function AdminServer() {
   const [pendingVoice, setPendingVoice] = useState<VoicePatchBody | null>(null);
   const [robotsAllowEnable, setRobotsAllowEnable] = useState(false);
   const [pendingRobots, setPendingRobots] = useState(false);
+  const [connectionsRecordAddress, setConnectionsRecordAddress] = useState(false);
+  const [pendingConnections, setPendingConnections] = useState(false);
   const [mavlinkKey, setMavlinkKey] = useState('');
   const [mavlinkUnsigned, setMavlinkUnsigned] = useState(false);
   const [pendingMavlink, setPendingMavlink] = useState<MavlinkPatchBody | null>(null);
@@ -89,6 +91,7 @@ export function AdminServer() {
         setVoiceConfidence(String(state.voice.minConfidence.value));
       }
       if (state.robots) setRobotsAllowEnable(state.robots.allowEnable.value);
+      if (state.connections) setConnectionsRecordAddress(state.connections.recordAddress.value);
       if (state.mavlink) {
         setMavlinkKey(state.mavlink.signingKeyFile.value);
         setMavlinkUnsigned(state.mavlink.signingAllowUnsigned.value);
@@ -117,6 +120,7 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('voice_heard_text_on')) setWarning(t('ecosystem.admin_security_voice_heard_warning'));
       if (knownWarnings(data.warnings).includes('voice_confidence_off')) setWarning(t('ecosystem.admin_security_voice_confidence_warning'));
       if (knownWarnings(data.warnings).includes('robot_enable_allowed')) setWarning(t('ecosystem.admin_security_robots_warning'));
+      if (knownWarnings(data.warnings).includes('connection_address_recorded')) setWarning(t('ecosystem.admin_security_connections_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_unsigned_allowed')) setWarning(t('ecosystem.admin_security_mavlink_unsigned_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_signing_off')) setWarning(t('ecosystem.admin_security_mavlink_off_warning'));
       setNotice(t('ecosystem.admin_security_saved'));
@@ -156,6 +160,12 @@ export function AdminServer() {
     if (!security?.robots) return;
     if (robotsChangeNeedsConfirmation(security.robots.allowEnable.value, robotsAllowEnable)) setPendingRobots(true);
     else void saveSecurity(robotsPatch(robotsAllowEnable));
+  };
+
+  const saveConnections = () => {
+    if (!security?.connections) return;
+    if (connectionsChangeNeedsConfirmation(security.connections.recordAddress.value, connectionsRecordAddress)) setPendingConnections(true);
+    else void saveSecurity(connectionsPatch(connectionsRecordAddress));
   };
 
   const saveMavlink = () => {
@@ -476,6 +486,27 @@ export function AdminServer() {
             </div>
           )}
 
+          {security.connections && (
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_connections_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="connections-record-address"
+                  checked={connectionsRecordAddress}
+                  disabled={saving || isLocked(security.connections.recordAddress.source)}
+                  onChange={e => setConnectionsRecordAddress(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_connections_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.connections.recordAddress.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_connections_help')}</div>
+              <button onClick={saveConnections} disabled={saving || isLocked(security.connections.recordAddress.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                <Save size={14} /> {t('ecosystem.admin_security_connections_save')}
+              </button>
+            </div>
+          )}
+
           {security.mavlink && (
             <div className="space-y-2">
               <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_mavlink_title')}</h5>
@@ -522,6 +553,13 @@ export function AdminServer() {
         message={t('ecosystem.admin_security_robots_confirm')}
         onConfirm={() => { setPendingRobots(false); void saveSecurity(robotsPatch(robotsAllowEnable)); }}
         onCancel={() => setPendingRobots(false)}
+      />
+
+      <ConfirmDialog
+        open={pendingConnections}
+        message={t('ecosystem.admin_security_connections_confirm')}
+        onConfirm={() => { setPendingConnections(false); void saveSecurity(connectionsPatch(connectionsRecordAddress)); }}
+        onCancel={() => setPendingConnections(false)}
       />
 
       <ConfirmDialog

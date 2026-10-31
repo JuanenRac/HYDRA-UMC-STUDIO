@@ -7,6 +7,8 @@
 import { publishClaimsEvent } from './lib/claimsFeed';
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { apiUrl, wsUrl } from './lib/apiBase';
+import { clientHeader } from './lib/connectionsApi';
+import studioPackage from '../package.json';
 import { loginFailureText, saveFailureText, totpNeededText, unreachableText } from './lib/serverErrors';
 import { loginNeedsCode as loginNeedsCodeFrom, normalizeCode } from './lib/totpApi';
 import { applyRobotCommandMutation, rollbackRobotCommand } from './robotCommandTransition';
@@ -184,7 +186,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const res = await fetch(apiUrl('/api/login'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...clientHeader(studioPackage.version) },
         body: JSON.stringify(totp ? { username, password, totp: normalizeCode(totp) } : { username, password }),
       });
       const data = await res.json().catch(() => ({}));

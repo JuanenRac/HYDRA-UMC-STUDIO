@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Connection history in Connected Apps:** under the list of live connections, a simple view of who has signed in to the server: the clients it has seen (kind, user, version, local or from outside, the sessions open now, the sign-ins that worked or were refused) and the latest sign-ins, refused sign-ins, sign-outs and ended sessions, read from the connection routes of the server. It says so plainly when the server is too old to offer them. Studio now names itself to the server in the sign-in (`X-Hydra-Client`). Server Admin has a switch to keep the address and user agent of each client in that history (off by default, asks before turning it on, locked when the environment fixes it). Texts in the eight languages.
 - **Safe mode of a robot:** the robot bar has a Disable button (the robot stops, its valves and pumps go off and the server refuses everything but STOP; a `Safe mode - disabled` badge shows it) and, for an administrator, an Enable button that asks first. The server keeps enabling off by default, so Server Admin has a new switch (`Allow a client to enable a robot that is in safe mode`, with a confirmation before it is turned on); a refused command says in its own sentence why (robot disabled, enabling not allowed, administrator required), in the eight languages.
 - **The unit of the meshes is declared by each model:** the `metadata.json` of every model in `public/models` says `mm` or `m`, the same declaration that SUITE and the URDF editor read.
 

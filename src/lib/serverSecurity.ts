@@ -51,6 +51,10 @@ export interface SecurityState {
   robots: {
     allowEnable: { value: boolean; source: SecuritySource };
   } | null;
+  /** Absent when the server predates the history of connections. */
+  connections: {
+    recordAddress: { value: boolean; source: SecuritySource };
+  } | null;
   /** Absent when the server predates the MAVLink options. The key itself is never sent, only where its file is. */
   mavlink: {
     signingKeyFile: { value: string; source: SecuritySource };
@@ -101,6 +105,13 @@ function parseRobots(raw: any): SecurityState['robots'] {
   const allow = raw.allowEnable;
   if (!allow || typeof allow.value !== 'boolean' || !isSource(allow.source)) return null;
   return { allowEnable: { value: allow.value, source: allow.source } };
+}
+
+function parseConnections(raw: any): SecurityState['connections'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const record = raw.recordAddress;
+  if (!record || typeof record.value !== 'boolean' || !isSource(record.source)) return null;
+  return { recordAddress: { value: record.value, source: record.source } };
 }
 
 function parseMavlink(raw: any): SecurityState['mavlink'] {
@@ -159,6 +170,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     mqtt: parseMqtt(raw.mqtt),
     voice: parseVoice(raw.voice),
     robots: parseRobots(raw.robots),
+    connections: parseConnections(raw.connections),
     mavlink: parseMavlink(raw.mavlink),
   };
 }
@@ -242,6 +254,18 @@ export function robotsChangeNeedsConfirmation(current: boolean, next: boolean): 
   return !current && next;
 }
 
+export type ConnectionsPatchBody = { connections: { recordAddress: boolean } };
+
+/** The request body for the option that keeps the address and user agent of each client in the history of connections (off by default). */
+export function connectionsPatch(recordAddress: boolean): ConnectionsPatchBody {
+  return { connections: { recordAddress } };
+}
+
+/** Keeping the address of the clients stores personal data: ask first. Turning it off never asks. */
+export function connectionsChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
+  return !current && next;
+}
+
 export type MavlinkPatchBody = { mavlink: { signingKeyFile: string; signingAllowUnsigned: boolean } };
 
 /** The request body for the MAVLink signing options: only the path of the key file travels, never the key. */
@@ -258,6 +282,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'mavlink_unsigned_allowed', 'mavlink_signing_off'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'mavlink_unsigned_allowed', 'mavlink_signing_off'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }
