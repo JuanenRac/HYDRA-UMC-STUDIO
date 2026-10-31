@@ -1100,7 +1100,15 @@
     "admin_security_exposure_camera_warning": "摄像头画面现已对整个网络开放。",
     "admin_security_exposure_ws_warning": "现在接受 WebSocket 地址中的令牌；代理和服务器可能会记录它。",
     "admin_security_exposure_log_warning": "日志中的机密信息不再被隐去。",
-    "admin_security_exposure_confirm": "这会降低服务器的保护（开放摄像头画面、地址中带令牌、日志中含机密信息，或语音确认没有签名）。是否继续？"
+    "admin_security_exposure_confirm": "这会降低服务器的保护（开放摄像头画面、地址中带令牌、日志中含机密信息，或语音确认没有签名）。是否继续？",
+    "admin_security_install_title": "安装与摄像头密码",
+    "admin_security_install_camera_label": "通过环境（而非命令行）把 IP 摄像头的密码交给其进程",
+    "admin_security_install_tls_label": "让新安装自行开启 TLS",
+    "admin_security_install_help": "安全默认值：两项均开启。摄像头选项在下次启动摄像头进程时生效；TLS 选项仅在安装首次启动时读取。由服务器环境固定的值无法在此更改。",
+    "admin_security_install_save": "保存安装选项",
+    "admin_security_install_camera_warning": "IP 摄像头的密码现在位于其进程的命令行中，本机的其他用户可以读取。",
+    "admin_security_install_tls_warning": "新安装将不再自行开启 TLS。",
+    "admin_security_install_confirm": "这会降低服务器的保护（摄像头密码出现在命令行中，或新安装默认不启用 TLS）。是否继续？"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO 访问",

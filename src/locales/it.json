@@ -1100,7 +1100,15 @@
     "admin_security_exposure_camera_warning": "Le immagini delle telecamere sono ora aperte a tutta la rete.",
     "admin_security_exposure_ws_warning": "Ora un token nell'indirizzo del WebSocket viene accettato; proxy e server possono registrarlo.",
     "admin_security_exposure_log_warning": "I segreti non vengono più oscurati nel registro.",
-    "admin_security_exposure_confirm": "Questo riduce la protezione del server (immagini delle telecamere aperte, un token nell'indirizzo, segreti nel registro o nessuna firma sulle conferme vocali). Continuare?"
+    "admin_security_exposure_confirm": "Questo riduce la protezione del server (immagini delle telecamere aperte, un token nell'indirizzo, segreti nel registro o nessuna firma sulle conferme vocali). Continuare?",
+    "admin_security_install_title": "Installazione e password delle telecamere",
+    "admin_security_install_camera_label": "Consegnare la password di una telecamera IP al suo processo tramite l'ambiente (non sulla sua riga di comando)",
+    "admin_security_install_tls_label": "Lasciare che una nuova installazione attivi TLS da sola",
+    "admin_security_install_help": "Valori sicuri: entrambe attive. L'opzione della telecamera vale dal prossimo avvio di un processo di telecamera; quella di TLS viene letta solo al primo avvio di un'installazione. Un valore fissato dall'ambiente del server non si può cambiare qui.",
+    "admin_security_install_save": "Salva le opzioni di installazione",
+    "admin_security_install_camera_warning": "La password di una telecamera IP si trova ora sulla riga di comando del suo processo, dove gli altri utenti della macchina possono leggerla.",
+    "admin_security_install_tls_warning": "Una nuova installazione non attiverà più TLS da sola.",
+    "admin_security_install_confirm": "Questo riduce la protezione del server (una password di telecamera su una riga di comando, o nessun TLS di default in una nuova installazione). Continuare?"
   },
   "auth": {
     "title": "Accesso a HYDRA-UMC STUDIO",

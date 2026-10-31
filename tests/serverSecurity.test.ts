@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -268,5 +268,48 @@ describe('the exposure options (camera pictures, token in the WebSocket address,
 
   it('knows the warnings', () => {
     expect(knownWarnings(['camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'other'])).toEqual(['camera_open', 'ws_query_token_allowed', 'log_redaction_off']);
+  });
+});
+
+describe('the installation options (password of an IP camera through the environment, TLS of a new installation)', () => {
+  const safe = { cameraCredentialsViaEnv: true, newInstallTls: true };
+  const reported = {
+    camera: { credentialsViaEnv: { value: true, source: 'default' } },
+    install: { newInstallTls: { value: false, source: 'env' } },
+  };
+
+  it('reads the two values and shows nothing for a server that predates any of them', () => {
+    expect(parseSecurityState({ ...answer, ...reported })?.install).toEqual({
+      cameraCredentialsViaEnv: { value: true, source: 'default' },
+      newInstallTls: { value: false, source: 'env' },
+    });
+    expect(parseSecurityState(answer)?.install).toBeNull();
+    expect(parseSecurityState({ ...answer, ...reported, install: undefined })?.install).toBeNull();
+    expect(parseSecurityState({ ...answer, ...reported, camera: { credentialsViaEnv: { value: 'yes', source: 'config' } } })?.install).toBeNull();
+    expect(parseSecurityState({ ...answer, ...reported, camera: { credentialsViaEnv: { value: true, source: 'elsewhere' } } })?.install).toBeNull();
+  });
+
+  it('keeps the camera pictures option apart from the camera password option', () => {
+    const both = { ...answer, ...reported, websocket: { allowQueryToken: { value: false, source: 'default' } }, logging: { redactSecrets: { value: true, source: 'default' } }, voice: { requireSignature: { value: false, source: 'default' } } };
+    const state = parseSecurityState({ ...both, camera: { open: { value: true, source: 'config' }, credentialsViaEnv: { value: false, source: 'config' } } });
+    expect(state?.exposure?.cameraOpen).toEqual({ value: true, source: 'config' });
+    expect(state?.install?.cameraCredentialsViaEnv).toEqual({ value: false, source: 'config' });
+  });
+
+  it('sends only what changed, so an option fixed by the environment is never sent again', () => {
+    expect(installPatch(safe, safe)).toBeNull();
+    expect(installPatch(safe, { ...safe, cameraCredentialsViaEnv: false })).toEqual({ camera: { credentialsViaEnv: false } });
+    expect(installPatch(safe, { cameraCredentialsViaEnv: false, newInstallTls: false })).toEqual({ camera: { credentialsViaEnv: false }, install: { newInstallTls: false } });
+  });
+
+  it('asks before lowering the protection and never before raising it', () => {
+    expect(installChangeNeedsConfirmation(safe, { ...safe, cameraCredentialsViaEnv: false })).toBe(true);
+    expect(installChangeNeedsConfirmation(safe, { ...safe, newInstallTls: false })).toBe(true);
+    expect(installChangeNeedsConfirmation({ cameraCredentialsViaEnv: false, newInstallTls: false }, safe)).toBe(false);
+    expect(installChangeNeedsConfirmation(safe, safe)).toBe(false);
+  });
+
+  it('knows the warnings', () => {
+    expect(knownWarnings(['camera_credentials_in_arguments', 'new_install_tls_off', 'other'])).toEqual(['camera_credentials_in_arguments', 'new_install_tls_off']);
   });
 });

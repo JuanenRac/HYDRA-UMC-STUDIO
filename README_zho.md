@@ -213,7 +213,7 @@ HYDRA-UMC STUDIO 本身是一个纯客户端——除了当前会话在内存中
 ### 谁在连接，以及 Server Admin 的访问选项
 
 - **Connected Apps 中的连接历史：** 在实时连接列表下方，用简单视图显示谁登录过服务器：服务器见过的客户端（类型、用户、版本、本地或外部、当前打开的会话、成功或被拒绝的登录），以及最近的登录、被拒绝的登录、登出和已结束的会话，数据来自 `GET /api/connections/clients` 和 `GET /api/connections/events`。服务器太旧而无法提供时，会明确说明。两个列表都不含密码或令牌；只有在告知服务器保存地址时才会显示地址。
-- **Server Admin 中的七个访问开关**（仅管理员）：`health.open`（无需登录的健康检查路由）、`safety.publishGlobalStop`（在 MQTT 桥上通告全局停止）、`connections.recordAddress`（在历史中保留每个客户端的地址）、`camera.open`（无需票据的摄像头画面）、`websocket.allowQueryToken`（WebSocket 地址中的令牌）、`logging.redactSecrets`（遮蔽日志中的机密）和 `voice.requireSignature`（对已确认的语音请求要求经过验证的签名）。全部以保守值开始，每个开关都显示其值的来源（默认、从界面保存，或由服务器环境固定并因此被锁定），只发送发生变化的部分，凡是降低保护的更改都会先询问，服务器不提供的选项不会显示。参见 HYDRA-UMC-SERVER 的 `docs/REMOTE_API.md`。
+- **Server Admin 中的九个访问开关**（仅管理员）：`health.open`（无需登录的健康检查路由）、`safety.publishGlobalStop`（在 MQTT 桥上通告全局停止）、`connections.recordAddress`（在历史中保留每个客户端的地址）、`camera.open`（无需票据的摄像头画面）、`websocket.allowQueryToken`（WebSocket 地址中的令牌）、`logging.redactSecrets`（遮蔽日志中的机密）、`voice.requireSignature`（对已确认的语音请求要求经过验证的签名）、`camera.credentialsViaEnv`（通过进程的环境而非命令行交付 IP 摄像头的密码）和 `install.newInstallTls`（新安装自行开启 TLS）。全部以保守值开始，每个开关都显示其值的来源（默认、从界面保存，或由服务器环境固定并因此被锁定），只发送发生变化的部分，凡是降低保护的更改都会先询问，服务器不提供的选项不会显示。参见 HYDRA-UMC-SERVER 的 `docs/REMOTE_API.md`。
 - **网格来自单一软件包：** `meshes.pack.json` 固定软件包以及与 HYDRA-UMC-SUITE 共享的每个网格的 SHA-256，`npm run meshes -- status | check | ensure | prepare` 会使 `public/models/` 达到该状态。来源为 `local`（默认：不改变任何内容，也不下载任何内容）、`auto` 或 `download`，在 `mesh_pack.config.json` 中或用 `HYDRA_UMC_MESH_SOURCE` 选择；不匹配的软件包不会安装任何东西，且只接受 `https` 地址。参见 [`docs/MESH_PACKAGE.md`](docs/MESH_PACKAGE.md)。
 
 ## 🔒 安全与防护

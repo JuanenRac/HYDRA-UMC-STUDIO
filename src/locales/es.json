@@ -1100,7 +1100,15 @@
     "admin_security_exposure_camera_warning": "Las imágenes de las cámaras están ahora abiertas a toda la red.",
     "admin_security_exposure_ws_warning": "Ahora se acepta un token en la dirección del WebSocket; los proxies y servidores pueden registrarlo.",
     "admin_security_exposure_log_warning": "Los secretos ya no se tachan en el registro.",
-    "admin_security_exposure_confirm": "Esto reduce la protección del servidor (imágenes de cámara abiertas, un token en la dirección, secretos en el registro o sin firma en las confirmaciones habladas). ¿Continuar?"
+    "admin_security_exposure_confirm": "Esto reduce la protección del servidor (imágenes de cámara abiertas, un token en la dirección, secretos en el registro o sin firma en las confirmaciones habladas). ¿Continuar?",
+    "admin_security_install_title": "Instalación y contraseñas de cámaras",
+    "admin_security_install_camera_label": "Entregar la contraseña de una cámara IP a su proceso por el entorno (no en su línea de órdenes)",
+    "admin_security_install_tls_label": "Dejar que una instalación nueva active TLS por sí sola",
+    "admin_security_install_help": "Valores seguros: ambas activadas. La opción de la cámara se aplica la próxima vez que arranque un proceso de cámara; la de TLS solo se lee en el primer arranque de una instalación. Un valor fijado por el entorno del servidor no se puede cambiar aquí.",
+    "admin_security_install_save": "Guardar las opciones de instalación",
+    "admin_security_install_camera_warning": "La contraseña de una cámara IP queda ahora en la línea de órdenes de su proceso, donde otros usuarios de la máquina pueden leerla.",
+    "admin_security_install_tls_warning": "Una instalación nueva ya no activará TLS por sí sola.",
+    "admin_security_install_confirm": "Esto reduce la protección del servidor (una contraseña de cámara en una línea de órdenes, o sin TLS por defecto en una instalación nueva). ¿Continuar?"
   },
   "auth": {
     "title": "Acceso a HYDRA-UMC STUDIO",

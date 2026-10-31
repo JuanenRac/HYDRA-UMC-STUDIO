@@ -1100,7 +1100,15 @@
     "admin_security_exposure_camera_warning": "Les images des caméras sont maintenant ouvertes à tout le réseau.",
     "admin_security_exposure_ws_warning": "Un jeton dans l'adresse du WebSocket est maintenant accepté ; les proxys et serveurs peuvent l'enregistrer.",
     "admin_security_exposure_log_warning": "Les secrets ne sont plus masqués dans le journal.",
-    "admin_security_exposure_confirm": "Cela réduit la protection du serveur (images de caméra ouvertes, un jeton dans l'adresse, secrets dans le journal ou aucune signature sur les confirmations vocales). Continuer ?"
+    "admin_security_exposure_confirm": "Cela réduit la protection du serveur (images de caméra ouvertes, un jeton dans l'adresse, secrets dans le journal ou aucune signature sur les confirmations vocales). Continuer ?",
+    "admin_security_install_title": "Installation et mots de passe des caméras",
+    "admin_security_install_camera_label": "Transmettre le mot de passe d'une caméra IP à son processus par l'environnement (et non sur sa ligne de commande)",
+    "admin_security_install_tls_label": "Laisser une nouvelle installation activer TLS d'elle-même",
+    "admin_security_install_help": "Valeurs sûres : les deux activées. L'option de la caméra s'applique au prochain démarrage d'un processus de caméra ; celle de TLS n'est lue qu'au premier démarrage d'une installation. Une valeur fixée par l'environnement du serveur ne peut pas être modifiée ici.",
+    "admin_security_install_save": "Enregistrer les options d'installation",
+    "admin_security_install_camera_warning": "Le mot de passe d'une caméra IP figure désormais sur la ligne de commande de son processus, où les autres utilisateurs de la machine peuvent le lire.",
+    "admin_security_install_tls_warning": "Une nouvelle installation n'activera plus TLS d'elle-même.",
+    "admin_security_install_confirm": "Cela réduit la protection du serveur (un mot de passe de caméra sur une ligne de commande, ou pas de TLS par défaut dans une nouvelle installation). Continuer ?"
   },
   "auth": {
     "title": "Accès HYDRA-UMC STUDIO",

@@ -1100,7 +1100,15 @@
     "admin_security_exposure_camera_warning": "The camera pictures are now open to the whole network.",
     "admin_security_exposure_ws_warning": "A token in the WebSocket address is now accepted; proxies and servers may record it.",
     "admin_security_exposure_log_warning": "Secrets are no longer blanked out of the log.",
-    "admin_security_exposure_confirm": "This lowers the protection of the server (open camera pictures, a token in the address, secrets in the log or no signature on spoken confirmations). Continue?"
+    "admin_security_exposure_confirm": "This lowers the protection of the server (open camera pictures, a token in the address, secrets in the log or no signature on spoken confirmations). Continue?",
+    "admin_security_install_title": "Installation and camera passwords",
+    "admin_security_install_camera_label": "Hand the password of an IP camera to its process through the environment (not on its command line)",
+    "admin_security_install_tls_label": "Let a new installation switch TLS on by itself",
+    "admin_security_install_help": "Safe defaults: both on. The camera option applies the next time a camera process starts; the TLS option is only read at the first start of an installation. A value fixed by the server environment cannot be changed here.",
+    "admin_security_install_save": "Save installation options",
+    "admin_security_install_camera_warning": "The password of an IP camera is now on the command line of its process, where other users of the machine can read it.",
+    "admin_security_install_tls_warning": "A new installation will no longer switch TLS on by itself.",
+    "admin_security_install_confirm": "This lowers the protection of the server (a camera password on a command line, or no TLS by default in a new installation). Continue?"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Access",

@@ -1100,7 +1100,15 @@
     "admin_security_exposure_camera_warning": "As imagens das câmaras estão agora abertas a toda a rede.",
     "admin_security_exposure_ws_warning": "Passa a aceitar-se um token no endereço do WebSocket; os proxies e servidores podem registá-lo.",
     "admin_security_exposure_log_warning": "Os segredos já não são ocultados no registo.",
-    "admin_security_exposure_confirm": "Isto reduz a proteção do servidor (imagens de câmara abertas, um token no endereço, segredos no registo ou sem assinatura nas confirmações faladas). Continuar?"
+    "admin_security_exposure_confirm": "Isto reduz a proteção do servidor (imagens de câmara abertas, um token no endereço, segredos no registo ou sem assinatura nas confirmações faladas). Continuar?",
+    "admin_security_install_title": "Instalação e palavras-passe das câmaras",
+    "admin_security_install_camera_label": "Entregar a palavra-passe de uma câmara IP ao seu processo através do ambiente (não na sua linha de comandos)",
+    "admin_security_install_tls_label": "Deixar uma instalação nova ativar o TLS por si própria",
+    "admin_security_install_help": "Valores seguros: ambas ativas. A opção da câmara aplica-se da próxima vez que um processo de câmara arrancar; a do TLS só é lida no primeiro arranque de uma instalação. Um valor fixado pelo ambiente do servidor não pode ser alterado aqui.",
+    "admin_security_install_save": "Guardar as opções de instalação",
+    "admin_security_install_camera_warning": "A palavra-passe de uma câmara IP fica agora na linha de comandos do seu processo, onde os outros utilizadores da máquina a podem ler.",
+    "admin_security_install_tls_warning": "Uma instalação nova deixa de ativar o TLS por si própria.",
+    "admin_security_install_confirm": "Isto reduz a proteção do servidor (uma palavra-passe de câmara numa linha de comandos, ou sem TLS por predefinição numa instalação nova). Continuar?"
   },
   "auth": {
     "title": "Acesso ao HYDRA-UMC STUDIO",
