@@ -41,3 +41,10 @@ public/models/**/*.bak
 # npm is the package manager of this project (package-lock.json); another manager's lockfile would drift from it
 bun.lock
 bun.lockb
+
+# The 3D model files shared with HYDRA-UMC-SUITE come from the verified mesh package (docs/MESH_PACKAGE.md); a download
+# must never be committed. A new model is added on purpose with git add -f and goes into a new revision of the package.
+public/models/**/*.stl
+public/models/**/*.STL
+public/models/**/*.amf
+public/models/**/*.3mf
