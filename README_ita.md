@@ -378,6 +378,8 @@ HYDRA-UMC-STUDIO/
 ├── CHANGELOG.md                     cosa è cambiato in ogni versione
 ├── hydra-umc.project.json           manifesto: versione, maturità, famiglia
 ├── package.json                     metadati e script del pacchetto
+├── mesh_pack.config.json            Da dove arrivano i modelli 3D: local (predefinito), auto o download, con l'indirizzo del pacchetto
+├── meshes.pack.json                 Dimensioni e SHA-256 del pacchetto di mesh e di ogni mesh che contiene
 └── test.sh                          esegue i test
 ```
 

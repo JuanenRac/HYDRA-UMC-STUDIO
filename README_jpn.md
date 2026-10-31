@@ -377,6 +377,8 @@ HYDRA-UMC-STUDIO/
 ├── CHANGELOG.md                     各バージョンの変更点
 ├── hydra-umc.project.json           マニフェスト：バージョン、成熟度、ファミリー
 ├── package.json                     パッケージのメタデータとスクリプト
+├── mesh_pack.config.json            3Dモデルの取得元：local（既定）、auto、download、およびパッケージのアドレス
+├── meshes.pack.json                 メッシュパッケージとそれに含まれる各メッシュのサイズと SHA-256
 └── test.sh                          テストを実行
 ```
 

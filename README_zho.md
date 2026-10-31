@@ -377,6 +377,8 @@ HYDRA-UMC-STUDIO/
 ├── CHANGELOG.md                     每个版本的变更
 ├── hydra-umc.project.json           清单：版本、成熟度、系列
 ├── package.json                     包的元数据和脚本
+├── mesh_pack.config.json            3D 模型的来源：local（默认）、auto 或 download，以及包的地址
+├── meshes.pack.json                 网格包及其包含的每个网格的大小和 SHA-256
 └── test.sh                          运行测试
 ```
 
