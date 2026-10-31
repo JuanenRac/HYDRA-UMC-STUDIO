@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.0.6] - Two more security switches in Server Admin and the meshes from one downloadable package, off by default
+
 - **Two more security switches in Server Admin:** a new "Installation and camera passwords" card lets an administrator keep the password of an IP camera out of the command line of its process (`camera.credentialsViaEnv`) and let a new installation switch TLS on by itself (`install.newInstallTls`). Both start on the safe side, show where their value comes from, are locked when the server environment fixes them, appear only when the server offers them, send only what changed and ask before lowering the protection. Texts in the eight languages.
 - **The meshes can come from one downloadable package:** `meshes.pack.json` pins the SHA-256 of a package and of every mesh shared with HYDRA-UMC-SUITE, and `node scripts/mesh_pack.mjs` (`npm run meshes -- status | check | ensure | prepare`) can bring `public/models/` to that state. The source is chosen in `mesh_pack.config.json` or with `HYDRA_UMC_MESH_SOURCE`: `local` (the default, nothing changes and nothing is downloaded), `auto` (the local meshes are used when all are present, only the missing ones are fetched) or `download` (every mesh is checked by its hash). A package that does not match installs nothing; only `https` addresses are accepted. `npm run dev` and `npm run build` run the silent `prepare` step first. Messages in the eight languages; covered by `tests/meshPack.test.ts`. See `docs/MESH_PACKAGE.md`.
 
