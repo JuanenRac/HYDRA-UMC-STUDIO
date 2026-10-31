@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.0.4] - The history of connections in Connected Apps, two more switches in Server Admin, safe mode of a robot, the routes the app calls fixed by a test and the unit of the meshes declared by each model
+
 - **The routes the app calls are fixed by a test:** `tests/restPaths.test.ts` lists every server route used by the sources in `tests/fixtures/rest_routes.json` (a route can only be added or dropped on purpose) and, when the shared contracts sit next to this repository, checks that each one exists in the server contract.
 - **Portuguese wording aligned with SUITE:** the camera library reads "multimédia" instead of "media" and the CPU is masculine ("Carga do CPU").
 - **Two more switches in Server Admin:** whether `GET /health` answers without a sign-in (off by default; opening it asks first) and whether the server announces a global stop on the MQTT bridge (off by default). Each shows where its value comes from, is locked when the server's environment fixes it, and appears only when the server offers it. Texts in the eight languages.
