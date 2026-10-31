@@ -1079,7 +1079,17 @@
     "admin_security_connections_help": "Désactivé par défaut : l'historique fonctionne sans eux. Une fois activé, seuls les administrateurs les voient.",
     "admin_security_connections_save": "Enregistrer l'historique des connexions",
     "admin_security_connections_warning": "Le serveur conserve désormais l'adresse et l'agent utilisateur de chaque client dans l'historique des connexions (seuls les administrateurs les voient).",
-    "admin_security_connections_confirm": "L'adresse et l'agent utilisateur sont des données personnelles. Les conserver dans l'historique des connexions ?"
+    "admin_security_connections_confirm": "L'adresse et l'agent utilisateur sont des données personnelles. Les conserver dans l'historique des connexions ?",
+    "admin_security_health_title": "Route de santé",
+    "admin_security_health_label": "Permettre à tout le réseau de lire GET /health sans connexion",
+    "admin_security_health_help": "Désactivé par défaut : la route répond alors comme si elle n'existait pas. Activée, elle ne montre qu'un rapport de santé minimal, pour un superviseur ou un répartiteur de charge.",
+    "admin_security_health_save": "Enregistrer la route de santé",
+    "admin_security_health_warning": "GET /health répond désormais sans connexion (un simple rapport de santé minimal).",
+    "admin_security_health_confirm": "GET /health répondra sans connexion. L'ouvrir ?",
+    "admin_security_stop_title": "Annonce de l'arrêt global",
+    "admin_security_stop_label": "Annoncer un arrêt global sur le pont MQTT (SAFE_STOP retenu)",
+    "admin_security_stop_help": "Désactivé par défaut. Nécessite le pont MQTT actif. L'état reste jusqu'à ce qu'un administrateur le libère.",
+    "admin_security_stop_save": "Enregistrer l'annonce d'arrêt"
   },
   "auth": {
     "title": "Accès HYDRA-UMC STUDIO",

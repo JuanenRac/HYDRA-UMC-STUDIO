@@ -1079,7 +1079,17 @@
     "admin_security_connections_help": "默认关闭:没有它们历史也能工作。开启后,只有管理员能看到。",
     "admin_security_connections_save": "保存连接历史设置",
     "admin_security_connections_warning": "服务器现在会在连接历史中保存每个客户端的地址和用户代理(只有管理员能看到)。",
-    "admin_security_connections_confirm": "地址和用户代理属于个人数据。要保存到连接历史吗?"
+    "admin_security_connections_confirm": "地址和用户代理属于个人数据。要保存到连接历史吗?",
+    "admin_security_health_title": "健康检查路由",
+    "admin_security_health_label": "允许网络上的任何人无需登录读取 GET /health",
+    "admin_security_health_help": "默认关闭:此时该路由的响应就像不存在一样。开启后只返回最简的健康报告,供监控程序或负载均衡器使用。",
+    "admin_security_health_save": "保存健康检查路由",
+    "admin_security_health_warning": "GET /health 现在无需登录即可响应(仅返回最简的健康报告)。",
+    "admin_security_health_confirm": "GET /health 将无需登录即可响应。要开放吗?",
+    "admin_security_stop_title": "全局停止通告",
+    "admin_security_stop_label": "在 MQTT 桥上通告全局停止(保留的 SAFE_STOP)",
+    "admin_security_stop_help": "默认关闭。需要开启 MQTT 桥。该状态会一直保留,直到管理员解除。",
+    "admin_security_stop_save": "保存停止通告"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO 访问",

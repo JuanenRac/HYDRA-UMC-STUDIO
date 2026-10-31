@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, tlsPatch } from '../src/lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, tlsPatch } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -197,5 +197,29 @@ describe('the address option of the connection history', () => {
 
   it('knows the warning of keeping them', () => {
     expect(knownWarnings(['connection_address_recorded', 'other'])).toEqual(['connection_address_recorded']);
+  });
+});
+
+describe('the health route and the global stop announcement options', () => {
+  it('reads the options the server reports and shows nothing for a server that predates them', () => {
+    expect(parseSecurityState({ ...answer, health: { open: { value: false, source: 'default' } } })?.health).toEqual({ open: { value: false, source: 'default' } });
+    expect(parseSecurityState({ ...answer, safety: { publishGlobalStop: { value: true, source: 'env' } } })?.safety).toEqual({ publishGlobalStop: { value: true, source: 'env' } });
+    expect(parseSecurityState(answer)?.health).toBeNull();
+    expect(parseSecurityState(answer)?.safety).toBeNull();
+    expect(parseSecurityState({ ...answer, health: { open: { value: 'yes', source: 'default' } } })?.health).toBeNull();
+    expect(parseSecurityState({ ...answer, safety: { publishGlobalStop: { value: true, source: 'nowhere' } } })?.safety).toBeNull();
+  });
+
+  it('builds the requests and asks only before opening the health route', () => {
+    expect(healthPatch(true)).toEqual({ health: { open: true } });
+    expect(safetyPatch(true)).toEqual({ safety: { publishGlobalStop: true } });
+    expect(healthChangeNeedsConfirmation(false, true)).toBe(true);
+    expect(healthChangeNeedsConfirmation(true, false)).toBe(false);
+    expect(healthChangeNeedsConfirmation(true, true)).toBe(false);
+    expect(healthChangeNeedsConfirmation(false, false)).toBe(false);
+  });
+
+  it('knows the warnings of both', () => {
+    expect(knownWarnings(['health_open', 'global_stop_published', 'other'])).toEqual(['health_open', 'global_stop_published']);
   });
 });

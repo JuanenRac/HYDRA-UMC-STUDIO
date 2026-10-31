@@ -1079,7 +1079,17 @@
     "admin_security_connections_help": "Disattivato per impostazione predefinita: la cronologia funziona senza. Se attivo, solo gli amministratori li vedono.",
     "admin_security_connections_save": "Salva cronologia delle connessioni",
     "admin_security_connections_warning": "Il server ora conserva l'indirizzo e lo user agent di ogni client nella cronologia delle connessioni (solo gli amministratori li vedono).",
-    "admin_security_connections_confirm": "L'indirizzo e lo user agent sono dati personali. Conservarli nella cronologia delle connessioni?"
+    "admin_security_connections_confirm": "L'indirizzo e lo user agent sono dati personali. Conservarli nella cronologia delle connessioni?",
+    "admin_security_health_title": "Percorso di salute",
+    "admin_security_health_label": "Consentire a chiunque sulla rete di leggere GET /health senza accedere",
+    "admin_security_health_help": "Disattivato per impostazione predefinita: il percorso risponde come se non esistesse. Attivo, mostra solo un rapporto di salute minimo, per un supervisore o un bilanciatore.",
+    "admin_security_health_save": "Salva percorso di salute",
+    "admin_security_health_warning": "GET /health ora risponde senza accesso (solo un rapporto di salute minimo).",
+    "admin_security_health_confirm": "GET /health risponderà senza accesso. Aprirlo?",
+    "admin_security_stop_title": "Annuncio dell'arresto globale",
+    "admin_security_stop_label": "Annunciare un arresto globale sul bridge MQTT (SAFE_STOP trattenuto)",
+    "admin_security_stop_help": "Disattivato per impostazione predefinita. Richiede il bridge MQTT attivo. Lo stato resta finché un amministratore lo rilascia.",
+    "admin_security_stop_save": "Salva annuncio di arresto"
   },
   "auth": {
     "title": "Accesso a HYDRA-UMC STUDIO",

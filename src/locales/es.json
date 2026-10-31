@@ -1079,7 +1079,17 @@
     "admin_security_connections_help": "Desactivado por defecto: el historial funciona sin ellos. Si se activa, solo los administradores los ven.",
     "admin_security_connections_save": "Guardar historial de conexiones",
     "admin_security_connections_warning": "El servidor guarda ahora la dirección y el agente de usuario de cada cliente en el historial de conexiones (solo los administradores los ven).",
-    "admin_security_connections_confirm": "La dirección y el agente de usuario son datos personales. ¿Guardarlos en el historial de conexiones?"
+    "admin_security_connections_confirm": "La dirección y el agente de usuario son datos personales. ¿Guardarlos en el historial de conexiones?",
+    "admin_security_health_title": "Ruta de salud",
+    "admin_security_health_label": "Permitir que cualquiera en la red lea GET /health sin iniciar sesión",
+    "admin_security_health_help": "Desactivado por defecto: la ruta responde como si no existiera. Activado, solo muestra un informe de salud mínimo, para un supervisor o balanceador.",
+    "admin_security_health_save": "Guardar ruta de salud",
+    "admin_security_health_warning": "GET /health responde ahora sin iniciar sesión (solo un informe de salud mínimo).",
+    "admin_security_health_confirm": "GET /health responderá sin iniciar sesión. ¿Abrirla?",
+    "admin_security_stop_title": "Anuncio de parada global",
+    "admin_security_stop_label": "Anunciar una parada global en el puente MQTT (SAFE_STOP retenido)",
+    "admin_security_stop_help": "Desactivado por defecto. Requiere el puente MQTT activo. El estado permanece hasta que un administrador lo libere.",
+    "admin_security_stop_save": "Guardar anuncio de parada"
   },
   "auth": {
     "title": "Acceso a HYDRA-UMC STUDIO",

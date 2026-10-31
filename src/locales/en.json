@@ -1079,7 +1079,17 @@
     "admin_security_connections_help": "Off by default: the history works without them. When on, only administrators are shown them.",
     "admin_security_connections_save": "Save connection history",
     "admin_security_connections_warning": "The server now keeps the address and user agent of every client in the connection history (only administrators see them).",
-    "admin_security_connections_confirm": "The address and user agent are personal data. Keep them in the connection history?"
+    "admin_security_connections_confirm": "The address and user agent are personal data. Keep them in the connection history?",
+    "admin_security_health_title": "Health route",
+    "admin_security_health_label": "Let anyone on the network read GET /health without signing in",
+    "admin_security_health_help": "Off by default: the route then answers as if it did not exist. When on, it shows only a bare health report, for a supervisor or load balancer.",
+    "admin_security_health_save": "Save health route",
+    "admin_security_health_warning": "GET /health now answers without a sign-in (only a bare health report).",
+    "admin_security_health_confirm": "GET /health will answer without a sign-in. Open it?",
+    "admin_security_stop_title": "Global stop announcement",
+    "admin_security_stop_label": "Announce a global stop on the MQTT bridge (retained SAFE_STOP)",
+    "admin_security_stop_help": "Off by default. Needs the MQTT bridge on. The state stays until an administrator releases it.",
+    "admin_security_stop_save": "Save stop announcement"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Access",

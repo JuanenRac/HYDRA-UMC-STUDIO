@@ -1079,7 +1079,17 @@
     "admin_security_connections_help": "初期設定ではオフです。これらがなくても履歴は機能します。オンにしても、表示されるのは管理者だけです。",
     "admin_security_connections_save": "接続履歴を保存",
     "admin_security_connections_warning": "サーバーは各クライアントのアドレスとユーザーエージェントを接続履歴に保存するようになりました(管理者だけに表示されます)。",
-    "admin_security_connections_confirm": "アドレスとユーザーエージェントは個人データです。接続履歴に保存しますか?"
+    "admin_security_connections_confirm": "アドレスとユーザーエージェントは個人データです。接続履歴に保存しますか?",
+    "admin_security_health_title": "ヘルスルート",
+    "admin_security_health_label": "ネットワーク上の誰でもサインインなしで GET /health を読めるようにする",
+    "admin_security_health_help": "既定ではオフ:ルートは存在しないかのように応答します。オンにすると、監視ツールやロードバランサー向けに最小限のヘルスレポートだけを返します。",
+    "admin_security_health_save": "ヘルスルートを保存",
+    "admin_security_health_warning": "GET /health はサインインなしで応答するようになりました(最小限のヘルスレポートのみ)。",
+    "admin_security_health_confirm": "GET /health がサインインなしで応答します。公開しますか?",
+    "admin_security_stop_title": "グローバル停止の通知",
+    "admin_security_stop_label": "MQTT ブリッジでグローバル停止を通知する(保持された SAFE_STOP)",
+    "admin_security_stop_help": "既定ではオフ。MQTT ブリッジがオンである必要があります。管理者が解除するまで状態は保持されます。",
+    "admin_security_stop_save": "停止通知を保存"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO アクセス",

@@ -1079,7 +1079,17 @@
     "admin_security_connections_help": "Standardmäßig aus: Der Verlauf funktioniert auch ohne sie. Wenn an, sehen nur Administratoren sie.",
     "admin_security_connections_save": "Verbindungsverlauf speichern",
     "admin_security_connections_warning": "Der Server speichert jetzt Adresse und User-Agent jedes Clients im Verbindungsverlauf (nur Administratoren sehen sie).",
-    "admin_security_connections_confirm": "Adresse und User-Agent sind personenbezogene Daten. Im Verbindungsverlauf speichern?"
+    "admin_security_connections_confirm": "Adresse und User-Agent sind personenbezogene Daten. Im Verbindungsverlauf speichern?",
+    "admin_security_health_title": "Health-Route",
+    "admin_security_health_label": "GET /health für jeden im Netzwerk ohne Anmeldung lesbar machen",
+    "admin_security_health_help": "Standardmäßig aus: Die Route antwortet dann, als gäbe es sie nicht. Eingeschaltet zeigt sie nur einen minimalen Gesundheitsbericht, für Überwachung oder Load Balancer.",
+    "admin_security_health_save": "Health-Route speichern",
+    "admin_security_health_warning": "GET /health antwortet jetzt ohne Anmeldung (nur ein minimaler Gesundheitsbericht).",
+    "admin_security_health_confirm": "GET /health antwortet dann ohne Anmeldung. Öffnen?",
+    "admin_security_stop_title": "Ankündigung des globalen Stopps",
+    "admin_security_stop_label": "Einen globalen Stopp auf der MQTT-Brücke ankündigen (gehaltenes SAFE_STOP)",
+    "admin_security_stop_help": "Standardmäßig aus. Die MQTT-Brücke muss eingeschaltet sein. Der Zustand bleibt, bis ein Administrator ihn freigibt.",
+    "admin_security_stop_save": "Stopp-Ankündigung speichern"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Zugang",

@@ -26,7 +26,7 @@ import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, healthChangeNeedsConfirmation, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
 
 interface HydraInfo {
   product?: string;
@@ -73,6 +73,9 @@ export function AdminServer() {
   const [pendingRobots, setPendingRobots] = useState(false);
   const [connectionsRecordAddress, setConnectionsRecordAddress] = useState(false);
   const [pendingConnections, setPendingConnections] = useState(false);
+  const [healthOpen, setHealthOpen] = useState(false);
+  const [pendingHealth, setPendingHealth] = useState(false);
+  const [safetyPublish, setSafetyPublish] = useState(false);
   const [mavlinkKey, setMavlinkKey] = useState('');
   const [mavlinkUnsigned, setMavlinkUnsigned] = useState(false);
   const [pendingMavlink, setPendingMavlink] = useState<MavlinkPatchBody | null>(null);
@@ -92,6 +95,8 @@ export function AdminServer() {
       }
       if (state.robots) setRobotsAllowEnable(state.robots.allowEnable.value);
       if (state.connections) setConnectionsRecordAddress(state.connections.recordAddress.value);
+      if (state.health) setHealthOpen(state.health.open.value);
+      if (state.safety) setSafetyPublish(state.safety.publishGlobalStop.value);
       if (state.mavlink) {
         setMavlinkKey(state.mavlink.signingKeyFile.value);
         setMavlinkUnsigned(state.mavlink.signingAllowUnsigned.value);
@@ -121,6 +126,7 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('voice_confidence_off')) setWarning(t('ecosystem.admin_security_voice_confidence_warning'));
       if (knownWarnings(data.warnings).includes('robot_enable_allowed')) setWarning(t('ecosystem.admin_security_robots_warning'));
       if (knownWarnings(data.warnings).includes('connection_address_recorded')) setWarning(t('ecosystem.admin_security_connections_warning'));
+      if (knownWarnings(data.warnings).includes('health_open')) setWarning(t('ecosystem.admin_security_health_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_unsigned_allowed')) setWarning(t('ecosystem.admin_security_mavlink_unsigned_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_signing_off')) setWarning(t('ecosystem.admin_security_mavlink_off_warning'));
       setNotice(t('ecosystem.admin_security_saved'));
@@ -166,6 +172,12 @@ export function AdminServer() {
     if (!security?.connections) return;
     if (connectionsChangeNeedsConfirmation(security.connections.recordAddress.value, connectionsRecordAddress)) setPendingConnections(true);
     else void saveSecurity(connectionsPatch(connectionsRecordAddress));
+  };
+
+  const saveHealth = () => {
+    if (!security?.health) return;
+    if (healthChangeNeedsConfirmation(security.health.open.value, healthOpen)) setPendingHealth(true);
+    else void saveSecurity(healthPatch(healthOpen));
   };
 
   const saveMavlink = () => {
@@ -507,6 +519,48 @@ export function AdminServer() {
             </div>
           )}
 
+          {security.health && (
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_health_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="health-open"
+                  checked={healthOpen}
+                  disabled={saving || isLocked(security.health.open.source)}
+                  onChange={e => setHealthOpen(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_health_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.health.open.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_health_help')}</div>
+              <button onClick={saveHealth} disabled={saving || isLocked(security.health.open.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                <Save size={14} /> {t('ecosystem.admin_security_health_save')}
+              </button>
+            </div>
+          )}
+
+          {security.safety && (
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_stop_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="safety-publish-stop"
+                  checked={safetyPublish}
+                  disabled={saving || isLocked(security.safety.publishGlobalStop.source)}
+                  onChange={e => setSafetyPublish(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_stop_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.safety.publishGlobalStop.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_stop_help')}</div>
+              <button onClick={() => void saveSecurity(safetyPatch(safetyPublish))} disabled={saving || isLocked(security.safety.publishGlobalStop.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                <Save size={14} /> {t('ecosystem.admin_security_stop_save')}
+              </button>
+            </div>
+          )}
+
           {security.mavlink && (
             <div className="space-y-2">
               <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_mavlink_title')}</h5>
@@ -560,6 +614,13 @@ export function AdminServer() {
         message={t('ecosystem.admin_security_connections_confirm')}
         onConfirm={() => { setPendingConnections(false); void saveSecurity(connectionsPatch(connectionsRecordAddress)); }}
         onCancel={() => setPendingConnections(false)}
+      />
+
+      <ConfirmDialog
+        open={pendingHealth}
+        message={t('ecosystem.admin_security_health_confirm')}
+        onConfirm={() => { setPendingHealth(false); void saveSecurity(healthPatch(healthOpen)); }}
+        onCancel={() => setPendingHealth(false)}
       />
 
       <ConfirmDialog

@@ -55,6 +55,14 @@ export interface SecurityState {
   connections: {
     recordAddress: { value: boolean; source: SecuritySource };
   } | null;
+  /** Absent when the server predates the unauthenticated health route. */
+  health: {
+    open: { value: boolean; source: SecuritySource };
+  } | null;
+  /** Absent when the server predates the announcement of the global stop. */
+  safety: {
+    publishGlobalStop: { value: boolean; source: SecuritySource };
+  } | null;
   /** Absent when the server predates the MAVLink options. The key itself is never sent, only where its file is. */
   mavlink: {
     signingKeyFile: { value: string; source: SecuritySource };
@@ -114,6 +122,20 @@ function parseConnections(raw: any): SecurityState['connections'] {
   return { recordAddress: { value: record.value, source: record.source } };
 }
 
+function parseHealth(raw: any): SecurityState['health'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const open = raw.open;
+  if (!open || typeof open.value !== 'boolean' || !isSource(open.source)) return null;
+  return { open: { value: open.value, source: open.source } };
+}
+
+function parseSafety(raw: any): SecurityState['safety'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const publish = raw.publishGlobalStop;
+  if (!publish || typeof publish.value !== 'boolean' || !isSource(publish.source)) return null;
+  return { publishGlobalStop: { value: publish.value, source: publish.source } };
+}
+
 function parseMavlink(raw: any): SecurityState['mavlink'] {
   if (!raw || typeof raw !== 'object') return null;
   const key = raw.signingKeyFile;
@@ -171,6 +193,8 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     voice: parseVoice(raw.voice),
     robots: parseRobots(raw.robots),
     connections: parseConnections(raw.connections),
+    health: parseHealth(raw.health),
+    safety: parseSafety(raw.safety),
     mavlink: parseMavlink(raw.mavlink),
   };
 }
@@ -266,6 +290,25 @@ export function connectionsChangeNeedsConfirmation(current: boolean, next: boole
   return !current && next;
 }
 
+export type HealthPatchBody = { health: { open: boolean } };
+
+/** The request body for the option that lets anyone on the network read GET /health without signing in (off by default). */
+export function healthPatch(open: boolean): HealthPatchBody {
+  return { health: { open } };
+}
+
+/** Opening the health route to clients that are not signed in widens what the network can read: ask first. Closing it never asks. */
+export function healthChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
+  return !current && next;
+}
+
+export type SafetyPatchBody = { safety: { publishGlobalStop: boolean } };
+
+/** The request body for the option that announces a global stop on the MQTT bridge (off by default). Announcing a stop is the safe direction: it never asks. */
+export function safetyPatch(publishGlobalStop: boolean): SafetyPatchBody {
+  return { safety: { publishGlobalStop } };
+}
+
 export type MavlinkPatchBody = { mavlink: { signingKeyFile: string; signingAllowUnsigned: boolean } };
 
 /** The request body for the MAVLink signing options: only the path of the key file travels, never the key. */
@@ -282,6 +325,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'mavlink_unsigned_allowed', 'mavlink_signing_off'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }
