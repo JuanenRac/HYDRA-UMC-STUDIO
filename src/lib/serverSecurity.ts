@@ -63,6 +63,10 @@ export interface SecurityState {
   ecosystemHealth: {
     enabled: { value: boolean; source: SecuritySource };
   } | null;
+  /** Absent when the server predates the remaining-useful-life relay for operators. */
+  rul: {
+    enabled: { value: boolean; source: SecuritySource };
+  } | null;
   /** Absent when the server predates the announcement of the global stop. */
   safety: {
     publishGlobalStop: { value: boolean; source: SecuritySource };
@@ -146,6 +150,13 @@ function parseHealth(raw: any): SecurityState['health'] {
 }
 
 function parseEcosystemHealth(raw: any): SecurityState['ecosystemHealth'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const enabled = raw.enabled;
+  if (!enabled || typeof enabled.value !== 'boolean' || !isSource(enabled.source)) return null;
+  return { enabled: { value: enabled.value, source: enabled.source } };
+}
+
+function parseRul(raw: any): SecurityState['rul'] {
   if (!raw || typeof raw !== 'object') return null;
   const enabled = raw.enabled;
   if (!enabled || typeof enabled.value !== 'boolean' || !isSource(enabled.source)) return null;
@@ -238,6 +249,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     connections: parseConnections(raw.connections),
     health: parseHealth(raw.health),
     ecosystemHealth: parseEcosystemHealth(raw.ecosystemHealth),
+    rul: parseRul(raw.rul),
     safety: parseSafety(raw.safety),
     exposure: parseExposure(raw),
     install: parseInstall(raw),
@@ -353,6 +365,13 @@ export type EcosystemHealthPatchBody = { ecosystemHealth: { enabled: boolean } }
 /** The request body for the option that lets operators and administrators read GET /api/ecosystem/health (off by default). */
 export function ecosystemHealthPatch(enabled: boolean): EcosystemHealthPatchBody {
   return { ecosystemHealth: { enabled } };
+}
+
+export type RulPatchBody = { rul: { enabled: boolean } };
+
+/** The request body for the option that lets operators ask the anomaly detector for a remaining-useful-life estimate through the relay (off by default). */
+export function rulPatch(enabled: boolean): RulPatchBody {
+  return { rul: { enabled } };
 }
 
 export interface ExposureValues {

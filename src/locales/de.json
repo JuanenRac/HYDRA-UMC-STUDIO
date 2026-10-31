@@ -1113,7 +1113,11 @@
     "admin_security_ecosystem_health_title": "Gesundheit des Ökosystems",
     "admin_security_ecosystem_health_label": "Bedienern und Administratoren erlauben, die Gesundheit der Dienste zu lesen (GET /api/ecosystem/health)",
     "admin_security_ecosystem_health_help": "Standardmäßig aus: Die Route antwortet dann, als gäbe es sie nicht. Eingeschaltet listet sie jeden Dienst mit Zustand, gemeldeter Version und den Resttagen des TLS-Zertifikats; nur Administratoren sehen zusätzlich Ports und Units.",
-    "admin_security_ecosystem_health_save": "Gesundheit des Ökosystems speichern"
+    "admin_security_ecosystem_health_save": "Gesundheit des Ökosystems speichern",
+    "admin_security_rul_title": "Restnutzungsdauer für Bediener",
+    "admin_security_rul_label": "Bedienern die Schätzung der Restnutzungsdauer des KI-Dashboards erlauben (POST /api/ai/anomaly-detector/rul)",
+    "admin_security_rul_help": "Standardmäßig aus: Dann darf nur ein Administrator die Anfrage senden, wie bisher. Eingeschaltet dürfen es auch Bediener; Größe und Zeit der Anfrage sind begrenzt, und nur diese Anfrage wird geöffnet (jeder andere Schreibzugriff auf den Detektor bleibt Administratoren vorbehalten).",
+    "admin_security_rul_save": "Restnutzungsdauer speichern"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Zugang",

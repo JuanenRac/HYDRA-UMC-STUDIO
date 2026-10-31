@@ -1113,7 +1113,11 @@
     "admin_security_ecosystem_health_title": "Salute dell'ecosistema",
     "admin_security_ecosystem_health_label": "Consenti a operatori e amministratori di leggere la salute dei servizi (GET /api/ecosystem/health)",
     "admin_security_ecosystem_health_help": "Disattivata per impostazione predefinita: la route risponde allora come se non esistesse. Attivata, elenca ogni servizio con il suo stato, la versione che comunica e i giorni rimasti del certificato TLS; solo gli amministratori vedono anche porte e unità.",
-    "admin_security_ecosystem_health_save": "Salva salute dell'ecosistema"
+    "admin_security_ecosystem_health_save": "Salva salute dell'ecosistema",
+    "admin_security_rul_title": "Vita utile residua per gli operatori",
+    "admin_security_rul_label": "Consenti agli operatori di usare la stima della vita utile residua del cruscotto IA (POST /api/ai/anomaly-detector/rul)",
+    "admin_security_rul_help": "Disattivata per impostazione predefinita: solo un amministratore può allora inviare la richiesta, come prima. Attivata, possono anche gli operatori; dimensione e tempo della richiesta sono limitati e si apre solo questa richiesta (ogni altra scrittura nel rilevatore resta riservata agli amministratori).",
+    "admin_security_rul_save": "Salva vita utile residua"
   },
   "auth": {
     "title": "Accesso a HYDRA-UMC STUDIO",

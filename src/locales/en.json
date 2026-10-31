@@ -1113,7 +1113,11 @@
     "admin_security_ecosystem_health_title": "Health of the ecosystem",
     "admin_security_ecosystem_health_label": "Let operators and administrators read the health of the services (GET /api/ecosystem/health)",
     "admin_security_ecosystem_health_help": "Off by default: the route then answers as if it did not exist. When on, it lists each service with its state, the version it reports and the days left of the TLS certificate; only administrators also see ports and units.",
-    "admin_security_ecosystem_health_save": "Save health of the ecosystem"
+    "admin_security_ecosystem_health_save": "Save health of the ecosystem",
+    "admin_security_rul_title": "Remaining useful life for operators",
+    "admin_security_rul_label": "Let operators use the remaining-useful-life estimate of the AI dashboard (POST /api/ai/anomaly-detector/rul)",
+    "admin_security_rul_help": "Off by default: only an administrator may then send the request, as before. When on, operators may too; the size and the time of the request are limited, and only this request is opened (every other write to the detector stays for administrators).",
+    "admin_security_rul_save": "Save remaining useful life"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Access",

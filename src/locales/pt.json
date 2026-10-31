@@ -1113,7 +1113,11 @@
     "admin_security_ecosystem_health_title": "Saúde do ecossistema",
     "admin_security_ecosystem_health_label": "Permitir que operadores e administradores leiam a saúde dos serviços (GET /api/ecosystem/health)",
     "admin_security_ecosystem_health_help": "Desativado por predefinição: a rota responde então como se não existisse. Ativado, lista cada serviço com o seu estado, a versão que comunica e os dias que restam ao certificado TLS; só os administradores veem também portas e unidades.",
-    "admin_security_ecosystem_health_save": "Guardar saúde do ecossistema"
+    "admin_security_ecosystem_health_save": "Guardar saúde do ecossistema",
+    "admin_security_rul_title": "Vida útil restante para operadores",
+    "admin_security_rul_label": "Permitir que os operadores usem a estimativa de vida útil restante do painel de IA (POST /api/ai/anomaly-detector/rul)",
+    "admin_security_rul_help": "Desativado por predefinição: só um administrador pode então enviar o pedido, como antes. Ativado, os operadores também podem; o tamanho e o tempo do pedido são limitados e só este pedido é aberto (qualquer outra escrita no detetor continua reservada aos administradores).",
+    "admin_security_rul_save": "Guardar vida útil restante"
   },
   "auth": {
     "title": "Acesso ao HYDRA-UMC STUDIO",

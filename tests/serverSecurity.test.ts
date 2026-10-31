@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -326,5 +326,20 @@ describe('the installation options (password of an IP camera through the environ
 
   it('knows the warnings', () => {
     expect(knownWarnings(['camera_credentials_in_arguments', 'new_install_tls_off', 'other'])).toEqual(['camera_credentials_in_arguments', 'new_install_tls_off']);
+  });
+});
+
+describe('the remaining-useful-life option', () => {
+  it('reads the option the server reports and shows nothing for a server that predates it', () => {
+    expect(parseSecurityState({ ...answer, rul: { enabled: { value: false, source: 'default' } } })?.rul).toEqual({ enabled: { value: false, source: 'default' } });
+    expect(parseSecurityState({ ...answer, rul: { enabled: { value: true, source: 'env' } } })?.rul).toEqual({ enabled: { value: true, source: 'env' } });
+    expect(parseSecurityState(answer)?.rul).toBeNull();
+    expect(parseSecurityState({ ...answer, rul: { enabled: { value: 'yes', source: 'default' } } })?.rul).toBeNull();
+    expect(parseSecurityState({ ...answer, rul: { enabled: { value: true, source: 'nowhere' } } })?.rul).toBeNull();
+  });
+
+  it('builds the request', () => {
+    expect(rulPatch(true)).toEqual({ rul: { enabled: true } });
+    expect(rulPatch(false)).toEqual({ rul: { enabled: false } });
   });
 });
