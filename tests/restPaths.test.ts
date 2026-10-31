@@ -48,7 +48,7 @@ describe('server routes called by the app', () => {
     const matches = (route: string, path: string): boolean =>
       new RegExp('^' + route.replace(/\{p\}/g, '[^/]+') + '$').test(path.replace(/\{[^}]+\}/g, 'x'));
     // Routes the server already serves but the shared contract does not list yet; remove each one once the contract has it.
-    const notYetInContract = ['/api/connections/clients', '/api/connections/events'];
+    const notYetInContract = ['/api/connections/clients', '/api/connections/events', '/api/ecosystem/health'];
     const unknown = calledRoutes().filter((r) => !notYetInContract.includes(r)).filter((r) => !paths.some((p) => matches(r, p)));
     expect(unknown).toEqual([]);
   });

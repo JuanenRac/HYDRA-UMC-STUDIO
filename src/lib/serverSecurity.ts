@@ -59,6 +59,10 @@ export interface SecurityState {
   health: {
     open: { value: boolean; source: SecuritySource };
   } | null;
+  /** Absent when the server predates the health of the ecosystem. */
+  ecosystemHealth: {
+    enabled: { value: boolean; source: SecuritySource };
+  } | null;
   /** Absent when the server predates the announcement of the global stop. */
   safety: {
     publishGlobalStop: { value: boolean; source: SecuritySource };
@@ -139,6 +143,13 @@ function parseHealth(raw: any): SecurityState['health'] {
   const open = raw.open;
   if (!open || typeof open.value !== 'boolean' || !isSource(open.source)) return null;
   return { open: { value: open.value, source: open.source } };
+}
+
+function parseEcosystemHealth(raw: any): SecurityState['ecosystemHealth'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const enabled = raw.enabled;
+  if (!enabled || typeof enabled.value !== 'boolean' || !isSource(enabled.source)) return null;
+  return { enabled: { value: enabled.value, source: enabled.source } };
 }
 
 function parseExposure(raw: any): SecurityState['exposure'] {
@@ -226,6 +237,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     robots: parseRobots(raw.robots),
     connections: parseConnections(raw.connections),
     health: parseHealth(raw.health),
+    ecosystemHealth: parseEcosystemHealth(raw.ecosystemHealth),
     safety: parseSafety(raw.safety),
     exposure: parseExposure(raw),
     install: parseInstall(raw),
@@ -334,6 +346,13 @@ export function healthPatch(open: boolean): HealthPatchBody {
 /** Opening the health route to clients that are not signed in widens what the network can read: ask first. Closing it never asks. */
 export function healthChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
   return !current && next;
+}
+
+export type EcosystemHealthPatchBody = { ecosystemHealth: { enabled: boolean } };
+
+/** The request body for the option that lets operators and administrators read GET /api/ecosystem/health (off by default). */
+export function ecosystemHealthPatch(enabled: boolean): EcosystemHealthPatchBody {
+  return { ecosystemHealth: { enabled } };
 }
 
 export interface ExposureValues {

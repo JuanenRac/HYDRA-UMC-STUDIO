@@ -14,7 +14,7 @@ export function helpTabOf(view: string): HelpTab {
     case 'cameras': case 'cameraMedia': return 'cameras_gamepad';
     case 'flasher': case 'tester': case 'hydraFlasher': case 'hydraTester': case 'kinematicBrainStage': case 'settings': return 'firmware_settings';
     case 'adminClients': case 'adminLogs': case 'adminServer': return 'accounts_access';
-    case 'ecosystemServices': case 'ecosystemTelemetry': case 'aiFamilyStatus': case 'systemSupervisor': return 'ecosystem';
+    case 'ecosystemServices': case 'ecosystemHealth': case 'ecosystemTelemetry': case 'aiFamilyStatus': case 'systemSupervisor': return 'ecosystem';
     default: return 'start';
   }
 }

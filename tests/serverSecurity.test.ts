@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -197,6 +197,21 @@ describe('the address option of the connection history', () => {
 
   it('knows the warning of keeping them', () => {
     expect(knownWarnings(['connection_address_recorded', 'other'])).toEqual(['connection_address_recorded']);
+  });
+});
+
+describe('the health of the ecosystem option', () => {
+  it('reads the option the server reports and shows nothing for a server that predates it', () => {
+    expect(parseSecurityState({ ...answer, ecosystemHealth: { enabled: { value: false, source: 'default' } } })?.ecosystemHealth).toEqual({ enabled: { value: false, source: 'default' } });
+    expect(parseSecurityState({ ...answer, ecosystemHealth: { enabled: { value: true, source: 'env' } } })?.ecosystemHealth).toEqual({ enabled: { value: true, source: 'env' } });
+    expect(parseSecurityState(answer)?.ecosystemHealth).toBeNull();
+    expect(parseSecurityState({ ...answer, ecosystemHealth: { enabled: { value: 'yes', source: 'default' } } })?.ecosystemHealth).toBeNull();
+    expect(parseSecurityState({ ...answer, ecosystemHealth: { enabled: { value: true, source: 'nowhere' } } })?.ecosystemHealth).toBeNull();
+  });
+
+  it('builds the request', () => {
+    expect(ecosystemHealthPatch(true)).toEqual({ ecosystemHealth: { enabled: true } });
+    expect(ecosystemHealthPatch(false)).toEqual({ ecosystemHealth: { enabled: false } });
   });
 });
 

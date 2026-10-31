@@ -26,7 +26,7 @@ import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, ecosystemHealthPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
 
 interface HydraInfo {
   product?: string;
@@ -75,6 +75,7 @@ export function AdminServer() {
   const [pendingConnections, setPendingConnections] = useState(false);
   const [healthOpen, setHealthOpen] = useState(false);
   const [pendingHealth, setPendingHealth] = useState(false);
+  const [ecosystemHealthOn, setEcosystemHealthOn] = useState(false);
   const [safetyPublish, setSafetyPublish] = useState(false);
   const [exposure, setExposure] = useState<ExposureValues>({ cameraOpen: false, wsQueryToken: false, logRedaction: true, voiceSignature: false });
   const [pendingExposure, setPendingExposure] = useState<ExposurePatchBody | null>(null);
@@ -100,6 +101,7 @@ export function AdminServer() {
       if (state.robots) setRobotsAllowEnable(state.robots.allowEnable.value);
       if (state.connections) setConnectionsRecordAddress(state.connections.recordAddress.value);
       if (state.health) setHealthOpen(state.health.open.value);
+      if (state.ecosystemHealth) setEcosystemHealthOn(state.ecosystemHealth.enabled.value);
       if (state.safety) setSafetyPublish(state.safety.publishGlobalStop.value);
       if (state.exposure) setExposure({ cameraOpen: state.exposure.cameraOpen.value, wsQueryToken: state.exposure.wsQueryToken.value, logRedaction: state.exposure.logRedaction.value, voiceSignature: state.exposure.voiceSignature.value });
       if (state.install) setInstall({ cameraCredentialsViaEnv: state.install.cameraCredentialsViaEnv.value, newInstallTls: state.install.newInstallTls.value });
@@ -575,6 +577,27 @@ export function AdminServer() {
               <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_health_help')}</div>
               <button onClick={saveHealth} disabled={saving || isLocked(security.health.open.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
                 <Save size={14} /> {t('ecosystem.admin_security_health_save')}
+              </button>
+            </div>
+          )}
+
+          {security.ecosystemHealth && (
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_ecosystem_health_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="ecosystem-health-enabled"
+                  checked={ecosystemHealthOn}
+                  disabled={saving || isLocked(security.ecosystemHealth.enabled.source)}
+                  onChange={e => setEcosystemHealthOn(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_ecosystem_health_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.ecosystemHealth.enabled.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_ecosystem_health_help')}</div>
+              <button onClick={() => void saveSecurity(ecosystemHealthPatch(ecosystemHealthOn))} disabled={saving || isLocked(security.ecosystemHealth.enabled.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                <Save size={14} /> {t('ecosystem.admin_security_ecosystem_health_save')}
               </button>
             </div>
           )}
