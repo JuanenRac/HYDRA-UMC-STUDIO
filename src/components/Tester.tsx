@@ -29,8 +29,9 @@ import { useTranslation } from 'react-i18next';
 import { Activity, Beaker, Radio, RefreshCw, Trash2, CheckCircle2, XCircle, Circle, Thermometer, Gauge, Zap } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { useHydraStore, type ToolType } from '../store';
+import { type ToolType } from '../store';
 import { chipNameFor, hardwareQueryVersion, hasAdvancedExpansion, hopDescription, mockQueryVersion, mockSelfTest, slotLabel, startMockBusMonitor, type CanFrame, type CanOtaTarget, type CanOtaTier, type SelfTestStep } from '../lib/canOta';
+import { useFleet, useSession, useSettingsStore } from '../storeContexts';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -67,7 +68,9 @@ const ALL_TIERS: CanOtaTier[] = ['kinematicBrain', 'controllerBoard', 'urtcHead'
  */
 export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   const { t } = useTranslation();
-  const { activeController, updateRobot, updateController, settings, authToken } = useHydraStore();
+  const { authToken } = useSession();
+  const { settings } = useSettingsStore();
+  const { activeController, updateRobot, updateController } = useFleet();
   const robots = activeController?.robots || [];
   const isHardwareTransport = settings.canOta?.transport === 'hardware';
 

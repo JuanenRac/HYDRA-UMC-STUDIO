@@ -71,7 +71,7 @@ export interface SecurityState {
   /** Absent when the server predates the options of the job dispatcher. */
   jobDispatcher: {
     stopRelay: { enabled: { value: boolean; source: SecuritySource }; robotMap: Record<string, number>; appliesOnRestart: boolean };
-    replan: { allowUnconfirmed: { value: boolean; source: SecuritySource }; stopAckTimeoutSeconds: { value: number; source: SecuritySource }; editable: boolean };
+    replan: { allowUnconfirmed: { value: boolean; source: SecuritySource }; stopAckTimeoutSeconds: { value: number; source: SecuritySource }; editable: boolean; reload: DispatcherReloadState };
   } | null;
   safety: {
     publishGlobalStop: { value: boolean; source: SecuritySource };
@@ -188,6 +188,14 @@ function parseInstall(raw: any): SecurityState['install'] {
   return { cameraCredentialsViaEnv, newInstallTls };
 }
 
+/** What came of the last request to the job dispatcher to read its file again. `none`: nothing was asked yet (no chip is shown). */
+export type DispatcherReloadState = 'none' | 'pending' | 'applied' | 'failed' | 'not_configured';
+
+/** The state the server reports, or `none` when it predates the field or sends something unknown. */
+export function parseDispatcherReload(raw: unknown): DispatcherReloadState {
+  return raw === 'pending' || raw === 'applied' || raw === 'failed' || raw === 'not_configured' ? raw : 'none';
+}
+
 function parseJobDispatcher(raw: any): SecurityState['jobDispatcher'] {
   if (!raw || typeof raw !== 'object') return null;
   const relay = raw.stopRelay;
@@ -206,6 +214,7 @@ function parseJobDispatcher(raw: any): SecurityState['jobDispatcher'] {
       allowUnconfirmed: { value: replan.allowUnconfirmed.value, source: replan.allowUnconfirmed.source },
       stopAckTimeoutSeconds: { value: replan.stopAckTimeoutSeconds.value, source: replan.stopAckTimeoutSeconds.source },
       editable: replan.editable === true,
+      reload: parseDispatcherReload(replan.reload),
     },
   };
 }

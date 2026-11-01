@@ -22,7 +22,6 @@ import { useTranslation } from 'react-i18next';
 import { Cpu, Upload, Download, Zap, AlertTriangle, CheckCircle2, XCircle, RefreshCw, Radio, CloudDownload } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { useHydraStore } from '../store';
 import { ConfirmDialog } from './ConfirmDialog';
 import {
   chipNameFor, crc32, downloadGithubFirmware, fetchGithubFirmwareReleases, GITHUB_FIRMWARE_REPO,
@@ -30,6 +29,7 @@ import {
   resolveHardwareTarget, slotLabel,
   type CanOtaTarget, type CanOtaTier, type FlashPhase, type GithubFirmwareAsset,
 } from '../lib/canOta';
+import { useFleet, useServerStatus, useSession, useSettingsStore } from '../storeContexts';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -49,7 +49,10 @@ const ALL_TIERS: CanOtaTier[] = ['kinematicBrain', 'controllerBoard', 'urtcHead'
  */
 export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   const { t } = useTranslation();
-  const { activeController, updateRobot, updateController, settings, authToken, canotaProgress } = useHydraStore();
+  const { authToken } = useSession();
+  const { canotaProgress } = useServerStatus();
+  const { settings } = useSettingsStore();
+  const { activeController, updateRobot, updateController } = useFleet();
   const robots = activeController?.robots || [];
 
   const [tier, setTier] = useState<CanOtaTier>(tiers[0]);

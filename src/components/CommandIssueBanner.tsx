@@ -13,12 +13,14 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertOctagon, X } from 'lucide-react';
-import { useHydraStore } from '../store';
 import { armJog } from '../lib/accessApi';
+import { useCommandFeedback, useFleet, useServerStatus } from '../storeContexts';
 
 export function CommandIssueBanner() {
   const { t } = useTranslation();
-  const { commandIssue, dismissCommandIssue, emergencyStop, settingsLoadError, robots } = useHydraStore();
+  const { commandIssue, dismissCommandIssue, emergencyStop } = useCommandFeedback();
+  const { settingsLoadError } = useServerStatus();
+  const { robots } = useFleet();
 
   // A remark on a command the server accepted is information, not an alarm: it fades. Every failure stays.
   const fades = commandIssue?.code === 'warnings' || commandIssue?.code === 'temperature_limit';
@@ -47,7 +49,7 @@ export function CommandIssueBanner() {
           aria-live="assertive"
           className={
             'pointer-events-auto max-w-3xl w-full rounded-lg border px-4 py-3 shadow-2xl flex items-start gap-3 ' +
-            (commandIssue.code === 'warnings' || commandIssue.code === 'temperature_limit' || commandIssue.code === 'sim_blocked'
+            (commandIssue.code === 'warnings' || commandIssue.code === 'temperature_limit' || commandIssue.code === 'sim_blocked' || commandIssue.code === 'settings_admin_only'
               ? 'border-amber-500/50 bg-amber-950/95 text-amber-100'
               : 'border-rose-500 bg-rose-950/95 text-rose-100')
           }

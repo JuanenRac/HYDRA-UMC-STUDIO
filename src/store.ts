@@ -706,7 +706,7 @@ export const defaultControllers: HydraController[] = [
 ];
 
 /** Defines the data structure and expected properties for  hydra store context type entities. */
-interface HydraStoreContextType {
+export interface HydraStoreContextType {
   controllers: HydraController[];
   activeControllerId: string;
   activeController: HydraController;

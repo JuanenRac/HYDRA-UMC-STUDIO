@@ -5,13 +5,13 @@
 // =============================================================================
 
 import { useEffect, useRef, useState } from 'react';
-import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw, Cpu, Maximize2, Plus } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 import SharedModule3DView from './3d/SharedModule3DView';
+import { useFleet, useSettingsStore } from '../storeContexts';
 
 /**
  * Executes the  pick and place logic. 
@@ -19,7 +19,8 @@ import SharedModule3DView from './3d/SharedModule3DView';
  */
 export function PickAndPlace() {
   const { t } = useTranslation();
-  const { robots, updateRobot, settings, updateSettings } = useHydraStore();
+  const { settings, updateSettings } = useSettingsStore();
+  const { robots, updateRobot } = useFleet();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [machineType, setMachineType] = useState<'juanenPnP' | 'lumenPnP'>('juanenPnP');
 

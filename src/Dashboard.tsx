@@ -8,7 +8,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { setLanguage } from './i18n';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
-import { useHydraStore, ROBOT_MANUFACTURERS } from './store';
+import { ROBOT_MANUFACTURERS } from './store';
 import { apiUrl } from './lib/apiBase';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { CommandIssueBanner } from './components/CommandIssueBanner';
@@ -53,6 +53,7 @@ import { About } from './components/About';
 import { Config } from './components/Config';
 import { Assistant } from './assistant/Assistant';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { useCommandFeedback, useFleet, useServerStatus, useSession, useSettingsStore } from './storeContexts';
 
 // Lazy-loaded Panels
 const RobotDetail = React.lazy(() => import('./components/RobotDetail').then(m => ({ default: m.RobotDetail })));
@@ -126,7 +127,11 @@ const SystemSupervisor = React.lazy(() => import('./components/SystemSupervisor'
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
-  const { controllers, activeControllerId, setActiveControllerId, robots, settings, isAdmin, logout, serverReachable, settingsSaveError, settingsLocalOnly, flushSettingsSave, reportCommandIssue } = useHydraStore();
+  const { isAdmin, logout } = useSession();
+  const { reportCommandIssue } = useCommandFeedback();
+  const { serverReachable, settingsSaveError, settingsLocalOnly } = useServerStatus();
+  const { settings, flushSettingsSave } = useSettingsStore();
+  const { controllers, activeControllerId, setActiveControllerId, robots } = useFleet();
   const [activeTab, setActiveTab] = useState<string>('overview');
   // Shared with the gamepad, which moves the robot selected here (it used to be fixed on robot 1).
   const selectedRobotId = useSelectedRobotId();
@@ -507,7 +512,7 @@ function IconButton({ icon, label, onClick }: { icon: React.ReactNode, label: st
 
 function OverviewPanel() {
   const { t } = useTranslation();
-  const { robots, updateRobot, cameras, sendRobotCommand } = useHydraStore();
+  const { robots, updateRobot, cameras, sendRobotCommand } = useFleet();
 
   return (
     <div className="w-full h-full flex flex-col gap-6 overflow-hidden">

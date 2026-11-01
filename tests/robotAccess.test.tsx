@@ -10,7 +10,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '../src/i18n';
-import { HydraContext, defaultControllers, type RobotState } from '../src/store';
+import { defaultControllers, type RobotState } from '../src/store';
+import { HydraStoreProviders } from '../src/storeContexts';
 import { RobotAccessBar } from '../src/components/RobotAccessBar';
 import { AdminSafety } from '../src/components/AdminSafety';
 import { getControllerId } from '../src/lib/controllerSession';
@@ -26,7 +27,7 @@ function token(username: string, role: string): string {
 function context(over: Record<string, unknown> = {}) {
   const reportCommandIssue = vi.fn();
   const value = { authToken: token('ana', 'operator'), isAdmin: false, robots: [robot], reportCommandIssue, ...over };
-  return { reportCommandIssue, wrapper: ({ children }: { children: React.ReactNode }) => <HydraContext.Provider value={value as never}>{children}</HydraContext.Provider> };
+  return { reportCommandIssue, wrapper: ({ children }: { children: React.ReactNode }) => <HydraStoreProviders value={value as never}>{children}</HydraStoreProviders> };
 }
 
 interface FakeServer { claims: unknown[]; limits: Record<string, unknown>; armedUntil: number | null; calls: Array<{ url: string; method: string; body: any }>; reply: Map<string, { status: number; body: unknown }> }

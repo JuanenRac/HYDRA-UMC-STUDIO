@@ -14,7 +14,7 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Hand, Lock, Power, ShieldCheck, Unlock } from 'lucide-react';
-import { useHydraStore, type RobotState } from '../store';
+import { type RobotState } from '../store';
 import { useModeState, useSafetyState, setRobotMode, setDefaultRobotMode, setSafetyState } from '../lib/accessStore';
 import { modeOf } from '../lib/liveSim';
 import { armJog, claimRobot, fetchClaims, fetchSafetyLimits, releaseRobot } from '../lib/accessApi';
@@ -25,6 +25,7 @@ import { isArmed } from '../lib/safetyLimits';
 import { chooseConditionalMode, robotRevisions, type ConditionalMode } from '../lib/revisions';
 import type { CommandResult } from '../lib/commandResult';
 import { ConfirmDialog } from './ConfirmDialog';
+import { useCommandFeedback, useFleet, useSession } from '../storeContexts';
 
 const POLL_MS = 10_000;
 /** A list pushed this recently makes the poll skip its turn. */
@@ -68,7 +69,9 @@ export function ClaimsList({ claims, robotNames, myUsername }: { claims: ClaimEn
 
 export function RobotAccessBar({ robot }: { robot: RobotState }) {
   const { t } = useTranslation();
-  const { authToken, isAdmin, robots, reportCommandIssue, refreshRobotFromServer, sendRobotCommand } = useHydraStore();
+  const { authToken, isAdmin } = useSession();
+  const { reportCommandIssue } = useCommandFeedback();
+  const { robots, refreshRobotFromServer, sendRobotCommand } = useFleet();
   const modes = useModeState();
   const safety = useSafetyState();
   const mode = modeOf(modes, robot.id);

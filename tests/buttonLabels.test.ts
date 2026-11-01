@@ -65,7 +65,7 @@ describe('icon-only buttons with a title', () => {
 
 describe('physical settings in the robot panel', () => {
   it('the tool selector asks for confirmation instead of sending the change at once', () => {
-    const source = readFileSync('src/components/RobotDetail.tsx', 'utf8');
+    const source = ['src/components/RobotDetail.tsx', 'src/components/robotDetail/ConfigPanel.tsx'].map((f) => readFileSync(f, 'utf8')).join(' ');
     const direct = source.match(/onChange=\{[^}]*sendRobotCommand\([^)]*'tool'/g);
     expect(direct).toBeNull();
     expect(source).toContain('setPendingTool(e.target.value)');

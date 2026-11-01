@@ -30,17 +30,20 @@ import {
   saveLoginTokens,
 } from './lib/session';
 import { getControllerId } from './lib/controllerSession';
-import { blockedBySim } from './lib/liveSim';
+import { guardCommand } from './lib/motionGuard';
 import { settingsLocalOnly, settingsSaveAllowed } from './lib/settingsSave';
+import { applyOverlay, loadOverlay, saveOverlay, splitSettingsUpdate, usernameFromToken } from './lib/settingsScope';
+import { browserStorage } from './lib/robotDetailHelpers';
 import { getModeState, getSafetyState, setSafetyState } from './lib/accessStore';
 import { fetchRobot, fetchSafetyLimits } from './lib/accessApi';
 import { revisionOf, robotRevisions } from './lib/revisions';
-import { checkTable, isUnknownCommand, markTableCommand, serverHasTableCommand, tableAsJogs } from './lib/tableMove';
+import { isUnknownCommand, markTableCommand, serverHasTableCommand, tableAsJogs } from './lib/tableMove';
 import { createEditQueue, markEditCommands, planRobotEdits, serverHasEditCommands, type RobotEditCommand } from './lib/robotEdits';
-import { checkJog, isTemperatureWarning, parseWarnings } from './lib/safetyLimits';
+import { isTemperatureWarning, parseWarnings } from './lib/safetyLimits';
 import { type StopAllReport, type StopAllRobot, requestStopAllWithRetry } from './lib/stopAll';
 import { validateSceneRobots, validateTrajectoryPoints } from './lib/importValidation';
-import { type CameraState, HydraContext, type HydraController, type RobotState, type SystemSettings, decodeJwtRole, defaultControllers } from './store';
+import { HydraStoreProviders } from './storeContexts';
+import { type CameraState, type HydraController, type RobotState, type SystemSettings, decodeJwtRole, defaultControllers } from './store';
 
 /**
  * Renders the  hydra provider component.
@@ -164,7 +167,10 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginNeedsCode, setLoginNeedsCode] = useState(false);
+  // Who is signed in and whether the account may save the settings tree, for the callbacks that outlive a render.
+  const accountRef = useRef<{ username: string | null; mayEditGlobal: boolean }>({ username: null, mayEditGlobal: true });
   const role = useMemo(() => decodeJwtRole(authToken), [authToken]);
+  accountRef.current = { username: usernameFromToken(authToken), mayEditGlobal: settingsSaveAllowed(role) };
   const isAdmin = role === 'admin';
   const localOnly = settingsLocalOnly(role, operatorEdited);
 
@@ -385,7 +391,13 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // guard already fingerprinted, so the round-trip actually
         // terminates in one hop like the guard's own comment above
         // assumes it does.
-        if (data.settings) setSettings(data.settings);
+        // An account that cannot change the global settings keeps its local choices (theme, language, layout) over what the server sends.
+        const overlay = !accountRef.current.mayEditGlobal && accountRef.current.username ? loadOverlay(browserStorage(), accountRef.current.username) : {};
+        if (data.settings && Object.keys(overlay).length > 0) {
+          const merged = applyOverlay(data.settings, overlay);
+          if (merged !== data.settings) skipNextSaveRef.current = true;
+          setSettings(merged);
+        } else if (data.settings) setSettings(data.settings);
         else setSettings(prev => ({ ...prev, ...data })); // fallback for a pre-nested-envelope settings.json - genuinely incomplete on its own, so a merge onto known-good defaults is correct here, not the bug described above
         let finalControllers: any[] = [];
         if (data.controllers && data.controllers.length > 0) {
@@ -774,7 +786,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const sent: RobotEditCommand[] = [];
     const heldBack: string[] = [];
     for (const edit of plan.commands) {
-      if (blockedBySim(getModeState(), [id], edit.command)) heldBack.push(edit.command);
+      if (!guardCommand({ command: edit.command, robotIds: [id], limits: getSafetyState().limits, modes: getModeState() }).ok) heldBack.push(edit.command);
       else sent.push(edit);
     }
     // Nothing is left for the tree when every changed field went out as a command.
@@ -844,32 +856,16 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     affectedIds?: number[]
   ): Promise<CommandResult> => {
     const ids = affectedIds && affectedIds.length > 0 ? affectedIds : [id];
-    // A robot put in Sim never receives a command that moves it or switches something on (lib/liveSim.ts): the
-    // command is refused here, before it leaves the browser, and the interface says so. STOP is never one of them.
-    if (blockedBySim(getModeState(), ids, command)) {
-      reportCommandIssue({ code: 'sim_blocked', command, robotIds: ids, detail: null });
-      return { ok: false, status: 0, code: 'rejected', detail: null, serverCode: 'sim-mode', warnings: [] };
-    }
-    // The size of a jog is bounded by the limits the server reports for the model of the robot (the server checks
-    // again); a step over the limit is not sent and the message says which limit.
-    if (command === 'jog') {
-      const target = controllersRef.current.flatMap((c) => c.robots).find((r) => r.id === id);
-      const check = checkJog(getSafetyState().limits, target?.model, params);
-      if (!check.ok) {
-        reportCommandIssue({ code: 'jog_limit', command, robotIds: ids, detail: `${check.kind === 'absolute' ? 'abs ' : ''}${check.limit}` });
-        return { ok: false, status: 0, code: 'rejected', detail: null, serverCode: 'jog-limit', warnings: [] };
-      }
-    }
-    // A table move is checked as a whole against the same limits (the server checks again, and applies all of it or none).
-    if (command === 'table') {
-      const target = controllersRef.current.flatMap((c) => c.robots).find((r) => r.id === id);
-      const check = checkTable(getSafetyState().limits, target?.model, params, {
-        x: target?.xyTable?.pos?.x, y: target?.xyTable?.pos?.y, rz: target?.pos?.trz,
-      });
-      if (!check.ok) {
-        reportCommandIssue({ code: 'jog_limit', command, robotIds: ids, detail: `${check.kind === 'absolute' ? 'abs ' : ''}${check.limit}` });
-        return { ok: false, status: 0, code: 'rejected', detail: null, serverCode: 'jog-limit', warnings: [] };
-      }
+    // The guard of every motion command (lib/motionGuard.ts): Sim mode, the size of a jog and of a table move. A STOP is
+    // never refused. A refused command is not sent and the interface says which rule stopped it.
+    const target = command === 'jog' || command === 'table' ? controllersRef.current.flatMap((c) => c.robots).find((r) => r.id === id) : undefined;
+    const verdict = guardCommand({
+      command, params, robotIds: ids, model: target?.model, limits: getSafetyState().limits, modes: getModeState(),
+      tablePosition: { x: target?.xyTable?.pos?.x, y: target?.xyTable?.pos?.y, rz: target?.pos?.trz },
+    });
+    if (!verdict.ok) {
+      reportCommandIssue(verdict.issue);
+      return { ok: false, status: 0, code: 'rejected', detail: null, serverCode: verdict.serverCode, warnings: [] };
     }
     // Snapshot (for rollback) and this call's own generation number for
     // every affected robot - captured BEFORE the optimistic mutation
@@ -1073,8 +1069,22 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  // An administrator changes any setting. Any other account changes only the local ones (theme, language, layout of the
+  // panels: lib/settingsScope.ts), which stay in this browser; a global one is refused here and the interface says so
+  // (the server refuses it as well).
   const updateSettings = (updates: Partial<SystemSettings>) => {
-    setSettings(prev => ({ ...prev, ...updates }));
+    if (settingsSaveAllowed(role)) {
+      setSettings(prev => ({ ...prev, ...updates }));
+      return;
+    }
+    const parts = splitSettingsUpdate(updates);
+    if (parts.hasGlobal) reportCommandIssue({ code: 'settings_admin_only', command: 'settings', robotIds: [], detail: Object.keys(parts.global).join(', ') });
+    if (!parts.hasLocal) return;
+    const username = usernameFromToken(authToken);
+    const next = { ...settingsRef.current, ...parts.local };
+    if (JSON.stringify(next) !== JSON.stringify(settingsRef.current)) skipNextSaveRef.current = true;
+    if (username) saveOverlay(browserStorage(), username, { ...loadOverlay(browserStorage(), username), ...parts.local });
+    setSettings(prev => ({ ...prev, ...parts.local }));
   };
 
   const addController = (controller: HydraController) => {
@@ -1205,7 +1215,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <HydraContext.Provider value={{
+    <HydraStoreProviders value={{
       controllers, activeControllerId, activeController, setActiveControllerId,
       robots, cameras, settings,
       updateController, updateRobot, setRobotJoints, sendRobotCommand, refreshRobotFromServer, emergencyStop, stopAllReport, dismissStopAllReport, stopAllPending: stopAllInFlight > 0, updateCamera, flushSettingsSave, updateSettings,
@@ -1218,6 +1228,6 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       serverReachable, settingsSaveError, settingsLocalOnly: localOnly, settingsLoadError
     }}>
       {children}
-    </HydraContext.Provider>
+    </HydraStoreProviders>
   );
 };

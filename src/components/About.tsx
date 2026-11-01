@@ -9,11 +9,11 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Info, Mail, LogOut } from 'lucide-react';
-import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import HydraIcon from '../assets/HYDRA_UMC_ICON.svg';
 import studioPackage from '../../package.json';
+import { useSession } from '../storeContexts';
 
 const AUTHOR_NAME = 'JuanenRac (Electro Hobby 3D)';
 const AUTHOR_EMAIL = 'electrohobby3d@gmail.com';
@@ -26,7 +26,7 @@ const STUDIO_VERSION = studioPackage.version;
 
 export function About({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
-  const { authToken, logout } = useHydraStore();
+  const { authToken, logout } = useSession();
   // Real bug fixed: this used to be a single "Version" row showing only
   // HYDRA-UMC-SERVER's own appVersion (from GET /api/hydra-info),
   // labeled generically enough that it looked like STUDIO's own version -

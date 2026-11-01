@@ -27,9 +27,10 @@ import { useState } from 'react';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 import { Crosshair, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Thermometer, RotateCw, RotateCcw, Wind, Fan, Droplets, GitBranch, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useHydraStore, type KinematicBrainStage as KinematicBrainStageState } from '../store';
+import { type KinematicBrainStage as KinematicBrainStageState } from '../store';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useFleet } from '../storeContexts';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -49,7 +50,7 @@ type AxisKey = 'x' | 'y1' | 'y2' | 'z';
 
 export function KinematicBrainStage() {
   const { t } = useTranslation();
-  const { activeController, updateController } = useHydraStore();
+  const { activeController, updateController } = useFleet();
   const bedCeiling = highestBedMax(useSafetyState().limits);
   const [jogStep, setJogStep] = useState<number>(10);
   // Switching the heater on switches 230 V mains: it asks first. Off never asks.

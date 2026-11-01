@@ -5,13 +5,13 @@
 // =============================================================================
 
 import { useState } from 'react';
-import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw, PenTool, Maximize2, Plus } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 import SharedModule3DView from './3d/SharedModule3DView';
+import { useFleet } from '../storeContexts';
 
 /**
  * Executes the  c n c logic. 
@@ -19,7 +19,7 @@ import SharedModule3DView from './3d/SharedModule3DView';
  */
 export function CNC() {
   const { t } = useTranslation();
-  const { robots, updateRobot } = useHydraStore();
+  const { robots, updateRobot } = useFleet();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const [machineType, setMachineType] = useState<'juanenCNC'>('juanenCNC');
   

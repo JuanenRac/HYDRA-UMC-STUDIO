@@ -15,15 +15,16 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Lock, User, LogIn, Power, RotateCcw, LayoutDashboard, ShieldCheck } from 'lucide-react';
-import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { ConfirmDialog } from './ConfirmDialog';
 import { CommandIssueBanner } from './CommandIssueBanner';
 import HydraIcon from '../assets/HYDRA_UMC_ICON.svg';
+import { useCommandFeedback, useSession } from '../storeContexts';
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
-  const { authToken, login, loginError, loginNeedsCode, reportCommandIssue } = useHydraStore();
+  const { authToken, login, loginError, loginNeedsCode } = useSession();
+  const { reportCommandIssue } = useCommandFeedback();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [totpCode, setTotpCode] = useState('');

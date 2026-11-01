@@ -18,11 +18,12 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useTranslation } from 'react-i18next';
 import { Bot, CheckCircle2, XCircle } from 'lucide-react';
-import { useHydraStore, ROBOT_MANUFACTURERS, REAL_ROBOT_MODELS, robotModelDof, type RobotModel, type RobotState } from '../store';
+import { ROBOT_MANUFACTURERS, REAL_ROBOT_MODELS, robotModelDof, type RobotModel, type RobotState } from '../store';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 import RobotArm from './3d/RobotArm';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useSettingsStore } from '../storeContexts';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -68,7 +69,7 @@ function previewRobotState(model: RobotModel): RobotState {
 
 export function RobotsCatalogView() {
   const { t } = useTranslation();
-  const { settings, updateSettings } = useHydraStore();
+  const { settings, updateSettings } = useSettingsStore();
   const manufacturers = useMemo(() => Array.from(new Set(REAL_ROBOT_MODELS.map(m => ROBOT_MANUFACTURERS[m]))).sort(), []);
   const [manufacturerFilter, setManufacturerFilter] = useState<string>('all');
   const [dofFilter, setDofFilter] = useState<string>('all');

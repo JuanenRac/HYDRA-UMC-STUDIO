@@ -17,10 +17,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Users as UsersIcon, Trash2, KeyRound, UserPlus, ShieldCheck, ShieldOff } from 'lucide-react';
-import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { ConfirmDialog } from './ConfirmDialog';
 import { totpApi } from '../lib/totpApi';
+import { useSession } from '../storeContexts';
 
 interface StoredUserSummary {
   username: string;
@@ -30,7 +30,7 @@ interface StoredUserSummary {
 
 export function UsersPanel() {
   const { t } = useTranslation();
-  const { authToken } = useHydraStore();
+  const { authToken } = useSession();
   const [users, setUsers] = useState<StoredUserSummary[]>([]);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');

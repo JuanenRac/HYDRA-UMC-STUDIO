@@ -12,16 +12,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Save, ShieldAlert, Trash2, Undo2 } from 'lucide-react';
-import { useHydraStore } from '../store';
 import { setSafetyState, useSafetyState } from '../lib/accessStore';
 import { fetchSafetyLimits, putSafetyLimits } from '../lib/accessApi';
 import { buildPatch, formFromLimits, modelKey, type FormProblem, type SafetyForm } from '../lib/safetyLimits';
+import { useFleet, useSession } from '../storeContexts';
 
 const input = 'w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-sky-500';
 
 export function AdminSafety() {
   const { t } = useTranslation();
-  const { isAdmin, robots } = useHydraStore();
+  const { isAdmin } = useSession();
+  const { robots } = useFleet();
   const state = useSafetyState();
   const [form, setForm] = useState<SafetyForm>(() => formFromLimits(state.limits));
   const [dirty, setDirty] = useState(false);

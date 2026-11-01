@@ -8,13 +8,14 @@ import React, { useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Box, Cylinder, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
-import { useHydraStore, type RobotState } from '../store';
+import { type RobotState } from '../store';
 import RobotArm from './3d/RobotArm';
 import PathVisualizer from './3d/PathVisualizer';
 import SharedModule3DView from './3d/SharedModule3DView';
 import ATC3DView from './3d/ATC3DView';
 import Rack3DView from './3d/Rack3DView';
 import DraggableGizmo from './3d/DraggableGizmo';
+import { useFleet, useSettingsStore } from '../storeContexts';
 
 /**
  * Executes the  camera animator logic. 
@@ -68,7 +69,8 @@ function CameraAnimator({ targetPosition, targetFocus, trigger, controlsRef, ini
  * This function handles the necessary computations and state updates.
  */
 export function VirtualKinematics({ robot, controlMode, onSelectRobot, lowPower }: { robot: RobotState; controlMode: 'translate' | 'rotate' | 'scale' | 'none'; onSelectRobot?: (robotId: number) => void; lowPower?: boolean }) {
-  const { updateRobot, settings, robots } = useHydraStore();
+  const { settings } = useSettingsStore();
+  const { updateRobot, robots } = useFleet();
   const controlsRef = useRef<any>(null);
 
   const hasXYTable = robot.hasXYTable;

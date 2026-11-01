@@ -6,11 +6,12 @@
 
 import { useTranslation } from 'react-i18next';
 import { useState, useRef } from 'react';
-import { useHydraStore, type ATCGrid, type ToolType, type ATCConfig } from '../store';
+import { type ATCGrid, type ToolType, type ATCConfig } from '../store';
 import { RotateCcw, Settings, Grid3X3, CircleDashed, MapPin, ChevronDown, ChevronUp, Save, Upload, Server } from 'lucide-react';
 
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useFleet } from '../storeContexts';
 
 /**
  * Executes the Cnm logic. 
@@ -64,7 +65,7 @@ const defaultAtcConfig: ATCConfig = {
  */
 export function ATCToolsConfig() {
   const { t } = useTranslation();
-  const { robots, updateRobot } = useHydraStore();
+  const { robots, updateRobot } = useFleet();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(robots[0]?.id || 1);
   const [editingSlot, setEditingSlot] = useState<number | 'revolver' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);

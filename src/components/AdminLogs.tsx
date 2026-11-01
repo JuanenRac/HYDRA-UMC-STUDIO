@@ -21,8 +21,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eraser, FileText, Pause, Play, Search } from 'lucide-react';
-import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
+import { useServerStatus, useSession } from '../storeContexts';
 
 const POLL_MS = 3000;
 const LINES = 300;
@@ -50,7 +50,8 @@ export function AdminLogs() {
   // reset itself every time the operator navigated away and back,
   // silently un-clearing the view. See logsClearedAt's own doc comment on
   // the store's context type for the full reasoning.
-  const { authToken, isAdmin, logsClearedAt: clearedAt, setLogsClearedAt: setClearedAt } = useHydraStore();
+  const { authToken, isAdmin } = useSession();
+  const { logsClearedAt: clearedAt, setLogsClearedAt: setClearedAt } = useServerStatus();
   const [lines, setLines] = useState<string[]>([]);
   const [live, setLive] = useState(true);
   const [error, setError] = useState('');

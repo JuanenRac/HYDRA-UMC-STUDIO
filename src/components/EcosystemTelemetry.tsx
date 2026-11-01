@@ -19,8 +19,8 @@ import { LineChart as LineChartIcon, TableProperties, Play, Clock } from 'lucide
 import {
   ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts';
-import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
+import { useSession } from '../storeContexts';
 
 interface Point { sourceId: string; kind: string; field: string; timestamp: number; value: number; }
 interface Bucket { bucketStart: number; value: number; count: number; }
@@ -53,7 +53,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
 
 export function EcosystemTelemetry() {
   const { t } = useTranslation();
-  const { authToken } = useHydraStore();
+  const { authToken } = useSession();
   const [mode, setMode] = useState<'query' | 'aggregate'>('query');
   const [view, setView] = useState<'chart' | 'table'>('chart');
   const [sourceId, setSourceId] = useState('');

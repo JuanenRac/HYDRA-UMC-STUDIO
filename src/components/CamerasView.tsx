@@ -5,13 +5,14 @@
 // =============================================================================
 
 import { useEffect, useState } from 'react';
-import { useHydraStore, ipStreamLabels } from '../store';
+import { ipStreamLabels } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { useMediaTicket, withTicket } from '../lib/mediaTicket';
 import { useTranslation } from 'react-i18next';
 import { Video, Maximize2, Minimize2, Camera as CameraIcon, Power, ScanLine, CircleDot, RefreshCw, Move, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useFleet, useSession } from '../storeContexts';
 
 /**
  * Executes the Cn logic. 
@@ -26,7 +27,8 @@ function cn(...inputs: ClassValue[]) {
  * This function handles the necessary computations and state updates.
  */
 export function CamerasView() {
-  const { cameras, updateCamera, updateRobot, authToken } = useHydraStore();
+  const { authToken } = useSession();
+  const { cameras, updateCamera, updateRobot } = useFleet();
   const mediaTicket = useMediaTicket(authToken);
   const { t } = useTranslation();
   const [fullScreenId, setFullScreenId] = useState<number | null>(null);

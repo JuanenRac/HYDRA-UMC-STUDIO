@@ -21,7 +21,7 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bluetooth, BluetoothConnected, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import { apiUrl } from '../lib/apiBase';
-import { useHydraStore } from '../store';
+import { useSession } from '../storeContexts';
 
 interface BluetoothDeviceInfo {
   mac: string;
@@ -37,7 +37,7 @@ type PanelStatus = 'idle' | 'scanning' | 'pairing';
 
 export function BluetoothPairing() {
   const { t } = useTranslation();
-  const { authToken, isAdmin } = useHydraStore();
+  const { authToken, isAdmin } = useSession();
 
   const [devices, setDevices] = useState<BluetoothDeviceInfo[]>([]);
   const [status, setStatus] = useState<PanelStatus>('idle');

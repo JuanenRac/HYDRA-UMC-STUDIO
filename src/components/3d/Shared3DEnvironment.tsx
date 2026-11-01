@@ -4,14 +4,14 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import { useHydraStore } from '../../store';
+import { useSettingsStore } from '../../storeContexts';
 
 /**
  * Executes the  shared3 d environment logic. 
  * This function handles the necessary computations and state updates.
  */
 export function Shared3DEnvironment() {
-  const { settings } = useHydraStore();
+  const { settings } = useSettingsStore();
   
   return (
     <>

@@ -11,9 +11,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Download, RefreshCw, ScrollText, ShieldCheck } from 'lucide-react';
-import { useHydraStore } from '../store';
 import { AUDIT_TYPES, checkChain, detailLine, type AuditRead, type ChainCheck } from '../lib/audit';
 import { fetchAudit, fetchAuditJsonl } from '../lib/auditApi';
+import { useFleet, useSession } from '../storeContexts';
 
 const field = 'bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500';
 const LIMITS = [50, 100, 250, 1000];
@@ -22,7 +22,8 @@ type Failure = 'forbidden' | 'unavailable' | 'session' | 'network' | 'other';
 
 export function AdminAudit() {
   const { t } = useTranslation();
-  const { isAdmin, robots } = useHydraStore();
+  const { isAdmin } = useSession();
+  const { robots } = useFleet();
   const [type, setType] = useState('');
   const [robotId, setRobotId] = useState('');
   const [limit, setLimit] = useState(100);

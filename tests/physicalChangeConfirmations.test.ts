@@ -7,11 +7,15 @@
 // computed and limited, so the selectors must go through a confirmation
 // dialog instead of writing straight to the robot.
 // =============================================================================
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const source = readFileSync(path.resolve(__dirname, '../src/components/RobotDetail.tsx'), 'utf8');
+// The screen and the parts cut out of it (src/components/robotDetail) are read as one text.
+const partsDir = path.resolve(__dirname, '../src/components/robotDetail');
+const source = [path.resolve(__dirname, '../src/components/RobotDetail.tsx'), ...readdirSync(partsDir).filter((f) => f.endsWith('.tsx')).map((f) => path.join(partsDir, f))]
+  .map((f) => readFileSync(f, 'utf8'))
+  .join(' ');
 
 describe('robot selectors ask before acting', () => {
   it('the tool selector only stages the change', () => {

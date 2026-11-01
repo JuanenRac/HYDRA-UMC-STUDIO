@@ -45,6 +45,10 @@ function Probe() {
       <button onClick={() => store.updateSettings({ serverName: 'Edited cell' })}>edit</button>
       <span data-testid="local-only">{String(store.settingsLocalOnly)}</span>
       <span data-testid="save-error">{store.settingsSaveError ?? ''}</span>
+      <button onClick={() => store.updateSettings({ theme: 'Nord' })}>edit theme</button>
+      <button onClick={() => store.updateRobot(store.robots[0].id, { name: 'Renamed' })}>edit robot</button>
+      <span data-testid="theme">{String(store.settings.theme)}</span>
+      <span data-testid="issue">{store.commandIssue?.code ?? ''}</span>
     </div>
   );
 }
@@ -100,13 +104,51 @@ describe('saving the settings tree by role', () => {
     expect(screen.getByTestId('save-error').textContent).toBe('');
   });
 
-  it('sends nothing for an operator, shows no failure and says the edit stays here', async () => {
+  it('sends nothing for an operator who edits a robot of the tree, shows no failure and says the edit stays here', async () => {
     const calls = startServer();
     await mount('operator', calls);
-    fireEvent.click(screen.getByText('edit'));
+    fireEvent.click(screen.getByText('edit robot'));
     await waitFor(() => expect(screen.getByTestId('local-only').textContent).toBe('true'), { timeout: 3000 });
     await new Promise((resolve) => setTimeout(resolve, 800));
     expect(calls.posts).toEqual([]);
     expect(screen.getByTestId('save-error').textContent).toBe('');
+  });
+
+  it('refuses a global setting for an operator and says an administrator changes it', async () => {
+    const calls = startServer();
+    await mount('operator', calls);
+    fireEvent.click(screen.getByText('edit'));
+    await waitFor(() => expect(screen.getByTestId('issue').textContent).toBe('settings_admin_only'));
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    expect(calls.posts).toEqual([]);
+    expect(screen.getByTestId('local-only').textContent).toBe('false');
+  });
+
+  it('lets an operator change a local setting: it stays in this browser, is not sent and is not a pending edit', async () => {
+    const calls = startServer();
+    await mount('operator', calls);
+    fireEvent.click(screen.getByText('edit theme'));
+    await waitFor(() => expect(screen.getByTestId('theme').textContent).toBe('Nord'));
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    expect(calls.posts).toEqual([]);
+    expect(screen.getByTestId('local-only').textContent).toBe('false');
+    expect(screen.getByTestId('issue').textContent).toBe('');
+    expect(JSON.parse(window.localStorage.getItem('hydra.localSettings.ana') ?? '{}')).toEqual({ theme: 'Nord' });
+  });
+
+  it('puts the local choice of the account over the settings of the server when they are read', async () => {
+    window.localStorage.setItem('hydra.localSettings.ana', JSON.stringify({ theme: 'Dracula' }));
+    const calls = startServer();
+    await mount('operator', calls);
+    expect(screen.getByTestId('theme').textContent).toBe('Dracula');
+    expect(screen.getByTestId('local-only').textContent).toBe('false');
+    expect(calls.posts).toEqual([]);
+  });
+
+  it('keeps an administrator saving every setting, the local ones too', async () => {
+    const calls = startServer();
+    await mount('admin', calls);
+    fireEvent.click(screen.getByText('edit theme'));
+    await waitFor(() => expect(calls.posts).toContain('/api/settings'), { timeout: 3000 });
   });
 });

@@ -8,7 +8,6 @@ import { bedMaxFor, clampBedTargetTo } from '../lib/safetyLimits';
 import { useSafetyState } from '../lib/accessStore';
 import { useState } from 'react';
 import { ConfirmDialog } from './ConfirmDialog';
-import { useHydraStore } from '../store';
 import { HEATED_BED_MODELS, heatedBedModel, heatedBedSize, selectHeatedBed, resizeHeatedBed } from '../heatedBeds';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw, Thermometer, Maximize2, Plus, Power } from 'lucide-react';
@@ -16,6 +15,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 import SharedModule3DView from './3d/SharedModule3DView';
+import { useFleet } from '../storeContexts';
 
 
 
@@ -25,7 +25,7 @@ import SharedModule3DView from './3d/SharedModule3DView';
  */
 export function HeatedBedConfig() {
   const { t } = useTranslation();
-  const { robots, updateRobot } = useHydraStore();
+  const { robots, updateRobot } = useFleet();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   // Switching the heater on switches 230 V mains: it asks first. Off never asks.
   const [pendingSsr, setPendingSsr] = useState(false);

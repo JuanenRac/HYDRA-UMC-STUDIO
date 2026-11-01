@@ -8,30 +8,7 @@
 // =============================================================================
 
 import type { RobotState, RobotModel } from '../store';
-import { PAROL6_HOME_POSE } from '../examples/parol6Kinematics';
-import { FAZE4_HOME_POSE } from '../examples/faze4Kinematics';
-import { AR3_HOME_POSE } from '../examples/ar3Kinematics';
-import { AR4_HOME_POSE } from '../examples/ar4Kinematics';
-import { UR3E_HOME_POSE } from '../examples/ur3eKinematics';
-import { UR5E_HOME_POSE } from '../examples/ur5eKinematics';
-import { UR10E_HOME_POSE } from '../examples/ur10eKinematics';
-import { UR16E_HOME_POSE } from '../examples/ur16eKinematics';
-import { UR20_HOME_POSE } from '../examples/ur20Kinematics';
-import { XARM6_HOME_POSE } from '../examples/xarm6Kinematics';
-import { LITE6_HOME_POSE } from '../examples/lite6Kinematics';
-import { EDO_HOME_POSE } from '../examples/edoKinematics';
-import { GEN3LITE_HOME_POSE } from '../examples/gen3LiteKinematics';
-import { M710IC_HOME_POSE } from '../examples/m710icKinematics';
-import { SOARM100_HOME_POSE } from '../examples/soArm100Kinematics';
-import { GEN2_HOME_POSE } from '../examples/gen2Kinematics';
-import { PIPER_HOME_POSE } from '../examples/piperKinematics';
-import { Z1_HOME_POSE } from '../examples/z1Kinematics';
-import { VX300S_HOME_POSE } from '../examples/vx300sKinematics';
-import { WX250S_HOME_POSE } from '../examples/wx250sKinematics';
-import { KOCH_HOME_POSE } from '../examples/kochKinematics';
-import { UR3CLASSIC_HOME_POSE } from '../examples/ur3ClassicKinematics';
-import { UR5CLASSIC_HOME_POSE } from '../examples/ur5ClassicKinematics';
-import { UR10CLASSIC_HOME_POSE } from '../examples/ur10ClassicKinematics';
+import kinematicData from '../data/kinematicData.json';
 import { convertToCartesian } from '../examples/utils';
 import { jointsToCartesianForModel, resolveTargetJoints } from '../examples/robotKinematicsDispatch';
 import { positionResidualMm } from './reachCheck';
@@ -56,30 +33,8 @@ export function pointKeyFor(pt: object): number {
 // Generic home pose (j2:-45,j3:45,j5:90) is fine for the shared-convention rigs, but
 // robots with their own real kinematics need their own reachable, sensible pose instead.
 export function homePoseFor(model: RobotModel) {
-  if (model === 'Parol6 (6-DOF)') return { ...PAROL6_HOME_POSE };
-  if (model === 'Faze4 (6-DOF)') return { ...FAZE4_HOME_POSE };
-  if (model === 'AR3 (6-DOF)') return { ...AR3_HOME_POSE };
-  if (model === 'AR4 (6-DOF)') return { ...AR4_HOME_POSE };
-  if (model === 'UR3e (6-DOF)') return { ...UR3E_HOME_POSE };
-  if (model === 'UR5e (6-DOF)') return { ...UR5E_HOME_POSE };
-  if (model === 'UR10e (6-DOF)') return { ...UR10E_HOME_POSE };
-  if (model === 'UR16e (6-DOF)') return { ...UR16E_HOME_POSE };
-  if (model === 'UR20 (6-DOF)') return { ...UR20_HOME_POSE };
-  if (model === 'xArm6 (6-DOF)') return { ...XARM6_HOME_POSE };
-  if (model === 'Lite 6 (6-DOF)') return { ...LITE6_HOME_POSE };
-  if (model === 'e.DO (6-DOF)') return { ...EDO_HOME_POSE };
-  if (model === 'Gen3 Lite (6-DOF)') return { ...GEN3LITE_HOME_POSE };
-  if (model === 'M-710iC (6-DOF)') return { ...M710IC_HOME_POSE };
-  if (model === 'SO-ARM100 (5-DOF)') return { ...SOARM100_HOME_POSE };
-  if (model === 'Gen2 (6-DOF)') return { ...GEN2_HOME_POSE };
-  if (model === 'PiPER (6-DOF)') return { ...PIPER_HOME_POSE };
-  if (model === 'Z1 (6-DOF)') return { ...Z1_HOME_POSE };
-  if (model === 'ViperX 300 (6-DOF)') return { ...VX300S_HOME_POSE };
-  if (model === 'WidowX 250 (6-DOF)') return { ...WX250S_HOME_POSE };
-  if (model === 'Koch v1.1 (5-DOF)') return { ...KOCH_HOME_POSE };
-  if (model === 'UR3 (6-DOF)') return { ...UR3CLASSIC_HOME_POSE };
-  if (model === 'UR5 (6-DOF)') return { ...UR5CLASSIC_HOME_POSE };
-  if (model === 'UR10 (6-DOF)') return { ...UR10CLASSIC_HOME_POSE };
+  const entry = (kinematicData.models as unknown as Record<string, { home: Record<string, number> }>)[model];
+  if (entry) return { ...entry.home } as { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number };
   return { j1: 0, j2: -45, j3: 45, j4: 0, j5: 90, j6: 0 };
 }
 

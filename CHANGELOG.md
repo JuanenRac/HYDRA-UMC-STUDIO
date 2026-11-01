@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The state of the reload of the job dispatcher in Server Admin:** next to the replanning options a chip says what came of the request to read the dispatcher file again (pending, applied, failed or not configured), read from `jobDispatcher.replan.reload`, in the eight languages; while the request is pending the screen asks the server again every two seconds.
+- **One guard for every motion command:** Sim mode, the size of a jog, the size of a table move and a single step that swings a joint a long way are decided in one module (`lib/motionGuard.ts`) that the provider, the robot screen and the gamepad all use, so the order and the sentence of a refusal are the same everywhere; a stop is never refused.
+- **The store is cut in five domains** (session, command feedback, link status, settings, fleet), each with its own hook, stable functions and its own context: a screen that reads one domain no longer draws again when another changes (a joint moving no longer redraws the login gate). `useHydraStore()` still gives the whole value.
+- **Local and global settings:** the theme, the language and the layout of the panels (the keys are in `src/config/localSettings.json`) are a choice of the person in front of the screen: an operator or a viewer changes them, they stay in this browser under that account and are put over what the server sends. Every other setting belongs to the installation: only an administrator changes it, and for anyone else the change is refused with a sentence of its own (the server refuses it as well).
+- **One table of joint ranges and home poses:** `src/data/kinematicData.json` is read by this program and by HYDRA-UMC-SUITE instead of two tables typed by hand; a test compares it with the constants of every model and, when both repositories sit side by side, with the copy of SUITE.
+- **The robot screen is cut in parts:** the camera window, the configuration tabs and the table of points are components of their own, held in place by tests of the rendered screen; a work-file list that is not a list no longer breaks the configuration tab.
 - **TypeScript 7:** the type checker is the native TypeScript 7 compiler; the typecheck, the lint, the 782 tests and the production build pass with it.
 
 ## [0.8.0.8] - A Planning and operation view under Ecosystem and the job dispatcher options in Server Admin

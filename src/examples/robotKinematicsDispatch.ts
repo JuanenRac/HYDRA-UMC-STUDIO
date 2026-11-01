@@ -24,23 +24,24 @@
 // =============================================================================
 
 import type { RobotModel } from '../store';
-import { parol6JointsToCartesian, parol6CartesianToJoints, PAROL6_JOINT_LIMITS_DEG } from './parol6Kinematics';
+import kinematicData from '../data/kinematicData.json';
+import { parol6JointsToCartesian, parol6CartesianToJoints } from './parol6Kinematics';
 import { faze4JointsToCartesian, faze4CartesianToJoints } from './faze4Kinematics';
 import { ar3JointsToCartesian, ar3CartesianToJoints } from './ar3Kinematics';
-import { ar4JointsToCartesian, ar4CartesianToJoints, AR4_JOINT_LIMITS_DEG } from './ar4Kinematics';
-import { ur3eJointsToCartesian, ur3eCartesianToJoints, UR3E_JOINT_LIMITS_DEG } from './ur3eKinematics';
-import { ur5eJointsToCartesian, ur5eCartesianToJoints, UR5E_JOINT_LIMITS_DEG } from './ur5eKinematics';
-import { ur10eJointsToCartesian, ur10eCartesianToJoints, UR10E_JOINT_LIMITS_DEG } from './ur10eKinematics';
-import { ur16eJointsToCartesian, ur16eCartesianToJoints, UR16E_JOINT_LIMITS_DEG } from './ur16eKinematics';
-import { ur20JointsToCartesian, ur20CartesianToJoints, UR20_JOINT_LIMITS_DEG } from './ur20Kinematics';
-import { xarm6JointsToCartesian, xarm6CartesianToJoints, XARM6_JOINT_LIMITS_DEG } from './xarm6Kinematics';
-import { lite6JointsToCartesian, lite6CartesianToJoints, LITE6_JOINT_LIMITS_DEG } from './lite6Kinematics';
+import { ar4JointsToCartesian, ar4CartesianToJoints } from './ar4Kinematics';
+import { ur3eJointsToCartesian, ur3eCartesianToJoints } from './ur3eKinematics';
+import { ur5eJointsToCartesian, ur5eCartesianToJoints } from './ur5eKinematics';
+import { ur10eJointsToCartesian, ur10eCartesianToJoints } from './ur10eKinematics';
+import { ur16eJointsToCartesian, ur16eCartesianToJoints } from './ur16eKinematics';
+import { ur20JointsToCartesian, ur20CartesianToJoints } from './ur20Kinematics';
+import { xarm6JointsToCartesian, xarm6CartesianToJoints } from './xarm6Kinematics';
+import { lite6JointsToCartesian, lite6CartesianToJoints } from './lite6Kinematics';
 import { edoJointsToCartesian, edoCartesianToJoints } from './edoKinematics';
-import { gen3LiteJointsToCartesian, gen3LiteCartesianToJoints, GEN3LITE_JOINT_LIMITS_DEG } from './gen3LiteKinematics';
+import { gen3LiteJointsToCartesian, gen3LiteCartesianToJoints } from './gen3LiteKinematics';
 import { m710icJointsToCartesian, m710icCartesianToJoints } from './m710icKinematics';
 import { soArm100JointsToCartesian, soArm100CartesianToJoints } from './soArm100Kinematics';
-import { gen2JointsToCartesian, gen2CartesianToJoints, GEN2_JOINT_LIMITS_DEG } from './gen2Kinematics';
-import { piperJointsToCartesian, piperCartesianToJoints, PIPER_JOINT_LIMITS_DEG } from './piperKinematics';
+import { gen2JointsToCartesian, gen2CartesianToJoints } from './gen2Kinematics';
+import { piperJointsToCartesian, piperCartesianToJoints } from './piperKinematics';
 import { z1JointsToCartesian, z1CartesianToJoints } from './z1Kinematics';
 import { vx300sJointsToCartesian, vx300sCartesianToJoints } from './vx300sKinematics';
 import { wx250sJointsToCartesian, wx250sCartesianToJoints } from './wx250sKinematics';
@@ -104,21 +105,10 @@ export function jointsToCartesianForModel(model: RobotModel | undefined, pt: Kin
 // to RobotDetail.tsx) so GamepadController.tsx's own per-joint jog can
 // clamp identically without either duplicating this ternary chain or
 // re-importing all 12 *_JOINT_LIMITS_DEG constants a second time - same
-// "single source of truth" reasoning as jointsToCartesianForModel above.
+// "single source of truth" reasoning as jointsToCartesianForModel above. The ranges are in src/data/kinematicData.json, the one
+// file HYDRA-UMC-SUITE reads as well (tests/kinematicData.test.ts checks it against the constants of each model).
 export function jointLimitsFor(model: RobotModel, j: 'j1' | 'j2' | 'j3' | 'j4' | 'j5' | 'j6'): [number, number] {
-  if (model === 'Parol6 (6-DOF)') return PAROL6_JOINT_LIMITS_DEG[j];
-  if (model === 'AR4 (6-DOF)') return AR4_JOINT_LIMITS_DEG[j];
-  if (model === 'UR3e (6-DOF)') return UR3E_JOINT_LIMITS_DEG[j];
-  if (model === 'UR5e (6-DOF)') return UR5E_JOINT_LIMITS_DEG[j];
-  if (model === 'UR10e (6-DOF)') return UR10E_JOINT_LIMITS_DEG[j];
-  if (model === 'UR16e (6-DOF)') return UR16E_JOINT_LIMITS_DEG[j];
-  if (model === 'UR20 (6-DOF)') return UR20_JOINT_LIMITS_DEG[j];
-  if (model === 'xArm6 (6-DOF)') return XARM6_JOINT_LIMITS_DEG[j];
-  if (model === 'Lite 6 (6-DOF)') return LITE6_JOINT_LIMITS_DEG[j];
-  if (model === 'Gen3 Lite (6-DOF)') return GEN3LITE_JOINT_LIMITS_DEG[j];
-  if (model === 'Gen2 (6-DOF)') return GEN2_JOINT_LIMITS_DEG[j];
-  if (model === 'PiPER (6-DOF)') return PIPER_JOINT_LIMITS_DEG[j];
-  return [-180, 180];
+  return (kinematicData.models as unknown as Record<string, { limits: Record<string, [number, number]> }>)[model]?.limits[j] ?? [-180, 180];
 }
 
 // Parol6Arm.tsx/Faze4Arm.tsx/AR3Arm.tsx/AR4Arm.tsx/... are each driven by

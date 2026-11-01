@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { parseDispatcherReload, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -357,6 +357,13 @@ describe('the options of the job dispatcher', () => {
     expect(parseSecurityState(answer)?.jobDispatcher).toBeNull();
     expect(parseSecurityState({ ...answer, jobDispatcher: { ...server, replan: { ...server.replan, stopAckTimeoutSeconds: { value: '30', source: 'config' } } } })?.jobDispatcher).toBeNull();
     expect(parseSecurityState({ ...answer, jobDispatcher: { ...server, stopRelay: { ...server.stopRelay, enabled: { value: true, source: 'nowhere' } } } })?.jobDispatcher).toBeNull();
+  });
+
+  it('reads the state of the reload of the dispatcher and treats anything else as nothing asked', () => {
+    const read = (reload: unknown) => parseSecurityState({ ...answer, jobDispatcher: { ...server, replan: { ...server.replan, reload } } })?.jobDispatcher?.replan.reload;
+    for (const state of ['pending', 'applied', 'failed', 'not_configured', 'none']) expect(read(state)).toBe(state);
+    for (const odd of [undefined, 'done', 3, null]) expect(read(odd)).toBe('none');
+    expect(parseDispatcherReload('applied')).toBe('applied');
   });
 
   it('writes the robot map as text and reads it back', () => {

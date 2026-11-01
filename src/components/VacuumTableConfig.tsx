@@ -5,7 +5,6 @@
 // =============================================================================
 
 import { useState } from 'react';
-import { useHydraStore } from '../store';
 import { VACUUM_TABLE_MODELS, vacuumTableModel, selectVacuumTable, vacuumTableSize, resizeVacuumTable } from '../vacuumTables';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw, Wind, Maximize2, Plus, Power } from 'lucide-react';
@@ -13,6 +12,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 import SharedModule3DView from './3d/SharedModule3DView';
+import { useFleet } from '../storeContexts';
 
 
 
@@ -22,7 +22,7 @@ import SharedModule3DView from './3d/SharedModule3DView';
  */
 export function VacuumTableConfig() {
   const { t } = useTranslation();
-  const { robots, updateRobot } = useHydraStore();
+  const { robots, updateRobot } = useFleet();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const selectedRobot = robots.find(r => r.id === selectedRobotId);
 

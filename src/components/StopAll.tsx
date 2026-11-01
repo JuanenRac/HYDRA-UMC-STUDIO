@@ -17,10 +17,10 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertOctagon, CheckCircle2, X } from 'lucide-react';
-import { useHydraStore } from '../store';
 import { STOP_ALL_SHORTCUT_LABEL, isStopAllShortcut, reportNeedsAttention } from '../lib/stopAll';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useCommandFeedback } from '../storeContexts';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -28,7 +28,7 @@ function cn(...inputs: ClassValue[]) {
 
 export function StopAllButton({ variant = 'header' }: { variant?: 'header' | 'footer' }) {
   const { t } = useTranslation();
-  const { emergencyStop, stopAllPending, commandIssue } = useHydraStore();
+  const { emergencyStop, stopAllPending, commandIssue } = useCommandFeedback();
   const unconfirmed = commandIssue?.code === 'estop_failed';
   return (
     <button
@@ -53,7 +53,7 @@ export function StopAllButton({ variant = 'header' }: { variant?: 'header' | 'fo
 
 /** Mounted once: Ctrl+Shift+Space presses STOP from anywhere, even while a text field has the focus. */
 export function StopAllShortcut() {
-  const { emergencyStop } = useHydraStore();
+  const { emergencyStop } = useCommandFeedback();
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!isStopAllShortcut(event)) return;
@@ -68,7 +68,7 @@ export function StopAllShortcut() {
 
 export function StopAllReportBanner({ compact = false }: { compact?: boolean }) {
   const { t } = useTranslation();
-  const { stopAllReport, dismissStopAllReport, emergencyStop } = useHydraStore();
+  const { stopAllReport, dismissStopAllReport, emergencyStop } = useCommandFeedback();
   const attention = stopAllReport ? reportNeedsAttention(stopAllReport) : false;
 
   // A clean result is information: it fades. A warning stays until it is dismissed.

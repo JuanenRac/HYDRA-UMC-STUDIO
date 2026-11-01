@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { Bot, RefreshCw, AlertTriangle, Circle } from 'lucide-react';
 import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
-import { useHydraStore } from '../store';
+import { useSettingsStore } from '../storeContexts';
 
 interface EcosystemProjectStatus {
   name: string;
@@ -43,7 +43,7 @@ const AI_FAMILIES = [
 
 export function AiFamilyStatus() {
   const { t } = useTranslation();
-  const { settings } = useHydraStore();
+  const { settings } = useSettingsStore();
   const [available, setAvailable] = useState<boolean | null>(null);
   const [projects, setProjects] = useState<EcosystemProjectStatus[]>([]);
   const [loading, setLoading] = useState(false);

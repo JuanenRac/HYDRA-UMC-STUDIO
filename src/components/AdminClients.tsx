@@ -17,9 +17,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Radio, RefreshCw, ShieldCheck, User } from 'lucide-react';
-import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { ConnectionHistory } from './ConnectionHistory';
+import { useSession } from '../storeContexts';
 
 interface ClientInfo {
   username: string | null;
@@ -46,7 +46,7 @@ function relativeDuration(iso: string | null, now: number): string {
 
 export function AdminClients() {
   const { t } = useTranslation();
-  const { authToken, isAdmin } = useHydraStore();
+  const { authToken, isAdmin } = useSession();
   const [clients, setClients] = useState<ClientInfo[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

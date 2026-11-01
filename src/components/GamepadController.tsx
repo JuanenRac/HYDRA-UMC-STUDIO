@@ -5,11 +5,11 @@
 // =============================================================================
 
 import { useEffect, useRef } from 'react';
-import { useHydraStore } from '../store';
 import { jointsToCartesianForModel, jointLimitsFor, resolveTargetJoints } from '../examples/robotKinematicsDispatch';
-import { excessiveJogStep } from '../examples/jogSafety';
+import { guardJogStep } from '../lib/motionGuard';
 import { createInFlightCounter, createRateLimiter } from '../lib/inputThrottle';
 import { getSelectedRobotId, setSelectedRobotId } from '../lib/selectedRobot';
+import { useCommandFeedback, useFleet, useSettingsStore } from '../storeContexts';
 
 // A held button or stick becomes at most this many commands per second per action, and none at all while this many
 // earlier commands are still unanswered: at 60 frames per second it used to send on every frame, and the requests
@@ -61,7 +61,9 @@ type JointKey = (typeof JOINT_KEYS)[number];
  * its own on the server.
  */
 export function GamepadController() {
-  const { settings, activeController, updateRobot, sendRobotCommand, emergencyStop, reportCommandIssue } = useHydraStore();
+  const { emergencyStop, reportCommandIssue } = useCommandFeedback();
+  const { settings } = useSettingsStore();
+  const { activeController, updateRobot, sendRobotCommand } = useFleet();
   const requestRef = useRef<number>(0);
   const lastState = useRef<Record<string, boolean>>({});
   const settingsRef = useRef(settings);
@@ -149,9 +151,9 @@ export function GamepadController() {
               const y = cart.y + dy * CARTESIAN_JOG_STEP_MM;
               const z = cart.z + dz * CARTESIAN_JOG_STEP_MM;
               const newJoints = resolveTargetJoints(currentRobot.model, x, y, z, cart.a, cart.b, cart.c, currentRobot.joints, currentRobot.joints);
-              const jump = excessiveJogStep(currentRobot.joints, newJoints);
-              if (jump) {
-                reportCommandIssueRef.current({ code: 'jog_jump', command: 'jog', robotIds: [currentRobot.id], detail: `${jump.joint.toUpperCase()} (${jump.deltaDeg.toFixed(0)}°)` });
+              const verdict = guardJogStep({ robotId: currentRobot.id, from: currentRobot.joints, to: newJoints });
+              if (!verdict.ok) {
+                reportCommandIssueRef.current(verdict.issue);
                 continue;
               }
               const axes: { axis: 'x' | 'y' | 'z'; amount: number; value: number }[] = [

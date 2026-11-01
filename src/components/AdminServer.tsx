@@ -21,12 +21,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Power, Save, Server as ServerIcon, Settings } from 'lucide-react';
-import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
 import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
+import { useSession } from '../storeContexts';
 
 interface HydraInfo {
   product?: string;
@@ -44,9 +44,19 @@ function formatUptime(seconds: number | undefined): string {
   return `${hours}h ${minutes}m`;
 }
 
+/** Time between two questions to the server while the dispatcher has not answered the request to read its file again. */
+const RELOAD_POLL_MS = 2000;
+
+const RELOAD_CHIP_STYLE: Record<'pending' | 'applied' | 'failed' | 'not_configured', string> = {
+  pending: 'text-amber-400 border-amber-500/30 bg-amber-500/10',
+  applied: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10',
+  failed: 'text-red-400 border-red-500/30 bg-red-500/10',
+  not_configured: 'text-slate-400 border-slate-600/40 bg-slate-700/20',
+};
+
 export function AdminServer() {
   const { t } = useTranslation();
-  const { authToken, isAdmin } = useHydraStore();
+  const { authToken, isAdmin } = useSession();
   const [currentPort, setCurrentPort] = useState<number | null>(null);
   const [pendingPort, setPendingPort] = useState('');
   const [saving, setSaving] = useState(false);
@@ -283,6 +293,21 @@ export function AdminServer() {
   };
 
   useEffect(() => { if (isAdmin) load(); }, [isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // While the dispatcher has not answered the request to read its file again, ask the server again; only the state of the chip changes, not what is being edited.
+  const reloadPending = security?.jobDispatcher?.replan.reload === 'pending';
+  useEffect(() => {
+    if (!isAdmin || !reloadPending) return undefined;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(apiUrl('/api/admin/server-config'), { headers: authHeaders() });
+        if (res.ok) setSecurity(parseSecurityState(await res.json()));
+      } catch {
+        // The next change of the page asks again.
+      }
+    }, RELOAD_POLL_MS);
+    return () => clearTimeout(timer);
+  }, [isAdmin, reloadPending, security]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const savePort = async () => {
     const portNum = parseInt(pendingPort, 10);
@@ -797,6 +822,14 @@ export function AdminServer() {
                 onChange={e => setJdTimeout(e.target.value)}
                 className="w-32 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
               />
+              {security.jobDispatcher.replan.reload !== 'none' && (
+                <div className="flex items-center gap-2 text-[10px] text-slate-400" data-testid="jd-reload-status">
+                  {t('ecosystem.admin_security_jd_reload_label')}
+                  <span data-testid="jd-reload-chip" data-state={security.jobDispatcher.replan.reload} className={`px-2 py-0.5 rounded-full border font-black uppercase tracking-widest ${RELOAD_CHIP_STYLE[security.jobDispatcher.replan.reload]}`}>
+                    {t(`ecosystem.admin_security_jd_reload_${security.jobDispatcher.replan.reload}`)}
+                  </span>
+                </div>
+              )}
               <div className="text-[10px] text-slate-500">{security.jobDispatcher.replan.editable ? t('ecosystem.admin_security_jd_replan_help') : t('ecosystem.admin_security_jd_not_editable')}</div>
               <button onClick={saveJobDispatcher} disabled={saving} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-all">
                 <Save size={14} /> {t('ecosystem.admin_security_jd_save')}

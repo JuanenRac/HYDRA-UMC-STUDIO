@@ -30,8 +30,8 @@ import { useTranslation } from 'react-i18next';
 import { Boxes, Loader2, Play, RefreshCw, RotateCw, Search, Square, Circle } from 'lucide-react';
 import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
-import { useHydraStore } from '../store';
 import { ConfirmDialog } from './ConfirmDialog';
+import { useSession } from '../storeContexts';
 
 interface EcosystemProjectStatus {
   name: string;
@@ -148,7 +148,7 @@ function StatusBadge({ color, label, version }: { color: HealthColor; label: str
 
 export function EcosystemServices() {
   const { t } = useTranslation();
-  const { authToken, isAdmin } = useHydraStore();
+  const { authToken, isAdmin } = useSession();
   const [available, setAvailable] = useState<boolean | null>(null);
   const [projects, setProjects] = useState<EcosystemProjectStatus[]>([]);
   const [scannedAt, setScannedAt] = useState<string | null>(null);

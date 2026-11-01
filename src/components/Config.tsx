@@ -16,11 +16,12 @@ import {
   Settings, Plus, Trash2, AlertTriangle, Cpu, RefreshCw, Save, FolderOpen, Edit2, Wifi, Smartphone, Tablet,
   Wrench, CheckCircle2, XCircle, Bot, Printer, Watch, Search, Zap, MonitorSmartphone,
 } from 'lucide-react';
-import { useHydraStore, createDefaultRobots, createDefaultCameras, RTSP_DEFAULT_PORT, ipStreamLabels } from '../store';
+import { createDefaultRobots, createDefaultCameras, RTSP_DEFAULT_PORT, ipStreamLabels } from '../store';
 import { UsersPanel } from './UsersPanel';
 import { SubmittedModels } from './SubmittedModels';
 import { ConfirmDialog } from './ConfirmDialog';
 import { apiUrl } from '../lib/apiBase';
+import { useFleet, useServerStatus, useSession, useSettingsStore } from '../storeContexts';
 
 const GamepadConfig = React.lazy(() => import('./GamepadConfig').then(m => ({ default: m.GamepadConfig })));
 
@@ -77,7 +78,10 @@ function TestConnectionButton({ state, onTest }: { state: TestState; onTest: () 
 export function Config({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const [confirmHardwareTransport, setConfirmHardwareTransport] = useState(false);
-  const { controllers, activeController, activeControllerId, updateController, settings, updateSettings, updateRobot, addController, removeController, factoryReset, updateCamera, flushSettingsSave, authToken, serverReachable } = useHydraStore();
+  const { authToken } = useSession();
+  const { serverReachable } = useServerStatus();
+  const { settings, updateSettings, flushSettingsSave } = useSettingsStore();
+  const { controllers, activeController, activeControllerId, updateController, updateRobot, addController, removeController, factoryReset, updateCamera } = useFleet();
   const [configTab, setConfigTab] = useState<ConfigTab>('identity');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 

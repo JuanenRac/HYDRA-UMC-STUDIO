@@ -5,10 +5,10 @@
 // =============================================================================
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useHydraStore } from '../store';
 import { useTranslation } from 'react-i18next';
 import { Gamepad2 } from 'lucide-react';
 import { BluetoothPairing } from './BluetoothPairing';
+import { useSettingsStore } from '../storeContexts';
 
 /**
  * Executes the  gamepad config logic.
@@ -16,7 +16,7 @@ import { BluetoothPairing } from './BluetoothPairing';
  */
 export function GamepadConfig() {
   const { t } = useTranslation();
-  const { settings, updateSettings } = useHydraStore();
+  const { settings, updateSettings } = useSettingsStore();
 
   const gamepadEnabled = settings.gamepadEnabled || false;
   const mapping = settings.gamepadMapping || {};

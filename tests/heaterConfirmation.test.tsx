@@ -11,7 +11,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import '../src/i18n';
-import { HydraContext, createDefaultKinematicBrainStage, defaultControllers } from '../src/store';
+import { createDefaultKinematicBrainStage, defaultControllers } from '../src/store';
+import { HydraStoreProviders } from '../src/storeContexts';
 import { KinematicBrainStage } from '../src/components/KinematicBrainStage';
 import { HeatedBedConfig } from '../src/components/HeatedBedConfig';
 
@@ -26,7 +27,7 @@ function brainContext(ssrActive: boolean) {
   const updateController = vi.fn();
   const controller = { ...defaultControllers[0], kinematicBrainStage: { ...createDefaultKinematicBrainStage(), heatedBed: { ...createDefaultKinematicBrainStage().heatedBed, ssrActive } } };
   const value = { activeController: controller, updateController };
-  return { updateController, wrapper: ({ children }: { children: React.ReactNode }) => <HydraContext.Provider value={value as never}>{children}</HydraContext.Provider> };
+  return { updateController, wrapper: ({ children }: { children: React.ReactNode }) => <HydraStoreProviders value={value as never}>{children}</HydraStoreProviders> };
 }
 
 describe('the heater of the Kinematic Brain Stage', () => {
@@ -68,7 +69,7 @@ describe('the heater of the heated bed screen', () => {
     const updateRobot = vi.fn();
     const robot = { ...defaultControllers[0].robots[0], id: 1, model: 'Parol6 (6-DOF)', heatedBed: { enabled: true, modelId: '200x200x5', size: { width: 200, length: 200 }, targetTemp: 60, currentTemp1: 25, currentTemp2: 25, ssrActive, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 } };
     const value = { robots: [robot], updateRobot };
-    return { updateRobot, wrapper: ({ children }: { children: React.ReactNode }) => <HydraContext.Provider value={value as never}>{children}</HydraContext.Provider> };
+    return { updateRobot, wrapper: ({ children }: { children: React.ReactNode }) => <HydraStoreProviders value={value as never}>{children}</HydraStoreProviders> };
   }
 
   it('asks before switching on', () => {

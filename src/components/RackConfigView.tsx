@@ -6,7 +6,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-import { useHydraStore, type RackConfig } from '../store';
+import { type RackConfig } from '../store';
 import { RotateCcw, Layers, MapPin, CheckSquare, Square } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -14,6 +14,7 @@ import { rackGeometry, validRackDimension } from '../racks';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import Rack3DView from './3d/Rack3DView';
+import { useFleet } from '../storeContexts';
 
 /**
  * Executes the Cnm logic. 
@@ -29,7 +30,7 @@ function cnm(...inputs: ClassValue[]) {
  */
 export function RackConfigView() {
   const { t } = useTranslation();
-  const { robots, updateRobot } = useHydraStore();
+  const { robots, updateRobot } = useFleet();
   const [selectedRobotId, setSelectedRobotId] = useState<number>(1);
   const selectedRobot = robots.find(r => r.id === selectedRobotId);
 

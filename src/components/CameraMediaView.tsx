@@ -12,7 +12,6 @@
 // =============================================================================
 
 import { useEffect, useMemo, useState } from 'react';
-import { useHydraStore } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { useMediaTicket, withTicket } from '../lib/mediaTicket';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -21,6 +20,7 @@ import { Camera as CameraIcon, Video, Image as ImageIcon, RefreshCw, Download, T
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { MjpegRecordingPlayer } from './MjpegRecordingPlayer';
+import { useSession } from '../storeContexts';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -44,7 +44,7 @@ function formatSize(bytes: number): string {
 }
 
 export function CameraMediaView() {
-  const { authToken } = useHydraStore();
+  const { authToken } = useSession();
   const { t } = useTranslation();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
