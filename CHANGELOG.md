@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.0.8] - A Planning and operation view under Ecosystem and the job dispatcher options in Server Admin
+
 - **A Planning and operation view under Ecosystem:** the dry run of a plan (the answer is shown only if it says that nothing was executed), the estimates of the job dispatcher with their ranges, the remaining useful life of a series of scores typed or pasted, a reader of the output of `train plan --json` of the updater (read from a file, only shown) and the state of the window statistics of the data lake. Each function says so when its service has the switch off. Eight languages.
 
 
