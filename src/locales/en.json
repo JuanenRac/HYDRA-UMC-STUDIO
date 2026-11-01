@@ -1101,7 +1101,7 @@
     "admin_security_jd_allow_label": "Send a job back to the queue even if the silent robot never confirmed its stop (off by default)",
     "admin_security_jd_timeout_label": "Seconds to wait for the confirmed stop (more than 0, at most 86400)",
     "admin_security_jd_timeout_invalid": "The wait must be a number greater than 0 and at most 86400.",
-    "admin_security_jd_replan_help": "The server writes these two values into the configuration file of the dispatcher; the dispatcher reads them when it starts.",
+    "admin_security_jd_replan_help": "The server writes these two values into the configuration file of the dispatcher and asks it to read the file again; if it cannot, the dispatcher reads them when it starts.",
     "admin_security_jd_not_editable": "The deployment did not name the configuration file of the dispatcher (HYDRA_UMC_JOB_DISPATCHER_CONFIG): these two options cannot be changed here.",
     "admin_security_jd_save": "Save job dispatcher options",
     "admin_security_jd_confirm": "Switch the delivery of stop requests on, or let a job go to another robot without a confirmed stop? Check the robot map first.",

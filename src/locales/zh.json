@@ -1101,7 +1101,7 @@
     "admin_security_jd_allow_label": "即使无响应的机器人从未确认停止，也将作业放回队列（默认关闭）",
     "admin_security_jd_timeout_label": "等待已确认停止的秒数（大于 0，最多 86400）",
     "admin_security_jd_timeout_invalid": "等待时间必须是大于 0 且不超过 86400 的数字。",
-    "admin_security_jd_replan_help": "服务器将这两个值写入调度器的配置文件；调度器在启动时读取。",
+    "admin_security_jd_replan_help": "服务器将这两个值写入调度器的配置文件，并请求其重新读取；若无法完成，调度器会在启动时读取。",
     "admin_security_jd_not_editable": "部署未指定调度器的配置文件（HYDRA_UMC_JOB_DISPATCHER_CONFIG）：这两个选项无法在此处更改。",
     "admin_security_jd_save": "保存调度器选项",
     "admin_security_jd_confirm": "开启停止请求的转交，或允许作业在没有确认停止的情况下转给其他机器人？请先检查机器人映射表。",

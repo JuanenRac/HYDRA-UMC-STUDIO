@@ -1101,7 +1101,7 @@
     "admin_security_jd_allow_label": "Devolver un trabajo a la cola aunque el robot mudo nunca haya confirmado su parada (apagado por defecto)",
     "admin_security_jd_timeout_label": "Segundos de espera de la parada confirmada (más de 0, como máximo 86400)",
     "admin_security_jd_timeout_invalid": "La espera debe ser un número mayor que 0 y como máximo 86400.",
-    "admin_security_jd_replan_help": "El servidor escribe estos dos valores en el fichero de configuración del despachador; el despachador los lee al arrancar.",
+    "admin_security_jd_replan_help": "El servidor escribe estos dos valores en el fichero de configuración del despachador y le pide que lo lea de nuevo; si no puede, el despachador los lee al arrancar.",
     "admin_security_jd_not_editable": "El despliegue no indicó el fichero de configuración del despachador (HYDRA_UMC_JOB_DISPATCHER_CONFIG): estas dos opciones no se pueden cambiar aquí.",
     "admin_security_jd_save": "Guardar opciones del despachador",
     "admin_security_jd_confirm": "¿Activar la entrega de las peticiones de parada, o dejar que un trabajo pase a otro robot sin parada confirmada? Revisa antes el mapa de robots.",

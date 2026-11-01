@@ -1101,7 +1101,7 @@
     "admin_security_jd_allow_label": "Einen Job auch dann in die Warteschlange zurückgeben, wenn der stumme Roboter seinen Stopp nie bestätigt hat (standardmäßig aus)",
     "admin_security_jd_timeout_label": "Sekunden Wartezeit auf den bestätigten Stopp (mehr als 0, höchstens 86400)",
     "admin_security_jd_timeout_invalid": "Die Wartezeit muss eine Zahl größer als 0 und höchstens 86400 sein.",
-    "admin_security_jd_replan_help": "Der Server schreibt diese beiden Werte in die Konfigurationsdatei des Dispatchers; der Dispatcher liest sie beim Start.",
+    "admin_security_jd_replan_help": "Der Server schreibt diese beiden Werte in die Konfigurationsdatei des Dispatchers und bittet ihn, die Datei neu zu lesen; gelingt das nicht, liest der Dispatcher sie beim Start.",
     "admin_security_jd_not_editable": "Die Bereitstellung hat die Konfigurationsdatei des Dispatchers nicht benannt (HYDRA_UMC_JOB_DISPATCHER_CONFIG): Diese beiden Optionen lassen sich hier nicht ändern.",
     "admin_security_jd_save": "Dispatcher-Optionen speichern",
     "admin_security_jd_confirm": "Die Zustellung der Stopp-Anfragen einschalten oder einen Job ohne bestätigten Stopp an einen anderen Roboter gehen lassen? Prüfe zuerst die Roboterzuordnung.",

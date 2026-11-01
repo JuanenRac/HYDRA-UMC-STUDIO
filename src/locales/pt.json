@@ -1101,7 +1101,7 @@
     "admin_security_jd_allow_label": "Devolver um trabalho à fila mesmo que o robô mudo nunca tenha confirmado a sua paragem (desativado por predefinição)",
     "admin_security_jd_timeout_label": "Segundos de espera pela paragem confirmada (mais de 0, no máximo 86400)",
     "admin_security_jd_timeout_invalid": "A espera tem de ser um número maior que 0 e no máximo 86400.",
-    "admin_security_jd_replan_help": "O servidor escreve estes dois valores no ficheiro de configuração do despachante; o despachante lê-os ao arrancar.",
+    "admin_security_jd_replan_help": "O servidor escreve estes dois valores no ficheiro de configuração do despachante e pede-lhe que o volte a ler; se não conseguir, o despachante lê-os ao arrancar.",
     "admin_security_jd_not_editable": "A instalação não indicou o ficheiro de configuração do despachante (HYDRA_UMC_JOB_DISPATCHER_CONFIG): estas duas opções não podem ser alteradas aqui.",
     "admin_security_jd_save": "Guardar opções do despachante",
     "admin_security_jd_confirm": "Ativar a entrega dos pedidos de paragem, ou deixar um trabalho passar a outro robô sem paragem confirmada? Verifique primeiro o mapa de robôs.",
