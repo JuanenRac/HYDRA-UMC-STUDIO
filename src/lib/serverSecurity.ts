@@ -68,6 +68,11 @@ export interface SecurityState {
     enabled: { value: boolean; source: SecuritySource };
   } | null;
   /** Absent when the server predates the announcement of the global stop. */
+  /** Absent when the server predates the options of the job dispatcher. */
+  jobDispatcher: {
+    stopRelay: { enabled: { value: boolean; source: SecuritySource }; robotMap: Record<string, number>; appliesOnRestart: boolean };
+    replan: { allowUnconfirmed: { value: boolean; source: SecuritySource }; stopAckTimeoutSeconds: { value: number; source: SecuritySource }; editable: boolean };
+  } | null;
   safety: {
     publishGlobalStop: { value: boolean; source: SecuritySource };
   } | null;
@@ -183,6 +188,28 @@ function parseInstall(raw: any): SecurityState['install'] {
   return { cameraCredentialsViaEnv, newInstallTls };
 }
 
+function parseJobDispatcher(raw: any): SecurityState['jobDispatcher'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const relay = raw.stopRelay;
+  const replan = raw.replan;
+  if (!relay || typeof relay !== 'object' || !replan || typeof replan !== 'object') return null;
+  if (typeof relay.enabled?.value !== 'boolean' || !isSource(relay.enabled?.source)) return null;
+  if (typeof replan.allowUnconfirmed?.value !== 'boolean' || !isSource(replan.allowUnconfirmed?.source)) return null;
+  if (typeof replan.stopAckTimeoutSeconds?.value !== 'number' || !isSource(replan.stopAckTimeoutSeconds?.source)) return null;
+  const robotMap: Record<string, number> = {};
+  if (relay.robotMap && typeof relay.robotMap === 'object' && !Array.isArray(relay.robotMap)) {
+    for (const [id, number] of Object.entries(relay.robotMap)) if (typeof number === 'number' && Number.isInteger(number)) robotMap[id] = number;
+  }
+  return {
+    stopRelay: { enabled: { value: relay.enabled.value, source: relay.enabled.source }, robotMap, appliesOnRestart: relay.appliesOnRestart === true },
+    replan: {
+      allowUnconfirmed: { value: replan.allowUnconfirmed.value, source: replan.allowUnconfirmed.source },
+      stopAckTimeoutSeconds: { value: replan.stopAckTimeoutSeconds.value, source: replan.stopAckTimeoutSeconds.source },
+      editable: replan.editable === true,
+    },
+  };
+}
+
 function parseSafety(raw: any): SecurityState['safety'] {
   if (!raw || typeof raw !== 'object') return null;
   const publish = raw.publishGlobalStop;
@@ -251,6 +278,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     ecosystemHealth: parseEcosystemHealth(raw.ecosystemHealth),
     rul: parseRul(raw.rul),
     safety: parseSafety(raw.safety),
+    jobDispatcher: parseJobDispatcher(raw.jobDispatcher),
     exposure: parseExposure(raw),
     install: parseInstall(raw),
     mavlink: parseMavlink(raw.mavlink),
@@ -426,6 +454,62 @@ export function installChangeNeedsConfirmation(current: InstallValues, next: Ins
   return (current.cameraCredentialsViaEnv && !next.cameraCredentialsViaEnv) || (current.newInstallTls && !next.newInstallTls);
 }
 
+export const MAX_STOP_ACK_TIMEOUT_SECONDS = 86400;
+const DISPATCHER_ROBOT_ID = /^[A-Za-z0-9._:-]{1,64}$/;
+
+/** The robot map as text, one `id = number` per line, in the order of the ids. */
+export function robotMapToText(map: Record<string, number>): string {
+  return Object.keys(map).sort().map(id => `${id} = ${map[id]}`).join('\n');
+}
+
+/** The text back to a map; null when a line is not `id = number`, an id is not valid, a number is not a whole number of 0 or more, or an id repeats. Blank lines are ignored. */
+export function parseRobotMapText(text: string): Record<string, number> | null {
+  const map: Record<string, number> = {};
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (line === '') continue;
+    const match = /^([^=:\s][^=\s]*)\s*=\s*(\d+)$/.exec(line);
+    if (!match || !DISPATCHER_ROBOT_ID.test(match[1])) return null;
+    if (Object.prototype.hasOwnProperty.call(map, match[1])) return null;
+    const number = Number(match[2]);
+    if (!Number.isSafeInteger(number)) return null;
+    map[match[1]] = number;
+  }
+  return Object.keys(map).length <= 1000 ? map : null;
+}
+
+export type JobDispatcherPatchBody = {
+  jobDispatcher: {
+    stopRelay: { enabled: boolean; robotMap: Record<string, number> };
+    replan?: { allowUnconfirmed: boolean; stopAckTimeoutSeconds: number };
+  };
+};
+
+/**
+ * The request body for the job dispatcher options; null when the robot map or the wait is not valid (a comma is read as a decimal point; an empty
+ * text is not a number). The replanning part is left out when the server cannot write the file of the dispatcher.
+ */
+export function jobDispatcherPatch(input: { relayEnabled: boolean; robotMapText: string; replanEditable: boolean; allowUnconfirmed: boolean; timeoutText: string }): JobDispatcherPatchBody | null {
+  const robotMap = parseRobotMapText(input.robotMapText);
+  if (robotMap === null) return null;
+  const body: JobDispatcherPatchBody = { jobDispatcher: { stopRelay: { enabled: input.relayEnabled, robotMap } } };
+  if (input.replanEditable) {
+    const text = input.timeoutText.trim().replace(',', '.');
+    if (text === '' || !/^\d*\.?\d+$|^\d+\.$/.test(text)) return null;
+    const seconds = Number(text);
+    if (!Number.isFinite(seconds) || seconds <= 0 || seconds > MAX_STOP_ACK_TIMEOUT_SECONDS) return null;
+    body.jobDispatcher.replan = { allowUnconfirmed: input.allowUnconfirmed, stopAckTimeoutSeconds: seconds };
+  }
+  return body;
+}
+
+/** Switching the delivery on, or letting a job go to another robot without a confirmed stop, asks first. */
+export function jobDispatcherChangeNeedsConfirmation(current: NonNullable<SecurityState['jobDispatcher']>, next: JobDispatcherPatchBody): boolean {
+  const relayOn = !current.stopRelay.enabled.value && next.jobDispatcher.stopRelay.enabled;
+  const unconfirmed = next.jobDispatcher.replan !== undefined && !current.replan.allowUnconfirmed.value && next.jobDispatcher.replan.allowUnconfirmed;
+  return relayOn || unconfirmed;
+}
+
 export type SafetyPatchBody = { safety: { publishGlobalStop: boolean } };
 
 /** The request body for the option that announces a global stop on the MQTT bridge (off by default). Announcing a stop is the safe direction: it never asks. */
@@ -449,6 +533,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }

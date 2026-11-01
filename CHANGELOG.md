@@ -4,6 +4,9 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The job dispatcher options in Server Admin:** a card with the switch and the robot map (one `id = number` per line) of the delivery of the stop requests and the two options of the replanning (send a job back to the queue without a confirmed stop, seconds to wait for it), in the eight languages. The replanning part is read only when the server was not told the configuration file of the dispatcher, and switching the delivery on or allowing a job to move without a confirmed stop asks for a confirmation first.
+
+
 ## [0.8.0.7] - The 3D models from one downloadable package instead of the repository tree, a view of the health of the ecosystem and switches in Server Admin for it and for the remaining useful life relay
 
 - **A switch for the remaining-useful-life relay in Server Admin:** the security screen gets the `rul.enabled` option (off by default, locked by the environment like the others) that lets operators use the remaining-useful-life estimate of the AI dashboard through the relay of the server; without it only an administrator can. Texts in the 8 languages; tests in `tests/serverSecurity.test.ts`.

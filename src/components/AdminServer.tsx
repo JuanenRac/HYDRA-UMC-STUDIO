@@ -26,7 +26,7 @@ import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState } from '../lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
 
 interface HydraInfo {
   product?: string;
@@ -78,6 +78,11 @@ export function AdminServer() {
   const [ecosystemHealthOn, setEcosystemHealthOn] = useState(false);
   const [rulOn, setRulOn] = useState(false);
   const [safetyPublish, setSafetyPublish] = useState(false);
+  const [jdRelay, setJdRelay] = useState(false);
+  const [jdMapText, setJdMapText] = useState('');
+  const [jdAllow, setJdAllow] = useState(false);
+  const [jdTimeout, setJdTimeout] = useState('30');
+  const [pendingJd, setPendingJd] = useState<JobDispatcherPatchBody | null>(null);
   const [exposure, setExposure] = useState<ExposureValues>({ cameraOpen: false, wsQueryToken: false, logRedaction: true, voiceSignature: false });
   const [pendingExposure, setPendingExposure] = useState<ExposurePatchBody | null>(null);
   const [install, setInstall] = useState<InstallValues>({ cameraCredentialsViaEnv: true, newInstallTls: true });
@@ -105,6 +110,12 @@ export function AdminServer() {
       if (state.ecosystemHealth) setEcosystemHealthOn(state.ecosystemHealth.enabled.value);
       if (state.rul) setRulOn(state.rul.enabled.value);
       if (state.safety) setSafetyPublish(state.safety.publishGlobalStop.value);
+      if (state.jobDispatcher) {
+        setJdRelay(state.jobDispatcher.stopRelay.enabled.value);
+        setJdMapText(robotMapToText(state.jobDispatcher.stopRelay.robotMap));
+        setJdAllow(state.jobDispatcher.replan.allowUnconfirmed.value);
+        setJdTimeout(String(state.jobDispatcher.replan.stopAckTimeoutSeconds.value));
+      }
       if (state.exposure) setExposure({ cameraOpen: state.exposure.cameraOpen.value, wsQueryToken: state.exposure.wsQueryToken.value, logRedaction: state.exposure.logRedaction.value, voiceSignature: state.exposure.voiceSignature.value });
       if (state.install) setInstall({ cameraCredentialsViaEnv: state.install.cameraCredentialsViaEnv.value, newInstallTls: state.install.newInstallTls.value });
       if (state.mavlink) {
@@ -144,6 +155,8 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('new_install_tls_off')) setWarning(t('ecosystem.admin_security_install_tls_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_unsigned_allowed')) setWarning(t('ecosystem.admin_security_mavlink_unsigned_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_signing_off')) setWarning(t('ecosystem.admin_security_mavlink_off_warning'));
+      if (knownWarnings(data.warnings).includes('job_stop_relay_on')) setWarning(t('ecosystem.admin_security_jd_warning_relay'));
+      if (knownWarnings(data.warnings).includes('replan_unconfirmed_allowed')) setWarning(t('ecosystem.admin_security_jd_warning_replan'));
       setNotice(t('ecosystem.admin_security_saved'));
     } catch {
       setError(t('ecosystem.admin_server_load_error'));
@@ -175,6 +188,17 @@ export function AdminServer() {
     if (!patch || !security?.voice) { setError(t('ecosystem.admin_security_voice_invalid')); return; }
     if (voiceChangeNeedsConfirmation({ includeHeardText: security.voice.includeHeardText.value, minConfidence: security.voice.minConfidence.value }, patch.voice)) setPendingVoice(patch);
     else void saveSecurity(patch);
+  };
+
+  const saveJobDispatcher = () => {
+    if (!security?.jobDispatcher) return;
+    const body = jobDispatcherPatch({ relayEnabled: jdRelay, robotMapText: jdMapText, replanEditable: security.jobDispatcher.replan.editable, allowUnconfirmed: jdAllow, timeoutText: jdTimeout });
+    if (!body) {
+      setError(parseRobotMapText(jdMapText) === null ? t('ecosystem.admin_security_jd_map_invalid') : t('ecosystem.admin_security_jd_timeout_invalid'));
+      return;
+    }
+    if (jobDispatcherChangeNeedsConfirmation(security.jobDispatcher, body)) setPendingJd(body);
+    else void saveSecurity(body);
   };
 
   const saveRobots = () => {
@@ -732,6 +756,54 @@ export function AdminServer() {
             </div>
           )}
 
+          {security.jobDispatcher && (
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_jd_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="jd-relay"
+                  checked={jdRelay}
+                  disabled={saving || isLocked(security.jobDispatcher.stopRelay.enabled.source)}
+                  onChange={e => setJdRelay(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_jd_relay_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.jobDispatcher.stopRelay.enabled.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_jd_relay_help')}</div>
+              <label className="text-xs font-bold text-slate-200" htmlFor="admin-security-jd-map">{t('ecosystem.admin_security_jd_map_label')}</label>
+              <textarea
+                id="admin-security-jd-map" data-testid="jd-map" rows={4} value={jdMapText} placeholder={t('ecosystem.admin_security_jd_map_placeholder')}
+                disabled={saving}
+                onChange={e => setJdMapText(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 font-mono outline-none"
+              />
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_jd_map_help')}</div>
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_jd_replan_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="jd-allow-unconfirmed"
+                  checked={jdAllow}
+                  disabled={saving || !security.jobDispatcher.replan.editable}
+                  onChange={e => setJdAllow(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_jd_allow_label')}
+              </label>
+              <label className="text-xs font-bold text-slate-200" htmlFor="admin-security-jd-timeout">{t('ecosystem.admin_security_jd_timeout_label')}</label>
+              <input
+                id="admin-security-jd-timeout" data-testid="jd-timeout" type="text" inputMode="decimal" value={jdTimeout}
+                disabled={saving || !security.jobDispatcher.replan.editable}
+                onChange={e => setJdTimeout(e.target.value)}
+                className="w-32 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
+              />
+              <div className="text-[10px] text-slate-500">{security.jobDispatcher.replan.editable ? t('ecosystem.admin_security_jd_replan_help') : t('ecosystem.admin_security_jd_not_editable')}</div>
+              <button onClick={saveJobDispatcher} disabled={saving} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-all">
+                <Save size={14} /> {t('ecosystem.admin_security_jd_save')}
+              </button>
+            </div>
+          )}
+
           {security.mavlink && (
             <div className="space-y-2">
               <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_mavlink_title')}</h5>
@@ -771,6 +843,13 @@ export function AdminServer() {
         message={t('ecosystem.admin_security_voice_confirm')}
         onConfirm={() => { const next = pendingVoice; setPendingVoice(null); if (next) void saveSecurity(next); }}
         onCancel={() => setPendingVoice(null)}
+      />
+
+      <ConfirmDialog
+        open={pendingJd !== null}
+        message={t('ecosystem.admin_security_jd_confirm')}
+        onConfirm={() => { const body = pendingJd; setPendingJd(null); if (body) void saveSecurity(body); }}
+        onCancel={() => setPendingJd(null)}
       />
 
       <ConfirmDialog

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -341,5 +341,50 @@ describe('the remaining-useful-life option', () => {
   it('builds the request', () => {
     expect(rulPatch(true)).toEqual({ rul: { enabled: true } });
     expect(rulPatch(false)).toEqual({ rul: { enabled: false } });
+  });
+});
+
+describe('the options of the job dispatcher', () => {
+  const server = {
+    stopRelay: { enabled: { value: false, source: 'default' }, robotMap: { 'arm-2': 2, 'arm-1': 1 }, appliesOnRestart: false },
+    replan: { allowUnconfirmed: { value: false, source: 'default' }, stopAckTimeoutSeconds: { value: 30, source: 'config' }, editable: true },
+  };
+
+  it('reads what the server reports and shows nothing for a server that predates it or answers nonsense', () => {
+    const state = parseSecurityState({ ...answer, jobDispatcher: server })?.jobDispatcher;
+    expect(state?.stopRelay.robotMap).toEqual({ 'arm-1': 1, 'arm-2': 2 });
+    expect(state?.replan.editable).toBe(true);
+    expect(parseSecurityState(answer)?.jobDispatcher).toBeNull();
+    expect(parseSecurityState({ ...answer, jobDispatcher: { ...server, replan: { ...server.replan, stopAckTimeoutSeconds: { value: '30', source: 'config' } } } })?.jobDispatcher).toBeNull();
+    expect(parseSecurityState({ ...answer, jobDispatcher: { ...server, stopRelay: { ...server.stopRelay, enabled: { value: true, source: 'nowhere' } } } })?.jobDispatcher).toBeNull();
+  });
+
+  it('writes the robot map as text and reads it back', () => {
+    expect(robotMapToText({ 'arm-2': 2, 'arm-1': 1 })).toBe('arm-1 = 1\narm-2 = 2');
+    expect(parseRobotMapText('arm-1 = 1\n\n  arm-2=2 \r\n')).toEqual({ 'arm-1': 1, 'arm-2': 2 });
+    expect(parseRobotMapText('')).toEqual({});
+    for (const bad of ['arm-1', 'arm-1 = x', 'arm-1 = -1', 'arm-1 = 1.5', 'bad id = 1', '= 1', 'a = 1\na = 2', `${'x'.repeat(65)} = 1`]) expect(parseRobotMapText(bad), bad).toBeNull();
+  });
+
+  it('builds the request, leaving the replanning out when the server cannot write the file of the dispatcher', () => {
+    const input = { relayEnabled: true, robotMapText: 'arm-1 = 1', replanEditable: true, allowUnconfirmed: true, timeoutText: '45,5' };
+    expect(jobDispatcherPatch(input)).toEqual({ jobDispatcher: { stopRelay: { enabled: true, robotMap: { 'arm-1': 1 } }, replan: { allowUnconfirmed: true, stopAckTimeoutSeconds: 45.5 } } });
+    expect(jobDispatcherPatch({ ...input, replanEditable: false, timeoutText: 'nonsense' })).toEqual({ jobDispatcher: { stopRelay: { enabled: true, robotMap: { 'arm-1': 1 } } } });
+    for (const timeoutText of ['', '0', '-1', '86401', 'abc', '1e3']) expect(jobDispatcherPatch({ ...input, timeoutText }), timeoutText).toBeNull();
+    expect(jobDispatcherPatch({ ...input, timeoutText: '86400' })).not.toBeNull();
+    expect(jobDispatcherPatch({ ...input, robotMapText: 'nonsense' })).toBeNull();
+  });
+
+  it('asks first when the delivery is switched on or a job may go to another robot without a confirmed stop', () => {
+    const current = parseSecurityState({ ...answer, jobDispatcher: server })!.jobDispatcher!;
+    const base = { relayEnabled: false, robotMapText: 'arm-1 = 1', replanEditable: true, allowUnconfirmed: false, timeoutText: '30' };
+    expect(jobDispatcherChangeNeedsConfirmation(current, jobDispatcherPatch(base)!)).toBe(false);
+    expect(jobDispatcherChangeNeedsConfirmation(current, jobDispatcherPatch({ ...base, relayEnabled: true })!)).toBe(true);
+    expect(jobDispatcherChangeNeedsConfirmation(current, jobDispatcherPatch({ ...base, allowUnconfirmed: true })!)).toBe(true);
+    expect(jobDispatcherChangeNeedsConfirmation(current, jobDispatcherPatch({ ...base, timeoutText: '60' })!)).toBe(false);
+  });
+
+  it('knows the two warnings of the server', () => {
+    expect(knownWarnings(['job_stop_relay_on', 'replan_unconfirmed_allowed', 'other'])).toEqual(['job_stop_relay_on', 'replan_unconfirmed_allowed']);
   });
 });
