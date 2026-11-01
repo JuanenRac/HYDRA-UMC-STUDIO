@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.0.9] - One guard for every motion command, the store cut in five domains, local and global settings by role, the robot screen cut in parts, a chip with the state of the reload of the job dispatcher and TypeScript 7
+
 - **The state of the reload of the job dispatcher in Server Admin:** next to the replanning options a chip says what came of the request to read the dispatcher file again (pending, applied, failed or not configured), read from `jobDispatcher.replan.reload`, in the eight languages; while the request is pending the screen asks the server again every two seconds.
 - **One guard for every motion command:** Sim mode, the size of a jog, the size of a table move and a single step that swings a joint a long way are decided in one module (`lib/motionGuard.ts`) that the provider, the robot screen and the gamepad all use, so the order and the sentence of a refusal are the same everywhere; a stop is never refused.
 - **The store is cut in five domains** (session, command feedback, link status, settings, fleet), each with its own hook, stable functions and its own context: a screen that reads one domain no longer draws again when another changes (a joint moving no longer redraws the login gate). `useHydraStore()` still gives the whole value.
