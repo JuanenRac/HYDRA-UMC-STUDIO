@@ -4,6 +4,9 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A Planning and operation view under Ecosystem:** the dry run of a plan (the answer is shown only if it says that nothing was executed), the estimates of the job dispatcher with their ranges, the remaining useful life of a series of scores typed or pasted, a reader of the output of `train plan --json` of the updater (read from a file, only shown) and the state of the window statistics of the data lake. Each function says so when its service has the switch off. Eight languages.
+
+
 - **The job dispatcher options in Server Admin:** a card with the switch and the robot map (one `id = number` per line) of the delivery of the stop requests and the two options of the replanning (send a job back to the queue without a confirmed stop, seconds to wait for it), in the eight languages. The replanning part is read only when the server was not told the configuration file of the dispatcher, and switching the delivery on or allowing a job to move without a confirmed stop asks for a confirmation first.
 
 
