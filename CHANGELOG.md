@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.1.0] - A check of the trajectory before Play, an audit record that filters by who and from where, trusted networks and the gateway switch in Server Admin, a map of the ecosystem and a refused home pose that says so
+
 - **A check of the trajectory before Play:** a switch in the trajectories tab (off by default, kept in this browser) makes START show the path from above, from the side and from the front first, with the joints that are outside the limits of the model and the steps that swing a joint too far, and ask before it plays. The largest step, the tolerance of the limits and the size of the views are in `src/config/trajectoryPreview.json`; texts and help in the eight languages.
 
 - **The audit record screen narrows by who and from where:** besides the type and the robot, it filters what it read by account, window, address and text, has an *Only mine* button, knows every kind of entry the server writes (global stop released, robot enabled or disabled, bridge commands, job dispatcher options and reload, notification devices, remote access policy) and can read the record again by itself (off by default; the interval is in `src/config/auditView.json`).
