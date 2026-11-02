@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Trusted networks in Server Admin:** a new option, off by default (locked when the environment of the server fixes it), that makes the server refuse to be administered from outside the house network and the VPN; the ranges and the policy for the outside stay in the configuration file of the server. It speaks the eight languages and warns once it is saved.
+
+- **A refused HOME / RESET says so:** when the server will not send a robot home (the pose is not the home pose of its model, or a joint would leave its range) the banner says the robot did not move, in the eight languages.
+
 - **A map of the ecosystem:** Ecosystem > Map of the ecosystem draws every project that the server finds next to it, grouped by family, one tile each with its version, port, maturity and a state (up, error, down, unknown) from the scan and the probe of `GET /api/ecosystem/status`, with the totals as filters, a search box and a mark on the project whose version differs from its manifest when the health of the ecosystem is on. Read only, no new route; eight languages.
 
 - **The switch of the gateway to the machine bridges:** Server Admin shows the new option `bridgeGateway.enabled` (off by default; locked when the environment of the server sets it) with a warning when it is turned on, in the eight languages.

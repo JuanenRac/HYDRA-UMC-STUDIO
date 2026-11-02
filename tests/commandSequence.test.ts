@@ -52,3 +52,24 @@ describe('the answer of a command that arrived out of order', () => {
     }
   });
 });
+
+describe('the answer of a home / reset the server refused', () => {
+  it('is its own failure for both refusals, and moves nothing on the screen', async () => {
+    const { interpretCommandResponse } = await import('../src/lib/commandResult');
+    for (const [status, code] of [[400, 'home-pose-mismatch'], [422, 'home-out-of-limits']] as const) {
+      const result = interpretCommandResponse(status, false, { error: 'not the home pose', code });
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.code).toBe('home_rejected');
+    }
+  });
+
+  it('has a text in all eight languages', async () => {
+    const fs = await import('node:fs');
+    for (const lang of ['en', 'es', 'de', 'fr', 'it', 'ja', 'pt', 'zh']) {
+      const locale = JSON.parse(fs.readFileSync(`src/locales/${lang}.json`, 'utf8'));
+      const text = locale.command_issue?.home_rejected;
+      expect(text, lang).toBeTruthy();
+      expect(String(text)).toContain('{{robots}}');
+    }
+  });
+});

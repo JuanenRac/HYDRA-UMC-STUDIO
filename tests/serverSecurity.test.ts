@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDispatcherReload, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -409,5 +409,17 @@ describe('the options of the job dispatcher', () => {
 
   it('knows the two warnings of the server', () => {
     expect(knownWarnings(['job_stop_relay_on', 'replan_unconfirmed_allowed', 'other'])).toEqual(['job_stop_relay_on', 'replan_unconfirmed_allowed']);
+  });
+});
+
+describe('the trusted networks option', () => {
+  it('reads the switch, ignores a damaged one and builds the patch', () => {
+    const base = answer;
+    expect(parseSecurityState({ ...base, trustedNetworks: { enabled: { value: false, source: 'default' }, outside: 'operate' } })?.trustedNetworks).toEqual({ enabled: { value: false, source: 'default' } });
+    expect(parseSecurityState({ ...base, trustedNetworks: { enabled: { value: true, source: 'env' } } })?.trustedNetworks).toEqual({ enabled: { value: true, source: 'env' } });
+    expect(parseSecurityState(base)?.trustedNetworks).toBeNull();
+    expect(parseSecurityState({ ...base, trustedNetworks: { enabled: { value: 'yes', source: 'default' } } })?.trustedNetworks).toBeNull();
+    expect(trustedNetworksPatch(true)).toEqual({ trustedNetworks: { enabled: true } });
+    expect(knownWarnings(['trusted_networks_on', 'other'])).toEqual(['trusted_networks_on']);
   });
 });
