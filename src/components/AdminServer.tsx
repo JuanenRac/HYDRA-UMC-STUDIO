@@ -25,7 +25,7 @@ import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
 
 interface HydraInfo {
@@ -86,6 +86,7 @@ export function AdminServer() {
   const [healthOpen, setHealthOpen] = useState(false);
   const [pendingHealth, setPendingHealth] = useState(false);
   const [ecosystemHealthOn, setEcosystemHealthOn] = useState(false);
+  const [bridgeGatewayOn, setBridgeGatewayOn] = useState(false);
   const [rulOn, setRulOn] = useState(false);
   const [safetyPublish, setSafetyPublish] = useState(false);
   const [jdRelay, setJdRelay] = useState(false);
@@ -118,6 +119,7 @@ export function AdminServer() {
       if (state.connections) setConnectionsRecordAddress(state.connections.recordAddress.value);
       if (state.health) setHealthOpen(state.health.open.value);
       if (state.ecosystemHealth) setEcosystemHealthOn(state.ecosystemHealth.enabled.value);
+      if (state.bridgeGateway) setBridgeGatewayOn(state.bridgeGateway.enabled.value);
       if (state.rul) setRulOn(state.rul.enabled.value);
       if (state.safety) setSafetyPublish(state.safety.publishGlobalStop.value);
       if (state.jobDispatcher) {
@@ -158,6 +160,7 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('robot_enable_allowed')) setWarning(t('ecosystem.admin_security_robots_warning'));
       if (knownWarnings(data.warnings).includes('connection_address_recorded')) setWarning(t('ecosystem.admin_security_connections_warning'));
       if (knownWarnings(data.warnings).includes('health_open')) setWarning(t('ecosystem.admin_security_health_warning'));
+      if (knownWarnings(data.warnings).includes('bridge_gateway_on')) setWarning(t('ecosystem.admin_security_bridge_gateway_warning'));
       if (knownWarnings(data.warnings).includes('camera_open')) setWarning(t('ecosystem.admin_security_exposure_camera_warning'));
       if (knownWarnings(data.warnings).includes('ws_query_token_allowed')) setWarning(t('ecosystem.admin_security_exposure_ws_warning'));
       if (knownWarnings(data.warnings).includes('log_redaction_off')) setWarning(t('ecosystem.admin_security_exposure_log_warning'));
@@ -649,6 +652,27 @@ export function AdminServer() {
               <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_ecosystem_health_help')}</div>
               <button onClick={() => void saveSecurity(ecosystemHealthPatch(ecosystemHealthOn))} disabled={saving || isLocked(security.ecosystemHealth.enabled.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
                 <Save size={14} /> {t('ecosystem.admin_security_ecosystem_health_save')}
+              </button>
+            </div>
+          )}
+
+          {security.bridgeGateway && (
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_bridge_gateway_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="bridge-gateway-enabled"
+                  checked={bridgeGatewayOn}
+                  disabled={saving || isLocked(security.bridgeGateway.enabled.source)}
+                  onChange={e => setBridgeGatewayOn(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_bridge_gateway_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.bridgeGateway.enabled.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_bridge_gateway_help')}</div>
+              <button onClick={() => void saveSecurity(bridgeGatewayPatch(bridgeGatewayOn))} disabled={saving || isLocked(security.bridgeGateway.enabled.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-50 text-sky-300 border border-sky-500/30 rounded-lg text-xs font-bold transition-all">
+                <Save size={14} /> {t('ecosystem.admin_security_bridge_gateway_save')}
               </button>
             </div>
           )}

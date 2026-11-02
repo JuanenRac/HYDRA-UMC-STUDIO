@@ -63,6 +63,10 @@ export interface SecurityState {
   ecosystemHealth: {
     enabled: { value: boolean; source: SecuritySource };
   } | null;
+  /** Absent when the server predates the gateway to the machine bridges. */
+  bridgeGateway: {
+    enabled: { value: boolean; source: SecuritySource };
+  } | null;
   /** Absent when the server predates the remaining-useful-life relay for operators. */
   rul: {
     enabled: { value: boolean; source: SecuritySource };
@@ -155,6 +159,13 @@ function parseHealth(raw: any): SecurityState['health'] {
 }
 
 function parseEcosystemHealth(raw: any): SecurityState['ecosystemHealth'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const enabled = raw.enabled;
+  if (!enabled || typeof enabled.value !== 'boolean' || !isSource(enabled.source)) return null;
+  return { enabled: { value: enabled.value, source: enabled.source } };
+}
+
+function parseBridgeGateway(raw: any): SecurityState['bridgeGateway'] {
   if (!raw || typeof raw !== 'object') return null;
   const enabled = raw.enabled;
   if (!enabled || typeof enabled.value !== 'boolean' || !isSource(enabled.source)) return null;
@@ -285,6 +296,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     connections: parseConnections(raw.connections),
     health: parseHealth(raw.health),
     ecosystemHealth: parseEcosystemHealth(raw.ecosystemHealth),
+    bridgeGateway: parseBridgeGateway(raw.bridgeGateway),
     rul: parseRul(raw.rul),
     safety: parseSafety(raw.safety),
     jobDispatcher: parseJobDispatcher(raw.jobDispatcher),
@@ -402,6 +414,13 @@ export type EcosystemHealthPatchBody = { ecosystemHealth: { enabled: boolean } }
 /** The request body for the option that lets operators and administrators read GET /api/ecosystem/health (off by default). */
 export function ecosystemHealthPatch(enabled: boolean): EcosystemHealthPatchBody {
   return { ecosystemHealth: { enabled } };
+}
+
+export type BridgeGatewayPatchBody = { bridgeGateway: { enabled: boolean } };
+
+/** The request body for the option that opens the gateway to the machine bridges (GET /api/bridges, POST /api/bridges/:name/cmd/:verb; off by default). */
+export function bridgeGatewayPatch(enabled: boolean): BridgeGatewayPatchBody {
+  return { bridgeGateway: { enabled } };
 }
 
 export type RulPatchBody = { rul: { enabled: boolean } };
@@ -542,6 +561,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }

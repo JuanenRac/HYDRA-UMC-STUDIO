@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDispatcherReload, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { parseDispatcherReload, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -212,6 +212,22 @@ describe('the health of the ecosystem option', () => {
   it('builds the request', () => {
     expect(ecosystemHealthPatch(true)).toEqual({ ecosystemHealth: { enabled: true } });
     expect(ecosystemHealthPatch(false)).toEqual({ ecosystemHealth: { enabled: false } });
+  });
+});
+
+describe('the gateway to the machine bridges option', () => {
+  it('reads the option the server reports and shows nothing for a server that predates it', () => {
+    expect(parseSecurityState({ ...answer, bridgeGateway: { enabled: { value: false, source: 'default' } } })?.bridgeGateway).toEqual({ enabled: { value: false, source: 'default' } });
+    expect(parseSecurityState({ ...answer, bridgeGateway: { enabled: { value: true, source: 'env' } } })?.bridgeGateway).toEqual({ enabled: { value: true, source: 'env' } });
+    expect(parseSecurityState(answer)?.bridgeGateway).toBeNull();
+    expect(parseSecurityState({ ...answer, bridgeGateway: { enabled: { value: 'yes', source: 'default' } } })?.bridgeGateway).toBeNull();
+    expect(parseSecurityState({ ...answer, bridgeGateway: { enabled: { value: true, source: 'nowhere' } } })?.bridgeGateway).toBeNull();
+  });
+
+  it('builds the request and knows the warning', () => {
+    expect(bridgeGatewayPatch(true)).toEqual({ bridgeGateway: { enabled: true } });
+    expect(bridgeGatewayPatch(false)).toEqual({ bridgeGateway: { enabled: false } });
+    expect(knownWarnings(['bridge_gateway_on', 'other'])).toEqual(['bridge_gateway_on']);
   });
 });
 

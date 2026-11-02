@@ -115,6 +115,7 @@ const KinematicBrainStage = React.lazy(() => import('./components/KinematicBrain
 // HYDRA-UMC-SERVER route it talks to.
 const EcosystemServices = React.lazy(() => import('./components/EcosystemServices').then(m => ({ default: m.EcosystemServices })));
 const AiFamilyStatus = React.lazy(() => import('./components/AiFamilyStatus').then(m => ({ default: m.AiFamilyStatus })));
+const EcosystemMap = React.lazy(() => import('./components/EcosystemMap').then(m => ({ default: m.EcosystemMap })));
 const EcosystemHealth = React.lazy(() => import('./components/EcosystemHealth').then(m => ({ default: m.EcosystemHealth })));
 const EcosystemPlanning = React.lazy(() => import('./components/EcosystemPlanning').then(m => ({ default: m.EcosystemPlanning })));
 const EcosystemTelemetry = React.lazy(() => import('./components/EcosystemTelemetry').then(m => ({ default: m.EcosystemTelemetry })));
@@ -354,6 +355,7 @@ export default function Dashboard() {
 
                   <div className="mt-6 mb-2 px-4 text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1">{t('ecosystem.menu_section')}</div>
                   <button onClick={() => setActiveTab('ecosystemServices')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemServices' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_services')}</button>
+                  <button onClick={() => setActiveTab('ecosystemMap')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemMap' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_map')}</button>
                   <button onClick={() => setActiveTab('ecosystemHealth')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemHealth' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_health')}</button>
                   <button onClick={() => setActiveTab('ecosystemPlanning')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemPlanning' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.planning_menu')}</button>
                   <button onClick={() => setActiveTab('ecosystemTelemetry')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemTelemetry' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_telemetry')}</button>
@@ -408,6 +410,7 @@ export default function Dashboard() {
                {activeTab === 'cameraMedia' && <CameraMediaView />}
                {activeTab === 'ecosystemServices' && <EcosystemServices />}
                {activeTab === 'ecosystemHealth' && <EcosystemHealth />}
+               {activeTab === 'ecosystemMap' && <EcosystemMap />}
                {activeTab === 'ecosystemPlanning' && <EcosystemPlanning />}
                {activeTab === 'ecosystemTelemetry' && <EcosystemTelemetry />}
                {activeTab === 'aiFamilyStatus' && <AiFamilyStatus />}

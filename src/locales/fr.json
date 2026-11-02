@@ -1187,10 +1187,16 @@
     "admin_security_install_tls_warning": "Une nouvelle installation n'activera plus TLS d'elle-même.",
     "admin_security_install_confirm": "Cela réduit la protection du serveur (un mot de passe de caméra sur une ligne de commande, ou pas de TLS par défaut dans une nouvelle installation). Continuer ?",
     "menu_health": "Santé de l'écosystème",
+    "menu_map": "Carte de l'écosystème",
     "admin_security_ecosystem_health_title": "Santé de l'écosystème",
     "admin_security_ecosystem_health_label": "Permettre aux opérateurs et aux administrateurs de lire la santé des services (GET /api/ecosystem/health)",
     "admin_security_ecosystem_health_help": "Désactivé par défaut : la route répond alors comme si elle n'existait pas. Activé, elle liste chaque service avec son état, la version qu'il annonce et les jours restants du certificat TLS ; seuls les administrateurs voient aussi les ports et les unités.",
     "admin_security_ecosystem_health_save": "Enregistrer la santé de l'écosystème",
+    "admin_security_bridge_gateway_title": "Passerelle vers les ponts machine",
+    "admin_security_bridge_gateway_label": "Laisser les clients lire l'état des ponts machine et les opérateurs leur envoyer des commandes (GET /api/bridges, POST /api/bridges/:name/cmd/:verb)",
+    "admin_security_bridge_gateway_help": "Désactivé par défaut : les routes répondent alors comme si elles n'existaient pas. Activée, le serveur lit les ponts depuis le broker et publie sur leurs topics les commandes d'une courte liste (stop, pause, resume, status) ; chaque commande est inscrite au journal d'audit. La liste d'accès du broker devrait n'autoriser que le serveur à publier sur les topics de commande.",
+    "admin_security_bridge_gateway_save": "Enregistrer la passerelle vers les ponts machine",
+    "admin_security_bridge_gateway_warning": "Le serveur transmet désormais les commandes des opérateurs aux ponts machine par le broker.",
     "admin_security_rul_title": "Durée de vie restante pour les opérateurs",
     "admin_security_rul_label": "Permettre aux opérateurs d'utiliser l'estimation de durée de vie restante du tableau de bord IA (POST /api/ai/anomaly-detector/rul)",
     "admin_security_rul_help": "Désactivé par défaut : seul un administrateur peut alors envoyer la requête, comme avant. Activé, les opérateurs le peuvent aussi ; la taille et la durée de la requête sont limitées, et seule cette requête est ouverte (toute autre écriture dans le détecteur reste réservée aux administrateurs).",
@@ -1592,5 +1598,21 @@
     "warning_certificate_expiring": "Le certificat TLS du serveur est sur le point d'expirer.",
     "warning_certificate_expired": "Le certificat TLS du serveur a expiré.",
     "warning_certificate_unreadable": "Impossible de lire le certificat TLS du serveur."
+  },
+  "ecosystemMap": {
+    "title": "Carte de l'écosystème",
+    "subtitle": "Tous les projets que le serveur trouve à côté de lui, par famille, avec leur état : en marche, en erreur, arrêté ou inconnu. Lecture seule ; elle se met à jour toute seule.",
+    "refresh": "Actualiser",
+    "load_error": "La carte n'a pas pu être lue depuis le serveur.",
+    "not_available": "Le serveur ne peut pas explorer les projets ici, la carte est donc vide.",
+    "all": "Tous",
+    "search": "Chercher un projet",
+    "empty": "Aucun projet ne correspond.",
+    "family_other": "Autres",
+    "state_up": "En marche",
+    "state_error": "Erreur",
+    "state_down": "Arrêté",
+    "state_unknown": "Inconnu",
+    "drift": "La version diffère de son manifeste"
   }
 }

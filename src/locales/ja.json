@@ -1187,10 +1187,16 @@
     "admin_security_install_tls_warning": "新規インストールは自動的に TLS を有効にしなくなります。",
     "admin_security_install_confirm": "サーバーの保護が下がります（カメラのパスワードがコマンドラインに載る、または新規インストールで既定で TLS がオフになる）。続行しますか？",
     "menu_health": "エコシステムの健全性",
+    "menu_map": "エコシステムマップ",
     "admin_security_ecosystem_health_title": "エコシステムの健全性",
     "admin_security_ecosystem_health_label": "オペレーターと管理者がサービスの健全性を読み取れるようにする（GET /api/ecosystem/health）",
     "admin_security_ecosystem_health_help": "既定ではオフです。オフのとき、このルートは存在しないかのように応答します。オンにすると、各サービスの状態、報告されるバージョン、TLS 証明書の残り日数を一覧にします。ポートとユニットも見えるのは管理者だけです。",
     "admin_security_ecosystem_health_save": "エコシステムの健全性を保存",
+    "admin_security_bridge_gateway_title": "マシンブリッジへのゲートウェイ",
+    "admin_security_bridge_gateway_label": "クライアントがマシンブリッジの状態を読み取り、オペレーターがコマンドを送れるようにする (GET /api/bridges, POST /api/bridges/:name/cmd/:verb)",
+    "admin_security_bridge_gateway_help": "既定ではオフです。オフの間、これらのルートは存在しないかのように応答します。オンにすると、サーバーはブローカーからブリッジを読み取り、短い一覧 (stop, pause, resume, status) のコマンドをそのトピックに発行します。すべてのコマンドは監査ログに記録されます。ブローカーのアクセス一覧は、コマンドトピックへの発行をサーバーだけに許可してください。",
+    "admin_security_bridge_gateway_save": "マシンブリッジへのゲートウェイを保存",
+    "admin_security_bridge_gateway_warning": "サーバーはオペレーターのコマンドをブローカー経由でマシンブリッジへ転送するようになりました。",
     "admin_security_rul_title": "オペレーター向けの残存耐用年数",
     "admin_security_rul_label": "オペレーターが AI ダッシュボードの残存耐用年数の推定を使えるようにする（POST /api/ai/anomaly-detector/rul）",
     "admin_security_rul_help": "既定ではオフです。オフのときは、これまでどおり管理者だけがこのリクエストを送れます。オンにするとオペレーターも送れます。リクエストのサイズと時間は制限され、開放されるのはこのリクエストだけです（検出器へのその他の書き込みは管理者専用のままです）。",
@@ -1592,5 +1598,21 @@
     "warning_certificate_expiring": "サーバーの TLS 証明書がまもなく期限切れになります。",
     "warning_certificate_expired": "サーバーの TLS 証明書は期限切れです。",
     "warning_certificate_unreadable": "サーバーの TLS 証明書を読み取れませんでした。"
+  },
+  "ecosystemMap": {
+    "title": "エコシステムのマップ",
+    "subtitle": "サーバーの隣で見つかったすべてのプロジェクトをファミリー別に表示し、稼働中・エラー・停止・不明の状態を示します。読み取り専用で、自動的に更新されます。",
+    "refresh": "更新",
+    "load_error": "サーバーからマップを読み込めませんでした。",
+    "not_available": "サーバーがここでプロジェクトをスキャンできないため、マップは空です。",
+    "all": "すべて",
+    "search": "プロジェクトを検索",
+    "empty": "一致するプロジェクトはありません。",
+    "family_other": "その他",
+    "state_up": "稼働中",
+    "state_error": "エラー",
+    "state_down": "停止",
+    "state_unknown": "不明",
+    "drift": "バージョンがマニフェストと異なります"
   }
 }

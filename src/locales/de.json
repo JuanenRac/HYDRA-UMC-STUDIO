@@ -1187,10 +1187,16 @@
     "admin_security_install_tls_warning": "Eine neue Installation schaltet TLS nicht mehr selbst ein.",
     "admin_security_install_confirm": "Das senkt den Schutz des Servers (ein Kamerapasswort in einer Befehlszeile oder standardmäßig kein TLS in einer neuen Installation). Fortfahren?",
     "menu_health": "Ökosystem-Gesundheit",
+    "menu_map": "Ökosystem-Karte",
     "admin_security_ecosystem_health_title": "Gesundheit des Ökosystems",
     "admin_security_ecosystem_health_label": "Bedienern und Administratoren erlauben, die Gesundheit der Dienste zu lesen (GET /api/ecosystem/health)",
     "admin_security_ecosystem_health_help": "Standardmäßig aus: Die Route antwortet dann, als gäbe es sie nicht. Eingeschaltet listet sie jeden Dienst mit Zustand, gemeldeter Version und den Resttagen des TLS-Zertifikats; nur Administratoren sehen zusätzlich Ports und Units.",
     "admin_security_ecosystem_health_save": "Gesundheit des Ökosystems speichern",
+    "admin_security_bridge_gateway_title": "Gateway zu den Maschinenbrücken",
+    "admin_security_bridge_gateway_label": "Clients den Zustand der Maschinenbrücken lesen lassen und Operatoren erlauben, ihnen Befehle zu senden (GET /api/bridges, POST /api/bridges/:name/cmd/:verb)",
+    "admin_security_bridge_gateway_help": "Standardmäßig aus: Die Routen antworten dann, als gäbe es sie nicht. Eingeschaltet liest der Server die Brücken vom Broker und veröffentlicht die Befehle einer kurzen Liste (stop, pause, resume, status) auf deren Topics; jeder Befehl wird im Audit-Protokoll festgehalten. Die Zugriffsliste des Brokers sollte nur dem Server das Veröffentlichen auf den Befehls-Topics erlauben.",
+    "admin_security_bridge_gateway_save": "Gateway zu den Maschinenbrücken speichern",
+    "admin_security_bridge_gateway_warning": "Der Server leitet nun Befehle von Operatoren über den Broker an die Maschinenbrücken weiter.",
     "admin_security_rul_title": "Restnutzungsdauer für Bediener",
     "admin_security_rul_label": "Bedienern die Schätzung der Restnutzungsdauer des KI-Dashboards erlauben (POST /api/ai/anomaly-detector/rul)",
     "admin_security_rul_help": "Standardmäßig aus: Dann darf nur ein Administrator die Anfrage senden, wie bisher. Eingeschaltet dürfen es auch Bediener; Größe und Zeit der Anfrage sind begrenzt, und nur diese Anfrage wird geöffnet (jeder andere Schreibzugriff auf den Detektor bleibt Administratoren vorbehalten).",
@@ -1592,5 +1598,21 @@
     "warning_certificate_expiring": "Das TLS-Zertifikat des Servers läuft bald ab.",
     "warning_certificate_expired": "Das TLS-Zertifikat des Servers ist abgelaufen.",
     "warning_certificate_unreadable": "Das TLS-Zertifikat des Servers konnte nicht gelesen werden."
+  },
+  "ecosystemMap": {
+    "title": "Karte des Ökosystems",
+    "subtitle": "Alle Projekte, die der Server neben sich findet, nach Familie, mit dem Zustand: läuft, Fehler, gestoppt oder unbekannt. Nur lesend; aktualisiert sich selbst.",
+    "refresh": "Aktualisieren",
+    "load_error": "Die Karte konnte nicht vom Server gelesen werden.",
+    "not_available": "Der Server kann die Projekte hier nicht durchsuchen, daher ist die Karte leer.",
+    "all": "Alle",
+    "search": "Projekt suchen",
+    "empty": "Kein Projekt passt.",
+    "family_other": "Andere",
+    "state_up": "Läuft",
+    "state_error": "Fehler",
+    "state_down": "Gestoppt",
+    "state_unknown": "Unbekannt",
+    "drift": "Version weicht vom Manifest ab"
   }
 }

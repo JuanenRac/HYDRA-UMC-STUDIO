@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A map of the ecosystem:** Ecosystem > Map of the ecosystem draws every project that the server finds next to it, grouped by family, one tile each with its version, port, maturity and a state (up, error, down, unknown) from the scan and the probe of `GET /api/ecosystem/status`, with the totals as filters, a search box and a mark on the project whose version differs from its manifest when the health of the ecosystem is on. Read only, no new route; eight languages.
+
+- **The switch of the gateway to the machine bridges:** Server Admin shows the new option `bridgeGateway.enabled` (off by default; locked when the environment of the server sets it) with a warning when it is turned on, in the eight languages.
+
 ## [0.8.0.9] - One guard for every motion command, the store cut in five domains, local and global settings by role, the robot screen cut in parts, a chip with the state of the reload of the job dispatcher and TypeScript 7
 
 - **The state of the reload of the job dispatcher in Server Admin:** next to the replanning options a chip says what came of the request to read the dispatcher file again (pending, applied, failed or not configured), read from `jobDispatcher.replan.reload`, in the eight languages; while the request is pending the screen asks the server again every two seconds.

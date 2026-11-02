@@ -1187,10 +1187,16 @@
     "admin_security_install_tls_warning": "Una instalación nueva ya no activará TLS por sí sola.",
     "admin_security_install_confirm": "Esto reduce la protección del servidor (una contraseña de cámara en una línea de órdenes, o sin TLS por defecto en una instalación nueva). ¿Continuar?",
     "menu_health": "Salud del ecosistema",
+    "menu_map": "Mapa del ecosistema",
     "admin_security_ecosystem_health_title": "Salud del ecosistema",
     "admin_security_ecosystem_health_label": "Permitir que operadores y administradores lean la salud de los servicios (GET /api/ecosystem/health)",
     "admin_security_ecosystem_health_help": "Desactivado por defecto: la ruta responde entonces como si no existiera. Activado, lista cada servicio con su estado, la versión que informa y los días que le quedan al certificado TLS; solo los administradores ven además puertos y unidades.",
     "admin_security_ecosystem_health_save": "Guardar salud del ecosistema",
+    "admin_security_bridge_gateway_title": "Pasarela a los puentes de máquina",
+    "admin_security_bridge_gateway_label": "Permitir que los clientes lean el estado de los puentes de máquina y que los operadores les envíen órdenes (GET /api/bridges, POST /api/bridges/:name/cmd/:verb)",
+    "admin_security_bridge_gateway_help": "Desactivado por defecto: las rutas responden entonces como si no existieran. Activado, el servidor lee los puentes del broker y publica en sus temas las órdenes de una lista corta (stop, pause, resume, status); cada orden queda en el registro de auditoría. La lista de acceso del broker debería dejar publicar en los temas de órdenes solo al servidor.",
+    "admin_security_bridge_gateway_save": "Guardar pasarela a los puentes de máquina",
+    "admin_security_bridge_gateway_warning": "El servidor reenvía ahora las órdenes de los operadores a los puentes de máquina a través del broker.",
     "admin_security_rul_title": "Vida útil restante para operadores",
     "admin_security_rul_label": "Permitir que los operadores usen la estimación de vida útil restante del panel de IA (POST /api/ai/anomaly-detector/rul)",
     "admin_security_rul_help": "Desactivado por defecto: entonces solo un administrador puede enviar la petición, como antes. Activado, también los operadores; se limitan el tamaño y el tiempo de la petición, y solo se abre esta petición (cualquier otra escritura en el detector sigue siendo de administradores).",
@@ -1592,5 +1598,21 @@
     "warning_certificate_expiring": "El certificado TLS del servidor está a punto de caducar.",
     "warning_certificate_expired": "El certificado TLS del servidor ha caducado.",
     "warning_certificate_unreadable": "No se pudo leer el certificado TLS del servidor."
+  },
+  "ecosystemMap": {
+    "title": "Mapa del ecosistema",
+    "subtitle": "Todos los proyectos que el servidor encuentra a su lado, por familia, con su estado: en marcha, con error, parado o desconocido. Solo lectura; se actualiza solo.",
+    "refresh": "Actualizar",
+    "load_error": "No se pudo leer el mapa del servidor.",
+    "not_available": "El servidor no puede explorar aquí los proyectos, así que el mapa está vacío.",
+    "all": "Todos",
+    "search": "Buscar un proyecto",
+    "empty": "Ningún proyecto coincide.",
+    "family_other": "Otros",
+    "state_up": "En marcha",
+    "state_error": "Con error",
+    "state_down": "Parado",
+    "state_unknown": "Desconocido",
+    "drift": "La versión difiere de su manifiesto"
   }
 }

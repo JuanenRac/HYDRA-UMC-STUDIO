@@ -1187,10 +1187,16 @@
     "admin_security_install_tls_warning": "Una nuova installazione non attiverà più TLS da sola.",
     "admin_security_install_confirm": "Questo riduce la protezione del server (una password di telecamera su una riga di comando, o nessun TLS di default in una nuova installazione). Continuare?",
     "menu_health": "Salute dell'ecosistema",
+    "menu_map": "Mappa dell'ecosistema",
     "admin_security_ecosystem_health_title": "Salute dell'ecosistema",
     "admin_security_ecosystem_health_label": "Consenti a operatori e amministratori di leggere la salute dei servizi (GET /api/ecosystem/health)",
     "admin_security_ecosystem_health_help": "Disattivata per impostazione predefinita: la route risponde allora come se non esistesse. Attivata, elenca ogni servizio con il suo stato, la versione che comunica e i giorni rimasti del certificato TLS; solo gli amministratori vedono anche porte e unità.",
     "admin_security_ecosystem_health_save": "Salva salute dell'ecosistema",
+    "admin_security_bridge_gateway_title": "Gateway verso i bridge macchina",
+    "admin_security_bridge_gateway_label": "Lasciare che i client leggano lo stato dei bridge macchina e che gli operatori inviino loro comandi (GET /api/bridges, POST /api/bridges/:name/cmd/:verb)",
+    "admin_security_bridge_gateway_help": "Disattivato per impostazione predefinita: le rotte rispondono allora come se non esistessero. Attivo, il server legge i bridge dal broker e pubblica sui loro topic i comandi di un breve elenco (stop, pause, resume, status); ogni comando è registrato nel registro di audit. La lista di accesso del broker dovrebbe permettere di pubblicare sui topic dei comandi solo al server.",
+    "admin_security_bridge_gateway_save": "Salva gateway verso i bridge macchina",
+    "admin_security_bridge_gateway_warning": "Il server inoltra ora i comandi degli operatori ai bridge macchina tramite il broker.",
     "admin_security_rul_title": "Vita utile residua per gli operatori",
     "admin_security_rul_label": "Consenti agli operatori di usare la stima della vita utile residua del cruscotto IA (POST /api/ai/anomaly-detector/rul)",
     "admin_security_rul_help": "Disattivata per impostazione predefinita: solo un amministratore può allora inviare la richiesta, come prima. Attivata, possono anche gli operatori; dimensione e tempo della richiesta sono limitati e si apre solo questa richiesta (ogni altra scrittura nel rilevatore resta riservata agli amministratori).",
@@ -1592,5 +1598,21 @@
     "warning_certificate_expiring": "Il certificato TLS del server sta per scadere.",
     "warning_certificate_expired": "Il certificato TLS del server è scaduto.",
     "warning_certificate_unreadable": "Impossibile leggere il certificato TLS del server."
+  },
+  "ecosystemMap": {
+    "title": "Mappa dell'ecosistema",
+    "subtitle": "Tutti i progetti che il server trova accanto a sé, per famiglia, con il loro stato: attivo, in errore, fermo o sconosciuto. Sola lettura; si aggiorna da sola.",
+    "refresh": "Aggiorna",
+    "load_error": "Non è stato possibile leggere la mappa dal server.",
+    "not_available": "Il server non può esplorare qui i progetti, quindi la mappa è vuota.",
+    "all": "Tutti",
+    "search": "Cerca un progetto",
+    "empty": "Nessun progetto corrisponde.",
+    "family_other": "Altri",
+    "state_up": "Attivo",
+    "state_error": "Errore",
+    "state_down": "Fermo",
+    "state_unknown": "Sconosciuto",
+    "drift": "La versione differisce dal suo manifesto"
   }
 }

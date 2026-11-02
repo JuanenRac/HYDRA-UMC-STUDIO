@@ -1187,10 +1187,16 @@
     "admin_security_install_tls_warning": "新安装将不再自行开启 TLS。",
     "admin_security_install_confirm": "这会降低服务器的保护（摄像头密码出现在命令行中，或新安装默认不启用 TLS）。是否继续？",
     "menu_health": "生态系统健康",
+    "menu_map": "生态系统地图",
     "admin_security_ecosystem_health_title": "生态系统健康",
     "admin_security_ecosystem_health_label": "允许操作员和管理员读取各服务的健康状况（GET /api/ecosystem/health）",
     "admin_security_ecosystem_health_help": "默认关闭：此时该路由的响应就像它不存在一样。开启后，会列出每个服务的状态、上报的版本和 TLS 证书的剩余天数；只有管理员还能看到端口和单元。",
     "admin_security_ecosystem_health_save": "保存生态系统健康设置",
+    "admin_security_bridge_gateway_title": "通往机器桥接器的网关",
+    "admin_security_bridge_gateway_label": "允许客户端读取机器桥接器的状态，并允许操作员向其发送命令 (GET /api/bridges, POST /api/bridges/:name/cmd/:verb)",
+    "admin_security_bridge_gateway_help": "默认关闭：关闭时这些路由的响应就像不存在一样。开启后，服务器从代理读取桥接器，并把一份简短清单（stop、pause、resume、status）中的命令发布到它们的主题；每条命令都会记入审计日志。代理的访问列表应只允许服务器在命令主题上发布。",
+    "admin_security_bridge_gateway_save": "保存通往机器桥接器的网关",
+    "admin_security_bridge_gateway_warning": "服务器现在会通过代理把操作员的命令转发给机器桥接器。",
     "admin_security_rul_title": "操作员的剩余使用寿命",
     "admin_security_rul_label": "允许操作员使用 AI 仪表板的剩余使用寿命估算（POST /api/ai/anomaly-detector/rul）",
     "admin_security_rul_help": "默认关闭：此时只有管理员可以发送该请求，与以前相同。开启后操作员也可以发送；请求的大小和时间受到限制，并且只开放这一个请求（对检测器的其他写入仍仅限管理员）。",
@@ -1592,5 +1598,21 @@
     "warning_certificate_expiring": "服务器的 TLS 证书即将过期。",
     "warning_certificate_expired": "服务器的 TLS 证书已过期。",
     "warning_certificate_unreadable": "无法读取服务器的 TLS 证书。"
+  },
+  "ecosystemMap": {
+    "title": "生态系统地图",
+    "subtitle": "服务器在其旁边找到的所有项目，按系列分组，显示其状态：运行中、出错、已停止或未知。只读；会自动刷新。",
+    "refresh": "刷新",
+    "load_error": "无法从服务器读取地图。",
+    "not_available": "服务器无法在此扫描项目，因此地图为空。",
+    "all": "全部",
+    "search": "搜索项目",
+    "empty": "没有匹配的项目。",
+    "family_other": "其他",
+    "state_up": "运行中",
+    "state_error": "出错",
+    "state_down": "已停止",
+    "state_unknown": "未知",
+    "drift": "版本与其清单不一致"
   }
 }
