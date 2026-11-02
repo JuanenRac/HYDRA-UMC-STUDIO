@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-841%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-900%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.0-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | バージョン | `0.8.1.0` |
 | 成熟度 | 機能する |
-| テスト | 841 (`npm test`) |
+| テスト | 900 (`npm test`) |
 | 技術 | React 19 / Vite / Three.js / Tailwind CSS |
 | 対象 | HYDRA-UMC セルの Raspberry Pi CM5 |
 | 実機での確認 | ベンチ環境で動作：上の正直さの確認に、どの部分が実機で動いたかが書かれています |
@@ -53,7 +53,7 @@ GPL-3.0-or-later - see LICENSE
 | 領域 | 状態 | ここでの意味 |
 |---|---|---|
 | ソフトウェア | 🟡 | 主な目的では動作します。足りない点は上の正直さの確認に書かれています |
-| テスト | 🟢 | 自動テスト 841 件。変更のたびに実行されます |
+| テスト | 🟢 | 自動テスト 900 件。変更のたびに実行されます |
 | 実機 | 🟡 | ベンチ環境で動作：上の正直さの確認に、どの部分が実機で動いたかが書かれています |
 | インターフェースとプロトコル | 🟡 | 提供するルートやメッセージは文書化され、クライアントで試験済みです。すべてのクライアントがまだ使ったわけではありません |
 | 連携 | 🟡 | メッセージとルートは SDK の共通契約に照らして検証されていますが、実機と一緒に動かしたことはありません |
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 テスト
 
-`npm test` で自動テスト 841 件を実行します。 ハードウェアも、このマシンの外にあるものも必要ありません。
+`npm test` で自動テスト 900 件を実行します。 ハードウェアも、このマシンの外にあるものも必要ありません。
 
 CI は `HYDRA_UMC_CI=1 python tools/ci_validate.py` を実行し、マニフェスト、文書、8 つの README、図を検査します。
 
@@ -388,7 +388,7 @@ HYDRA-UMC-STUDIO/
 │   ├── store.ts                     グローバル状態：RobotModel/RobotState/HydraController/SystemSettings ——
 │   ├── motionSource.ts              描画されたポーズが表すもの (指令値か、機械が追従した値か)、および sendRobotCommand() の純粋な状態遷移の中核
 │   ├── i18n.ts                      react-i18next の設定——src/locales/*.json を読み込み
-│   ├── hooks/                       usePartColors.ts: HYDRA-UMC-EDITOR-STL が保存したパーツごとの色の上書き
+│   ├── hooks/                       usePartColors.ts: HYDRA-UMC-EDITOR-STL が保存したパーツごとの色の上書き; usePanelLayout.ts: 右パネルと3Dビューのドラッグと保存されるサイズ
 │   ├── assets/                      アプリのアイコン、スプラッシュ画面、画像と、グローバルなスタイル
 │   ├── assistant/                   Hydri アシスタント：回答エンジン、知識ベース（8言語）、マスコット、設定
 │   ├── components/                  画面とパネル：ロボット詳細、3D シーン、管理、CAN-OTA ツール

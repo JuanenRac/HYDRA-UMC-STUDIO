@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-841%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-900%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.0-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Versão | `0.8.1.0` |
 | Maturidade | Funcional |
-| Testes | 841 (`npm test`) |
+| Testes | 900 (`npm test`) |
 | Tecnologia | React 19 / Vite / Three.js / Tailwind CSS |
 | Destino | O Raspberry Pi CM5 de uma célula HYDRA-UMC |
 | Em hardware real | Executado numa bancada de ensaio: a verificação de honestidade acima diz que partes correram em hardware real |
@@ -53,7 +53,7 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 | Área | Estado | O que significa aqui |
 |---|---|---|
 | Software | 🟡 | Funciona para o seu propósito principal; a verificação de honestidade acima lista o que ainda falta |
-| Testes | 🟢 | 841 testes automáticos, executados a cada alteração |
+| Testes | 🟢 | 900 testes automáticos, executados a cada alteração |
 | Hardware real | 🟡 | Executado numa bancada de ensaio: a verificação de honestidade acima diz que partes correram em hardware real |
 | Interface e protocolos | 🟡 | As rotas ou mensagens que oferece estão documentadas e testadas com um cliente; ainda nem todos os clientes as usaram |
 | Integração | 🟡 | As suas mensagens e rotas são verificadas contra os contratos partilhados do SDK; ainda não funcionou em conjunto com o equipamento real |
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Testes
 
-841 testes automáticos correm com `npm test`. Não precisam de hardware nem de nada fora desta máquina.
+900 testes automáticos correm com `npm test`. Não precisam de hardware nem de nada fora desta máquina.
 
 A CI executa `HYDRA_UMC_CI=1 python tools/ci_validate.py`, que verifica o manifesto, os documentos, os oito README e as imagens.
 
@@ -391,7 +391,7 @@ HYDRA-UMC-STUDIO/
 │   ├── store.ts                     Estado global: RobotModel/RobotState/HydraController/SystemSettings -
 │   ├── motionSource.ts              O que a pose desenhada representa (comandada ou seguida pela máquina) e o núcleo puro de transição de estado de sendRobotCommand()
 │   ├── i18n.ts                      Configuração do react-i18next - carrega src/locales/*.json
-│   ├── hooks/                       usePartColors.ts: cores por peça guardadas pelo HYDRA-UMC-EDITOR-STL
+│   ├── hooks/                       usePartColors.ts: cores por peça guardadas pelo HYDRA-UMC-EDITOR-STL; usePanelLayout.ts: arrastar e tamanho guardado do painel direito e da vista 3D
 │   ├── assets/                      O ícone, o ecrã de arranque e as imagens da app, e os estilos globais
 │   ├── assistant/                   Hydri, o assistente: motor de respostas, base de conhecimento (8 idiomas), mascote, preferências
 │   ├── components/                  os ecrãs e painéis: detalhe do robô, cena 3D, administração, ferramentas CAN-OTA

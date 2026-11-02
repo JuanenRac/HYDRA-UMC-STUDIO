@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-841%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-900%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.0-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | 版本 | `0.8.1.0` |
 | 成熟度 | 可用 |
-| 测试 | 841 (`npm test`) |
+| 测试 | 900 (`npm test`) |
 | 技术栈 | React 19 / Vite / Three.js / Tailwind CSS |
 | 目标 | HYDRA-UMC 工作单元的 Raspberry Pi CM5 |
 | 真实硬件 | 已在试验台上运行：上面的诚实性检查说明了哪些部分在真实硬件上运行过 |
@@ -53,7 +53,7 @@ GPL-3.0-or-later - see LICENSE
 | 领域 | 状态 | 在这里的含义 |
 |---|---|---|
 | 软件 | 🟡 | 主要用途可用；上面的诚实性检查列出了仍然缺少的内容 |
-| 测试 | 🟢 | 841 项自动测试，每次变更都会运行 |
+| 测试 | 🟢 | 900 项自动测试，每次变更都会运行 |
 | 真实硬件 | 🟡 | 已在试验台上运行：上面的诚实性检查说明了哪些部分在真实硬件上运行过 |
 | 接口与协议 | 🟡 | 提供的路由或消息已有文档，并用客户端测试过；尚未被所有客户端使用 |
 | 集成 | 🟡 | 其消息和路由已对照 SDK 的共享契约检查；尚未与真实设备一起运行 |
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 测试
 
-运行 `npm test` 会执行 841 个自动测试。 不需要硬件，也不需要这台机器以外的任何东西。
+运行 `npm test` 会执行 900 个自动测试。 不需要硬件，也不需要这台机器以外的任何东西。
 
 CI 运行 `HYDRA_UMC_CI=1 python tools/ci_validate.py`，检查清单、文档、八个 README 和图片。
 
@@ -388,7 +388,7 @@ HYDRA-UMC-STUDIO/
 │   ├── store.ts                     全局状态：RobotModel/RobotState/HydraController/SystemSettings ——
 │   ├── motionSource.ts              所绘姿态代表什么 (指令值还是机器实际跟随的值),以及 sendRobotCommand() 的纯状态转换核心
 │   ├── i18n.ts                      react-i18next 配置——加载 src/locales/*.json
-│   ├── hooks/                       usePartColors.ts: 由 HYDRA-UMC-EDITOR-STL 保存的按零件颜色覆盖
+│   ├── hooks/                       usePartColors.ts: 由 HYDRA-UMC-EDITOR-STL 保存的按零件颜色覆盖; usePanelLayout.ts: 右侧面板和 3D 视图的拖动与保存的尺寸
 │   ├── assets/                      应用的图标、启动画面和图片,以及全局样式
 │   ├── assistant/                   助手 Hydri：回答引擎、知识库（8 种语言）、吉祥物、偏好设置
 │   ├── components/                  界面和面板：机器人详情、3D 场景、管理、CAN-OTA 工具

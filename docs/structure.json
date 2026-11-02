@@ -140,24 +140,24 @@
         {
           "name": "hooks/",
           "desc": {
-            "en": "usePartColors.ts",
-            "es": "usePartColors.ts",
-            "de": "usePartColors.ts",
-            "fr": "usePartColors.ts",
-            "it": "usePartColors.ts",
-            "ja": "usePartColors.ts",
-            "zh": "usePartColors.ts",
-            "pt": "usePartColors.ts"
+            "en": "usePartColors.ts, usePanelLayout.ts",
+            "es": "usePartColors.ts, usePanelLayout.ts",
+            "de": "usePartColors.ts, usePanelLayout.ts",
+            "fr": "usePartColors.ts, usePanelLayout.ts",
+            "it": "usePartColors.ts, usePanelLayout.ts",
+            "ja": "usePartColors.ts, usePanelLayout.ts",
+            "zh": "usePartColors.ts, usePanelLayout.ts",
+            "pt": "usePartColors.ts, usePanelLayout.ts"
           },
           "tree_desc": {
-            "en": "usePartColors.ts: per-part colour overrides saved by HYDRA-UMC-EDITOR-STL",
-            "es": "usePartColors.ts: colores por pieza guardados por HYDRA-UMC-EDITOR-STL",
-            "de": "usePartColors.ts: Farbüberschreibungen pro Teil, gespeichert von HYDRA-UMC-EDITOR-STL",
-            "fr": "usePartColors.ts : couleurs par pièce enregistrées par HYDRA-UMC-EDITOR-STL",
-            "it": "usePartColors.ts: colori per pezzo salvati da HYDRA-UMC-EDITOR-STL",
-            "ja": "usePartColors.ts: HYDRA-UMC-EDITOR-STL が保存したパーツごとの色の上書き",
-            "zh": "usePartColors.ts: 由 HYDRA-UMC-EDITOR-STL 保存的按零件颜色覆盖",
-            "pt": "usePartColors.ts: cores por peça guardadas pelo HYDRA-UMC-EDITOR-STL"
+            "en": "usePartColors.ts: per-part colour overrides saved by HYDRA-UMC-EDITOR-STL; usePanelLayout.ts: drag and saved size of the right panel and the 3D view",
+            "es": "usePartColors.ts: colores por pieza guardados por HYDRA-UMC-EDITOR-STL; usePanelLayout.ts: arrastre y tamaño guardado del panel derecho y de la vista 3D",
+            "de": "usePartColors.ts: Farbüberschreibungen pro Teil, gespeichert von HYDRA-UMC-EDITOR-STL; usePanelLayout.ts: Ziehen und gespeicherte Größe des rechten Panels und der 3D-Ansicht",
+            "fr": "usePartColors.ts : couleurs par pièce enregistrées par HYDRA-UMC-EDITOR-STL; usePanelLayout.ts : glissement et taille enregistrée du panneau de droite et de la vue 3D",
+            "it": "usePartColors.ts: colori per pezzo salvati da HYDRA-UMC-EDITOR-STL; usePanelLayout.ts: trascinamento e dimensione salvata del pannello destro e della vista 3D",
+            "ja": "usePartColors.ts: HYDRA-UMC-EDITOR-STL が保存したパーツごとの色の上書き; usePanelLayout.ts: 右パネルと3Dビューのドラッグと保存されるサイズ",
+            "zh": "usePartColors.ts: 由 HYDRA-UMC-EDITOR-STL 保存的按零件颜色覆盖; usePanelLayout.ts: 右侧面板和 3D 视图的拖动与保存的尺寸",
+            "pt": "usePartColors.ts: cores por peça guardadas pelo HYDRA-UMC-EDITOR-STL; usePanelLayout.ts: arrastar e tamanho guardado do painel direito e da vista 3D"
           }
         },
         {

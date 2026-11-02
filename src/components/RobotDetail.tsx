@@ -23,6 +23,7 @@ import { jointsToCartesianForModel, jointLimitsFor, resolveTargetJoints } from '
 import { guardJogStep } from '../lib/motionGuard';
 import { ConfirmDialog } from './ConfirmDialog';
 import { tableParams } from '../lib/tableMove';
+import { usePanelLayout } from '../hooks/usePanelLayout';
 import { TrajectoryPreview } from './TrajectoryPreview';
 import { analyzeTrajectory, previewEnabled, savePreviewEnabled, type PreviewReport } from '../lib/trajectoryPreview';
 import { buildReachReport, findReachScale, loadReachTolerance, reachNeedsConfirmation, scalePortablePoints, type ReachReport, type ReachScale } from '../lib/reachCheck';
@@ -460,45 +461,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   };
 
   
-  const [rightPanelWidth, setRightPanelWidth] = useState(settings.uiLayout?.rightPanelWidth || 320);
-  const [isResizingRightPanel, setIsResizingRightPanel] = useState(false);
-  const rightPanelResizeStartRef = useRef({ width: 0, x: 0 });
-  const rightPanelWidthRef = useRef(rightPanelWidth);
-  const uiLayoutRef = useRef(settings.uiLayout);
-
-  useEffect(() => {
-    rightPanelWidthRef.current = rightPanelWidth;
-    uiLayoutRef.current = settings.uiLayout;
-  }, [rightPanelWidth, settings.uiLayout]);
-
-  useEffect(() => {
-    const handleMove = (e: PointerEvent) => {
-      if (isResizingRightPanel) {
-        const dx = rightPanelResizeStartRef.current.x - e.clientX;
-        const newWidth = Math.max(250, Math.min(800, rightPanelResizeStartRef.current.width + dx));
-        setRightPanelWidth(newWidth);
-      }
-    };
-    const handleUp = () => {
-      document.body.classList.remove('select-none');
-      setIsResizingRightPanel(false);
-      updateSettings({
-        uiLayout: {
-          ...uiLayoutRef.current,
-          rightPanelWidth: rightPanelWidthRef.current,
-        }
-      });
-    };
-    
-    if (isResizingRightPanel) {
-      window.addEventListener('pointermove', handleMove);
-      window.addEventListener('pointerup', handleUp);
-    }
-    return () => {
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('pointerup', handleUp);
-    };
-  }, [isResizingRightPanel, updateSettings]);
+  const { rightPanelWidth, beginResizeRightPanel, threeDHeight, beginResizeThreeD } = usePanelLayout(settings.uiLayout, updateSettings);
 
       const [rightTab, setRightTab] = useState<'trajectories' | 'config' | 'io'>('trajectories');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -650,38 +613,6 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     if (sawReset3DTrigger.current) setReset3DKey(k => k + 1);
     sawReset3DTrigger.current = true;
   }, [robot.reset3DTrigger]);
-  const [threeDHeight, setThreeDHeight] = useState<number | undefined>(settings.uiLayout?.threeDHeight);
-  const dragRef = useRef(false);
-  const startDragY = useRef(0);
-  const startHeight = useRef(0);
-  const currentHeightRef = useRef(threeDHeight);
-  
-  useEffect(() => {
-    currentHeightRef.current = threeDHeight;
-  }, [threeDHeight]);
-
-  useEffect(() => {
-    const handleMove = (e: PointerEvent) => {
-      if (!dragRef.current) return;
-      const newHeight = Math.max(200, startHeight.current + (e.clientY - startDragY.current));
-      setThreeDHeight(newHeight);
-    };
-    const handleUp = () => {
-      if (dragRef.current) {
-        document.body.classList.remove('select-none');
-        dragRef.current = false;
-        if (currentHeightRef.current) {
-          updateSettings({ uiLayout: { ...uiLayoutRef.current, threeDHeight: currentHeightRef.current } });
-        }
-      }
-    };
-    window.addEventListener('pointermove', handleMove);
-    window.addEventListener('pointerup', handleUp);
-    return () => {
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('pointerup', handleUp);
-    };
-  }, [updateSettings]);
 
   const handleAddPoint = () => {
     // Stamp this robot's own real Cartesian tool-tip position (via its own FK) onto the
@@ -1206,10 +1137,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
               onPointerDown={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                document.body.classList.add('select-none');
-                dragRef.current = true;
-                startHeight.current = e.currentTarget.parentElement?.offsetHeight || 0;
-                startDragY.current = e.clientY;
+                beginResizeThreeD(e.currentTarget.parentElement?.offsetHeight || 0, e.clientY);
               }}
             >
               <div className="w-12 h-1 rounded-full bg-slate-500/50" />
@@ -1665,9 +1593,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
             className="hidden lg:flex w-2 cursor-col-resize hover:bg-slate-700/50 rounded mx-[-12px] z-10 shrink-0 items-center justify-center transition-colors touch-none"
             onPointerDown={(e) => {
               e.preventDefault();
-              document.body.classList.add('select-none');
-              setIsResizingRightPanel(true);
-              rightPanelResizeStartRef.current = { width: rightPanelWidth, x: e.clientX };
+              beginResizeRightPanel(e.clientX);
             }}
           >
             <div className="w-0.5 h-12 bg-slate-600 rounded-full" />

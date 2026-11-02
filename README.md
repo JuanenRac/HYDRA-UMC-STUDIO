@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-841%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-900%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.0-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Version | `0.8.1.0` |
 | Maturity | Functional |
-| Tests | 841 (`npm test`) |
+| Tests | 900 (`npm test`) |
 | Stack | React 19 / Vite / Three.js / Tailwind CSS |
 | Target | The Raspberry Pi CM5 of a HYDRA-UMC cell |
 | On real hardware | Run on a bench setup: the honesty check above says which parts ran on real hardware |
@@ -53,7 +53,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟡 | Works for its main purpose; the honesty check above lists what is still missing |
-| Tests | 🟢 | 841 automated tests, run on every change |
+| Tests | 🟢 | 900 automated tests, run on every change |
 | Real hardware | 🟡 | Run on a bench setup: the honesty check above says which parts ran on real hardware |
 | Interface and protocols | 🟡 | The routes or messages it offers are documented and tested with a client; not every client has used them yet |
 | Integration | 🟡 | Its messages and routes are checked against the shared contracts of the SDK; it has not run together with the real equipment |
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Testing
 
-841 automated tests run with `npm test`. They need no hardware and nothing outside this machine.
+900 automated tests run with `npm test`. They need no hardware and nothing outside this machine.
 
 The CI runs `HYDRA_UMC_CI=1 python tools/ci_validate.py`, which checks the manifest, the documents, the eight READMEs and the pictures.
 
@@ -341,7 +341,7 @@ Runs Vite's own dev server (plain `vite`, port `5173`) with live-reloading. `vit
 ### Automated Tests
 
 ```bash
-npm test          # vitest run - 841 tests
+npm test          # vitest run - 900 tests
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 
@@ -389,7 +389,7 @@ HYDRA-UMC-STUDIO/
 │   ├── store.ts                     Global state: RobotModel/RobotState/HydraController/SystemSettings -
 │   ├── motionSource.ts              What the drawn pose stands for (commanded or followed by the machine), and the pure state-transition core of sendRobotCommand()
 │   ├── i18n.ts                      react-i18next setup - loads src/locales/*.json
-│   ├── hooks/                       usePartColors.ts: per-part colour overrides saved by HYDRA-UMC-EDITOR-STL
+│   ├── hooks/                       usePartColors.ts: per-part colour overrides saved by HYDRA-UMC-EDITOR-STL; usePanelLayout.ts: drag and saved size of the right panel and the 3D view
 │   ├── assets/                      The icon, the splash screen and the pictures of the app, and the global styles
 │   ├── assistant/                   Hydri, the assistant: answer engine, knowledge base (8 languages), mascot, preferences
 │   ├── components/                  the screens and panels: robot detail, 3D scene, administration, CAN-OTA tools
