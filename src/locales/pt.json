@@ -1479,7 +1479,24 @@
     "type_force_release": "Libertação forçada",
     "type_jog_arm": "Armação do jog",
     "type_safety_limits": "Limites de segurança",
-    "type_stop_all": "STOP global"
+    "type_stop_all": "STOP global",
+    "filter_account": "Conta",
+    "all_accounts": "Todas as contas",
+    "all_windows": "Todas as janelas",
+    "all_addresses": "Todos os endereços",
+    "filter_text": "Pesquisar",
+    "only_mine": "Só as minhas",
+    "auto_refresh": "Ler outra vez sozinho",
+    "auto_refresh_hint": "Volta a ler o registo a cada {{seconds}} segundos enquanto este ecrã estiver aberto.",
+    "type_stop_all_release": "STOP global libertado",
+    "type_robot_enable": "Robô ativado",
+    "type_robot_disable": "Robô desativado",
+    "type_bridge_command": "Comando para uma ponte",
+    "type_job_dispatcher_options": "Opções do despachante de trabalhos",
+    "type_job_dispatcher_reload": "Despachante de trabalhos recarregado",
+    "type_push_device_registered": "Dispositivo de avisos adicionado",
+    "type_push_device_removed": "Dispositivo de avisos removido",
+    "type_remote_policy": "Política de acesso remoto"
   },
   "totp": {
     "title": "Início de sessão em dois passos",
@@ -1620,5 +1637,23 @@
     "state_down": "Parado",
     "state_unknown": "Desconhecido",
     "drift": "A versão difere do seu manifesto"
+  },
+  "trajectory_preview": {
+    "title": "Verificar a trajetória antes de Play",
+    "ask_clean": "Não foi encontrado nenhum problema. Iniciar a trajetória?",
+    "ask_issues": "Foram encontrados {{count}} problema(s) na trajetória. Iniciá-la mesmo assim?",
+    "play": "Play",
+    "play_anyway": "Iniciar mesmo assim",
+    "summary": "{{count}} pontos, percurso de {{length}} mm, maior rotação de uma articulação {{step}} graus.",
+    "clean": "Todas as articulações estão dentro dos seus limites e nenhum passo roda demasiado uma articulação.",
+    "more": "... e mais {{count}}",
+    "issue_limit": "Ponto {{point}}: {{joint}} a {{value}} graus, fora de {{min}} a {{max}}",
+    "issue_step": "Ponto {{point}}: {{joint}} roda {{delta}} graus em relação ao ponto anterior",
+    "issue_pose": "Ponto {{point}}: a sua posição fica a {{mm}} mm da que as suas articulações dão",
+    "view_top": "De cima",
+    "view_side": "De lado",
+    "view_front": "De frente",
+    "switch_label": "Verificar a trajetória antes de Play",
+    "switch_hint": "Antes de Play, mostra o percurso de três lados e lista as articulações fora dos limites e os passos que rodam demasiado uma articulação. Desligado por defeito; guardado neste navegador."
   }
 }

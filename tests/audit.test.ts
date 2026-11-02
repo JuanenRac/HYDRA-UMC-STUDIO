@@ -135,3 +135,20 @@ describe('the calls', () => {
     expect(await fetchAuditJsonl()).toBeNull();
   });
 });
+
+describe('narrowing what was read by who did it and from where', () => {
+  const lines = chain(3);
+  lines[1] = { ...lines[1], username: 'bob', controllerId: 'w2', ip: '10.0.0.9', type: 'stop-all-release' };
+  const entries = entriesOf(lines);
+
+  it('keeps the entries that match every field given', async () => {
+    const { filterAuditEntries, distinctAuditValues, auditTypeKey } = await import('../src/lib/audit');
+    expect(filterAuditEntries(entries, {}).length).toBe(3);
+    expect(filterAuditEntries(entries, { username: 'bob' }).map((e) => e.seq)).toEqual([2]);
+    expect(filterAuditEntries(entries, { username: 'ana', controllerId: 'w2' })).toEqual([]);
+    expect(filterAuditEntries(entries, { address: '10.0.0.5' }).length).toBe(2);
+    expect(filterAuditEntries(entries, { text: 'STOP-ALL' }).map((e) => e.seq)).toEqual([2]);
+    expect(distinctAuditValues(entries, 'username')).toEqual(['ana', 'bob']);
+    expect(auditTypeKey('stop-all-release')).toBe('stop_all_release');
+  });
+});

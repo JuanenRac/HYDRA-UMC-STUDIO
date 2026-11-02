@@ -24,6 +24,8 @@ interface ConfigPanelProps {
   loadExampleForRobot: (botId: number, exId: string) => unknown;
   loadWorkFile: (fileName: string) => unknown;
   reachTolerance: number;
+  previewOn: boolean;
+  setPreviewOn: (on: boolean) => void;
   rightTab: string;
   robot: RobotState;
   robots: RobotState[];
@@ -43,7 +45,7 @@ interface ConfigPanelProps {
 }
 
 export function ConfigPanel(props: ConfigPanelProps) {
-  const { combinedBotsInfo, handleExportGCode, handleSaveWorkFile, handleUploadWorkFile, loadExample, loadExampleForRobot, loadWorkFile, reachTolerance, rightTab, robot, robots, selectedExample, selectedWorkFile, setPendingModel, setPendingTool, setReachTolerance, setRightTab, settings, t, togglePump, toggleValve, updateRobot, uploadWorkFileRef, workFiles } = props;
+  const { combinedBotsInfo, handleExportGCode, handleSaveWorkFile, handleUploadWorkFile, loadExample, loadExampleForRobot, loadWorkFile, previewOn, reachTolerance, rightTab, robot, robots, selectedExample, selectedWorkFile, setPendingModel, setPendingTool, setPreviewOn, setReachTolerance, setRightTab, settings, t, togglePump, toggleValve, updateRobot, uploadWorkFileRef, workFiles } = props;
   return (
     <div className="flex flex-col bg-slate-950 border border-slate-800 rounded-xl overflow-hidden min-h-0 shrink-0 max-h-[50%]">
       <div className="flex items-center border-b border-slate-800 bg-slate-900 overflow-x-auto custom-scrollbar shrink-0">
@@ -79,6 +81,10 @@ export function ConfigPanel(props: ConfigPanelProps) {
                 className="w-20 bg-slate-950 border border-slate-800 rounded p-1 text-xs text-slate-200 outline-none"
               />
             </div>
+            <label className="flex items-center gap-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider" title={t('trajectory_preview.switch_hint')}>
+              <input type="checkbox" data-testid="preview-before-play" checked={previewOn} onChange={(e) => setPreviewOn(e.target.checked)} />
+              {t('trajectory_preview.switch_label')}
+            </label>
             <div>
               <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">{t('robot_detail.works_robot', 'Works Robot')}</label>
               <div className="flex items-center gap-2">

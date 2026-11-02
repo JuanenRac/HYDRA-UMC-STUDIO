@@ -39,7 +39,31 @@ const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v =
 const text = (v: unknown): string | null => (typeof v === 'string' && v !== '' ? v : null);
 
 /** The types of entry the server writes (the filter of the screen); others are shown as they come. */
-export const AUDIT_TYPES: readonly string[] = ['claim', 'force-claim', 'release', 'force-release', 'jog-arm', 'safety-limits', 'stop-all'];
+export const AUDIT_TYPES: readonly string[] = ['claim', 'force-claim', 'release', 'force-release', 'jog-arm', 'safety-limits', 'stop-all', 'stop-all-release', 'robot-enable', 'robot-disable', 'bridge-command', 'job-dispatcher-options', 'job-dispatcher-reload', 'push-device-registered', 'push-device-removed', 'remote-policy'];
+
+/** The key of the translation of a type of entry (`audit.type_<key>`): every hyphen becomes an underscore. */
+export const auditTypeKey = (type: string): string => type.replace(/-/g, '_');
+
+export interface AuditViewFilter { username?: string; controllerId?: string; address?: string; text?: string }
+
+/** The entries that match a filter of who did it and from where (all the fields given must match; text looks in the detail too). */
+export function filterAuditEntries(entries: readonly AuditEntry[], filter: AuditViewFilter): AuditEntry[] {
+  const needle = filter.text?.trim().toLowerCase() ?? '';
+  return entries.filter((entry) => {
+    if (filter.username && entry.username !== filter.username) return false;
+    if (filter.controllerId && entry.controllerId !== filter.controllerId) return false;
+    if (filter.address && entry.ip !== filter.address) return false;
+    if (needle && !`${entry.type} ${entry.username ?? ''} ${entry.controllerId ?? ''} ${entry.ip ?? ''} ${detailLine(entry.detail, 400)}`.toLowerCase().includes(needle)) return false;
+    return true;
+  });
+}
+
+/** The distinct values of a field in the order they first appear, for the lists of the filter. */
+export function distinctAuditValues(entries: readonly AuditEntry[], field: 'username' | 'controllerId' | 'ip'): string[] {
+  const seen = new Set<string>();
+  for (const entry of entries) { const value = entry[field]; if (value) seen.add(value); }
+  return [...seen];
+}
 
 function parseEntry(value: unknown): AuditEntry | null {
   if (!isObject(value)) return null;

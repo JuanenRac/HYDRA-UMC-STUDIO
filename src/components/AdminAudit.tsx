@@ -11,7 +11,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Download, RefreshCw, ScrollText, ShieldCheck } from 'lucide-react';
-import { AUDIT_TYPES, checkChain, detailLine, type AuditRead, type ChainCheck } from '../lib/audit';
+import { AUDIT_TYPES, auditTypeKey, checkChain, detailLine, distinctAuditValues, filterAuditEntries, type AuditRead, type ChainCheck } from '../lib/audit';
+import { decodeJwtUsername } from '../lib/claims';
+import auditView from '../config/auditView.json';
 import { fetchAudit, fetchAuditJsonl } from '../lib/auditApi';
 import { useFleet, useSession } from '../storeContexts';
 
@@ -22,7 +24,8 @@ type Failure = 'forbidden' | 'unavailable' | 'session' | 'network' | 'other';
 
 export function AdminAudit() {
   const { t } = useTranslation();
-  const { isAdmin } = useSession();
+  const { isAdmin, authToken } = useSession();
+  const myUsername = useMemo(() => decodeJwtUsername(authToken), [authToken]);
   const { robots } = useFleet();
   const [type, setType] = useState('');
   const [robotId, setRobotId] = useState('');
@@ -32,6 +35,13 @@ export function AdminAudit() {
   const [busy, setBusy] = useState(false);
   const [local, setLocal] = useState<ChainCheck | null>(null);
   const [serverChecked, setServerChecked] = useState(false);
+  // Who did it and from where: narrows what was read, in this window only (nothing more is asked of the server).
+  const [account, setAccount] = useState('');
+  const [windowId, setWindowId] = useState('');
+  const [address, setAddress] = useState('');
+  const [search, setSearch] = useState('');
+  // Reading again by itself is off until the operator switches it on (the interval is in src/config/auditView.json).
+  const [autoRefresh, setAutoRefresh] = useState<boolean>(auditView.autoRefreshDefault);
 
   const query = useMemo(
     () => ({ limit, ...(type ? { type } : {}), ...(robotId !== '' ? { robotId: Number(robotId) } : {}) }),
@@ -66,6 +76,12 @@ export function AdminAudit() {
     if (isAdmin) void load(false);
   }, [isAdmin, load]);
 
+  useEffect(() => {
+    if (!isAdmin || !autoRefresh) return undefined;
+    const timer = window.setInterval(() => { void load(false); }, Math.max(2, auditView.autoRefreshSeconds) * 1000);
+    return () => window.clearInterval(timer);
+  }, [isAdmin, autoRefresh, load]);
+
   const exportFile = async () => {
     const text = await fetchAuditJsonl(query);
     if (text === null) { setFailure('other'); return; }
@@ -80,7 +96,10 @@ export function AdminAudit() {
   if (!isAdmin) return <p className="text-sm text-slate-400">{t('audit.admin_only')}</p>;
 
   const verification = read?.verification ?? null;
-  const entries = read ? [...read.entries].reverse() : [];
+  const accounts = read ? distinctAuditValues(read.entries, 'username') : [];
+  const windows = read ? distinctAuditValues(read.entries, 'controllerId') : [];
+  const addresses = read ? distinctAuditValues(read.entries, 'ip') : [];
+  const entries = read ? filterAuditEntries([...read.entries].reverse(), { username: account, controllerId: windowId, address, text: search }) : [];
 
   return (
     <div className="flex flex-col gap-4 overflow-y-auto pr-2 text-slate-300" data-testid="admin-audit">
@@ -94,7 +113,7 @@ export function AdminAudit() {
           {t('audit.filter_type')}
           <select className={field} value={type} onChange={(e) => setType(e.target.value)} data-testid="audit-type">
             <option value="">{t('audit.all_types')}</option>
-            {AUDIT_TYPES.map((name) => <option key={name} value={name}>{t(`audit.type_${name.replace('-', '_')}`, name)}</option>)}
+            {AUDIT_TYPES.map((name) => <option key={name} value={name}>{t(`audit.type_${auditTypeKey(name)}`, name)}</option>)}
           </select>
         </label>
         <label className="flex flex-col gap-1 text-[10px] font-black uppercase tracking-wider text-slate-500">
@@ -109,6 +128,38 @@ export function AdminAudit() {
           <select className={field} value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
             {LIMITS.map((n) => <option key={n} value={n}>{n}</option>)}
           </select>
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] font-black uppercase tracking-wider text-slate-500">
+          {t('audit.filter_account')}
+          <select className={field} value={account} onChange={(e) => setAccount(e.target.value)} data-testid="audit-account">
+            <option value="">{t('audit.all_accounts')}</option>
+            {accounts.map((name) => <option key={name} value={name}>{name}</option>)}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] font-black uppercase tracking-wider text-slate-500">
+          {t('audit.col_controller')}
+          <select className={field} value={windowId} onChange={(e) => setWindowId(e.target.value)} data-testid="audit-window">
+            <option value="">{t('audit.all_windows')}</option>
+            {windows.map((name) => <option key={name} value={name}>{name}</option>)}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] font-black uppercase tracking-wider text-slate-500">
+          {t('audit.col_address')}
+          <select className={field} value={address} onChange={(e) => setAddress(e.target.value)} data-testid="audit-address">
+            <option value="">{t('audit.all_addresses')}</option>
+            {addresses.map((name) => <option key={name} value={name}>{name}</option>)}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] font-black uppercase tracking-wider text-slate-500">
+          {t('audit.filter_text')}
+          <input className={field} value={search} onChange={(e) => setSearch(e.target.value)} data-testid="audit-search" />
+        </label>
+        {myUsername && (
+          <button type="button" onClick={() => setAccount(account === myUsername ? '' : myUsername)} data-testid="audit-mine" className="flex items-center gap-1 px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider border border-slate-600 text-slate-300 hover:bg-slate-800">{t('audit.only_mine')}</button>
+        )}
+        <label className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-slate-400" title={t('audit.auto_refresh_hint', { seconds: auditView.autoRefreshSeconds })}>
+          <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} data-testid="audit-auto" />
+          {t('audit.auto_refresh')}
         </label>
         <button type="button" disabled={busy} onClick={() => { void load(false); }} className="flex items-center gap-1 px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider border border-slate-600 text-slate-300 hover:bg-slate-800 disabled:opacity-40"><RefreshCw size={12} />{t('audit.refresh')}</button>
         <button type="button" disabled={busy} onClick={() => { void load(true); }} data-testid="audit-verify" className="flex items-center gap-1 px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider border border-emerald-600 text-emerald-300 hover:bg-emerald-950 disabled:opacity-40"><ShieldCheck size={12} />{t('audit.verify')}</button>
@@ -161,7 +212,7 @@ export function AdminAudit() {
                   <tr key={entry.seq} className="border-t border-slate-800 align-top">
                     <td className="py-1 pr-3 font-mono text-slate-500">{entry.seq}</td>
                     <td className="py-1 pr-3 font-mono whitespace-nowrap">{entry.ts.replace('T', ' ').replace(/\.\d+Z?$/, '')}</td>
-                    <td className="py-1 pr-3 font-bold">{t(`audit.type_${entry.type.replace('-', '_')}`, entry.type)}</td>
+                    <td className="py-1 pr-3 font-bold">{t(`audit.type_${auditTypeKey(entry.type)}`, entry.type)}</td>
                     <td className={'py-1 pr-3 font-bold ' + (entry.outcome === 'ok' ? 'text-emerald-400' : entry.outcome === 'refused' ? 'text-amber-400' : 'text-rose-400')}>{t(`audit.outcome_${entry.outcome}`)}</td>
                     <td className="py-1 pr-3">{entry.username ?? '-'}</td>
                     <td className="py-1 pr-3 font-mono">{entry.controllerId ?? '-'}</td>

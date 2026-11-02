@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-828%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-841%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.0.9-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Versión | `0.8.0.9` |
 | Madurez | Funcional |
-| Tests | 828 (`npm test`) |
+| Tests | 841 (`npm test`) |
 | Tecnología | React 19 / Vite / Three.js / Tailwind CSS |
 | Destino | La Raspberry Pi CM5 de una celda HYDRA-UMC |
 | En hardware real | Ejecutado en un banco de pruebas: la comprobación de honestidad de arriba dice qué partes funcionaron en hardware real |
@@ -53,7 +53,7 @@ Cada línea es una parte de este repositorio y la luz dice hasta dónde llega ho
 | Área | Estado | Qué significa aquí |
 |---|---|---|
 | Software | 🟡 | Funciona para su propósito principal; la comprobación de honestidad de arriba lista lo que aún falta |
-| Pruebas | 🟢 | 828 pruebas automáticas, ejecutadas en cada cambio |
+| Pruebas | 🟢 | 841 pruebas automáticas, ejecutadas en cada cambio |
 | Hardware real | 🟡 | Ejecutado en un banco de pruebas: la comprobación de honestidad de arriba dice qué partes funcionaron en hardware real |
 | Interfaz y protocolos | 🟡 | Las rutas o los mensajes que ofrece están documentados y probados con un cliente; aún no los han usado todos los clientes |
 | Integración | 🟡 | Sus mensajes y rutas se comprueban contra los contratos compartidos del SDK; no ha funcionado junto con el equipo real |
@@ -160,7 +160,7 @@ Estos diseños originales JuanenPNP / HYDRA-UMC y sus fuentes SCAD usan GPL-3.0;
 
 ### Trabajos y Trayectorias
 
-Carga trayectorias de ejemplo predefinidas, jogea y graba tus propios puntos en vivo, o carga/guarda/edita/reproduce trayectorias complejas multi-punto (JSON) por robot. Las trayectorias son portables entre modelos de robot - cada punto grabado se resuelve a través de la cinemática real propia de ese robot específico (`src/examples/robotKinematicsDispatch.ts`) en el momento de cargar/dibujar/reproducir, no se calcula de forma fija contra el robot con el que se grabó, de modo que el mismo archivo de trayectoria mueve correctamente a un Parol6 y a un UR10e a lo largo de su propia geometría alcanzable real.
+Carga trayectorias de ejemplo predefinidas, jogea y graba tus propios puntos en vivo, o carga/guarda/edita/reproduce trayectorias complejas multi-punto (JSON) por robot. Las trayectorias son portables entre modelos de robot - cada punto grabado se resuelve a través de la cinemática real propia de ese robot específico (`src/examples/robotKinematicsDispatch.ts`) en el momento de cargar/dibujar/reproducir, no se calcula de forma fija contra el robot con el que se grabó, de modo que el mismo archivo de trayectoria mueve correctamente a un Parol6 y a un UR10e a lo largo de su propia geometría alcanzable real. Con el interruptor **Revisar la trayectoria antes de Play** activado (en la pestaña de trayectorias; apagado por defecto y guardado en este navegador), START muestra primero el recorrido desde arriba, de lado y de frente, lista las articulaciones fuera de sus límites y los pasos que giran una articulación demasiado, y pregunta antes de reproducir; el paso máximo y el tamaño de las vistas están en `src/config/trajectoryPreview.json`.
 
 ### Herramientas de Firmware CAN-OTA
 
@@ -196,7 +196,7 @@ Dos diálogos independientes, ambos accesibles desde la cabecera (botones `Confi
 La app se protege a sí misma contra dos clases distintas de fallo en tiempo de ejecución, ambas nacidas de un incidente real de producción (una pantalla kiosco quedándose en negro tras un redeploy). `src/main.tsx` escucha el propio evento `vite:preloadError` de Vite - emitido cuando una pestaña del navegador dejada abierta a través de un redeploy intenta descargar un chunk de panel cargado con `React.lazy()` (cada panel de `Dashboard.tsx`, con hash de contenido según `vite.config.ts`) que ya no existe bajo su hash antiguo - y recarga la página una vez automáticamente, de modo que una pestaña kiosco de larga duración o una pestaña de fondo obsoleta se autorrepara sin que nadie lo note. Una protección con `sessionStorage` evita que esto entre en un bucle de recarga infinito si un chunk falta genuinamente por alguna otra razón. Por separado, `src/components/ErrorBoundary.tsx` envuelve el área de paneles `<Suspense>` como respaldo ante cualquier otro fallo de renderizado; está indexado por la pestaña activa, así que cambiar de un panel caído realmente reintenta el siguiente en vez de dejar todo el dashboard atascado en una pantalla de fallback.
 Las órdenes nunca fallan en silencio: cada orden de jog, reproducción, alimentación, visión y herramienta devuelve un resultado tipado, una sesión caducada se renueva una vez y se reintenta, y todo lo que siga rechazado se muestra en un aviso. El botón rojo **STOP** es global: un clic, sin confirmación, detiene todos los robots de todos los controladores y apaga todas las válvulas y bombas en una sola llamada (`POST /api/stop-all`). Está en la cabecera y el pie, en el panel del robot y en la superposición de control remoto, y Ctrl+Shift+Espacio lo pulsa desde el teclado (una combinación que no se escribe por accidente y se ignora con la tecla mantenida). El resultado se lista robot a robot (aviso si un robot no se detuvo o el servidor no pudo guardar la parada; los robots reservados por otra cuenta se marcan); un fallo de red se reintenta una vez, un servidor que superó su límite (429) o sin la ruta (404) se atiende con la parada por robot, y un aviso persistente «STOP no confirmado» permanece hasta que un STOP posterior obtenga respuesta. El jog con el joystick es un control de hombre muerto (termina al cancelar el puntero, perder el foco, ocultar la pestaña o a los 8 segundos), un movimiento de J1 se queda en el ángulo equivalente más cercano y se rechaza un paso de jog superior a 20 grados. El mando sigue al robot seleccionado en la interfaz y tiene límite de frecuencia. El firmware de una versión se comprueba con su sha256 antes de flashear por CAN-OTA, las imágenes de bootloader son opcionales y las trayectorias y escenas importadas se validan antes de llegar al estado compartido.
 
-El servidor decide, para todos los clientes, quién puede mover un robot y hasta dónde. Un robot puede **reservarse** para la cuenta y la ventana (un identificador de controlador elegido por ventana) que lo pide: la misma cuenta desde otra ventana, u otra cuenta, recibe un rechazo con un mensaje que dice cuál es el caso (`other-controller`, `other-account`, `controller-id-required`), la lista de reservas sale de `GET /api/claims` y un administrador puede tomar el control de un robot. El tamaño de un jog, el rango de un jog absoluto y la temperatura objetivo máxima de la cama se leen de `GET /api/safety-limits` en lugar de guardarse en la app; un administrador los edita por modelo en **Ecosistema > Límites de seguridad**, junto con el armado opcional del jog (desactivado por defecto; si se activa, un botón arma el jog durante un tiempo limitado) y el identificador de controlador obligatorio. Cada robot tiene un interruptor **Live / Sim** (Live por defecto): en Sim, esa ventana no envía nada que mueva el robot o encienda algo, mientras que STOP siempre pasa. Un Work o ejemplo con puntos que el brazo no alcanza se rechaza con la lista de esos puntos, y puede escalarse al alcance del modelo. La lista de reservas también la envía el servidor por el WebSocket (el mensaje `claims`, para las conexiones que pidieron `remoteApiVersion=2`), de modo que la barra de acceso muestra un cambio al instante en lugar de esperar a su siguiente consulta; mientras llegan los envíos, la consulta solo se hace de vez en cuando. Las escrituras son condicionales: cada una lleva la revisión del robot que esta ventana vio por última vez (`If-Match`) y, si otra persona cambió el robot entretanto, el servidor responde 412, se vuelve a leer el robot y el aviso lo dice (Estándar comprueba reservas, mesa y comandos puntuales; Estricto comprueba todo salvo STOP; Desactivado no comprueba nada; STOP nunca se comprueba). La mesa XY se mueve con el comando atómico `table`, y los administradores leen el registro de auditoría de solo añadir, con su cadena SHA-256 verificada, en **Ecosistema > Registro de auditoría**.
+El servidor decide, para todos los clientes, quién puede mover un robot y hasta dónde. Un robot puede **reservarse** para la cuenta y la ventana (un identificador de controlador elegido por ventana) que lo pide: la misma cuenta desde otra ventana, u otra cuenta, recibe un rechazo con un mensaje que dice cuál es el caso (`other-controller`, `other-account`, `controller-id-required`), la lista de reservas sale de `GET /api/claims` y un administrador puede tomar el control de un robot. El tamaño de un jog, el rango de un jog absoluto y la temperatura objetivo máxima de la cama se leen de `GET /api/safety-limits` en lugar de guardarse en la app; un administrador los edita por modelo en **Ecosistema > Límites de seguridad**, junto con el armado opcional del jog (desactivado por defecto; si se activa, un botón arma el jog durante un tiempo limitado) y el identificador de controlador obligatorio. Cada robot tiene un interruptor **Live / Sim** (Live por defecto): en Sim, esa ventana no envía nada que mueva el robot o encienda algo, mientras que STOP siempre pasa. Un Work o ejemplo con puntos que el brazo no alcanza se rechaza con la lista de esos puntos, y puede escalarse al alcance del modelo. La lista de reservas también la envía el servidor por el WebSocket (el mensaje `claims`, para las conexiones que pidieron `remoteApiVersion=2`), de modo que la barra de acceso muestra un cambio al instante en lugar de esperar a su siguiente consulta; mientras llegan los envíos, la consulta solo se hace de vez en cuando. Las escrituras son condicionales: cada una lleva la revisión del robot que esta ventana vio por última vez (`If-Match`) y, si otra persona cambió el robot entretanto, el servidor responde 412, se vuelve a leer el robot y el aviso lo dice (Estándar comprueba reservas, mesa y comandos puntuales; Estricto comprueba todo salvo STOP; Desactivado no comprueba nada; STOP nunca se comprueba). La mesa XY se mueve con el comando atómico `table`, y los administradores leen el registro de auditoría de solo añadir, con su cadena SHA-256 verificada, en **Ecosistema > Registro de auditoría**. La pantalla del registro de auditoría (**Ecosistema > Registro de auditoría**) también acota lo leído por cuenta, ventana, dirección y texto, con un botón *Solo las mías*, lista todos los tipos de entrada que escribe el servidor y puede volver a leer el registro por sí sola (apagado por defecto; el intervalo está en `src/config/auditView.json`).
 
 ### Cuentas y Acceso
 
@@ -285,7 +285,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Pruebas
 
-828 pruebas automáticas se ejecutan con `npm test`. No necesitan hardware ni nada fuera de esta máquina.
+841 pruebas automáticas se ejecutan con `npm test`. No necesitan hardware ni nada fuera de esta máquina.
 
 El CI ejecuta `HYDRA_UMC_CI=1 python tools/ci_validate.py`, que comprueba el manifiesto, los documentos, los ocho README y las imágenes.
 
@@ -311,7 +311,7 @@ Ejecuta el propio servidor de desarrollo de Vite (`vite` simple, puerto `5173`) 
 ### Pruebas Automatizadas
 
 ```bash
-npm test          # vitest run - 828 pruebas reales sobre src/examples/
+npm test          # vitest run - 841 pruebas reales sobre src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

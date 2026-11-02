@@ -1479,7 +1479,24 @@
     "type_force_release": "Rilascio forzato",
     "type_jog_arm": "Armamento del jog",
     "type_safety_limits": "Limiti di sicurezza",
-    "type_stop_all": "STOP globale"
+    "type_stop_all": "STOP globale",
+    "filter_account": "Account",
+    "all_accounts": "Tutti gli account",
+    "all_windows": "Tutte le finestre",
+    "all_addresses": "Tutti gli indirizzi",
+    "filter_text": "Cerca",
+    "only_mine": "Solo i miei",
+    "auto_refresh": "Rileggi da solo",
+    "auto_refresh_hint": "Rilegge il registro ogni {{seconds}} secondi finché questa schermata è aperta.",
+    "type_stop_all_release": "STOP globale rilasciato",
+    "type_robot_enable": "Robot abilitato",
+    "type_robot_disable": "Robot disabilitato",
+    "type_bridge_command": "Comando a un bridge",
+    "type_job_dispatcher_options": "Opzioni del dispatcher dei lavori",
+    "type_job_dispatcher_reload": "Dispatcher dei lavori ricaricato",
+    "type_push_device_registered": "Dispositivo di notifiche aggiunto",
+    "type_push_device_removed": "Dispositivo di notifiche rimosso",
+    "type_remote_policy": "Criterio di accesso remoto"
   },
   "totp": {
     "title": "Accesso in due passaggi",
@@ -1620,5 +1637,23 @@
     "state_down": "Fermo",
     "state_unknown": "Sconosciuto",
     "drift": "La versione differisce dal suo manifesto"
+  },
+  "trajectory_preview": {
+    "title": "Controlla la traiettoria prima di Play",
+    "ask_clean": "Non è stato trovato nessun problema. Avviare la traiettoria?",
+    "ask_issues": "Nella traiettoria sono stati trovati {{count}} problema/i. Avviarla comunque?",
+    "play": "Play",
+    "play_anyway": "Avvia comunque",
+    "summary": "{{count}} punti, percorso di {{length}} mm, maggiore rotazione di un giunto {{step}} gradi.",
+    "clean": "Tutti i giunti sono entro i loro limiti e nessun passo ruota troppo un giunto.",
+    "more": "... e altri {{count}}",
+    "issue_limit": "Punto {{point}}: {{joint}} a {{value}} gradi, fuori da {{min}} a {{max}}",
+    "issue_step": "Punto {{point}}: {{joint}} ruota di {{delta}} gradi rispetto al punto precedente",
+    "issue_pose": "Punto {{point}}: la sua posizione è a {{mm}} mm da quella che danno i suoi giunti",
+    "view_top": "Dall'alto",
+    "view_side": "Di lato",
+    "view_front": "Di fronte",
+    "switch_label": "Controlla la traiettoria prima di Play",
+    "switch_hint": "Prima di Play, mostra il percorso da tre lati ed elenca i giunti fuori dai limiti e i passi che ruotano troppo un giunto. Spento per impostazione predefinita; salvato in questo browser."
   }
 }

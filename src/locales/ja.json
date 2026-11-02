@@ -1479,7 +1479,24 @@
     "type_force_release": "強制解放",
     "type_jog_arm": "ジョグの有効化",
     "type_safety_limits": "安全上限",
-    "type_stop_all": "全体 STOP"
+    "type_stop_all": "全体 STOP",
+    "filter_account": "アカウント",
+    "all_accounts": "すべてのアカウント",
+    "all_windows": "すべてのウィンドウ",
+    "all_addresses": "すべてのアドレス",
+    "filter_text": "検索",
+    "only_mine": "自分の操作のみ",
+    "auto_refresh": "自動で再読み込み",
+    "auto_refresh_hint": "この画面を開いている間、{{seconds}} 秒ごとに記録を読み直します。",
+    "type_stop_all_release": "全体STOPの解除",
+    "type_robot_enable": "ロボットを有効化",
+    "type_robot_disable": "ロボットを無効化",
+    "type_bridge_command": "ブリッジへのコマンド",
+    "type_job_dispatcher_options": "ジョブディスパッチャーの設定",
+    "type_job_dispatcher_reload": "ジョブディスパッチャーの再読み込み",
+    "type_push_device_registered": "通知デバイスの追加",
+    "type_push_device_removed": "通知デバイスの削除",
+    "type_remote_policy": "リモートアクセスのポリシー"
   },
   "totp": {
     "title": "2段階サインイン",
@@ -1620,5 +1637,23 @@
     "state_down": "停止",
     "state_unknown": "不明",
     "drift": "バージョンがマニフェストと異なります"
+  },
+  "trajectory_preview": {
+    "title": "再生前に軌道を確認",
+    "ask_clean": "問題は見つかりませんでした。軌道を開始しますか。",
+    "ask_issues": "軌道に {{count}} 件の問題が見つかりました。それでも開始しますか。",
+    "play": "再生",
+    "play_anyway": "それでも再生",
+    "summary": "{{count}} 点、経路 {{length}} mm、関節の最大変化 {{step}} 度。",
+    "clean": "すべての関節が範囲内で、関節を大きく動かしすぎるステップもありません。",
+    "more": "... ほか {{count}} 件",
+    "issue_limit": "点 {{point}}: {{joint}} が {{value}} 度で、{{min}} から {{max}} の範囲外です",
+    "issue_step": "点 {{point}}: {{joint}} が前の点から {{delta}} 度動きます",
+    "issue_pose": "点 {{point}}: 位置が関節から求まる位置と {{mm}} mm ずれています",
+    "view_top": "上から",
+    "view_side": "横から",
+    "view_front": "正面から",
+    "switch_label": "再生前に軌道を確認する",
+    "switch_hint": "再生の前に、経路を3方向から表示し、範囲外の関節と関節を動かしすぎるステップを一覧にします。既定ではオフで、設定はこのブラウザに保存されます。"
   }
 }

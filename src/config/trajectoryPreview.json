@@ -1,0 +1,8 @@
+{
+  "storageKey": "hydra.previewBeforePlay",
+  "enabledByDefault": false,
+  "maxJointStepDeg": 90,
+  "listedIssues": 12,
+  "jointLimitToleranceDeg": 0.5,
+  "view": { "width": 220, "height": 170, "padding": 12 }
+}

@@ -92,3 +92,39 @@ describe('the robot detail screen', () => {
     expect(updateRobot).toHaveBeenLastCalledWith(robot.id, { recordedPoints: [robot.recordedPoints[1]] });
   });
 });
+
+describe('the check of the trajectory before Play', () => {
+  const wild = [
+    { motionType: 'model-joints', j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, x: 0, y: 0, z: 0 },
+    { motionType: 'model-joints', j1: 400, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, x: 10, y: 0, z: 0 },
+  ];
+  const played = (calls: unknown[][], id: number) => calls.some((c) => c[0] === id && c[1] === 'play');
+  afterEach(() => { window.localStorage.removeItem('hydra.previewBeforePlay'); });
+
+  it('starts at once while the check is off (the default)', () => {
+    const { sendRobotCommand, robot } = setup({ recordedPoints: wild as never });
+    fireEvent.click(screen.getByTitle(i18n.t('robot_detail.start')));
+    expect(played(sendRobotCommand.mock.calls as unknown as unknown[][], robot.id)).toBe(true);
+    expect(screen.queryByTestId('trajectory-preview')).toBeNull();
+  });
+
+  it('shows the path and the problems first, and plays only after the operator accepts', () => {
+    window.localStorage.setItem('hydra.previewBeforePlay', '1');
+    const { sendRobotCommand, robot } = setup({ recordedPoints: wild as never });
+    fireEvent.click(screen.getByTitle(i18n.t('robot_detail.start')));
+    expect(played(sendRobotCommand.mock.calls as unknown as unknown[][], robot.id)).toBe(false);
+    expect(screen.getByTestId('trajectory-preview')).toBeTruthy();
+    expect(screen.getByTestId('trajectory-preview-issues')).toBeTruthy();
+    fireEvent.click(screen.getByText(i18n.t('trajectory_preview.play_anyway')));
+    expect(played(sendRobotCommand.mock.calls as unknown as unknown[][], robot.id)).toBe(true);
+  });
+
+  it('plays nothing when the operator cancels', () => {
+    window.localStorage.setItem('hydra.previewBeforePlay', '1');
+    const { sendRobotCommand, robot } = setup({ recordedPoints: wild as never });
+    fireEvent.click(screen.getByTitle(i18n.t('robot_detail.start')));
+    fireEvent.click(screen.getByText(i18n.t('common.cancel')));
+    expect(played(sendRobotCommand.mock.calls as unknown as unknown[][], robot.id)).toBe(false);
+    expect(screen.queryByTestId('trajectory-preview')).toBeNull();
+  });
+});

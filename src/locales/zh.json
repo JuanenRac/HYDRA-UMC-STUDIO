@@ -1479,7 +1479,24 @@
     "type_force_release": "强制释放",
     "type_jog_arm": "点动解锁",
     "type_safety_limits": "安全限制",
-    "type_stop_all": "全局 STOP"
+    "type_stop_all": "全局 STOP",
+    "filter_account": "账户",
+    "all_accounts": "所有账户",
+    "all_windows": "所有窗口",
+    "all_addresses": "所有地址",
+    "filter_text": "搜索",
+    "only_mine": "仅我的操作",
+    "auto_refresh": "自动重新读取",
+    "auto_refresh_hint": "此界面打开期间，每 {{seconds}} 秒重新读取一次记录。",
+    "type_stop_all_release": "全局停止已解除",
+    "type_robot_enable": "机器人已启用",
+    "type_robot_disable": "机器人已停用",
+    "type_bridge_command": "发给桥接器的命令",
+    "type_job_dispatcher_options": "作业调度器选项",
+    "type_job_dispatcher_reload": "作业调度器已重新加载",
+    "type_push_device_registered": "已添加通知设备",
+    "type_push_device_removed": "已移除通知设备",
+    "type_remote_policy": "远程访问策略"
   },
   "totp": {
     "title": "两步登录",
@@ -1620,5 +1637,23 @@
     "state_down": "已停止",
     "state_unknown": "未知",
     "drift": "版本与其清单不一致"
+  },
+  "trajectory_preview": {
+    "title": "播放前检查轨迹",
+    "ask_clean": "未发现问题。要开始轨迹吗？",
+    "ask_issues": "轨迹中发现 {{count}} 个问题。仍要开始吗？",
+    "play": "播放",
+    "play_anyway": "仍然播放",
+    "summary": "{{count}} 个点，路径 {{length}} mm，关节最大摆动 {{step}} 度。",
+    "clean": "所有关节都在限位内，没有哪一步使关节摆动过大。",
+    "more": "... 另有 {{count}} 项",
+    "issue_limit": "点 {{point}}：{{joint}} 为 {{value}} 度，超出 {{min}} 至 {{max}}",
+    "issue_step": "点 {{point}}：{{joint}} 相对上一个点摆动 {{delta}} 度",
+    "issue_pose": "点 {{point}}：其位置与关节算出的位置相差 {{mm}} mm",
+    "view_top": "俯视",
+    "view_side": "侧视",
+    "view_front": "正视",
+    "switch_label": "播放前检查轨迹",
+    "switch_hint": "播放前从三个方向显示路径，并列出超出限位的关节和使关节摆动过大的步骤。默认关闭；设置保存在此浏览器中。"
   }
 }

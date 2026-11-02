@@ -1479,7 +1479,24 @@
     "type_force_release": "Release forced",
     "type_jog_arm": "Jog arming",
     "type_safety_limits": "Safety limits",
-    "type_stop_all": "Global STOP"
+    "type_stop_all": "Global STOP",
+    "filter_account": "Account",
+    "all_accounts": "All accounts",
+    "all_windows": "All windows",
+    "all_addresses": "All addresses",
+    "filter_text": "Search",
+    "only_mine": "Only mine",
+    "auto_refresh": "Read again by itself",
+    "auto_refresh_hint": "Reads the record again every {{seconds}} seconds while this screen is open.",
+    "type_stop_all_release": "Global STOP released",
+    "type_robot_enable": "Robot enabled",
+    "type_robot_disable": "Robot disabled",
+    "type_bridge_command": "Bridge command",
+    "type_job_dispatcher_options": "Job dispatcher options",
+    "type_job_dispatcher_reload": "Job dispatcher reloaded",
+    "type_push_device_registered": "Notification device added",
+    "type_push_device_removed": "Notification device removed",
+    "type_remote_policy": "Remote access policy"
   },
   "totp": {
     "title": "Two-step sign-in",
@@ -1620,5 +1637,23 @@
     "state_down": "Down",
     "state_unknown": "Unknown",
     "drift": "Version differs from its manifest"
+  },
+  "trajectory_preview": {
+    "title": "Check the trajectory before Play",
+    "ask_clean": "Nothing wrong was found. Start the trajectory?",
+    "ask_issues": "{{count}} problem(s) were found in the trajectory. Start it anyway?",
+    "play": "Play",
+    "play_anyway": "Play anyway",
+    "summary": "{{count}} points, path of {{length}} mm, largest swing of a joint {{step}} degrees.",
+    "clean": "Every joint is inside its limits and no step swings a joint too far.",
+    "more": "... and {{count}} more",
+    "issue_limit": "Point {{point}}: {{joint}} at {{value}} degrees, outside {{min}} to {{max}}",
+    "issue_step": "Point {{point}}: {{joint}} swings {{delta}} degrees from the point before",
+    "issue_pose": "Point {{point}}: its position is {{mm}} mm away from the one its joints give",
+    "view_top": "From above",
+    "view_side": "From the side",
+    "view_front": "From the front",
+    "switch_label": "Check the trajectory before Play",
+    "switch_hint": "Before Play, shows the path from three sides and lists the joints outside their limits and the steps that swing a joint too far. Off by default; kept in this browser."
   }
 }

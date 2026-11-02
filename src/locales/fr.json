@@ -1479,7 +1479,24 @@
     "type_force_release": "Libération forcée",
     "type_jog_arm": "Armement du jog",
     "type_safety_limits": "Limites de sécurité",
-    "type_stop_all": "STOP global"
+    "type_stop_all": "STOP global",
+    "filter_account": "Compte",
+    "all_accounts": "Tous les comptes",
+    "all_windows": "Toutes les fenêtres",
+    "all_addresses": "Toutes les adresses",
+    "filter_text": "Rechercher",
+    "only_mine": "Seulement les miennes",
+    "auto_refresh": "Relire automatiquement",
+    "auto_refresh_hint": "Relit le registre toutes les {{seconds}} secondes tant que cet écran est ouvert.",
+    "type_stop_all_release": "ARRÊT global levé",
+    "type_robot_enable": "Robot activé",
+    "type_robot_disable": "Robot désactivé",
+    "type_bridge_command": "Commande à un pont",
+    "type_job_dispatcher_options": "Options du répartiteur de travaux",
+    "type_job_dispatcher_reload": "Répartiteur de travaux rechargé",
+    "type_push_device_registered": "Appareil de notifications ajouté",
+    "type_push_device_removed": "Appareil de notifications retiré",
+    "type_remote_policy": "Politique d'accès à distance"
   },
   "totp": {
     "title": "Connexion en deux étapes",
@@ -1620,5 +1637,23 @@
     "state_down": "Arrêté",
     "state_unknown": "Inconnu",
     "drift": "La version diffère de son manifeste"
+  },
+  "trajectory_preview": {
+    "title": "Vérifier la trajectoire avant Play",
+    "ask_clean": "Aucun problème trouvé. Lancer la trajectoire ?",
+    "ask_issues": "{{count}} problème(s) trouvé(s) dans la trajectoire. La lancer quand même ?",
+    "play": "Play",
+    "play_anyway": "Lancer quand même",
+    "summary": "{{count}} points, parcours de {{length}} mm, plus grand déplacement d'une articulation {{step}} degrés.",
+    "clean": "Toutes les articulations sont dans leurs limites et aucun pas ne fait trop tourner une articulation.",
+    "more": "... et {{count}} de plus",
+    "issue_limit": "Point {{point}} : {{joint}} à {{value}} degrés, hors de {{min}} à {{max}}",
+    "issue_step": "Point {{point}} : {{joint}} tourne de {{delta}} degrés par rapport au point précédent",
+    "issue_pose": "Point {{point}} : sa position est à {{mm}} mm de celle que donnent ses articulations",
+    "view_top": "Vue de dessus",
+    "view_side": "Vue de côté",
+    "view_front": "Vue de face",
+    "switch_label": "Vérifier la trajectoire avant Play",
+    "switch_hint": "Avant Play, montre le parcours sous trois angles et liste les articulations hors de leurs limites et les pas qui font trop tourner une articulation. Désactivé par défaut ; conservé dans ce navigateur."
   }
 }

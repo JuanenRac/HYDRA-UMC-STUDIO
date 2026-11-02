@@ -23,6 +23,8 @@ import { jointsToCartesianForModel, jointLimitsFor, resolveTargetJoints } from '
 import { guardJogStep } from '../lib/motionGuard';
 import { ConfirmDialog } from './ConfirmDialog';
 import { tableParams } from '../lib/tableMove';
+import { TrajectoryPreview } from './TrajectoryPreview';
+import { analyzeTrajectory, previewEnabled, savePreviewEnabled, type PreviewReport } from '../lib/trajectoryPreview';
 import { buildReachReport, findReachScale, loadReachTolerance, reachNeedsConfirmation, scalePortablePoints, type ReachReport, type ReachScale } from '../lib/reachCheck';
 import { RobotAccessBar } from './RobotAccessBar';
 import { currentPlaybackStep } from '../lib/playbackStep';
@@ -407,8 +409,23 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     void emergencyStop();
   };
 
+  // With the check switched on (Config tab, off by default) Play first shows the path and what is wrong with it.
+  const [previewOn, setPreviewOn] = useState<boolean>(() => previewEnabled(browserStorage()));
+  const [pendingPreview, setPendingPreview] = useState<PreviewReport | null>(null);
+  const changePreviewOn = (on: boolean) => setPreviewOn(savePreviewEnabled(browserStorage(), on));
   const handlePlay = async () => {
     if (robot.recordedPoints.length === 0) return;
+    if (previewOn) {
+      setPendingPreview(analyzeTrajectory(robot.recordedPoints, robot.model));
+      return;
+    }
+    startPlay();
+  };
+  const runPendingPreview = () => {
+    setPendingPreview(null);
+    startPlay();
+  };
+  const startPlay = () => {
     // Only THIS robot mutated optimistically here, matching the original
     // scope of this local update - a combined sibling's own playbackState
     // still lands correctly (the server always fans "play" out to
@@ -946,6 +963,16 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
         danger={pendingAction === 'delete_points'}
         onConfirm={runPendingAction}
         onCancel={() => setPendingAction(null)}
+      />
+      <ConfirmDialog
+        open={pendingPreview !== null}
+        title={t('trajectory_preview.title')}
+        message={pendingPreview ? (pendingPreview.clean ? t('trajectory_preview.ask_clean') : t('trajectory_preview.ask_issues', { count: pendingPreview.issues.length })) : ''}
+        details={pendingPreview && <TrajectoryPreview report={pendingPreview} />}
+        confirmLabel={pendingPreview && !pendingPreview.clean ? t('trajectory_preview.play_anyway') : t('trajectory_preview.play')}
+        danger={pendingPreview ? !pendingPreview.clean : false}
+        onConfirm={runPendingPreview}
+        onCancel={() => setPendingPreview(null)}
       />
       <ConfirmDialog
         open={pendingReach !== null}
@@ -1654,7 +1681,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
             style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? rightPanelWidth : '100%' }}
           >
           {/* Top Panel: Config, I/O, Points */}
-          <ConfigPanel combinedBotsInfo={combinedBotsInfo} handleExportGCode={handleExportGCode} handleSaveWorkFile={handleSaveWorkFile} handleUploadWorkFile={handleUploadWorkFile} loadExample={loadExample} loadExampleForRobot={loadExampleForRobot} loadWorkFile={loadWorkFile} reachTolerance={reachTolerance} rightTab={rightTab} robot={robot} robots={robots} selectedExample={selectedExample} selectedWorkFile={selectedWorkFile} setPendingModel={setPendingModel} setPendingTool={setPendingTool} setReachTolerance={setReachTolerance} setRightTab={setRightTab} settings={settings} t={t} togglePump={togglePump} toggleValve={toggleValve} updateRobot={updateRobot} uploadWorkFileRef={uploadWorkFileRef} workFiles={workFiles} />
+          <ConfigPanel combinedBotsInfo={combinedBotsInfo} handleExportGCode={handleExportGCode} handleSaveWorkFile={handleSaveWorkFile} handleUploadWorkFile={handleUploadWorkFile} loadExample={loadExample} loadExampleForRobot={loadExampleForRobot} loadWorkFile={loadWorkFile} reachTolerance={reachTolerance} previewOn={previewOn} setPreviewOn={changePreviewOn} rightTab={rightTab} robot={robot} robots={robots} selectedExample={selectedExample} selectedWorkFile={selectedWorkFile} setPendingModel={setPendingModel} setPendingTool={setPendingTool} setReachTolerance={setReachTolerance} setRightTab={setRightTab} settings={settings} t={t} togglePump={togglePump} toggleValve={toggleValve} updateRobot={updateRobot} uploadWorkFileRef={uploadWorkFileRef} workFiles={workFiles} />
           
           {/* Bottom Panel: Points & Trajectories Table */}
           <PointsPanel editingPointData={editingPointData} editingPointKey={editingPointKey} robot={robot} setEditingPointData={setEditingPointData} setEditingPointKey={setEditingPointKey} t={t} updateRobot={updateRobot} />

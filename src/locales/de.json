@@ -1479,7 +1479,24 @@
     "type_force_release": "Freigabe erzwungen",
     "type_jog_arm": "Jog-Scharfschaltung",
     "type_safety_limits": "Sicherheitsgrenzen",
-    "type_stop_all": "Globaler STOP"
+    "type_stop_all": "Globaler STOP",
+    "filter_account": "Konto",
+    "all_accounts": "Alle Konten",
+    "all_windows": "Alle Fenster",
+    "all_addresses": "Alle Adressen",
+    "filter_text": "Suchen",
+    "only_mine": "Nur meine",
+    "auto_refresh": "Selbst neu lesen",
+    "auto_refresh_hint": "Liest das Protokoll alle {{seconds}} Sekunden neu, solange dieser Bildschirm offen ist.",
+    "type_stop_all_release": "Globaler STOPP aufgehoben",
+    "type_robot_enable": "Roboter freigegeben",
+    "type_robot_disable": "Roboter gesperrt",
+    "type_bridge_command": "Befehl an eine Bridge",
+    "type_job_dispatcher_options": "Optionen des Job-Dispatchers",
+    "type_job_dispatcher_reload": "Job-Dispatcher neu geladen",
+    "type_push_device_registered": "Benachrichtigungsgerät hinzugefügt",
+    "type_push_device_removed": "Benachrichtigungsgerät entfernt",
+    "type_remote_policy": "Richtlinie für den Fernzugriff"
   },
   "totp": {
     "title": "Anmeldung in zwei Schritten",
@@ -1620,5 +1637,23 @@
     "state_down": "Gestoppt",
     "state_unknown": "Unbekannt",
     "drift": "Version weicht vom Manifest ab"
+  },
+  "trajectory_preview": {
+    "title": "Bahn vor dem Start prüfen",
+    "ask_clean": "Es wurde nichts Auffälliges gefunden. Die Bahn starten?",
+    "ask_issues": "In der Bahn wurden {{count}} Problem(e) gefunden. Trotzdem starten?",
+    "play": "Start",
+    "play_anyway": "Trotzdem starten",
+    "summary": "{{count}} Punkte, Weg von {{length}} mm, größter Ausschlag eines Gelenks {{step}} Grad.",
+    "clean": "Alle Gelenke liegen innerhalb ihrer Grenzen und kein Schritt dreht ein Gelenk zu weit.",
+    "more": "... und {{count}} weitere",
+    "issue_limit": "Punkt {{point}}: {{joint}} bei {{value}} Grad, außerhalb von {{min}} bis {{max}}",
+    "issue_step": "Punkt {{point}}: {{joint}} dreht {{delta}} Grad gegenüber dem vorigen Punkt",
+    "issue_pose": "Punkt {{point}}: seine Position liegt {{mm}} mm von der entfernt, die seine Gelenke ergeben",
+    "view_top": "Von oben",
+    "view_side": "Von der Seite",
+    "view_front": "Von vorn",
+    "switch_label": "Bahn vor dem Start prüfen",
+    "switch_hint": "Zeigt vor dem Start den Weg von drei Seiten und listet Gelenke außerhalb ihrer Grenzen sowie Schritte, die ein Gelenk zu weit drehen. Standardmäßig aus; wird in diesem Browser gespeichert."
   }
 }

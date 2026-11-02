@@ -1479,7 +1479,24 @@
     "type_force_release": "Liberación forzada",
     "type_jog_arm": "Armado del jog",
     "type_safety_limits": "Límites de seguridad",
-    "type_stop_all": "STOP global"
+    "type_stop_all": "STOP global",
+    "filter_account": "Cuenta",
+    "all_accounts": "Todas las cuentas",
+    "all_windows": "Todas las ventanas",
+    "all_addresses": "Todas las direcciones",
+    "filter_text": "Buscar",
+    "only_mine": "Solo las mías",
+    "auto_refresh": "Leer de nuevo solo",
+    "auto_refresh_hint": "Vuelve a leer el registro cada {{seconds}} segundos mientras esta pantalla está abierta.",
+    "type_stop_all_release": "STOP global liberado",
+    "type_robot_enable": "Robot habilitado",
+    "type_robot_disable": "Robot deshabilitado",
+    "type_bridge_command": "Orden a un puente",
+    "type_job_dispatcher_options": "Opciones del despachador de trabajos",
+    "type_job_dispatcher_reload": "Despachador de trabajos recargado",
+    "type_push_device_registered": "Dispositivo de avisos añadido",
+    "type_push_device_removed": "Dispositivo de avisos retirado",
+    "type_remote_policy": "Política de acceso remoto"
   },
   "totp": {
     "title": "Inicio de sesión en dos pasos",
@@ -1620,5 +1637,23 @@
     "state_down": "Parado",
     "state_unknown": "Desconocido",
     "drift": "La versión difiere de su manifiesto"
+  },
+  "trajectory_preview": {
+    "title": "Revisar la trayectoria antes de Play",
+    "ask_clean": "No se encontró ningún problema. ¿Iniciar la trayectoria?",
+    "ask_issues": "Se encontraron {{count}} problema(s) en la trayectoria. ¿Iniciarla de todos modos?",
+    "play": "Play",
+    "play_anyway": "Play de todos modos",
+    "summary": "{{count}} puntos, recorrido de {{length}} mm, mayor giro de una articulación {{step}} grados.",
+    "clean": "Todas las articulaciones están dentro de sus límites y ningún paso gira una articulación demasiado.",
+    "more": "... y {{count}} más",
+    "issue_limit": "Punto {{point}}: {{joint}} a {{value}} grados, fuera de {{min}} a {{max}}",
+    "issue_step": "Punto {{point}}: {{joint}} gira {{delta}} grados respecto al punto anterior",
+    "issue_pose": "Punto {{point}}: su posición está a {{mm}} mm de la que dan sus articulaciones",
+    "view_top": "Desde arriba",
+    "view_side": "De lado",
+    "view_front": "De frente",
+    "switch_label": "Revisar la trayectoria antes de Play",
+    "switch_hint": "Antes de Play, muestra el recorrido desde tres lados y lista las articulaciones fuera de sus límites y los pasos que giran una articulación demasiado. Apagado por defecto; se guarda en este navegador."
   }
 }
