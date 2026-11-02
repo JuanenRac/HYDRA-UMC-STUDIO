@@ -83,13 +83,43 @@ GPL-3.0-or-later - see LICENSE
 
 ## 🖼️ スクリーンショット
 
-テストベンチで 1920×1080 で撮影。サンプルデータを使用しており、実際の設備は接続されていません。
+テストベンチで架空のサンプルデータを使って撮影したもので、実際の設備は接続されていません。
 
-<table>
-<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="概要：マイクロファクトリーの 8 台のロボットノードと、その役割・モデル・ツール。下のバーにマシンの状態を表示します。" width="100%"><br><sub>概要：マイクロファクトリーの 8 台のロボットノードと、その役割・モデル・ツール。下のバーにマシンの状態を表示します。</sub></td><td width="50%" valign="top"><img src="images/screenshots/robot-view.png" alt="ロボットビュー：関節コントロール、XYZ ジョグ、アームの 3D モデル、記録済みポイントを含む軌道パネル。" width="100%"><br><sub>ロボットビュー：関節コントロール、XYZ ジョグ、アームの 3D モデル、記録済みポイントを含む軌道パネル。</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/xy-table.png" alt="XY テーブル：テーブルのサイズ、ステップ付きのジョグボタン、各軸のライブ 3D ビュー。" width="100%"><br><sub>XY テーブル：テーブルのサイズ、ステップ付きのジョグボタン、各軸のライブ 3D ビュー。</sub></td><td width="50%" valign="top"><img src="images/screenshots/flasher-studio.png" alt="Flasher Studio：ボードとロボットスロットを選び、ファームウェアファイルを選んで CAN で書き込みます。ここはシミュレーションで、ボードには何も送信されません。" width="100%"><br><sub>Flasher Studio：ボードとロボットスロットを選び、ファームウェアファイルを選んで CAN で書き込みます。ここはシミュレーションで、ボードには何も送信されません。</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/tester-center.png" alt="Tester Center：ボードのステータス LED、永続性チェック、ツールテレメトリ、セルフテスト、生バスモニター。" width="100%"><br><sub>Tester Center：ボードのステータス LED、永続性チェック、ツールテレメトリ、セルフテスト、生バスモニター。</sub></td><td width="50%" valign="top"><img src="images/screenshots/safety-limits.png" alt="安全制限：ジョグの有効化、予約ルール、ロボットモデルごとのジョグとベッド温度の上限。サーバーに保存されます。" width="100%"><br><sub>安全制限：ジョグの有効化、予約ルール、ロボットモデルごとのジョグとベッド温度の上限。サーバーに保存されます。</sub></td></tr>
-</table>
+<p align="center">
+  <img src="images/screenshots/overview.png" alt="概要" width="100%">
+</p>
+
+<p align="center"><em>概要：マイクロファクトリーの 8 台のロボットノードと、その役割・モデル・ツール。下のバーにマシンの状態を表示します。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/robot-view.png" alt="ロボットビュー" width="100%">
+</p>
+
+<p align="center"><em>ロボットビュー：関節コントロール、XYZ ジョグ、アームの 3D モデル、記録済みポイントを含む軌道パネル。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/xy-table.png" alt="XY テーブル" width="100%">
+</p>
+
+<p align="center"><em>XY テーブル：テーブルのサイズ、ステップ付きのジョグボタン、各軸のライブ 3D ビュー。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/flasher-studio.png" alt="Flasher Studio" width="100%">
+</p>
+
+<p align="center"><em>Flasher Studio：ボードとロボットスロットを選び、ファームウェアファイルを選んで CAN で書き込みます。ここはシミュレーションで、ボードには何も送信されません。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/tester-center.png" alt="Tester Center" width="100%">
+</p>
+
+<p align="center"><em>Tester Center：ボードのステータス LED、永続性チェック、ツールテレメトリ、セルフテスト、生バスモニター。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/safety-limits.png" alt="安全制限" width="100%">
+</p>
+
+<p align="center"><em>安全制限：ジョグの有効化、予約ルール、ロボットモデルごとのジョグとベッド温度の上限。サーバーに保存されます。</em></p>
 
 ## ✨ 機能
 
@@ -374,7 +404,7 @@ HYDRA-UMC-STUDIO/
 │   └── locales/                     en/es/de/fr/it/zh/ja/pt 翻訳ファイル（react-i18next）
 ├── docs/                            真空テーブル・ヒートベッド・ラック・機械モデルのガイド
 ├── public/                          3D モデル：ロボット、ラック、ヒートベッド、真空テーブル、機械（STL と OpenSCAD）
-├── images/                          README バナー
+├── images/                          README のバナーとスクリーンショット
 ├── tests/                           実際の Vitest スイート(610 件のテスト)—— src/examples/ の FK/IK 数学のみ、React/DOM は不使用
 ├── tools/                           プロジェクトのツールと CI の検査
 ├── scripts/                         bump-version.mjs (明示的なバージョン更新) と csp.ts (ビルドされたページの Content-Security-Policy)

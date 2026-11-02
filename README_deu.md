@@ -83,13 +83,43 @@ Gebaut mit **React 19**, **Vite**, **Three.js** (über `@react-three/fiber`/`@re
 
 ## 🖼️ Screenshots
 
-Aufgenommen mit 1920×1080 auf einem Prüfstand, mit Beispieldaten und ohne eine echte Anlage dahinter.
+Aufgenommen auf einem Prüfstand mit erfundenen Beispieldaten und ohne eine echte Anlage dahinter.
 
-<table>
-<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Übersicht: die acht Roboterknoten der Mikrofabrik mit Rolle, Modell und Werkzeug und der Maschinenstatus in der unteren Leiste." width="100%"><br><sub>Übersicht: die acht Roboterknoten der Mikrofabrik mit Rolle, Modell und Werkzeug und der Maschinenstatus in der unteren Leiste.</sub></td><td width="50%" valign="top"><img src="images/screenshots/robot-view.png" alt="Roboteransicht: Gelenksteuerung, XYZ-Jog, das 3D-Modell des Arms und das Trajektorienfeld mit den aufgezeichneten Punkten." width="100%"><br><sub>Roboteransicht: Gelenksteuerung, XYZ-Jog, das 3D-Modell des Arms und das Trajektorienfeld mit den aufgezeichneten Punkten.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/xy-table.png" alt="XY-Tisch: die Größe des Tisches, die Jog-Tasten mit ihrer Schrittweite und die 3D-Live-Ansicht der Achsen." width="100%"><br><sub>XY-Tisch: die Größe des Tisches, die Jog-Tasten mit ihrer Schrittweite und die 3D-Live-Ansicht der Achsen.</sub></td><td width="50%" valign="top"><img src="images/screenshots/flasher-studio.png" alt="Flasher Studio: Platine und Roboterplatz wählen, eine Firmware-Datei auswählen und per CAN flashen; hier in der Simulation, es wird also nichts an eine Platine gesendet." width="100%"><br><sub>Flasher Studio: Platine und Roboterplatz wählen, eine Firmware-Datei auswählen und per CAN flashen; hier in der Simulation, es wird also nichts an eine Platine gesendet.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/tester-center.png" alt="Tester Center: die Status-LED, die Persistenzprüfung, die Werkzeugtelemetrie, der Selbsttest und der Rohbus-Monitor einer Platine." width="100%"><br><sub>Tester Center: die Status-LED, die Persistenzprüfung, die Werkzeugtelemetrie, der Selbsttest und der Rohbus-Monitor einer Platine.</sub></td><td width="50%" valign="top"><img src="images/screenshots/safety-limits.png" alt="Sicherheitsgrenzen: Scharfschaltung des Jogs, Reservierungsregel und die Jog- und Betttemperatur-Obergrenzen je Robotermodell, im Server gespeichert." width="100%"><br><sub>Sicherheitsgrenzen: Scharfschaltung des Jogs, Reservierungsregel und die Jog- und Betttemperatur-Obergrenzen je Robotermodell, im Server gespeichert.</sub></td></tr>
-</table>
+<p align="center">
+  <img src="images/screenshots/overview.png" alt="Übersicht" width="100%">
+</p>
+
+<p align="center"><em>Übersicht: die acht Roboterknoten der Mikrofabrik mit Rolle, Modell und Werkzeug und der Maschinenstatus in der unteren Leiste.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/robot-view.png" alt="Roboteransicht" width="100%">
+</p>
+
+<p align="center"><em>Roboteransicht: Gelenksteuerung, XYZ-Jog, das 3D-Modell des Arms und das Trajektorienfeld mit den aufgezeichneten Punkten.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/xy-table.png" alt="XY-Tisch" width="100%">
+</p>
+
+<p align="center"><em>XY-Tisch: die Größe des Tisches, die Jog-Tasten mit ihrer Schrittweite und die 3D-Live-Ansicht der Achsen.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/flasher-studio.png" alt="Flasher Studio" width="100%">
+</p>
+
+<p align="center"><em>Flasher Studio: Platine und Roboterplatz wählen, eine Firmware-Datei auswählen und per CAN flashen; hier in der Simulation, es wird also nichts an eine Platine gesendet.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/tester-center.png" alt="Tester Center" width="100%">
+</p>
+
+<p align="center"><em>Tester Center: die Status-LED, die Persistenzprüfung, die Werkzeugtelemetrie, der Selbsttest und der Rohbus-Monitor einer Platine.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/safety-limits.png" alt="Sicherheitsgrenzen" width="100%">
+</p>
+
+<p align="center"><em>Sicherheitsgrenzen: Scharfschaltung des Jogs, Reservierungsregel und die Jog- und Betttemperatur-Obergrenzen je Robotermodell, im Server gespeichert.</em></p>
 
 ## ✨ Funktionen
 
@@ -375,7 +405,7 @@ HYDRA-UMC-STUDIO/
 │   └── locales/                     en/es/de/fr/it/ja/zh/pt-Übersetzungsdateien (react-i18next)
 ├── docs/                            Anleitungen zu Vakuumtisch-, Heizbett-, Rack- und Maschinenmodellen
 ├── public/                          3D-Modelle: Roboter, Racks, Heizbetten, Vakuumtische, Maschinen (STL und OpenSCAD)
-├── images/                          README-Banner
+├── images/                          README-Banner und Screenshots
 ├── tests/                           Echte Vitest-Suite (610 Tests) - nur die FK/IK-Mathematik aus src/examples/, ohne React/DOM
 ├── tools/                           Projektwerkzeuge und CI-Prüfungen
 ├── scripts/                         bump-version.mjs (ausdrückliche Versionserhöhung) und csp.ts (die Content-Security-Policy der gebauten Seite)

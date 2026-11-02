@@ -83,13 +83,43 @@ Construit avec **React 19**, **Vite**, **Three.js** (via `@react-three/fiber`/`@
 
 ## 🖼️ Captures d'écran
 
-Capturées en 1920×1080 sur un banc d'essai, avec des données d'exemple et sans installation réelle derrière.
+Capturées sur un banc d'essai avec des données d'exemple fictives et sans installation réelle derrière.
 
-<table>
-<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Vue d'ensemble : les huit nœuds robot de la micro-usine avec leur rôle, leur modèle et leur outil, et l'état de la machine dans la barre du bas." width="100%"><br><sub>Vue d'ensemble : les huit nœuds robot de la micro-usine avec leur rôle, leur modèle et leur outil, et l'état de la machine dans la barre du bas.</sub></td><td width="50%" valign="top"><img src="images/screenshots/robot-view.png" alt="Vue robot : commandes des articulations, jog XYZ, le modèle 3D du bras et le panneau des trajectoires avec les points enregistrés." width="100%"><br><sub>Vue robot : commandes des articulations, jog XYZ, le modèle 3D du bras et le panneau des trajectoires avec les points enregistrés.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/xy-table.png" alt="Table XY : la taille de la table, les boutons de jog avec leur pas et la vue 3D en direct des axes." width="100%"><br><sub>Table XY : la taille de la table, les boutons de jog avec leur pas et la vue 3D en direct des axes.</sub></td><td width="50%" valign="top"><img src="images/screenshots/flasher-studio.png" alt="Flasher Studio : choisissez la carte et l'emplacement du robot, un fichier de firmware, et flashez-le par CAN ; ici en simulation, donc rien n'est envoyé à une carte." width="100%"><br><sub>Flasher Studio : choisissez la carte et l'emplacement du robot, un fichier de firmware, et flashez-le par CAN ; ici en simulation, donc rien n'est envoyé à une carte.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/tester-center.png" alt="Tester Center : la LED d'état, le contrôle de persistance, la télémétrie de l'outil, l'autotest et le moniteur de bus brut d'une carte." width="100%"><br><sub>Tester Center : la LED d'état, le contrôle de persistance, la télémétrie de l'outil, l'autotest et le moniteur de bus brut d'une carte.</sub></td><td width="50%" valign="top"><img src="images/screenshots/safety-limits.png" alt="Limites de sécurité : armement du jog, règle de réservation et plafonds de jog et de température du plateau par modèle de robot, conservés dans le serveur." width="100%"><br><sub>Limites de sécurité : armement du jog, règle de réservation et plafonds de jog et de température du plateau par modèle de robot, conservés dans le serveur.</sub></td></tr>
-</table>
+<p align="center">
+  <img src="images/screenshots/overview.png" alt="Vue d'ensemble" width="100%">
+</p>
+
+<p align="center"><em>Vue d'ensemble : les huit nœuds robot de la micro-usine avec leur rôle, leur modèle et leur outil, et l'état de la machine dans la barre du bas.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/robot-view.png" alt="Vue robot" width="100%">
+</p>
+
+<p align="center"><em>Vue robot : commandes des articulations, jog XYZ, le modèle 3D du bras et le panneau des trajectoires avec les points enregistrés.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/xy-table.png" alt="Table XY" width="100%">
+</p>
+
+<p align="center"><em>Table XY : la taille de la table, les boutons de jog avec leur pas et la vue 3D en direct des axes.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/flasher-studio.png" alt="Flasher Studio" width="100%">
+</p>
+
+<p align="center"><em>Flasher Studio : choisissez la carte et l'emplacement du robot, un fichier de firmware, et flashez-le par CAN ; ici en simulation, donc rien n'est envoyé à une carte.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/tester-center.png" alt="Tester Center" width="100%">
+</p>
+
+<p align="center"><em>Tester Center : la LED d'état, le contrôle de persistance, la télémétrie de l'outil, l'autotest et le moniteur de bus brut d'une carte.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/safety-limits.png" alt="Limites de sécurité" width="100%">
+</p>
+
+<p align="center"><em>Limites de sécurité : armement du jog, règle de réservation et plafonds de jog et de température du plateau par modèle de robot, conservés dans le serveur.</em></p>
 
 ## ✨ Fonctionnalités
 
@@ -375,7 +405,7 @@ HYDRA-UMC-STUDIO/
 │   └── locales/                     Fichiers de traduction en/es/de/fr/it/ja/zh/pt (react-i18next)
 ├── docs/                            guides des modèles de table à vide, lit chauffant, rack et machines
 ├── public/                          modèles 3D : robots, racks, lits chauffants, tables à vide, machines (STL et OpenSCAD)
-├── images/                          Bannière du README
+├── images/                          Bannière et captures du README
 ├── tests/                           Vraie suite Vitest (610 tests) - uniquement les maths FK/IK de src/examples/, sans React/DOM
 ├── tools/                           outils du projet et vérifications de la CI
 ├── scripts/                         bump-version.mjs (montée de version explicite) et csp.ts (la politique de sécurité du contenu de la page compilée)

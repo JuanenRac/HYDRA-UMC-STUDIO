@@ -547,24 +547,24 @@
         {
           "name": "images/",
           "desc": {
-            "en": "README banner",
-            "es": "Banner del README",
-            "de": "README-Banner",
-            "fr": "Bannière du README",
-            "it": "Banner del README",
-            "ja": "README バナー",
-            "zh": "README 横幅",
-            "pt": "Faixa do README"
+            "en": "README banner and screenshots",
+            "es": "Banner y capturas del README",
+            "de": "README-Banner und Screenshots",
+            "fr": "Bannière et captures du README",
+            "it": "Banner e schermate del README",
+            "ja": "README のバナーとスクリーンショット",
+            "zh": "README 横幅和截图",
+            "pt": "Faixa e capturas de ecrã do README"
           },
           "tree_desc": {
-            "en": "README banner",
-            "es": "Banner del README",
-            "de": "README-Banner",
-            "fr": "Bannière du README",
-            "it": "Banner del README",
-            "ja": "README バナー",
-            "zh": "README 横幅",
-            "pt": "Faixa do README"
+            "en": "README banner and screenshots",
+            "es": "Banner y capturas del README",
+            "de": "README-Banner und Screenshots",
+            "fr": "Bannière et captures du README",
+            "it": "Banner e schermate del README",
+            "ja": "README のバナーとスクリーンショット",
+            "zh": "README 横幅和截图",
+            "pt": "Faixa e capturas de ecrã do README"
           }
         },
         {

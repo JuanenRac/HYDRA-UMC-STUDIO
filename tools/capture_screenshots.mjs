@@ -5,8 +5,8 @@
  * Copyright (C) 2026 JuanenRac (Electro Hobby 3D). GPL-3.0-or-later.
  *
  *   npm run build                                Studio built (dist/); the SERVER built next to it (npm ci && npm run build)
- *   node tools/make_screenshots.mjs              writes images/screenshots/<name>.png at 1920x1080
- *   node tools/make_screenshots.mjs --out DIR    writes them in DIR instead, to look at them before they replace the ones in the repository
+ *   node tools/capture_screenshots.mjs              writes images/screenshots/<name>.png at 1920x1080
+ *   node tools/capture_screenshots.mjs --out DIR    writes them in DIR instead, to look at them before they replace the ones in the repository
  *
  * It needs Edge (the one Windows has) and Playwright, which it takes from e2e/node_modules, or from PLAYWRIGHT_DIR (a folder that has node_modules/@playwright/test).
  * The server listens on port 3000 (the port the Studio preview forwards to): stop whatever uses it first. It takes no mouse or keyboard of the desktop: the

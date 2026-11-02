@@ -83,13 +83,43 @@ O **HYDRA-UMC-STUDIO** é o painel web de controlo da célula: desenha cada rob�
 
 ## 🖼️ Capturas de ecrã
 
-Capturadas a 1920×1080 numa bancada de testes, com dados de exemplo e sem qualquer instalação real por trás.
+Capturadas numa bancada de testes com dados de exemplo inventados e sem qualquer instalação real por trás.
 
-<table>
-<tr><td width="50%" valign="top"><img src="images/screenshots/overview.png" alt="Resumo: os oito nós de robô da microfábrica com a função, o modelo e a ferramenta, e o estado da máquina na barra inferior." width="100%"><br><sub>Resumo: os oito nós de robô da microfábrica com a função, o modelo e a ferramenta, e o estado da máquina na barra inferior.</sub></td><td width="50%" valign="top"><img src="images/screenshots/robot-view.png" alt="Vista do robô: controlos das articulações, jog XYZ, o modelo 3D do braço e o painel de trajetórias com os pontos gravados." width="100%"><br><sub>Vista do robô: controlos das articulações, jog XYZ, o modelo 3D do braço e o painel de trajetórias com os pontos gravados.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/xy-table.png" alt="Mesa XY: o tamanho da mesa, os botões de jog com o seu passo e a vista 3D em direto dos eixos." width="100%"><br><sub>Mesa XY: o tamanho da mesa, os botões de jog com o seu passo e a vista 3D em direto dos eixos.</sub></td><td width="50%" valign="top"><img src="images/screenshots/flasher-studio.png" alt="Flasher Studio: escolha a placa e a ranhura do robô, escolha um ficheiro de firmware e grave-o por CAN; aqui em simulação, por isso nada é enviado a nenhuma placa." width="100%"><br><sub>Flasher Studio: escolha a placa e a ranhura do robô, escolha um ficheiro de firmware e grave-o por CAN; aqui em simulação, por isso nada é enviado a nenhuma placa.</sub></td></tr>
-<tr><td width="50%" valign="top"><img src="images/screenshots/tester-center.png" alt="Tester Center: o LED de estado, a verificação de persistência, a telemetria da ferramenta, o autoteste e o monitor de barramento em bruto de uma placa." width="100%"><br><sub>Tester Center: o LED de estado, a verificação de persistência, a telemetria da ferramenta, o autoteste e o monitor de barramento em bruto de uma placa.</sub></td><td width="50%" valign="top"><img src="images/screenshots/safety-limits.png" alt="Limites de segurança: armação do jog, regra de reservas e os tetos de jog e de temperatura da cama por modelo de robô, guardados no servidor." width="100%"><br><sub>Limites de segurança: armação do jog, regra de reservas e os tetos de jog e de temperatura da cama por modelo de robô, guardados no servidor.</sub></td></tr>
-</table>
+<p align="center">
+  <img src="images/screenshots/overview.png" alt="Resumo" width="100%">
+</p>
+
+<p align="center"><em>Resumo: os oito nós de robô da microfábrica com a função, o modelo e a ferramenta, e o estado da máquina na barra inferior.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/robot-view.png" alt="Vista do robô" width="100%">
+</p>
+
+<p align="center"><em>Vista do robô: controlos das articulações, jog XYZ, o modelo 3D do braço e o painel de trajetórias com os pontos gravados.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/xy-table.png" alt="Mesa XY" width="100%">
+</p>
+
+<p align="center"><em>Mesa XY: o tamanho da mesa, os botões de jog com o seu passo e a vista 3D em direto dos eixos.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/flasher-studio.png" alt="Flasher Studio" width="100%">
+</p>
+
+<p align="center"><em>Flasher Studio: escolha a placa e a ranhura do robô, escolha um ficheiro de firmware e grave-o por CAN; aqui em simulação, por isso nada é enviado a nenhuma placa.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/tester-center.png" alt="Tester Center" width="100%">
+</p>
+
+<p align="center"><em>Tester Center: o LED de estado, a verificação de persistência, a telemetria da ferramenta, o autoteste e o monitor de barramento em bruto de uma placa.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/safety-limits.png" alt="Limites de segurança" width="100%">
+</p>
+
+<p align="center"><em>Limites de segurança: armação do jog, regra de reservas e os tetos de jog e de temperatura da cama por modelo de robô, guardados no servidor.</em></p>
 
 ## ✨ Funcionalidades
 
@@ -377,7 +407,7 @@ HYDRA-UMC-STUDIO/
 │   └── locales/                     Ficheiros de tradução en/es/de/fr/it/ja/zh/pt (react-i18next)
 ├── docs/                            guias dos modelos de mesa de vácuo, cama aquecida, rack e máquinas
 ├── public/                          modelos 3D: robôs, racks, camas aquecidas, mesas de vácuo, máquinas (STL e OpenSCAD)
-├── images/                          Faixa do README
+├── images/                          Faixa e capturas de ecrã do README
 ├── tests/                           Suite Vitest real - matemática FK/IK de src/examples/, o assistente, as traduções, sem React/DOM
 ├── tools/                           ferramentas do projeto e verificações da CI
 ├── scripts/                         bump-version.mjs (subida de versão explícita) e csp.ts (a política de segurança de conteúdo da página compilada)

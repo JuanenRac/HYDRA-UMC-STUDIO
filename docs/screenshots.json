@@ -1,0 +1,142 @@
+{
+  "screens": [
+    {
+      "file": "overview.png",
+      "alt": {
+        "en": "Overview",
+        "es": "Resumen",
+        "fr": "Vue d'ensemble",
+        "it": "Panoramica",
+        "de": "Übersicht",
+        "zh": "概览",
+        "ja": "概要",
+        "pt": "Resumo"
+      },
+      "caption": {
+        "en": "Overview: the eight robot nodes of the micro-factory with their role, model and tooling, and the machine status in the bar below.",
+        "es": "Resumen: los ocho nodos robot de la microfábrica con su función, modelo y herramienta, y el estado de la máquina en la barra inferior.",
+        "fr": "Vue d'ensemble : les huit nœuds robot de la micro-usine avec leur rôle, leur modèle et leur outil, et l'état de la machine dans la barre du bas.",
+        "it": "Panoramica: gli otto nodi robot della microfabbrica con ruolo, modello e utensile, e lo stato della macchina nella barra in basso.",
+        "de": "Übersicht: die acht Roboterknoten der Mikrofabrik mit Rolle, Modell und Werkzeug und der Maschinenstatus in der unteren Leiste.",
+        "zh": "概览：微型工厂的八个机器人节点，包含其角色、型号和工具，底部状态栏显示机器状态。",
+        "ja": "概要：マイクロファクトリーの 8 台のロボットノードと、その役割・モデル・ツール。下のバーにマシンの状態を表示します。",
+        "pt": "Resumo: os oito nós de robô da microfábrica com a função, o modelo e a ferramenta, e o estado da máquina na barra inferior."
+      }
+    },
+    {
+      "file": "robot-view.png",
+      "alt": {
+        "en": "Robot view",
+        "es": "Vista de robot",
+        "fr": "Vue robot",
+        "it": "Vista robot",
+        "de": "Roboteransicht",
+        "zh": "机器人视图",
+        "ja": "ロボットビュー",
+        "pt": "Vista do robô"
+      },
+      "caption": {
+        "en": "Robot view: joint controls, XYZ jog, the 3D model of the arm and the trajectory panel with the recorded points.",
+        "es": "Vista de robot: controles de articulaciones, jog XYZ, el modelo 3D del brazo y el panel de trayectorias con los puntos grabados.",
+        "fr": "Vue robot : commandes des articulations, jog XYZ, le modèle 3D du bras et le panneau des trajectoires avec les points enregistrés.",
+        "it": "Vista robot: comandi dei giunti, jog XYZ, il modello 3D del braccio e il pannello delle traiettorie con i punti registrati.",
+        "de": "Roboteransicht: Gelenksteuerung, XYZ-Jog, das 3D-Modell des Arms und das Trajektorienfeld mit den aufgezeichneten Punkten.",
+        "zh": "机器人视图：关节控制、XYZ 点动、机械臂的 3D 模型，以及带有已记录点位的轨迹面板。",
+        "ja": "ロボットビュー：関節コントロール、XYZ ジョグ、アームの 3D モデル、記録済みポイントを含む軌道パネル。",
+        "pt": "Vista do robô: controlos das articulações, jog XYZ, o modelo 3D do braço e o painel de trajetórias com os pontos gravados."
+      }
+    },
+    {
+      "file": "xy-table.png",
+      "alt": {
+        "en": "XY table",
+        "es": "Mesa XY",
+        "fr": "Table XY",
+        "it": "Tavola XY",
+        "de": "XY-Tisch",
+        "zh": "XY 工作台",
+        "ja": "XY テーブル",
+        "pt": "Mesa XY"
+      },
+      "caption": {
+        "en": "XY table: the size of the table, the jog buttons with their step and the live 3D view of the axes.",
+        "es": "Mesa XY: el tamaño de la mesa, los botones de jog con su paso y la vista 3D en vivo de los ejes.",
+        "fr": "Table XY : la taille de la table, les boutons de jog avec leur pas et la vue 3D en direct des axes.",
+        "it": "Tavola XY: le dimensioni della tavola, i pulsanti di jog con il loro passo e la vista 3D dal vivo degli assi.",
+        "de": "XY-Tisch: die Größe des Tisches, die Jog-Tasten mit ihrer Schrittweite und die 3D-Live-Ansicht der Achsen.",
+        "zh": "XY 工作台：工作台尺寸、带步长的点动按钮和各轴的实时 3D 视图。",
+        "ja": "XY テーブル：テーブルのサイズ、ステップ付きのジョグボタン、各軸のライブ 3D ビュー。",
+        "pt": "Mesa XY: o tamanho da mesa, os botões de jog com o seu passo e a vista 3D em direto dos eixos."
+      }
+    },
+    {
+      "file": "flasher-studio.png",
+      "alt": {
+        "en": "Flasher Studio",
+        "es": "Flasher Studio",
+        "fr": "Flasher Studio",
+        "it": "Flasher Studio",
+        "de": "Flasher Studio",
+        "zh": "Flasher Studio",
+        "ja": "Flasher Studio",
+        "pt": "Flasher Studio"
+      },
+      "caption": {
+        "en": "Flasher Studio: pick the board and the robot slot, choose a firmware file and flash it over CAN; here in simulation, so nothing is sent to a board.",
+        "es": "Flasher Studio: elige la placa y la ranura del robot, escoge un fichero de firmware y flashéalo por CAN; aquí en simulación, así que no se envía nada a ninguna placa.",
+        "fr": "Flasher Studio : choisissez la carte et l'emplacement du robot, un fichier de firmware, et flashez-le par CAN ; ici en simulation, donc rien n'est envoyé à une carte.",
+        "it": "Flasher Studio: scegli la scheda e lo slot del robot, un file di firmware e flashalo via CAN; qui in simulazione, quindi non viene inviato nulla a nessuna scheda.",
+        "de": "Flasher Studio: Platine und Roboterplatz wählen, eine Firmware-Datei auswählen und per CAN flashen; hier in der Simulation, es wird also nichts an eine Platine gesendet.",
+        "zh": "Flasher Studio：选择开发板和机器人插槽，选择固件文件并通过 CAN 烧录；此处为模拟模式，不会向任何板子发送数据。",
+        "ja": "Flasher Studio：ボードとロボットスロットを選び、ファームウェアファイルを選んで CAN で書き込みます。ここはシミュレーションで、ボードには何も送信されません。",
+        "pt": "Flasher Studio: escolha a placa e a ranhura do robô, escolha um ficheiro de firmware e grave-o por CAN; aqui em simulação, por isso nada é enviado a nenhuma placa."
+      }
+    },
+    {
+      "file": "tester-center.png",
+      "alt": {
+        "en": "Tester Center",
+        "es": "Tester Center",
+        "fr": "Tester Center",
+        "it": "Tester Center",
+        "de": "Tester Center",
+        "zh": "Tester Center",
+        "ja": "Tester Center",
+        "pt": "Tester Center"
+      },
+      "caption": {
+        "en": "Tester Center: the status LED, the persistence check, the tool telemetry, the self-test and the raw bus monitor of a board.",
+        "es": "Tester Center: el LED de estado, la comprobación de persistencia, la telemetría de la herramienta, el autotest y el monitor de bus en bruto de una placa.",
+        "fr": "Tester Center : la LED d'état, le contrôle de persistance, la télémétrie de l'outil, l'autotest et le moniteur de bus brut d'une carte.",
+        "it": "Tester Center: il LED di stato, il controllo di persistenza, la telemetria dell'utensile, l'autotest e il monitor del bus grezzo di una scheda.",
+        "de": "Tester Center: die Status-LED, die Persistenzprüfung, die Werkzeugtelemetrie, der Selbsttest und der Rohbus-Monitor einer Platine.",
+        "zh": "Tester Center：开发板的状态 LED、持久化检查、工具遥测、自检和原始总线监视器。",
+        "ja": "Tester Center：ボードのステータス LED、永続性チェック、ツールテレメトリ、セルフテスト、生バスモニター。",
+        "pt": "Tester Center: o LED de estado, a verificação de persistência, a telemetria da ferramenta, o autoteste e o monitor de barramento em bruto de uma placa."
+      }
+    },
+    {
+      "file": "safety-limits.png",
+      "alt": {
+        "en": "Safety limits",
+        "es": "Límites de seguridad",
+        "fr": "Limites de sécurité",
+        "it": "Limiti di sicurezza",
+        "de": "Sicherheitsgrenzen",
+        "zh": "安全限制",
+        "ja": "安全制限",
+        "pt": "Limites de segurança"
+      },
+      "caption": {
+        "en": "Safety limits: arming of the jog, the reservation rule and the jog and bed-temperature ceilings per robot model, kept in the server.",
+        "es": "Límites de seguridad: armado del jog, regla de reservas y los techos de jog y de temperatura de cama por modelo de robot, guardados en el servidor.",
+        "fr": "Limites de sécurité : armement du jog, règle de réservation et plafonds de jog et de température du plateau par modèle de robot, conservés dans le serveur.",
+        "it": "Limiti di sicurezza: armamento del jog, regola delle prenotazioni e i massimi di jog e di temperatura del piano per modello di robot, conservati nel server.",
+        "de": "Sicherheitsgrenzen: Scharfschaltung des Jogs, Reservierungsregel und die Jog- und Betttemperatur-Obergrenzen je Robotermodell, im Server gespeichert.",
+        "zh": "安全限制：点动的启用、预约规则，以及按机器人型号设置的点动和热床温度上限，均保存在服务器中。",
+        "ja": "安全制限：ジョグの有効化、予約ルール、ロボットモデルごとのジョグとベッド温度の上限。サーバーに保存されます。",
+        "pt": "Limites de segurança: armação do jog, regra de reservas e os tetos de jog e de temperatura da cama por modelo de robô, guardados no servidor."
+      }
+    }
+  ]
+}
