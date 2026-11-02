@@ -51,6 +51,7 @@
   "/api/system/shutdown",
   "/api/system/supervisor",
   "/api/telemetry/aggregate",
+  "/api/telemetry/downsample-plan",
   "/api/telemetry/query",
   "/api/totp/begin",
   "/api/totp/confirm",

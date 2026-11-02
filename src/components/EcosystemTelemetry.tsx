@@ -21,6 +21,7 @@ import {
 } from 'recharts';
 import { apiUrl } from '../lib/apiBase';
 import { useSession } from '../storeContexts';
+import { DownsamplePlanEditor } from './DownsamplePlanEditor';
 
 interface Point { sourceId: string; kind: string; field: string; timestamp: number; value: number; }
 interface Bucket { bucketStart: number; value: number; count: number; }
@@ -53,7 +54,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
 
 export function EcosystemTelemetry() {
   const { t } = useTranslation();
-  const { authToken } = useSession();
+  const { authToken, isAdmin } = useSession();
   const [mode, setMode] = useState<'query' | 'aggregate'>('query');
   const [view, setView] = useState<'chart' | 'table'>('chart');
   const [sourceId, setSourceId] = useState('');
@@ -300,6 +301,8 @@ export function EcosystemTelemetry() {
           )}
         </div>
       )}
+
+      {isAdmin && <DownsamplePlanEditor />}
     </div>
   );
 }
