@@ -9,7 +9,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { apiUrl, wsUrl } from './lib/apiBase';
 import { clientHeader } from './lib/connectionsApi';
 import studioPackage from '../package.json';
-import { loginFailureText, saveFailureText, totpNeededText, unreachableText } from './lib/serverErrors';
+import { loginFailureText, saveConflictText, saveFailureText, totpNeededText, unreachableText } from './lib/serverErrors';
 import { loginNeedsCode as loginNeedsCodeFrom, normalizeCode } from './lib/totpApi';
 import { applyRobotCommandMutation, rollbackRobotCommand } from './robotCommandTransition';
 import {
@@ -43,12 +43,19 @@ import { isTemperatureWarning, parseWarnings } from './lib/safetyLimits';
 import { type StopAllReport, type StopAllRobot, requestStopAllWithRetry } from './lib/stopAll';
 import { validateSceneRobots, validateTrajectoryPoints } from './lib/importValidation';
 import { HydraStoreProviders } from './storeContexts';
+import { saveSettingsTree, type FetchLike } from './lib/settingsConcurrency';
 import { type CameraState, type HydraController, type RobotState, type SystemSettings, decodeJwtRole, defaultControllers } from './store';
 
 /**
  * Renders the  hydra provider component.
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
+/** The ETag of an answer of GET /api/settings, kept to send it back as If-Match when the tree is saved. */
+function rememberSettingsEtag(ref: { current: string | null }, response: Response): void {
+  const etag = response.headers.get('ETag');
+  if (etag) ref.current = etag;
+}
+
 export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [controllers, setControllers] = useState<HydraController[]>(defaultControllers);
   const [activeControllerId, setActiveControllerId] = useState<string>('192.168.1.100');
@@ -287,6 +294,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // incoming (or outgoing) payload matches it exactly breaks the loop at
   // the source - no state update means no re-render means no re-save.
   const lastPayloadJsonRef = useRef<string | null>(null);
+  // The revision (ETag) of the tree as the last GET /api/settings or the last save answered it: PUT /api/settings sends it as If-Match.
+  const settingsEtagRef = useRef<string | null>(null);
 
   // Cheaper sibling of lastPayloadJsonRef for the 3 hot paths that fire far
   // more often than a full-tree message ever did: applyRobotDelta() (every
@@ -463,6 +472,27 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsLoaded(true);
   }, []);
 
+  // Saves the whole tree with PUT /api/settings and the ETag read last (see lib/settingsConcurrency.ts). When the server's tree is
+  // not the one this window received last, the server's version is shown instead and the person is told to apply the change again.
+  const persistTree = useCallback((payloadJson: string, force: boolean) => saveSettingsTree({
+    fetchFn: fetch as unknown as FetchLike,
+    url: apiUrl('/api/settings'),
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: payloadJson,
+    etag: settingsEtagRef.current,
+    lastSyncedJson: lastPayloadJsonRef.current,
+    force,
+  }).then((outcome) => {
+    if (outcome.kind === 'saved' || outcome.kind === 'conflict') {
+      if (outcome.etag) settingsEtagRef.current = outcome.etag;
+    }
+    if (outcome.kind === 'conflict') {
+      applyServerData(outcome.server);
+      setSettingsSaveError(saveConflictText());
+    }
+    return outcome;
+  }), [applyServerData]);
+
   /**
    * Applies a real targeted delta (server.ts's own broadcastRobotDelta(),
    * `{type:"delta", schema:2, controllerId, robotId, patch, cameraId?,
@@ -485,7 +515,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const robotExists = controller?.robots?.some(r => r.id === robotId);
     if (!controller || !robotExists) {
       const headers: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
-      fetch(apiUrl('/api/settings'), { headers }).then(r => r.json()).then(data => applyServerData(data)).catch(() => {});
+      fetch(apiUrl('/api/settings'), { headers }).then(r => { rememberSettingsEtag(settingsEtagRef, r); return r.json(); }).then(data => applyServerData(data)).catch(() => {});
       return;
     }
     setControllers(prev => {
@@ -520,6 +550,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const headers: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
 
     fetch(apiUrl('/api/settings'), { headers }).then(async (r) => {
+      rememberSettingsEtag(settingsEtagRef, r);
       // The server answered. If it refused (401: the settings need a session; 403...) its body is an error
       // object, not settings - applying it would mix {error: ...} into the settings and show the sample
       // robots as if they were the system. Say it needs a session instead.
@@ -712,33 +743,25 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return;
       }
 
-      fetch(apiUrl('/api/settings'), {
-        method: 'POST',
-        headers: authHeaders({ 'Content-Type': 'application/json' }),
-        body: payloadJson
-      }).then((response) => {
-        if (!response.ok) {
-          // Real failure (401 expired session, 403 non-admin role, 5xx) - NOT marked as sent (lastPayloadJsonRef
+      void persistTree(payloadJson, false).then((outcome) => {
+        if (outcome.kind === 'failed') {
+          // Real failure (401 expired session, 403 non-admin role, 5xx, network) - NOT marked as sent (lastPayloadJsonRef
           // stays behind), so the next real change - or a manual Retry via flushSettingsSave() - tries again
           // instead of silently giving up on it forever.
-          setSettingsSaveError(saveFailureText('save', response.status));
+          setSettingsSaveError(saveFailureText('save', outcome.status));
           return;
         }
+        if (outcome.kind === 'conflict') return; // persistTree has already shown the server's version and said so
         lastPayloadJsonRef.current = payloadJson;
         setSettingsSaveError(null);
         // Saving the whole tree changes the robots on the server too: what was known of their revisions is stale.
         robotRevisions.forget();
         // The server lowers a bed target above the ceiling of its model and says so.
-        response.json().then((body: unknown) => {
-          const lowered = parseWarnings(body).find(isTemperatureWarning);
-          if (lowered) reportCommandIssue({ code: 'temperature_limit', command: 'settings', robotIds: lowered.robotId === null ? [] : [lowered.robotId], detail: `${lowered.requested ?? '?'} -> ${lowered.applied ?? '?'}` });
-        }).catch(() => { /* an answer without a JSON body */ });
-      }).catch(() => {
-        // Real network failure - also not marked as sent, same retry reasoning as the non-ok branch above.
-        setSettingsSaveError(saveFailureText('save', null));
+        const lowered = parseWarnings(outcome.body).find(isTemperatureWarning);
+        if (lowered) reportCommandIssue({ code: 'temperature_limit', command: 'settings', robotIds: lowered.robotId === null ? [] : [lowered.robotId], detail: `${lowered.requested ?? '?'} -> ${lowered.applied ?? '?'}` });
       });
     }, 500);
-  }, [settings, controllers, activeControllerId, isLoaded, reportCommandIssue, role]);
+  }, [settings, controllers, activeControllerId, isLoaded, reportCommandIssue, role, persistTree]);
 
   const activeController = useMemo(() => controllers.find(c => c.id === activeControllerId) || controllers[0] || defaultControllers[0], [controllers, activeControllerId]);
   const robots = activeController?.robots || [];
@@ -1011,7 +1034,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // The socket's per-robot deltas usually arrive first; the settings are read again to be sure.
       const refreshHeaders = authHeaders();
       fetch(apiUrl('/api/settings'), { headers: refreshHeaders })
-        .then((r) => (r.ok ? r.json() : null))
+        .then((r) => { rememberSettingsEtag(settingsEtagRef, r); return r.ok ? r.json() : null; })
         .then((data) => { if (data) applyServerData(data); })
         .catch(() => {});
     } finally {
@@ -1051,22 +1074,16 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setOperatorEdited(true);
       return;
     }
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-    try {
-      const response = await fetch(apiUrl('/api/settings'), { method: 'POST', headers, body: payloadJson });
-      if (!response.ok) {
-        // Real failure - see the debounced save effect's own comment for
-        // why lastPayloadJsonRef is deliberately NOT updated here either.
-        setSettingsSaveError(saveFailureText('save', response.status));
-        return;
-      }
-      lastPayloadJsonRef.current = payloadJson;
-      setSettingsSaveError(null);
-    } catch {
-      // Real network failure.
-      setSettingsSaveError(saveFailureText('save', null));
+    const outcome = await persistTree(payloadJson, false);
+    if (outcome.kind === 'failed') {
+      // Real failure - see the debounced save effect's own comment for
+      // why lastPayloadJsonRef is deliberately NOT updated here either.
+      setSettingsSaveError(saveFailureText('save', outcome.status));
+      return;
     }
+    if (outcome.kind === 'conflict') return;
+    lastPayloadJsonRef.current = payloadJson;
+    setSettingsSaveError(null);
   };
 
   // An administrator changes any setting. Any other account changes only the local ones (theme, language, layout of the
@@ -1191,16 +1208,10 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // above for why the login screen exists) - reloading unconditionally
     // afterward would then present the UNCHANGED settings as if the reset
     // had actually happened. Checked now, same as every other save path.
-    const headers: any = { "Content-Type": "application/json" };
-    if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
-    try {
-      const response = await fetch(apiUrl("/api/settings"), { method: "POST", headers, body: "{}" });
-      if (!response.ok) {
-        setSettingsSaveError(saveFailureText('reset', response.status));
-        return;
-      }
-    } catch {
-      setSettingsSaveError(saveFailureText('reset', null));
+    // A deliberate replacement: a stale revision is refreshed and the reset sent again whatever the server holds.
+    const outcome = await persistTree('{}', true);
+    if (outcome.kind !== 'saved') {
+      setSettingsSaveError(saveFailureText('reset', outcome.kind === 'failed' ? outcome.status : null));
       return;
     }
     window.location.reload();

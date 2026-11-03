@@ -34,3 +34,8 @@ export function totpNeededText(): string {
 export function unreachableText(): string {
   return i18n.t('serverErrors.cannot_reach_server');
 }
+
+/** A save refused because the settings changed on the server since this window read them (412): they were reloaded. */
+export function saveConflictText(): string {
+  return i18n.t('serverErrors.save_conflict');
+}

@@ -1430,6 +1430,7 @@
     "cannot_reach_server": "Server nicht erreichbar",
     "save_401": "Speichern fehlgeschlagen (401): Ihre Sitzung ist abgelaufen - bitte erneut anmelden.",
     "save_403": "Speichern fehlgeschlagen (403): Dieses Konto darf keine Einstellungen speichern.",
+    "save_conflict": "Speichern abgelehnt: Die Einstellungen auf dem Server haben sich seit dem Lesen geändert. Sie wurden neu geladen; wende deine Änderung erneut an.",
     "save_http": "Speichern fehlgeschlagen (HTTP {{status}}).",
     "save_unreachable": "Speichern fehlgeschlagen: Server nicht erreichbar.",
     "reset_401": "Zurücksetzen auf Werkseinstellungen fehlgeschlagen (401): Ihre Sitzung ist abgelaufen - bitte erneut anmelden.",

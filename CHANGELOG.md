@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The settings tree is saved with `PUT /api/settings` and `If-Match`:** the window keeps the ETag of the last read and sends it back; when the server answers 412 (or 428) the window reads the tree again, sends the save once more if the server still holds the tree it last received (a robot that moved changes the revision), and otherwise shows the server's version with a message in the eight languages asking to apply the change again. A server without `PUT` is saved with `POST` as before; the factory reset refreshes a stale revision and goes through.
+
 - **The audit record knows the motion and model-submission entries:** `robot-motion` (play, pause, stop, trajectory, table, speed, tool, valve, pump and the jog stream) and `model-submit` have a name in the eight languages, appear in the type filter, and the keys of their detail (command, points, table X and Y, model, category, replaces, meshes, reason) are shown with a translated name.
 
 - **Server Admin > Safety limits has the interval of the audit of the jog stream:** a whole number of seconds from 0 to 3600 (10 by default), saved with the other limits; 0 leaves the jog stream out of the audit record while the discrete commands are always recorded.

@@ -1430,6 +1430,7 @@
     "cannot_reach_server": "Serveur injoignable",
     "save_401": "Échec de l'enregistrement (401) : votre session a expiré, reconnectez-vous.",
     "save_403": "Échec de l'enregistrement (403) : ce compte n'a pas le droit d'enregistrer les réglages.",
+    "save_conflict": "Enregistrement refusé : les réglages ont changé sur le serveur depuis votre lecture. Ils ont été rechargés ; appliquez de nouveau votre modification.",
     "save_http": "Échec de l'enregistrement (HTTP {{status}}).",
     "save_unreachable": "Échec de l'enregistrement : serveur injoignable.",
     "reset_401": "Échec de la réinitialisation d'usine (401) : votre session a expiré, reconnectez-vous.",

@@ -1430,6 +1430,7 @@
     "cannot_reach_server": "No se puede contactar con el servidor",
     "save_401": "Error al guardar (401): la sesión ha caducado; inicia sesión de nuevo.",
     "save_403": "Error al guardar (403): esta cuenta no tiene permiso para guardar ajustes.",
+    "save_conflict": "Guardado rechazado: los ajustes cambiaron en el servidor desde que los leíste. Se han recargado; vuelve a aplicar tu cambio.",
     "save_http": "Error al guardar (HTTP {{status}}).",
     "save_unreachable": "Error al guardar: no se pudo contactar con el servidor.",
     "reset_401": "Error al restablecer de fábrica (401): la sesión ha caducado; inicia sesión de nuevo.",

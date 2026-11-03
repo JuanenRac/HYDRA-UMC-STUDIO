@@ -1430,6 +1430,7 @@
     "cannot_reach_server": "Server non raggiungibile",
     "save_401": "Salvataggio non riuscito (401): la sessione è scaduta, accedi di nuovo.",
     "save_403": "Salvataggio non riuscito (403): questo account non ha il permesso di salvare le impostazioni.",
+    "save_conflict": "Salvataggio rifiutato: le impostazioni sul server sono cambiate dopo la lettura. Sono state ricaricate; applica di nuovo la modifica.",
     "save_http": "Salvataggio non riuscito (HTTP {{status}}).",
     "save_unreachable": "Salvataggio non riuscito: server non raggiungibile.",
     "reset_401": "Ripristino di fabbrica non riuscito (401): la sessione è scaduta, accedi di nuovo.",

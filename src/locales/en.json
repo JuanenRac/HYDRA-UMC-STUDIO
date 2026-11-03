@@ -1430,6 +1430,7 @@
     "cannot_reach_server": "Cannot reach server",
     "save_401": "Save failed (401): your session has expired - log in again.",
     "save_403": "Save failed (403): this account does not have permission to save settings.",
+    "save_conflict": "Save refused: the settings changed on the server since you read them. They were reloaded; apply your change again.",
     "save_http": "Save failed (HTTP {{status}}).",
     "save_unreachable": "Save failed: could not reach the server.",
     "reset_401": "Factory reset failed (401): your session has expired - log in again.",

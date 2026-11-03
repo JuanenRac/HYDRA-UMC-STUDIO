@@ -1430,6 +1430,7 @@
     "cannot_reach_server": "Não é possível contactar o servidor",
     "save_401": "Falha ao guardar (401): a sessão expirou - inicie sessão novamente.",
     "save_403": "Falha ao guardar (403): esta conta não tem permissão para guardar definições.",
+    "save_conflict": "Gravação recusada: as definições mudaram no servidor desde que as leu. Foram recarregadas; volte a aplicar a sua alteração.",
     "save_http": "Falha ao guardar (HTTP {{status}}).",
     "save_unreachable": "Falha ao guardar: não foi possível contactar o servidor.",
     "reset_401": "Falha na reposição de fábrica (401): a sessão expirou - inicie sessão novamente.",
