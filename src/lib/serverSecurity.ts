@@ -13,6 +13,9 @@ export type SecuritySource = 'env' | 'config' | 'default';
 export type BleMode = 'off' | 'state' | 'commands';
 export type MqttMode = 'off' | 'state' | 'commands';
 
+export type JwtAlgorithm = 'HS256' | 'EdDSA';
+export const JWT_ALGORITHMS: readonly JwtAlgorithm[] = ['HS256', 'EdDSA'];
+
 export interface SecurityState {
   aiAccess: { value: 'open' | 'admin'; source: SecuritySource };
   infoAuth: { value: boolean; source: SecuritySource };
@@ -50,6 +53,11 @@ export interface SecurityState {
   /** Absent when the server predates safe mode. */
   robots: {
     allowEnable: { value: boolean; source: SecuritySource };
+  } | null;
+  /** Absent when the server predates the optional asymmetric sign-in tokens. */
+  auth: {
+    jwtAlgorithm: { value: JwtAlgorithm; source: SecuritySource };
+    acceptHs256: { value: boolean; source: SecuritySource };
   } | null;
   /** Absent when the server predates the history of connections. */
   connections: {
@@ -146,6 +154,15 @@ function parseRobots(raw: any): SecurityState['robots'] {
   const allow = raw.allowEnable;
   if (!allow || typeof allow.value !== 'boolean' || !isSource(allow.source)) return null;
   return { allowEnable: { value: allow.value, source: allow.source } };
+}
+
+function parseAuth(raw: any): SecurityState['auth'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const algorithm = raw.jwtAlgorithm;
+  const accept = raw.acceptHs256;
+  if (!algorithm || !JWT_ALGORITHMS.includes(algorithm.value) || !isSource(algorithm.source)) return null;
+  if (!accept || typeof accept.value !== 'boolean' || !isSource(accept.source)) return null;
+  return { jwtAlgorithm: { value: algorithm.value, source: algorithm.source }, acceptHs256: { value: accept.value, source: accept.source } };
 }
 
 function parseConnections(raw: any): SecurityState['connections'] {
@@ -304,6 +321,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     mqtt: parseMqtt(raw.mqtt),
     voice: parseVoice(raw.voice),
     robots: parseRobots(raw.robots),
+    auth: parseAuth(raw.auth),
     connections: parseConnections(raw.connections),
     health: parseHealth(raw.health),
     ecosystemHealth: parseEcosystemHealth(raw.ecosystemHealth),
@@ -395,6 +413,21 @@ export function robotsPatch(allowEnable: boolean): RobotsPatchBody {
 /** Allowing a client to enable a robot lowers the protection of safe mode: ask first. Turning it off never asks. */
 export function robotsChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
   return !current && next;
+}
+
+export type AuthPatchBody = { auth: { jwtAlgorithm?: JwtAlgorithm; acceptHs256?: boolean } };
+
+/** The request body for how the sign-in tokens are signed (HS256 by default) and whether HS256 tokens are still accepted while EdDSA is in use (yes by default). Only what is given is sent. */
+export function authPatch(change: { jwtAlgorithm?: JwtAlgorithm; acceptHs256?: boolean }): AuthPatchBody {
+  const auth: AuthPatchBody['auth'] = {};
+  if (change.jwtAlgorithm !== undefined) auth.jwtAlgorithm = change.jwtAlgorithm;
+  if (change.acceptHs256 !== undefined) auth.acceptHs256 = change.acceptHs256;
+  return { auth };
+}
+
+/** Refusing HS256 tokens signs out every session that still holds one: ask first. Accepting them again never asks. */
+export function authChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
+  return current && !next;
 }
 
 export type ConnectionsPatchBody = { connections: { recordAddress: boolean } };
@@ -580,6 +613,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'jwt_eddsa_on', 'jwt_hs256_refused'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }

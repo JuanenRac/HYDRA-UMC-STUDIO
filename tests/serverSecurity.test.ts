@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -421,5 +421,29 @@ describe('the trusted networks option', () => {
     expect(parseSecurityState({ ...base, trustedNetworks: { enabled: { value: 'yes', source: 'default' } } })?.trustedNetworks).toBeNull();
     expect(trustedNetworksPatch(true)).toEqual({ trustedNetworks: { enabled: true } });
     expect(knownWarnings(['trusted_networks_on', 'other'])).toEqual(['trusted_networks_on']);
+  });
+});
+
+describe('the sign-in token options', () => {
+  const auth = { jwtAlgorithm: { value: 'HS256', source: 'default' }, acceptHs256: { value: true, source: 'default' } };
+  it('reads the options the server reports and shows nothing for a server that predates them', () => {
+    expect(parseSecurityState({ ...answer, auth })?.auth).toEqual(auth);
+    expect(parseSecurityState({ ...answer, auth: { ...auth, jwtAlgorithm: { value: 'EdDSA', source: 'env' } } })?.auth?.jwtAlgorithm).toEqual({ value: 'EdDSA', source: 'env' });
+    expect(parseSecurityState(answer)?.auth).toBeNull();
+    expect(parseSecurityState({ ...answer, auth: { ...auth, jwtAlgorithm: { value: 'none', source: 'default' } } })?.auth).toBeNull();
+    expect(parseSecurityState({ ...answer, auth: { ...auth, acceptHs256: { value: 'yes', source: 'default' } } })?.auth).toBeNull();
+  });
+
+  it('sends only what changed and asks first before HS256 tokens are refused', () => {
+    expect(authPatch({ jwtAlgorithm: 'EdDSA' })).toEqual({ auth: { jwtAlgorithm: 'EdDSA' } });
+    expect(authPatch({ acceptHs256: false })).toEqual({ auth: { acceptHs256: false } });
+    expect(authPatch({})).toEqual({ auth: {} });
+    expect(authChangeNeedsConfirmation(true, false)).toBe(true);
+    expect(authChangeNeedsConfirmation(false, true)).toBe(false);
+    expect(authChangeNeedsConfirmation(true, true)).toBe(false);
+  });
+
+  it('knows the warnings of the change', () => {
+    expect(knownWarnings(['jwt_eddsa_on', 'jwt_hs256_refused', 'other'])).toEqual(['jwt_eddsa_on', 'jwt_hs256_refused']);
   });
 });

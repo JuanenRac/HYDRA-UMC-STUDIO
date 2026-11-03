@@ -25,7 +25,7 @@ import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
+import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
 
 interface HydraInfo {
@@ -83,6 +83,10 @@ export function AdminServer() {
   const [pendingRobots, setPendingRobots] = useState(false);
   const [connectionsRecordAddress, setConnectionsRecordAddress] = useState(false);
   const [pendingConnections, setPendingConnections] = useState(false);
+  const [authAlgorithm, setAuthAlgorithm] = useState<JwtAlgorithm>('HS256');
+  const [authAcceptHs256, setAuthAcceptHs256] = useState(true);
+  const [pendingAuth, setPendingAuth] = useState(false);
+  const [pendingRotate, setPendingRotate] = useState(false);
   const [healthOpen, setHealthOpen] = useState(false);
   const [pendingHealth, setPendingHealth] = useState(false);
   const [ecosystemHealthOn, setEcosystemHealthOn] = useState(false);
@@ -118,6 +122,7 @@ export function AdminServer() {
       }
       if (state.robots) setRobotsAllowEnable(state.robots.allowEnable.value);
       if (state.connections) setConnectionsRecordAddress(state.connections.recordAddress.value);
+      if (state.auth) { setAuthAlgorithm(state.auth.jwtAlgorithm.value); setAuthAcceptHs256(state.auth.acceptHs256.value); }
       if (state.health) setHealthOpen(state.health.open.value);
       if (state.ecosystemHealth) setEcosystemHealthOn(state.ecosystemHealth.enabled.value);
       if (state.bridgeGateway) setBridgeGatewayOn(state.bridgeGateway.enabled.value);
@@ -162,6 +167,8 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('robot_enable_allowed')) setWarning(t('ecosystem.admin_security_robots_warning'));
       if (knownWarnings(data.warnings).includes('connection_address_recorded')) setWarning(t('ecosystem.admin_security_connections_warning'));
       if (knownWarnings(data.warnings).includes('health_open')) setWarning(t('ecosystem.admin_security_health_warning'));
+      if (knownWarnings(data.warnings).includes('jwt_eddsa_on')) setWarning(t('ecosystem.admin_security_auth_eddsa_warning'));
+      if (knownWarnings(data.warnings).includes('jwt_hs256_refused')) setWarning(t('ecosystem.admin_security_auth_hs256_refused_warning'));
       if (knownWarnings(data.warnings).includes('bridge_gateway_on')) setWarning(t('ecosystem.admin_security_bridge_gateway_warning'));
       if (knownWarnings(data.warnings).includes('trusted_networks_on')) setWarning(t('ecosystem.admin_security_trusted_networks_warning'));
       if (knownWarnings(data.warnings).includes('camera_open')) setWarning(t('ecosystem.admin_security_exposure_camera_warning'));
@@ -227,6 +234,36 @@ export function AdminServer() {
     if (!security?.connections) return;
     if (connectionsChangeNeedsConfirmation(security.connections.recordAddress.value, connectionsRecordAddress)) setPendingConnections(true);
     else void saveSecurity(connectionsPatch(connectionsRecordAddress));
+  };
+
+  const authBody = () => {
+    if (!security?.auth) return null;
+    return authPatch({
+      ...(authAlgorithm !== security.auth.jwtAlgorithm.value && !isLocked(security.auth.jwtAlgorithm.source) ? { jwtAlgorithm: authAlgorithm } : {}),
+      ...(authAcceptHs256 !== security.auth.acceptHs256.value && !isLocked(security.auth.acceptHs256.source) ? { acceptHs256: authAcceptHs256 } : {}),
+    });
+  };
+
+  const saveAuth = () => {
+    const body = authBody();
+    if (!security?.auth || !body) return;
+    if (authChangeNeedsConfirmation(security.auth.acceptHs256.value, authAcceptHs256)) setPendingAuth(true);
+    else void saveSecurity(body);
+  };
+
+  // Makes a new key the active one; the previous one stays valid for the overlap of the server.
+  const rotateAuthKey = async () => {
+    setSaving(true); setError(''); setNotice(''); setWarning('');
+    try {
+      const res = await fetch(apiUrl('/api/admin/jwt-keys/rotate'), { method: 'POST', headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
+      setNotice(t('ecosystem.admin_security_auth_rotated'));
+    } catch {
+      setError(t('ecosystem.admin_security_auth_rotate_error'));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const saveHealth = () => {
@@ -617,6 +654,46 @@ export function AdminServer() {
             </div>
           )}
 
+          {security.auth && (
+            <div className="space-y-2" data-testid="auth-section">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_auth_title')}</h5>
+              <label className="text-xs font-bold text-slate-200" htmlFor="auth-algorithm">{t('ecosystem.admin_security_auth_algorithm_label')}</label>
+              <select
+                id="auth-algorithm"
+                data-testid="auth-algorithm"
+                value={authAlgorithm}
+                disabled={saving || isLocked(security.auth.jwtAlgorithm.source)}
+                onChange={e => setAuthAlgorithm(e.target.value as JwtAlgorithm)}
+                className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500"
+              >
+                {JWT_ALGORITHMS.map(algorithm => <option key={algorithm} value={algorithm}>{t(`ecosystem.admin_security_auth_${algorithm.toLowerCase()}`)}</option>)}
+              </select>
+              <span className="text-[10px] text-slate-500">{sourceText(security.auth.jwtAlgorithm.source)}</span>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="auth-accept-hs256"
+                  checked={authAcceptHs256}
+                  disabled={saving || isLocked(security.auth.acceptHs256.source)}
+                  onChange={e => setAuthAcceptHs256(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_auth_accept_hs256_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.auth.acceptHs256.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_auth_help')}</div>
+              <div className="flex gap-2">
+                <button onClick={saveAuth} disabled={saving || authBody() === null || Object.keys(authBody()?.auth ?? {}).length === 0} data-testid="auth-save" className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                  <Save size={14} /> {t('ecosystem.admin_security_auth_save')}
+                </button>
+                {security.auth.jwtAlgorithm.value === 'EdDSA' && (
+                  <button onClick={() => setPendingRotate(true)} disabled={saving} data-testid="auth-rotate" className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                    {t('ecosystem.admin_security_auth_rotate')}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {security.health && (
             <div className="space-y-2">
               <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_health_title')}</h5>
@@ -959,6 +1036,20 @@ export function AdminServer() {
         message={t('ecosystem.admin_security_install_confirm')}
         onConfirm={() => { const body = pendingInstall; setPendingInstall(null); if (body) void saveSecurity(body); }}
         onCancel={() => setPendingInstall(null)}
+      />
+
+      <ConfirmDialog
+        open={pendingAuth}
+        message={t('ecosystem.admin_security_auth_confirm')}
+        onConfirm={() => { setPendingAuth(false); const body = authBody(); if (body) void saveSecurity(body); }}
+        onCancel={() => setPendingAuth(false)}
+      />
+
+      <ConfirmDialog
+        open={pendingRotate}
+        message={t('ecosystem.admin_security_auth_rotate_confirm')}
+        onConfirm={() => { setPendingRotate(false); void rotateAuthKey(); }}
+        onCancel={() => setPendingRotate(false)}
       />
 
       <ConfirmDialog
