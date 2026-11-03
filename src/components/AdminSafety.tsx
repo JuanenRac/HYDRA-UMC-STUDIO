@@ -106,6 +106,12 @@ export function AdminSafety() {
           <input type="checkbox" data-testid="require-controller" checked={form.requireControllerId} onChange={(e) => edit({ requireControllerId: e.target.checked })} />
           <span><span className="font-bold">{t('safety.require_controller')}</span><br /><span className="text-slate-500">{t('safety.require_controller_hint')}</span></span>
         </label>
+        <label className="flex items-center gap-2 text-xs">
+          <span className="w-56">{t('safety.audit_motion_interval')}</span>
+          <input className={input + ' max-w-[8rem]'} inputMode="numeric" data-testid="audit-motion-interval" value={form.auditMotionSeconds} onChange={(e) => edit({ auditMotionSeconds: e.target.value })} aria-label={t('safety.audit_motion_interval')} />
+          <span className="text-slate-500">{t('safety.range_seconds', { min: hard.auditMotionIntervalSeconds.min, max: hard.auditMotionIntervalSeconds.max })}</span>
+        </label>
+        <p className="text-[11px] text-slate-500 -mt-2">{t('safety.audit_motion_interval_hint')}</p>
       </section>
 
       <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col gap-3">

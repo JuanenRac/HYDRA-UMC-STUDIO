@@ -40,16 +40,18 @@ describe('the limits read from the server', () => {
         jog: { armRequired: true, armTtlMs: 30000, default: { maxAmount: 50, maxAbsolute: 800 }, models: { 'Parol6 (6-DOF)': { maxAmount: 10 } } },
         temperature: { default: { bedMaxC: 100 }, models: { 'AR4 (6-DOF)': { bedMaxC: 90 } } },
         claims: { requireControllerId: true },
+        audit: { motionIntervalSeconds: 30 },
       },
       defaults: FALLBACK_LIMITS,
-      hardLimits: { jogMaxAmount: 900, jogMaxAbsolute: 9000, armTtlMs: { min: 2000, max: 500000 }, bedMaxC: 250 },
+      hardLimits: { jogMaxAmount: 900, jogMaxAbsolute: 9000, armTtlMs: { min: 2000, max: 500000 }, bedMaxC: 250, auditMotionIntervalSeconds: { min: 0, max: 600 } },
     });
     expect(state.limits.jog.armRequired).toBe(true);
     expect(state.limits.jog.armTtlMs).toBe(30000);
     expect(state.limits.claims.requireControllerId).toBe(true);
+    expect(state.limits.audit.motionIntervalSeconds).toBe(30);
     expect(jogLimitsFor(state.limits, 'Parol6 (6-DOF)')).toEqual({ maxAmount: 10, maxAbsolute: 800 });
     expect(bedMaxFor(state.limits, 'AR4 (6-DOF)')).toBe(90);
-    expect(state.hardLimits).toEqual({ jogMaxAmount: 900, jogMaxAbsolute: 9000, armTtlMs: { min: 2000, max: 500000 }, bedMaxC: 250 });
+    expect(state.hardLimits).toEqual({ jogMaxAmount: 900, jogMaxAbsolute: 9000, armTtlMs: { min: 2000, max: 500000 }, bedMaxC: 250, auditMotionIntervalSeconds: { min: 0, max: 600 } });
   });
 
   it('ignores damaged values instead of trusting them', () => {
@@ -117,6 +119,7 @@ describe('the form of the administration screen', () => {
       jog: { armRequired: false, armTtlMs: 60000, default: { maxAmount: 100, maxAbsolute: 1000 }, models: { ar4: { maxAbsolute: 500 }, parol6: { maxAmount: 20 } } },
       temperature: { default: { bedMaxC: 110 }, models: { parol6: { bedMaxC: 80 } } },
       claims: { requireControllerId: false },
+      audit: { motionIntervalSeconds: 10 },
     });
   });
 
@@ -173,5 +176,26 @@ describe('the warnings of the server', () => {
     expect(isArmed(1000, 1000)).toBe(false);
     expect(isArmed(null, 1000)).toBe(false);
     expect(isArmed(undefined)).toBe(false);
+  });
+});
+
+describe('the interval of the audit of the jog stream', () => {
+  it('reads it, keeps 10 seconds when the server does not say and ignores damaged values', () => {
+    expect(FALLBACK_LIMITS.audit.motionIntervalSeconds).toBe(10);
+    expect(parseSafetyLimits({ limits: { audit: { motionIntervalSeconds: 0 } } }).limits.audit.motionIntervalSeconds).toBe(0);
+    expect(parseSafetyLimits({ limits: { audit: { motionIntervalSeconds: 4000 } } }).limits.audit.motionIntervalSeconds).toBe(10);
+    expect(parseSafetyLimits({ limits: { audit: { motionIntervalSeconds: 1.5 } } }).limits.audit.motionIntervalSeconds).toBe(10);
+    expect(parseSafetyLimits({ limits: { jog: {} } }).hardLimits.auditMotionIntervalSeconds).toEqual({ min: 0, max: 3600 });
+  });
+
+  it('sends a whole number from 0 to 3600 and refuses the rest', () => {
+    const base = formFromLimits(FALLBACK_LIMITS);
+    expect(base.auditMotionSeconds).toBe('10');
+    expect(buildPatch({ ...base, auditMotionSeconds: '0' }, FALLBACK_HARD_LIMITS).patch).toMatchObject({ audit: { motionIntervalSeconds: 0 } });
+    expect(buildPatch({ ...base, auditMotionSeconds: '3600' }, FALLBACK_HARD_LIMITS).patch).toMatchObject({ audit: { motionIntervalSeconds: 3600 } });
+    expect(buildPatch({ ...base, auditMotionSeconds: '3601' }, FALLBACK_HARD_LIMITS)).toMatchObject({ ok: false, problem: 'range_from_zero', field: 'auditMotionSeconds' });
+    expect(buildPatch({ ...base, auditMotionSeconds: '-1' }, FALLBACK_HARD_LIMITS)).toMatchObject({ ok: false, problem: 'range_from_zero' });
+    expect(buildPatch({ ...base, auditMotionSeconds: '2.5' }, FALLBACK_HARD_LIMITS)).toMatchObject({ ok: false, problem: 'number' });
+    expect(buildPatch({ ...base, auditMotionSeconds: '' }, FALLBACK_HARD_LIMITS)).toMatchObject({ ok: false, problem: 'number' });
   });
 });

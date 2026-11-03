@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The audit record knows the motion and model-submission entries:** `robot-motion` (play, pause, stop, trajectory, table, speed, tool, valve, pump and the jog stream) and `model-submit` have a name in the eight languages, appear in the type filter, and the keys of their detail (command, points, table X and Y, model, category, replaces, meshes, reason) are shown with a translated name.
+
+- **Server Admin > Safety limits has the interval of the audit of the jog stream:** a whole number of seconds from 0 to 3600 (10 by default), saved with the other limits; 0 leaves the jog stream out of the audit record while the discrete commands are always recorded.
+
 ## [0.8.1.1] - An editor of the tier plan of the data lake inside the Telemetry panel with strict rules, the panel layout moved out of the robot detail into its own hook and tests of the global stop and the sign-in
 
 - **Bench test script:** `docs/BENCH_TESTS.md` lists the flashing and emergency-stop checks that need a real board, all marked not executed.

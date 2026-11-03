@@ -17,6 +17,8 @@ export interface SafetyLimitsConfig {
   jog: { armRequired: boolean; armTtlMs: number; default: JogLimits; models: Record<string, Partial<JogLimits>> };
   temperature: { default: TemperatureLimits; models: Record<string, Partial<TemperatureLimits>> };
   claims: { requireControllerId: boolean };
+  /** How often a stream of jog commands is written to the audit record (seconds; 0 leaves the stream out). */
+  audit: { motionIntervalSeconds: number };
 }
 
 export interface HardLimits {
@@ -24,6 +26,7 @@ export interface HardLimits {
   jogMaxAbsolute: number;
   armTtlMs: { min: number; max: number };
   bedMaxC: number;
+  auditMotionIntervalSeconds: { min: number; max: number };
 }
 
 export interface SafetyLimitsState {
@@ -37,6 +40,7 @@ export const FALLBACK_LIMITS: SafetyLimitsConfig = {
   jog: { armRequired: false, armTtlMs: 60_000, default: { maxAmount: 100, maxAbsolute: 1000 }, models: {} },
   temperature: { default: { bedMaxC: 110 }, models: {} },
   claims: { requireControllerId: false },
+  audit: { motionIntervalSeconds: 10 },
 };
 
 export const FALLBACK_HARD_LIMITS: HardLimits = {
@@ -44,6 +48,7 @@ export const FALLBACK_HARD_LIMITS: HardLimits = {
   jogMaxAbsolute: 10000,
   armTtlMs: { min: 1000, max: 600_000 },
   bedMaxC: 300,
+  auditMotionIntervalSeconds: { min: 0, max: 3600 },
 };
 
 export const FALLBACK_STATE: SafetyLimitsState = {
@@ -59,6 +64,9 @@ export function modelKey(model: unknown): string {
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const positive = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null);
+
+/** A whole number inside min..max, or null. */
+const wholeInRange = (v: unknown, min: number, max: number): number | null => (typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max ? v : null);
 
 function readModels<T>(raw: unknown, pick: (entry: Record<string, unknown>) => Partial<T>): Record<string, Partial<T>> {
   const out: Record<string, Partial<T>> = {};
@@ -90,6 +98,7 @@ function readConfig(raw: unknown, fallback: SafetyLimitsConfig): SafetyLimitsCon
   const jog = isObject(raw.jog) ? raw.jog : {};
   const temperature = isObject(raw.temperature) ? raw.temperature : {};
   const claims = isObject(raw.claims) ? raw.claims : {};
+  const audit = isObject(raw.audit) ? raw.audit : {};
   return {
     jog: {
       armRequired: typeof jog.armRequired === 'boolean' ? jog.armRequired : fallback.jog.armRequired,
@@ -102,6 +111,7 @@ function readConfig(raw: unknown, fallback: SafetyLimitsConfig): SafetyLimitsCon
       models: readModels<TemperatureLimits>(temperature.models, pickTemp),
     },
     claims: { requireControllerId: typeof claims.requireControllerId === 'boolean' ? claims.requireControllerId : fallback.claims.requireControllerId },
+    audit: { motionIntervalSeconds: wholeInRange(audit.motionIntervalSeconds, 0, 3600) ?? fallback.audit.motionIntervalSeconds },
   };
 }
 
@@ -112,6 +122,7 @@ export function parseSafetyLimits(body: unknown): SafetyLimitsState {
   const defaults = readConfig(body.defaults, FALLBACK_LIMITS);
   const hard = isObject(body.hardLimits) ? body.hardLimits : {};
   const armTtl = isObject(hard.armTtlMs) ? hard.armTtlMs : {};
+  const auditRange = isObject(hard.auditMotionIntervalSeconds) ? hard.auditMotionIntervalSeconds : {};
   return {
     limits,
     defaults,
@@ -120,6 +131,10 @@ export function parseSafetyLimits(body: unknown): SafetyLimitsState {
       jogMaxAbsolute: positive(hard.jogMaxAbsolute) ?? FALLBACK_HARD_LIMITS.jogMaxAbsolute,
       armTtlMs: { min: positive(armTtl.min) ?? FALLBACK_HARD_LIMITS.armTtlMs.min, max: positive(armTtl.max) ?? FALLBACK_HARD_LIMITS.armTtlMs.max },
       bedMaxC: positive(hard.bedMaxC) ?? FALLBACK_HARD_LIMITS.bedMaxC,
+      auditMotionIntervalSeconds: {
+        min: wholeInRange(auditRange.min, 0, 3600) ?? FALLBACK_HARD_LIMITS.auditMotionIntervalSeconds.min,
+        max: wholeInRange(auditRange.max, 0, 3600) ?? FALLBACK_HARD_LIMITS.auditMotionIntervalSeconds.max,
+      },
     },
   };
 }
@@ -173,6 +188,7 @@ export interface SafetyForm {
   armRequired: boolean;
   armTtlSeconds: string;
   requireControllerId: boolean;
+  auditMotionSeconds: string;
   defaultMaxAmount: string;
   defaultMaxAbsolute: string;
   defaultBedMaxC: string;
@@ -187,6 +203,7 @@ export function formFromLimits(limits: SafetyLimitsConfig): SafetyForm {
     armRequired: limits.jog.armRequired,
     armTtlSeconds: String(Math.round(limits.jog.armTtlMs / 1000)),
     requireControllerId: limits.claims.requireControllerId,
+    auditMotionSeconds: String(limits.audit.motionIntervalSeconds),
     defaultMaxAmount: String(limits.jog.default.maxAmount),
     defaultMaxAbsolute: String(limits.jog.default.maxAbsolute),
     defaultBedMaxC: String(limits.temperature.default.bedMaxC),
@@ -200,7 +217,7 @@ export function formFromLimits(limits: SafetyLimitsConfig): SafetyForm {
 }
 
 /** Why the form cannot be sent, as a code the screen has a sentence for. */
-export type FormProblem = 'number' | 'range' | 'model' | 'duplicate';
+export type FormProblem = 'number' | 'range' | 'range_from_zero' | 'model' | 'duplicate';
 export interface FormResult { ok: boolean; patch?: Record<string, unknown>; problem?: FormProblem; field?: string }
 
 function parseField(raw: string, max: number): { value: number } | { problem: 'number' | 'range' } {
@@ -217,6 +234,11 @@ export function buildPatch(form: SafetyForm, hard: HardLimits): FormResult {
   if (form.armTtlSeconds.trim() === '' || !Number.isFinite(ttl)) return fail('number', 'armTtl');
   const ttlMs = Math.round(ttl * 1000);
   if (ttlMs < hard.armTtlMs.min || ttlMs > hard.armTtlMs.max) return fail('range', 'armTtl');
+  const auditText = form.auditMotionSeconds.trim();
+  const auditSeconds = Number(auditText);
+  const auditRange = hard.auditMotionIntervalSeconds;
+  if (auditText === '' || !Number.isFinite(auditSeconds) || !Number.isInteger(auditSeconds)) return fail('number', 'auditMotionSeconds');
+  if (auditSeconds < auditRange.min || auditSeconds > auditRange.max) return fail('range_from_zero', 'auditMotionSeconds');
   const dAmount = parseField(form.defaultMaxAmount, hard.jogMaxAmount);
   if ('problem' in dAmount) return fail(dAmount.problem, 'defaultMaxAmount');
   const dAbsolute = parseField(form.defaultMaxAbsolute, hard.jogMaxAbsolute);
@@ -263,6 +285,7 @@ export function buildPatch(form: SafetyForm, hard: HardLimits): FormResult {
       },
       temperature: { default: { bedMaxC: dBed.value }, models: tempModels },
       claims: { requireControllerId: form.requireControllerId },
+      audit: { motionIntervalSeconds: auditSeconds },
     },
   };
 }

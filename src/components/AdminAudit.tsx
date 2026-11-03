@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Download, RefreshCw, ScrollText, ShieldCheck } from 'lucide-react';
-import { AUDIT_TYPES, auditTypeKey, checkChain, detailLine, distinctAuditValues, filterAuditEntries, type AuditRead, type ChainCheck } from '../lib/audit';
+import { AUDIT_TYPES, auditTypeKey, checkChain, detailLine, distinctAuditValues, filterAuditEntries, hasDetailLabel, type AuditRead, type ChainCheck } from '../lib/audit';
 import { decodeJwtUsername } from '../lib/claims';
 import auditView from '../config/auditView.json';
 import { fetchAudit, fetchAuditJsonl } from '../lib/auditApi';
@@ -218,7 +218,7 @@ export function AdminAudit() {
                     <td className="py-1 pr-3 font-mono">{entry.controllerId ?? '-'}</td>
                     <td className="py-1 pr-3 font-mono">{entry.ip ?? '-'}</td>
                     <td className="py-1 pr-3">{entry.robotId === null ? '-' : (robots.find((r) => r.id === entry.robotId)?.name ?? `#${entry.robotId}`)}</td>
-                    <td className="py-1 font-mono text-slate-400 break-all">{detailLine(entry.detail)}</td>
+                    <td className="py-1 font-mono text-slate-400 break-all">{detailLine(entry.detail, 140, (k) => (hasDetailLabel(entry.type, k) ? t(`audit.detail_${k}`) : k))}</td>
                   </tr>
                 ))}
               </tbody>

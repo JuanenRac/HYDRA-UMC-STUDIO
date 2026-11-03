@@ -39,7 +39,7 @@ const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v =
 const text = (v: unknown): string | null => (typeof v === 'string' && v !== '' ? v : null);
 
 /** The types of entry the server writes (the filter of the screen); others are shown as they come. */
-export const AUDIT_TYPES: readonly string[] = ['claim', 'force-claim', 'release', 'force-release', 'jog-arm', 'safety-limits', 'stop-all', 'stop-all-release', 'robot-enable', 'robot-disable', 'bridge-command', 'job-dispatcher-options', 'job-dispatcher-reload', 'push-device-registered', 'push-device-removed', 'remote-policy'];
+export const AUDIT_TYPES: readonly string[] = ['claim', 'force-claim', 'release', 'force-release', 'jog-arm', 'safety-limits', 'stop-all', 'stop-all-release', 'robot-motion', 'model-submit', 'robot-enable', 'robot-disable', 'bridge-command', 'job-dispatcher-options', 'job-dispatcher-reload', 'push-device-registered', 'push-device-removed', 'remote-policy'];
 
 /** The key of the translation of a type of entry (`audit.type_<key>`): every hyphen becomes an underscore. */
 export const auditTypeKey = (type: string): string => type.replace(/-/g, '_');
@@ -136,12 +136,18 @@ export function checkChain(entries: AuditEntry[]): ChainCheck {
 }
 
 /** A short line of the detail of an entry for the table: `key=value` pairs, bounded. */
-export function detailLine(detail: Record<string, unknown> | null, max = 140): string {
+export function detailLine(detail: Record<string, unknown> | null, max = 140, label?: (key: string) => string): string {
   if (!detail) return '';
-  const parts = Object.entries(detail).map(([k, v]) => `${k}=${typeof v === 'object' ? JSON.stringify(v) : String(v)}`);
+  const parts = Object.entries(detail).map(([k, v]) => `${label ? label(k) : k}=${typeof v === 'object' ? JSON.stringify(v) : String(v)}`);
   const joined = parts.join(' ');
   return joined.length > max ? `${joined.slice(0, max - 3)}...` : joined;
 }
+
+/** The keys of the detail of `robot-motion` and `model-submit` that have a translated name (`audit.detail_<key>`). */
+export const AUDIT_DETAIL_KEYS: readonly string[] = ['command', 'points', 'x', 'y', 'name', 'category', 'replaces', 'meshFiles', 'reason'];
+
+/** Whether the detail key of an entry of this type has a translated name. */
+export const hasDetailLabel = (type: string, key: string): boolean => (type === 'robot-motion' || type === 'model-submit') && AUDIT_DETAIL_KEYS.includes(key);
 
 export interface AuditQuery { limit?: number; type?: string; robotId?: number; afterSeq?: number; verify?: boolean }
 

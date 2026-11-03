@@ -152,3 +152,32 @@ describe('narrowing what was read by who did it and from where', () => {
     expect(auditTypeKey('stop-all-release')).toBe('stop_all_release');
   });
 });
+
+describe('the motion and model-submit entries', () => {
+  it('knows both types and names the keys of their detail', async () => {
+    const { AUDIT_TYPES, auditTypeKey, hasDetailLabel, detailLine } = await import('../src/lib/audit');
+    expect(AUDIT_TYPES).toContain('robot-motion');
+    expect(AUDIT_TYPES).toContain('model-submit');
+    expect(auditTypeKey('robot-motion')).toBe('robot_motion');
+    expect(auditTypeKey('model-submit')).toBe('model_submit');
+    expect(hasDetailLabel('robot-motion', 'points')).toBe(true);
+    expect(hasDetailLabel('model-submit', 'meshFiles')).toBe(true);
+    expect(hasDetailLabel('claim', 'points')).toBe(false);
+    expect(detailLine({ command: 'trajectory', points: 12 }, 140, (k) => k.toUpperCase())).toBe('COMMAND=trajectory POINTS=12');
+  });
+
+  it('has a translated name for both types and every detail key in the eight languages', async () => {
+    const fs = await import('node:fs');
+    const { AUDIT_DETAIL_KEYS } = await import('../src/lib/audit');
+    for (const lang of ['en', 'es', 'de', 'fr', 'it', 'ja', 'zh', 'pt']) {
+      const audit = JSON.parse(fs.readFileSync(`src/locales/${lang}.json`, 'utf-8')).audit;
+      expect(audit.type_robot_motion, lang).toBeTruthy();
+      expect(audit.type_model_submit, lang).toBeTruthy();
+      for (const key of AUDIT_DETAIL_KEYS) expect(audit[`detail_${key}`], `${lang} ${key}`).toBeTruthy();
+      const safety = JSON.parse(fs.readFileSync(`src/locales/${lang}.json`, 'utf-8')).safety;
+      expect(safety.audit_motion_interval, lang).toBeTruthy();
+      expect(safety.audit_motion_interval_hint, lang).toBeTruthy();
+      expect(safety.problem_range_from_zero, lang).toContain('{{field}}');
+    }
+  });
+});
