@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.1.1] - An editor of the tier plan of the data lake inside the Telemetry panel with strict rules, the panel layout moved out of the robot detail into its own hook and tests of the global stop and the sign-in
+
 - **Bench test script:** `docs/BENCH_TESTS.md` lists the flashing and emergency-stop checks that need a real board, all marked not executed.
 
 - **The drag of the right panel and of the 3D view of a robot screen lives in its own hook (`usePanelLayout`), and the global STOP and the login gate have tests with a real DOM** (button, keyboard chord, report banner, credentials, second step, read-only entry and the confirmation of the kiosk power buttons). Same limits and same saving as before; 26 new tests.
