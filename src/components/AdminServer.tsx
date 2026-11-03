@@ -25,7 +25,7 @@ import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
-import { bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
+import { RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
 
 interface HydraInfo {
@@ -45,6 +45,18 @@ function formatUptime(seconds: number | undefined): string {
 }
 
 /** Time between two questions to the server while the dispatcher has not answered the request to read its file again. */
+/** The text of the label of each number of the request limits. */
+const RL_LABELS: Record<RateLimitKey, string> = {
+  loginMax: 'ecosystem.admin_security_rl_login_max',
+  loginWindowSeconds: 'ecosystem.admin_security_rl_login_window',
+  refreshMax: 'ecosystem.admin_security_rl_refresh_max',
+  apiMax: 'ecosystem.admin_security_rl_api_max',
+  sensitiveMax: 'ecosystem.admin_security_rl_sensitive_max',
+  apiWindowSeconds: 'ecosystem.admin_security_rl_api_window',
+  stopAllMax: 'ecosystem.admin_security_rl_stopall_max',
+  stopAllWindowSeconds: 'ecosystem.admin_security_rl_stopall_window',
+};
+
 const RELOAD_POLL_MS = 2000;
 
 const RELOAD_CHIP_STYLE: Record<'pending' | 'applied' | 'failed' | 'not_configured', string> = {
@@ -103,6 +115,9 @@ export function AdminServer() {
   const [pendingExposure, setPendingExposure] = useState<ExposurePatchBody | null>(null);
   const [install, setInstall] = useState<InstallValues>({ cameraCredentialsViaEnv: true, newInstallTls: true });
   const [pendingInstall, setPendingInstall] = useState<InstallPatchBody | null>(null);
+  const [rlEnabled, setRlEnabled] = useState(true);
+  const [rlTexts, setRlTexts] = useState<Record<RateLimitKey, string>>({ loginMax: '', loginWindowSeconds: '', refreshMax: '', apiMax: '', sensitiveMax: '', apiWindowSeconds: '', stopAllMax: '', stopAllWindowSeconds: '' });
+  const [pendingRl, setPendingRl] = useState<RateLimitsPatchBody | null>(null);
   const [mavlinkKey, setMavlinkKey] = useState('');
   const [mavlinkUnsigned, setMavlinkUnsigned] = useState(false);
   const [pendingMavlink, setPendingMavlink] = useState<MavlinkPatchBody | null>(null);
@@ -136,6 +151,10 @@ export function AdminServer() {
         setJdTimeout(String(state.jobDispatcher.replan.stopAckTimeoutSeconds.value));
       }
       if (state.exposure) setExposure({ cameraOpen: state.exposure.cameraOpen.value, wsQueryToken: state.exposure.wsQueryToken.value, logRedaction: state.exposure.logRedaction.value, voiceSignature: state.exposure.voiceSignature.value });
+      if (state.rateLimits) {
+        setRlEnabled(state.rateLimits.enabled.value);
+        setRlTexts(Object.fromEntries(RATE_LIMIT_KEYS.map(key => [key, String(state.rateLimits!.numbers[key].value)])) as Record<RateLimitKey, string>);
+      }
       if (state.install) setInstall({ cameraCredentialsViaEnv: state.install.cameraCredentialsViaEnv.value, newInstallTls: state.install.newInstallTls.value });
       if (state.mavlink) {
         setMavlinkKey(state.mavlink.signingKeyFile.value);
@@ -176,6 +195,8 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('log_redaction_off')) setWarning(t('ecosystem.admin_security_exposure_log_warning'));
       if (knownWarnings(data.warnings).includes('camera_credentials_in_arguments')) setWarning(t('ecosystem.admin_security_install_camera_warning'));
       if (knownWarnings(data.warnings).includes('new_install_tls_off')) setWarning(t('ecosystem.admin_security_install_tls_warning'));
+      if (knownWarnings(data.warnings).includes('rate_limits_loose')) setWarning(t('ecosystem.admin_security_rl_loose_warning'));
+      if (knownWarnings(data.warnings).includes('rate_limits_off')) setWarning(t('ecosystem.admin_security_rl_off_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_unsigned_allowed')) setWarning(t('ecosystem.admin_security_mavlink_unsigned_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_signing_off')) setWarning(t('ecosystem.admin_security_mavlink_off_warning'));
       if (knownWarnings(data.warnings).includes('job_stop_relay_on')) setWarning(t('ecosystem.admin_security_jd_warning_relay'));
@@ -297,6 +318,16 @@ export function AdminServer() {
     const body = installPatch(current, install);
     if (!body) return;
     if (installChangeNeedsConfirmation(current, install)) setPendingInstall(body);
+    else void saveSecurity(body);
+  };
+
+  const saveRateLimits = () => {
+    const current = security?.rateLimits;
+    if (!current) return;
+    if (!rateLimitTextsValid(current, rlTexts)) { setNotice(''); setError(t('ecosystem.admin_security_rl_invalid')); return; }
+    const body = rateLimitsPatch(current, rlEnabled, rlTexts);
+    if (!body) return;
+    if (rateLimitsChangeNeedsConfirmation(current, rlEnabled)) setPendingRl(body);
     else void saveSecurity(body);
   };
 
@@ -885,6 +916,46 @@ export function AdminServer() {
             </div>
           )}
 
+          {security.rateLimits && (
+            <div className="space-y-2" data-testid="security-rate-limits">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_rl_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="rl-enabled"
+                  checked={rlEnabled}
+                  disabled={saving || isLocked(security.rateLimits.enabled.source)}
+                  onChange={e => setRlEnabled(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_rl_enabled_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.rateLimits.enabled.source)}</span>
+              {RATE_LIMIT_KEYS.map(key => {
+                const entry = security.rateLimits!.numbers[key];
+                return (
+                  <div key={key} className="flex flex-col gap-0.5">
+                    <label className="text-xs font-bold text-slate-200" htmlFor={`rl-${key}`}>{t(RL_LABELS[key])}</label>
+                    <input
+                      id={`rl-${key}`}
+                      data-testid={`rl-${key}`}
+                      type="text"
+                      inputMode="numeric"
+                      value={rlTexts[key]}
+                      disabled={saving || isLocked(entry.source)}
+                      onChange={e => setRlTexts({ ...rlTexts, [key]: e.target.value })}
+                      className="w-32 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500"
+                    />
+                    <span className="text-[10px] text-slate-500">{entry.min} - {entry.max} · {sourceText(entry.source)}</span>
+                  </div>
+                );
+              })}
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_rl_help')}</div>
+              <button onClick={saveRateLimits} disabled={saving} data-testid="rl-save" className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-wider">
+                <Save size={14} /> {t('ecosystem.admin_security_rl_save')}
+              </button>
+            </div>
+          )}
+
           {security.safety && (
             <div className="space-y-2">
               <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_stop_title')}</h5>
@@ -1036,6 +1107,13 @@ export function AdminServer() {
         message={t('ecosystem.admin_security_install_confirm')}
         onConfirm={() => { const body = pendingInstall; setPendingInstall(null); if (body) void saveSecurity(body); }}
         onCancel={() => setPendingInstall(null)}
+      />
+
+      <ConfirmDialog
+        open={pendingRl !== null}
+        message={t('ecosystem.admin_security_rl_confirm')}
+        onConfirm={() => { const body = pendingRl; setPendingRl(null); if (body) void saveSecurity(body); }}
+        onCancel={() => setPendingRl(null)}
       />
 
       <ConfirmDialog

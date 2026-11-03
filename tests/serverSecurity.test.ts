@@ -447,3 +447,50 @@ describe('the sign-in token options', () => {
     expect(knownWarnings(['jwt_eddsa_on', 'jwt_hs256_refused', 'other'])).toEqual(['jwt_eddsa_on', 'jwt_hs256_refused']);
   });
 });
+
+import { RATE_LIMIT_KEYS, parseRateLimitText, rateLimitTextsValid, rateLimitsChangeNeedsConfirmation, rateLimitsPatch } from '../src/lib/serverSecurity';
+
+describe('the request limits per address', () => {
+  const entry = (value: number, min: number, max: number, source = 'default') => ({ value, source, min, max });
+  const reported = {
+    rateLimits: {
+      enabled: { value: true, source: 'default' },
+      loginMax: entry(5, 3, 100), loginWindowSeconds: entry(900, 60, 86400), refreshMax: entry(120, 10, 10000), apiMax: entry(600, 60, 100000),
+      sensitiveMax: entry(30, 5, 10000), apiWindowSeconds: entry(60, 10, 3600), stopAllMax: entry(60, 10, 10000, 'env'), stopAllWindowSeconds: entry(60, 10, 3600),
+    },
+  };
+  const base = answer;
+  const state = () => parseSecurityState({ ...base, ...reported })?.rateLimits ?? null;
+  const texts = () => Object.fromEntries(RATE_LIMIT_KEYS.map(key => [key, String(state()!.numbers[key].value)])) as Record<(typeof RATE_LIMIT_KEYS)[number], string>;
+
+  it('reads the switch and the eight numbers, and is absent when the server predates them or reports one damaged', () => {
+    expect(state()!.enabled).toEqual({ value: true, source: 'default' });
+    expect(state()!.numbers.loginMax).toEqual({ value: 5, source: 'default', min: 3, max: 100 });
+    expect(state()!.numbers.stopAllMax.source).toBe('env');
+    expect(parseSecurityState({ ...base })?.rateLimits).toBeNull();
+    expect(parseSecurityState({ ...base, rateLimits: { ...reported.rateLimits, apiMax: { value: 1.5, source: 'config', min: 60, max: 100000 } } })?.rateLimits).toBeNull();
+    expect(parseSecurityState({ ...base, rateLimits: { ...reported.rateLimits, enabled: { value: 'yes', source: 'config' } } })?.rateLimits).toBeNull();
+  });
+
+  it('sends only what changed, never a number fixed by the environment, and nothing when nothing changed', () => {
+    expect(rateLimitsPatch(state()!, true, texts())).toBeNull();
+    expect(rateLimitsPatch(state()!, false, texts())).toEqual({ rateLimits: { enabled: false } });
+    expect(rateLimitsPatch(state()!, true, { ...texts(), loginMax: ' 10 ', apiMax: '900' })).toEqual({ rateLimits: { loginMax: 10, apiMax: 900 } });
+    expect(rateLimitsPatch(state()!, true, { ...texts(), stopAllMax: '90' })).toBeNull();
+  });
+
+  it('refuses numbers outside the range or that are not whole numbers', () => {
+    for (const bad of ['', '2', '101', '1.5', '-3', 'abc', '1e2']) {
+      expect(rateLimitsPatch(state()!, true, { ...texts(), loginMax: bad })).toBeNull();
+      expect(rateLimitTextsValid(state()!, { ...texts(), loginMax: bad })).toBe(false);
+    }
+    expect(parseRateLimitText('100', { min: 3, max: 100 })).toBe(100);
+    expect(rateLimitTextsValid(state()!, texts())).toBe(true);
+  });
+
+  it('asks for a confirmation only to switch the limiters off, and knows the warnings', () => {
+    expect(rateLimitsChangeNeedsConfirmation(state()!, false)).toBe(true);
+    expect(rateLimitsChangeNeedsConfirmation(state()!, true)).toBe(false);
+    expect(knownWarnings(['rate_limits_off', 'rate_limits_loose', 'other'])).toEqual(['rate_limits_off', 'rate_limits_loose']);
+  });
+});

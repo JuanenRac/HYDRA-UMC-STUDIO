@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Server Admin > Request limits per address:** the switch for the limiters of the server (sign-in, renewals, API, code and service routes, global stop; on by default) and their eight numbers, each with its range and its source. Only what changed is sent, a number outside its range or a value that is not a whole number is refused before sending, a value fixed by the environment of the server is locked, switching the limiters off asks first, and the warnings of the server (`rate_limits_off`, `rate_limits_loose`) are shown. A server that does not report the limits does not show the section. The texts are in the eight languages.
+
 - **Server Admin > Sign-in tokens:** choose how the server signs the login tokens (HS256 with the shared secret, the default, or EdDSA with public keys published at `/.well-known/jwks.json`), keep or refuse HS256 tokens during the switch (asks first, since the sessions that hold one must sign in again) and rotate the signing key (the previous one stays valid for the overlap). An option fixed by the environment of the server is locked; the sentences are in the eight languages.
 
 - **The settings tree is saved with `PUT /api/settings` and `If-Match`:** the window keeps the ETag of the last read and sends it back; when the server answers 412 (or 428) the window reads the tree again, sends the save once more if the server still holds the tree it last received (a robot that moved changes the revision), and otherwise shows the server's version with a message in the eight languages asking to apply the change again. A server without `PUT` is saved with `POST` as before; the factory reset refreshes a stale revision and goes through.

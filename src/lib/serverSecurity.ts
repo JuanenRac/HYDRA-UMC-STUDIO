@@ -104,6 +104,8 @@ export interface SecurityState {
     cameraCredentialsViaEnv: { value: boolean; source: SecuritySource };
     newInstallTls: { value: boolean; source: SecuritySource };
   } | null;
+  /** Absent when the server predates the request limits per address. */
+  rateLimits: RateLimitsState | null;
   /** Absent when the server predates the MAVLink options. The key itself is never sent, only where its file is. */
   mavlink: {
     signingKeyFile: { value: string; source: SecuritySource };
@@ -216,6 +218,66 @@ function parseExposure(raw: any): SecurityState['exposure'] {
   const voiceSignature = pick(raw.voice?.requireSignature);
   if (!cameraOpen || !wsQueryToken || !logRedaction || !voiceSignature) return null;
   return { cameraOpen, wsQueryToken, logRedaction, voiceSignature };
+}
+
+export const RATE_LIMIT_KEYS = ['loginMax', 'loginWindowSeconds', 'refreshMax', 'apiMax', 'sensitiveMax', 'apiWindowSeconds', 'stopAllMax', 'stopAllWindowSeconds'] as const;
+export type RateLimitKey = (typeof RATE_LIMIT_KEYS)[number];
+export interface RateLimitNumber {
+  value: number;
+  source: SecuritySource;
+  min: number;
+  max: number;
+}
+/** The switch and the eight numbers of the request limiters per address, each with where it comes from and its range. */
+export interface RateLimitsState {
+  enabled: { value: boolean; source: SecuritySource };
+  numbers: Record<RateLimitKey, RateLimitNumber>;
+}
+
+function parseRateLimits(raw: any): RateLimitsState | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const enabled = raw.enabled;
+  if (!enabled || typeof enabled.value !== 'boolean' || !isSource(enabled.source)) return null;
+  const numbers: Partial<Record<RateLimitKey, RateLimitNumber>> = {};
+  for (const key of RATE_LIMIT_KEYS) {
+    const entry = raw[key];
+    if (!entry || !Number.isInteger(entry.value) || !Number.isInteger(entry.min) || !Number.isInteger(entry.max) || !isSource(entry.source)) return null;
+    numbers[key] = { value: entry.value, source: entry.source, min: entry.min, max: entry.max };
+  }
+  return { enabled: { value: enabled.value, source: enabled.source }, numbers: numbers as Record<RateLimitKey, RateLimitNumber> };
+}
+
+/** The number typed in a box, or null when it is not a whole number inside the range. */
+export function parseRateLimitText(text: string, entry: Pick<RateLimitNumber, 'min' | 'max'>): number | null {
+  const trimmed = text.trim();
+  if (!/^\d{1,9}$/.test(trimmed)) return null;
+  const n = Number(trimmed);
+  return n >= entry.min && n <= entry.max ? n : null;
+}
+
+export type RateLimitsPatchBody = { rateLimits: Partial<Record<RateLimitKey, number>> & { enabled?: boolean } };
+
+/** The request body with only what changed and is not fixed by the server environment; null when a typed number is not valid or nothing changed. */
+export function rateLimitsPatch(current: RateLimitsState, enabled: boolean, texts: Record<RateLimitKey, string>): RateLimitsPatchBody | null {
+  const body: RateLimitsPatchBody['rateLimits'] = {};
+  if (!isLocked(current.enabled.source) && enabled !== current.enabled.value) body.enabled = enabled;
+  for (const key of RATE_LIMIT_KEYS) {
+    const entry = current.numbers[key];
+    const n = parseRateLimitText(texts[key], entry);
+    if (n === null) return null;
+    if (!isLocked(entry.source) && n !== entry.value) body[key] = n;
+  }
+  return Object.keys(body).length === 0 ? null : { rateLimits: body };
+}
+
+/** Whether the typed numbers are all valid (so the screen can say so before sending). */
+export function rateLimitTextsValid(current: RateLimitsState, texts: Record<RateLimitKey, string>): boolean {
+  return RATE_LIMIT_KEYS.every(key => parseRateLimitText(texts[key], current.numbers[key]) !== null);
+}
+
+/** Switching the limiters off lowers the protection: ask first. Switching them on never asks. */
+export function rateLimitsChangeNeedsConfirmation(current: RateLimitsState, enabled: boolean): boolean {
+  return current.enabled.value && !enabled;
 }
 
 function parseInstall(raw: any): SecurityState['install'] {
@@ -332,6 +394,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     jobDispatcher: parseJobDispatcher(raw.jobDispatcher),
     exposure: parseExposure(raw),
     install: parseInstall(raw),
+    rateLimits: parseRateLimits(raw.rateLimits),
     mavlink: parseMavlink(raw.mavlink),
   };
 }
@@ -613,6 +676,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'jwt_eddsa_on', 'jwt_hs256_refused'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'rate_limits_off', 'rate_limits_loose', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'jwt_eddsa_on', 'jwt_hs256_refused'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }
