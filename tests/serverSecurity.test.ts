@@ -468,7 +468,7 @@ describe('the request limits per address', () => {
     expect(state()!.numbers.loginMax).toEqual({ value: 5, source: 'default', min: 3, max: 100 });
     expect(state()!.numbers.stopAllMax.source).toBe('env');
     expect(parseSecurityState({ ...base })?.rateLimits).toBeNull();
-    expect(parseSecurityState({ ...base, rateLimits: { ...reported.rateLimits, apiMax: { value: 1.5, source: 'config', min: 60, max: 100000 } } })?.rateLimits).toBeNull();
+    expect(parseSecurityState({ ...base, rateLimits: { ...reported.rateLimits, apiMax: { value: 'x', source: 'config', min: 60, max: 100000 } } })?.rateLimits).toBeNull();
     expect(parseSecurityState({ ...base, rateLimits: { ...reported.rateLimits, enabled: { value: 'yes', source: 'config' } } })?.rateLimits).toBeNull();
   });
 

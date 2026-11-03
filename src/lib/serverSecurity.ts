@@ -241,7 +241,7 @@ function parseRateLimits(raw: any): RateLimitsState | null {
   const numbers: Partial<Record<RateLimitKey, RateLimitNumber>> = {};
   for (const key of RATE_LIMIT_KEYS) {
     const entry = raw[key];
-    if (!entry || !Number.isInteger(entry.value) || !Number.isInteger(entry.min) || !Number.isInteger(entry.max) || !isSource(entry.source)) return null;
+    if (!entry || typeof entry.value !== 'number' || !Number.isFinite(entry.value) || !Number.isInteger(entry.min) || !Number.isInteger(entry.max) || !isSource(entry.source)) return null;
     numbers[key] = { value: entry.value, source: entry.source, min: entry.min, max: entry.max };
   }
   return { enabled: { value: enabled.value, source: enabled.source }, numbers: numbers as Record<RateLimitKey, RateLimitNumber> };
@@ -263,16 +263,17 @@ export function rateLimitsPatch(current: RateLimitsState, enabled: boolean, text
   if (!isLocked(current.enabled.source) && enabled !== current.enabled.value) body.enabled = enabled;
   for (const key of RATE_LIMIT_KEYS) {
     const entry = current.numbers[key];
+    if (isLocked(entry.source)) continue; // fixed by the environment of the server: not edited, not sent
     const n = parseRateLimitText(texts[key], entry);
     if (n === null) return null;
-    if (!isLocked(entry.source) && n !== entry.value) body[key] = n;
+    if (n !== entry.value) body[key] = n;
   }
   return Object.keys(body).length === 0 ? null : { rateLimits: body };
 }
 
 /** Whether the typed numbers are all valid (so the screen can say so before sending). */
 export function rateLimitTextsValid(current: RateLimitsState, texts: Record<RateLimitKey, string>): boolean {
-  return RATE_LIMIT_KEYS.every(key => parseRateLimitText(texts[key], current.numbers[key]) !== null);
+  return RATE_LIMIT_KEYS.every(key => isLocked(current.numbers[key].source) || parseRateLimitText(texts[key], current.numbers[key]) !== null);
 }
 
 /** Switching the limiters off lowers the protection: ask first. Switching them on never asks. */
