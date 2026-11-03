@@ -279,7 +279,7 @@ HYDRA-UMC STUDIO 自体は純粋なクライアントです——現在のセッ
 | `/ws` | 状態のライブ配信（トークンは `hydra.bearer` サブプロトコル、`remoteApiVersion=2`） |
 | `/api/camera/*`, `/api/cameras/status` | カメラのストリーム、スナップショット、録画、PTZ、短命の画像チケット |
 | `/api/hardware/canota/version`, `/api/hardware/canota/flash` | Flasher と Tester が使う CAN-OTA チェーン（実機ができるまでは完全なシミュレーション） |
-| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin：アクセスのスイッチ、接続中のアプリ、サーバーログ、監査記録（管理者） |
+| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin：アクセスのスイッチ、接続中のアプリ、サーバーログ、監査記録（管理者）。種類フィルターと `robot-motion`・`model-submit` エントリの詳細には 8 言語の名前があります |
 
 ## ⚙️ 設定
 

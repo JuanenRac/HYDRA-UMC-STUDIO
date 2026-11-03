@@ -279,7 +279,7 @@ Le même contrat `GET`/`POST /api/settings`, plus un point de terminaison de dé
 | `/ws` | poussée en direct de l'état (jeton comme sous-protocole `hydra.bearer`, `remoteApiVersion=2`) |
 | `/api/camera/*`, `/api/cameras/status` | flux de caméra, instantanés, enregistrements, PTZ et le ticket d'image de courte durée |
 | `/api/hardware/canota/version`, `/api/hardware/canota/flash` | la chaîne CAN-OTA utilisée par Flasher et Tester (une simulation complète tant qu'il n'y a pas de vraies cartes) |
-| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin : les interrupteurs d'accès, les applications connectées, le journal du serveur et le registre d'audit (administrateurs) |
+| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin : les interrupteurs d'accès, les applications connectées, le journal du serveur et le registre d'audit (administrateurs); le filtre de type et le détail des entrées `robot-motion` et `model-submit` ont un nom dans les huit langues |
 
 ## ⚙️ Configuration
 

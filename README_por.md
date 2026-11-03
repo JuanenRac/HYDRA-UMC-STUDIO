@@ -279,7 +279,7 @@ O `GET /api/system/metrics` alimenta o rodapé do painel Resumo: a carga da CPU 
 | `/ws` | envio em direto do estado (token como subprotocolo `hydra.bearer`, `remoteApiVersion=2`) |
 | `/api/camera/*`, `/api/cameras/status` | fluxos de câmara, instantâneos, gravações, PTZ e o bilhete de imagem de curta duração |
 | `/api/hardware/canota/version`, `/api/hardware/canota/flash` | a cadeia CAN-OTA usada pelo Flasher e pelo Tester (uma simulação completa até existirem placas reais) |
-| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin: os interruptores de acesso, as aplicações ligadas, o registo do servidor e o registo de auditoria (administradores) |
+| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin: os interruptores de acesso, as aplicações ligadas, o registo do servidor e o registo de auditoria (administradores); o filtro de tipo e o detalhe das entradas `robot-motion` e `model-submit` têm nome nos oito idiomas |
 
 ## ⚙️ Configuração
 

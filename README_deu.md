@@ -279,7 +279,7 @@ Derselbe `GET`-/`POST /api/settings`-Vertrag, plus ein Discovery-Endpunkt (`GET 
 | `/ws` | Live-Push des Zustands (Token als Subprotokoll `hydra.bearer`, `remoteApiVersion=2`) |
 | `/api/camera/*`, `/api/cameras/status` | Kamerastreams, Schnappschüsse, Aufnahmen, PTZ und das kurzlebige Bildticket |
 | `/api/hardware/canota/version`, `/api/hardware/canota/flash` | die CAN-OTA-Kette für Flasher und Tester (eine vollständige Simulation, bis es echte Platinen gibt) |
-| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin: die Zugriffsschalter, die verbundenen Apps, das Serverprotokoll und der Audit-Eintrag (Administratoren) |
+| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin: die Zugriffsschalter, die verbundenen Apps, das Serverprotokoll und der Audit-Eintrag (Administratoren); der Typfilter und die Details der Einträge `robot-motion` und `model-submit` haben Namen in den acht Sprachen |
 
 ## ⚙️ Konfiguration
 

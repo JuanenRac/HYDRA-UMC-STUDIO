@@ -279,7 +279,7 @@ El mismo contrato `GET`/`POST /api/settings`, más un endpoint de descubrimiento
 | `/ws` | envío en vivo del estado (token como subprotocolo `hydra.bearer`, `remoteApiVersion=2`) |
 | `/api/camera/*`, `/api/cameras/status` | flujos de cámara, instantáneas, grabaciones, PTZ y el ticket de imagen de corta vida |
 | `/api/hardware/canota/version`, `/api/hardware/canota/flash` | la cadena CAN-OTA que usan Flasher y Tester (una simulación completa hasta que existan placas reales) |
-| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin: los interruptores de acceso, las aplicaciones conectadas, el registro del servidor y el registro de auditoría (administradores) |
+| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin: los interruptores de acceso, las aplicaciones conectadas, el registro del servidor y el registro de auditoría (administradores); el filtro de tipo y el detalle de las entradas `robot-motion` y `model-submit` tienen nombre en los ocho idiomas |
 
 ## ⚙️ Configuración
 

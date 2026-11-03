@@ -279,7 +279,7 @@ HYDRA-UMC STUDIO 本身是一个纯客户端——除了当前会话在内存中
 | `/ws` | 状态实时推送（令牌作为 `hydra.bearer` 子协议，`remoteApiVersion=2`） |
 | `/api/camera/*`, `/api/cameras/status` | 摄像头流、快照、录像、PTZ 和短时有效的图像票据 |
 | `/api/hardware/canota/version`, `/api/hardware/canota/flash` | Flasher 和 Tester 使用的 CAN-OTA 链（在真实板卡出现前是完整的模拟） |
-| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin：访问开关、已连接的应用、服务器日志和审计记录（管理员） |
+| `/api/admin/server-config`, `/api/admin/clients`, `/api/admin/logs`, `/api/audit` | Server Admin：访问开关、已连接的应用、服务器日志和审计记录（管理员）；类型筛选器以及 `robot-motion` 和 `model-submit` 条目的详情有八种语言的名称 |
 
 ## ⚙️ 配置
 
