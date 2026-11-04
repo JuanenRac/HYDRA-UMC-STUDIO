@@ -21,5 +21,8 @@
   "native_version": {
     "file": "package.json",
     "pattern": "\"version\":\\s*\"(\\d+)\\.(\\d+)\\.(\\d+)(?:\\.(\\d+))?\""
-  }
+  },
+  "depends_on": [
+    "HYDRA-UMC-SERVER"
+  ]
 }
