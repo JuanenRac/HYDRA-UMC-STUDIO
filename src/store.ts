@@ -560,6 +560,8 @@ export interface SystemSettings {
     enabled: boolean;
     /** Relative to the server's own data/ directory - e.g. "models/submitted". Created on first accepted submission if it doesn't exist yet. */
     destinationFolder: string;
+    /** Refuse a submission that comes without the licence and credit of the model. Off by default. */
+    requireAttribution?: boolean;
   };
   uiLayout?: {
     rightPanelWidth?: number;

@@ -14,6 +14,8 @@ export interface SubmittedModel {
   category: string;
   /** ISO text of the submission, or null when the server did not say. */
   submittedAt: string | null;
+  /** The licence and credit the submitter gave, or null when there is none. */
+  attribution: string | null;
 }
 
 export type CatalogError = 'login_required' | 'server' | 'network';
@@ -35,7 +37,7 @@ export function parseModelCatalog(data: unknown): SubmittedModel[] {
     const slug = text(entry.slug);
     const category = text(entry.category);
     if (!slug || !category) continue;
-    models.push({ slug, category, name: text(entry.name) ?? slug, submittedAt: text(entry.submittedAt) });
+    models.push({ slug, category, name: text(entry.name) ?? slug, submittedAt: text(entry.submittedAt), attribution: text(entry.attribution) });
   }
   return models.sort((a, b) => {
     if (a.submittedAt !== b.submittedAt) return (b.submittedAt ?? '').localeCompare(a.submittedAt ?? '');

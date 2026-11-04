@@ -19,7 +19,19 @@ describe('the catalogue of submitted models', () => {
       ],
     });
     expect(models.map((m) => m.slug)).toEqual(['a', 'b', 'c', 'd']);
-    expect(models[2]).toEqual({ slug: 'c', name: 'c', category: 'tools', submittedAt: null });
+    expect(models[2]).toEqual({ slug: 'c', name: 'c', category: 'tools', submittedAt: null, attribution: null });
+  });
+
+  it('keeps the licence and credit the submitter gave and ignores anything that is not text', () => {
+    const models = parseModelCatalog({
+      models: [
+        { slug: 'a', category: 'robots', attribution: 'CC-BY 4.0, by Someone' },
+        { slug: 'b', category: 'robots', attribution: 7 },
+        { slug: 'c', category: 'robots', attribution: '   ' },
+      ],
+    });
+    expect(models.map((m) => m.attribution).filter((a) => a !== null)).toEqual(['CC-BY 4.0, by Someone']);
+    expect(models).toHaveLength(3);
   });
 
   it('is an empty list for anything that is not a list of models', () => {
@@ -28,7 +40,7 @@ describe('the catalogue of submitted models', () => {
 
   it('tells a refusal that asks for a sign-in from a server error and from no answer', async () => {
     expect(await fetchModelCatalog(answer(200, { models: [{ slug: 'a', name: 'A', category: 'c' }] }), '/api/models')).toEqual({
-      models: [{ slug: 'a', name: 'A', category: 'c', submittedAt: null }], error: null,
+      models: [{ slug: 'a', name: 'A', category: 'c', submittedAt: null, attribution: null }], error: null,
     });
     expect((await fetchModelCatalog(answer(401, { error: 'x' }), '/api/models')).error).toBe('login_required');
     expect((await fetchModelCatalog(answer(403, {}), '/api/models')).error).toBe('login_required');

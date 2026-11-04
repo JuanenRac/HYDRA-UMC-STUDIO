@@ -71,6 +71,7 @@ export function SubmittedModels() {
                 <th className="px-4 py-2 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.submitted_models_name')}</th>
                 <th className="px-4 py-2 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.submitted_models_category')}</th>
                 <th className="px-4 py-2 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.submitted_models_date')}</th>
+                <th className="px-4 py-2 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.submitted_models_attribution')}</th>
                 <th className="px-4 py-2"></th>
               </tr>
             </thead>
@@ -80,6 +81,7 @@ export function SubmittedModels() {
                   <td className="px-4 py-2 text-slate-200 font-bold">{model.name}</td>
                   <td className="px-4 py-2 text-slate-400 font-mono">{model.category}</td>
                   <td className="px-4 py-2 text-slate-500 font-mono">{model.submittedAt ? model.submittedAt.replace('T', ' ').replace(/\.\d+Z?$/, '') : '-'}</td>
+                  <td className="px-4 py-2 text-slate-500 max-w-[16rem] truncate" title={model.attribution ?? undefined}>{model.attribution ?? '-'}</td>
                   <td className="px-4 py-2 text-right">
                     <button onClick={() => void download(model)} aria-label={t('config.submitted_models_download', { name: model.name })} title={t('config.submitted_models_download', { name: model.name })} className="text-slate-500 hover:text-sky-400 transition-colors">
                       <Download size={14} />

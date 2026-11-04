@@ -705,17 +705,24 @@ export function Config({ onClose }: { onClose: () => void }) {
                   <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-inner">
                     <div className="flex items-center justify-between">
                       <span className="font-black text-emerald-400 uppercase text-[10px] tracking-widest">{t('config.model_submissions_enable')}</span>
-                      <input type="checkbox" checked={settings.modelSubmissions?.enabled ?? false} onChange={(e) => updateSettings({ modelSubmissions: { enabled: e.target.checked, destinationFolder: settings.modelSubmissions?.destinationFolder ?? 'models/submitted' } })} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500" />
+                      <input type="checkbox" checked={settings.modelSubmissions?.enabled ?? false} onChange={(e) => updateSettings({ modelSubmissions: { ...settings.modelSubmissions, enabled: e.target.checked, destinationFolder: settings.modelSubmissions?.destinationFolder ?? 'models/submitted' } })} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('config.model_submissions_folder')}</label>
                       <input
                         value={settings.modelSubmissions?.destinationFolder ?? 'models/submitted'}
-                        onChange={(e) => updateSettings({ modelSubmissions: { enabled: settings.modelSubmissions?.enabled ?? false, destinationFolder: e.target.value } })}
+                        onChange={(e) => updateSettings({ modelSubmissions: { ...settings.modelSubmissions, enabled: settings.modelSubmissions?.enabled ?? false, destinationFolder: e.target.value } })}
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-slate-100 font-mono outline-none focus:border-emerald-400 transition-all"
                         placeholder="models/submitted"
                       />
                       <p className="text-[10px] text-slate-600 italic leading-relaxed">{t('config.model_submissions_folder_desc')}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-black text-emerald-400 uppercase text-[10px] tracking-widest">{t('config.model_submissions_require_attribution')}</span>
+                        <input type="checkbox" checked={settings.modelSubmissions?.requireAttribution ?? false} onChange={(e) => updateSettings({ modelSubmissions: { ...settings.modelSubmissions, enabled: settings.modelSubmissions?.enabled ?? false, destinationFolder: settings.modelSubmissions?.destinationFolder ?? 'models/submitted', requireAttribution: e.target.checked } })} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500" />
+                      </div>
+                      <p className="text-[10px] text-slate-600 italic leading-relaxed">{t('config.model_submissions_require_attribution_desc')}</p>
                     </div>
                   </div>
                 </div>

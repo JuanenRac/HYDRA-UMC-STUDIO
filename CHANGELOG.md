@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Licence and credit of the submitted models:** Config > Models lists the credit each model came with and has a switch (off by default) that makes the server refuse a submission without it, in the eight languages.
+
 - **The command handlers of the robot screen live in their own hook (`src/hooks/useRobotCommands.ts`):** recording a point, the Cartesian and base jogs, HOME and RESET, the XY table slider, RESET 3D and the valves and pumps moved out of `RobotDetail.tsx` (about 200 lines fewer) with the same behaviour and their own tests of what each one sends to the command channel.
 
 - **The files of trajectories and scenes leave the provider:** the name of a saved trajectory, the reading of a trajectory or scene file (points, one pose or the reason it is refused) and the download of a JSON file are in `src/lib/sceneFiles.ts` with their own tests (8), and the stop robot by robot (the fallback of the global STOP) moved to `src/lib/stopAll.ts` with 2 tests of its own (valves and pumps off, one retry of a network failure), so `HydraProvider` keeps only the state and the commands. No change in what the screens do.
