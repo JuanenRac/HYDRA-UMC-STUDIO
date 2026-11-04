@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The files of trajectories and scenes leave the provider:** the name of a saved trajectory, the reading of a trajectory or scene file (points, one pose or the reason it is refused) and the download of a JSON file are in `src/lib/sceneFiles.ts` with their own tests (8), so `HydraProvider` keeps only the state and the commands. No change in what the screens do.
+
 - **The AI dashboard inside the app:** a new entry in the Ecosystem menu shows the dashboard of the AI services (trend summary, anomaly check, fleet view) that the server serves at `/dashboard-ai`, in a frame that follows the height the page announces. The page uses the login of this app, so it is framed only when it comes from the same address; from another address the panel says so and offers a link. The message about the height is believed only from the frame itself, from the origin of the page, with the expected type and a sensible number. The texts are in the eight languages and 5 new tests cover the checks.
 
 - **Server Admin > Machine bridges:** the switches of BRIDGE-DROIDS (`globalStop`, `cutOnGlobalStop`), BRIDGE-UAV (`missionUploadEnabled`), BRIDGE-AMR (`publishState`, `publishOpcua`, `zoneInterlock`, `zoneUnknown`) and BRIDGE-OPENPNP (`boardCode`), each with its value, its source, its default and the name the bridge reads on its own host. Only what changed is sent, turning on a risky function asks first, the warnings of the server are shown, and the screen says whether the gateway that carries the values to the bridges is on. A server that does not report the switches does not show the section. The texts are in the eight languages.

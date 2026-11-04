@@ -41,7 +41,7 @@ import { isUnknownCommand, markTableCommand, serverHasTableCommand, tableAsJogs 
 import { createEditQueue, markEditCommands, planRobotEdits, serverHasEditCommands, type RobotEditCommand } from './lib/robotEdits';
 import { isTemperatureWarning, parseWarnings } from './lib/safetyLimits';
 import { type StopAllReport, type StopAllRobot, requestStopAllWithRetry } from './lib/stopAll';
-import { validateSceneRobots, validateTrajectoryPoints } from './lib/importValidation';
+import { downloadJson, kinematicsFileName, readSceneFile, readTrajectoryFile } from './lib/sceneFiles';
 import { HydraStoreProviders } from './storeContexts';
 import { saveSettingsTree, type FetchLike } from './lib/settingsConcurrency';
 import { type CameraState, type HydraController, type RobotState, type SystemSettings, decodeJwtRole, defaultControllers } from './store';
@@ -1120,17 +1120,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const saveKinematics = (id: number) => {
     const robot = robots.find(r => r.id === id);
     if (!robot || robot.recordedPoints.length === 0) return;
-    const data = JSON.stringify(robot.recordedPoints, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const prefix = settings.worksPaths?.[robot.id] ? settings.worksPaths[robot.id].replace(/\//g, '_') + '_' : '';
-    a.download = `${prefix}kinematics_${robot.name.replace(/\s+/g, '_')}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadJson(kinematicsFileName(robot.name, settings.worksPaths?.[robot.id]), robot.recordedPoints);
   };
 
   const loadKinematics = (id: number, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1138,29 +1128,20 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
-      try {
-        const json = JSON.parse(event.target?.result as string);
-        if (Array.isArray(json)) {
-          const checked = validateTrajectoryPoints(json);
-          if (!checked.ok) {
-            reportCommandIssue({ code: 'import_invalid', command: 'trajectory', robotIds: [id], detail: checked.error });
-            return;
-          }
-          // The atomic trajectory command: the server stores the points and resets the playback cursor, so the Play
-          // that follows plays THESE points (a plain settings edit reached it half a second later, or not at all).
-          void sendRobotCommand(
-            id,
-            'trajectory',
-            { points: checked.value },
-            () => ({ recordedPoints: checked.value as RobotState['recordedPoints'] }),
-          );
-        } else if (json && typeof json.x === 'number') {
-          updateRobot(id, { pos: { ...json } });
-        } else {
-          reportCommandIssue({ code: 'import_invalid', command: 'trajectory', robotIds: [id], detail: 'not a trajectory' });
-        }
-      } catch {
-        reportCommandIssue({ code: 'import_invalid', command: 'trajectory', robotIds: [id], detail: 'not valid JSON' });
+      const read = readTrajectoryFile(String(event.target?.result ?? ''));
+      if (read.kind === 'points') {
+        // The atomic trajectory command: the server stores the points and resets the playback cursor, so the Play
+        // that follows plays THESE points (a plain settings edit reached it half a second later, or not at all).
+        void sendRobotCommand(
+          id,
+          'trajectory',
+          { points: read.points },
+          () => ({ recordedPoints: read.points as RobotState['recordedPoints'] }),
+        );
+      } else if (read.kind === 'pose') {
+        updateRobot(id, { pos: read.pose as unknown as RobotState['pos'] });
+      } else {
+        reportCommandIssue({ code: 'import_invalid', command: 'trajectory', robotIds: [id], detail: read.detail });
       }
     };
     reader.readAsText(file);
@@ -1168,16 +1149,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const exportScene = () => {
-    const data = JSON.stringify(robots, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `hydra_scene.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadJson('hydra_scene.json', robots);
   };
 
   const importScene = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1185,17 +1157,12 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
-      try {
-        const json = JSON.parse(event.target?.result as string);
-        const checked = validateSceneRobots(json);
-        if (!checked.ok) {
-          reportCommandIssue({ code: 'import_invalid', command: 'scene', robotIds: [], detail: checked.error });
-          return;
-        }
-        updateController(activeControllerId, { robots: checked.value as unknown as RobotState[] });
-      } catch {
-        reportCommandIssue({ code: 'import_invalid', command: 'scene', robotIds: [], detail: 'not valid JSON' });
+      const read = readSceneFile(String(event.target?.result ?? ''));
+      if (!read.ok) {
+        reportCommandIssue({ code: 'import_invalid', command: 'scene', robotIds: [], detail: read.detail });
+        return;
       }
+      updateController(activeControllerId, { robots: read.robots as unknown as RobotState[] });
     };
     reader.readAsText(file);
     e.target.value = '';
