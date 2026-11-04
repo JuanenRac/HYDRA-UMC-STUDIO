@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The trajectory files and the G-code export moved out of the robot screen:** the listing of the WORKS folder and the save of the recorded points are in `hooks/useWorkFiles.ts` and the G-code text in `lib/gcodeExport.ts`, unchanged, with nine tests.
+
 - **The session moved out of the global state provider:** the token read on the first render, the sign-in with its second step, the silent renewal and the sign-out are in `hooks/useAuthSession.ts`, unchanged, with eight tests; the provider keeps the settings, the socket and the robots.
 
 - **Licence and credit of the submitted models:** Config > Models lists the credit each model came with and has a switch (off by default) that makes the server refuse a submission without it, in the eight languages.

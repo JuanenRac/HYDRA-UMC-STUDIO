@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { RotaryKnob } from "./RotaryKnob";
 import { FuturisticSlider } from "./FuturisticSlider";
 import { useTranslation } from 'react-i18next';
@@ -30,6 +30,8 @@ import { RobotAccessBar } from './RobotAccessBar';
 import { currentPlaybackStep } from '../lib/playbackStep';
 import { withCartesian, browserStorage, normalizeTrajectoryForRobot } from '../lib/robotDetailHelpers';
 import { useCommandFeedback, useFleet, useSession, useSettingsStore } from '../storeContexts';
+import { useWorkFiles } from '../hooks/useWorkFiles';
+import { buildGCode, gcodeFileName } from '../lib/gcodeExport';
 
 /**
  * Executes the  robot detail logic.
@@ -89,7 +91,6 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   const jogStep = robot.jogStep ?? 1;
   const setJogStep = (v: number) => sendRobotCommand(robot.id, 'jogStep', { value: v }, () => ({ jogStep: v }));
   const [selectedExample, setSelectedExample] = useState<string>(robot.selectedExample || '');
-  const [workFiles, setWorkFiles] = useState<string[]>([]);
   const [selectedWorkFile, setSelectedWorkFile] = useState<string>(robot.selectedWorkFile || '');
   // Real "adjust state during render" pattern (React's own recommended
   // replacement for a reset-only effect): both selectedExample and
@@ -107,132 +108,28 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   const [editingPointKey, setEditingPointKey] = useState<number | null>(null);
   const [editingPointData, setEditingPointData] = useState<any>({});
 
-  // Guards against an out-of-order response: fetchWorks() is called both from
-  // the effect below (whenever worksFolderPath changes) and manually after
-  // save/upload - nothing stopped an OLDER in-flight request from resolving
-  // AFTER a newer one and overwriting workFiles with stale data. Bumping this
-  // ref on every call and checking it's still the latest call before each
-  // setState turns a superseded response into a no-op instead of a race.
-  const worksFetchIdRef = useRef(0);
+  // The listing of this robot's WORKS folder, saving a trajectory to it and the G-code export live in hooks/useWorkFiles.ts and lib/gcodeExport.ts.
+  const { workFiles, fetchWorks, saveWorkFile: handleSaveWorkFile } = useWorkFiles({
+    robotId: robot.id,
+    robotName: robot.name,
+    worksPaths: settings.worksPaths,
+    authToken,
+    recordedPoints: robot.recordedPoints,
+    selectedWorkFile,
+    t,
+    onSaved: (fileName) => {
+      setSelectedWorkFile(fileName);
+      updateRobot(robot.id, { selectedWorkFile: fileName });
+    },
+  });
 
-  // Depends on the resolved PATH STRING for this one robot, not the whole
-  // settings.worksPaths object - that object is a fresh reference every
-  // time ANY setting anywhere changes (see store.tsx's own applyServerData,
-  // which used to make this worse by reshaping settings on every WebSocket
-  // broadcast), so depending on it directly re-ran this real network fetch
-  // (GET /${folderPath}/index.json) on every single jog tick from ANY
-  // connected client the instant a robot panel was open - the concrete
-  // mechanism behind this panel specifically (not other module panels,
-  // which have no such fetch) being far slower than everything else in
-  // the app. A plain string only changes reference (and re-triggers
-  // fetchWorks's own identity, and thus the effect below) when this
-  // robot's OWN folder path value actually changes.
-  const worksFolderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
-  const fetchWorks = useCallback(async () => {
-    const fetchId = ++worksFetchIdRef.current;
-    try {
-      const res = await fetch(apiUrl(`/${worksFolderPath}/index.json`));
-      if (fetchId !== worksFetchIdRef.current) return;
-      if (res.ok) {
-        const files = await res.json();
-        if (fetchId !== worksFetchIdRef.current) return;
-        setWorkFiles(Array.isArray(files) ? files.filter((f): f is string => typeof f === "string") : []);
-      } else {
-        setWorkFiles([]);
-      }
-    } catch {
-      if (fetchId === worksFetchIdRef.current) setWorkFiles([]);
-    }
-  }, [worksFolderPath]);
-
-  // Genuine "synchronize with an external system" effect (a real fetch of
-  // this robot's WORKS folder listing) - the sanctioned use the lint
-  // rule's own text carves out, not the "derive local state" case it's
-  // meant to catch.
-  useEffect(() => {
-    fetchWorks(); // eslint-disable-line -- real fetch, not a derived-state reset
-  }, [fetchWorks]);
-
-  const handleSaveWorkFile = async () => {
-    if (robot.recordedPoints.length === 0) return;
-    const defaultName = selectedWorkFile ? selectedWorkFile.replace('.json', '') : 'trayectoria_1';
-    let fileName = window.prompt(t('robot_detail.save_filename', 'Nombre del archivo (sin .json):'), defaultName);
-    if (!fileName) return;
-    if (!fileName.endsWith('.json')) fileName += '.json';
-    
-    try {
-      const folderPath = settings.worksPaths?.[robot.id] || `WORKS/${robot.name.replace(/\s+/g, '')}`;
-      // Server now requires a bearer token on this route (see server.ts's
-      // own comment on POST /api/upload-work) - without this header every
-      // save silently 401s for a logged-in user.
-      const res = await fetch(apiUrl('/api/upload-work'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
-        body: JSON.stringify({
-          folderPath,
-          fileName: fileName,
-          content: robot.recordedPoints
-        })
-      });
-      if (res.ok) {
-        await fetchWorks();
-        setSelectedWorkFile(fileName);
-        updateRobot(robot.id, { selectedWorkFile: fileName });
-      } else {
-        console.error('Failed to save work file');
-      }
-    } catch (err) {
-      console.error('Error saving file', err);
-    }
-  };
-
-  // Exports robot.recordedPoints as standard G-code (review note:
-  // "Permitir la exportaciÃ³n de trayectorias a archivos G-Code estÃ¡ndar").
-  // Uses each point's own Cartesian pose (x/y/z/a/b/c, deriving it via the
-  // same withCartesian() every example/upload already goes through - a
-  // point recorded from the live 3D view already carries it, one loaded
-  // from an older WORKS/ file predating this might not) rather than joint
-  // angles: G-code is a Cartesian TOOL-PATH format, not a joint-space one,
-  // and every existing G-code consumer (CAM viewers, most CNC post-
-  // processors) expects X/Y/Z/(A/B/C) words, not J1-J6. A/B/C are emitted
-  // as the rotary-axis words several real G-code dialects (RepRap-derived
-  // firmware, 5/6-axis mill posts) already use for exactly this - not a
-  // universal standard for 6-DOF orientation, so the header comment below
-  // says so explicitly rather than implying this is a validated post for
-  // any specific downstream machine/viewer.
   const handleExportGCode = () => {
     if (robot.recordedPoints.length === 0) return;
-    const points = robot.recordedPoints.map(withCartesian);
-    const fmt = (n: number | undefined) => (typeof n === 'number' && Number.isFinite(n) ? n.toFixed(3) : undefined);
-    const lines = [
-      `; HYDRA-UMC STUDIO - G-code export`,
-      `; Robot: ${robot.name}`,
-      `; Points: ${points.length}`,
-      `; NOTE: A/B/C are this robot's own tool orientation (degrees), following the`,
-      `;       same A/B/C convention several real G-code dialects use for rotary`,
-      `;       axes - not a universal 6-DOF standard. Verify against your actual`,
-      `;       downstream machine/viewer before running this on real hardware.`,
-      `G21 ; millimeters`,
-      `G90 ; absolute positioning`,
-    ];
-    points.forEach((pt, i) => {
-      const words = [`G1`];
-      const x = fmt(pt.x), y = fmt(pt.y), z = fmt(pt.z), a = fmt(pt.a), b = fmt(pt.b), c = fmt(pt.c);
-      if (x !== undefined) words.push(`X${x}`);
-      if (y !== undefined) words.push(`Y${y}`);
-      if (z !== undefined) words.push(`Z${z}`);
-      if (a !== undefined) words.push(`A${a}`);
-      if (b !== undefined) words.push(`B${b}`);
-      if (c !== undefined) words.push(`C${c}`);
-      lines.push(`${words.join(' ')} ; point ${i + 1}`);
-    });
-    lines.push(`M2 ; end of program`);
-
-    const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/plain' });
+    const blob = new Blob([buildGCode(robot.name, robot.recordedPoints)], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${robot.name.replace(/\s+/g, '_')}.gcode`;
+    a.download = gcodeFileName(robot.name);
     a.click();
     URL.revokeObjectURL(url);
   };
