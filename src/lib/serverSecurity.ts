@@ -106,6 +106,8 @@ export interface SecurityState {
   } | null;
   /** Absent when the server predates the request limits per address. */
   rateLimits: RateLimitsState | null;
+  /** Absent when the server predates the switches of the machine bridges. */
+  bridges: BridgesState | null;
   /** Absent when the server predates the MAVLink options. The key itself is never sent, only where its file is. */
   mavlink: {
     signingKeyFile: { value: string; source: SecuritySource };
@@ -281,6 +283,70 @@ export function rateLimitsChangeNeedsConfirmation(current: RateLimitsState, enab
   return current.enabled.value && !enabled;
 }
 
+export type BridgeValue = boolean | string;
+/** One switch of a machine bridge as the server reports it. */
+export interface BridgeOption {
+  bridge: string;
+  key: string;
+  value: BridgeValue;
+  /** Where the value comes from: what an administrator saved, or the conservative default. */
+  source: 'config' | 'default';
+  default: BridgeValue;
+  /** The values that ask for a confirmation before they are saved. */
+  risky: BridgeValue[];
+  /** The words of a choice, or null for an on/off switch. */
+  choices: string[] | null;
+  /** The name the bridge reads on its own host. */
+  localName: string;
+}
+export interface BridgesState {
+  /** Whether the bridge gateway is on, which is what carries the values to the bridges. */
+  delivery: 'gateway_on' | 'gateway_off';
+  options: BridgeOption[];
+}
+
+const isBridgeScalar = (v: unknown): v is BridgeValue => typeof v === 'boolean' || typeof v === 'string';
+
+function parseBridges(raw: any): BridgesState | null {
+  if (!raw || typeof raw !== 'object') return null;
+  if (raw.delivery !== 'gateway_on' && raw.delivery !== 'gateway_off') return null;
+  const options: BridgeOption[] = [];
+  for (const [bridge, body] of Object.entries(raw)) {
+    if (bridge === 'delivery') continue;
+    if (!body || typeof body !== 'object') return null;
+    for (const [key, entry] of Object.entries(body as Record<string, any>)) {
+      if (!entry || !isBridgeScalar(entry.value) || !isBridgeScalar(entry.default) || (entry.source !== 'config' && entry.source !== 'default') || !Array.isArray(entry.risky) || !entry.risky.every(isBridgeScalar) || typeof entry.localName !== 'string') return null;
+      const choices = Array.isArray(entry.choices) && entry.choices.every((c: unknown) => typeof c === 'string') ? (entry.choices as string[]) : null;
+      options.push({ bridge, key, value: entry.value, source: entry.source, default: entry.default, risky: entry.risky, choices, localName: entry.localName });
+    }
+  }
+  return options.length === 0 ? null : { delivery: raw.delivery, options };
+}
+
+/** The identity of an option in the form: `bridge.key`. */
+export const bridgeOptionId = (o: Pick<BridgeOption, 'bridge' | 'key'>): string => `${o.bridge}.${o.key}`;
+
+export type BridgesPatchBody = { bridges: Record<string, Record<string, BridgeValue>> };
+
+/** The request body with only what changed; null when nothing did. `values` is keyed by `bridge.key`. */
+export function bridgesPatch(current: BridgesState, values: Record<string, BridgeValue>): BridgesPatchBody | null {
+  const body: BridgesPatchBody['bridges'] = {};
+  for (const o of current.options) {
+    const v = values[bridgeOptionId(o)];
+    if (v === undefined || v === o.value) continue;
+    (body[o.bridge] ??= {})[o.key] = v;
+  }
+  return Object.keys(body).length === 0 ? null : { bridges: body };
+}
+
+/** A change that turns on a risky function (or takes a protection away) is asked about first; every other change is not. */
+export function bridgesChangeNeedsConfirmation(current: BridgesState, patch: BridgesPatchBody): boolean {
+  return current.options.some(o => {
+    const v = patch.bridges[o.bridge]?.[o.key];
+    return v !== undefined && o.risky.includes(v);
+  });
+}
+
 function parseInstall(raw: any): SecurityState['install'] {
   if (!raw || typeof raw !== 'object') return null;
   const pick = (value: any) => (value && typeof value.value === 'boolean' && isSource(value.source) ? { value: value.value as boolean, source: value.source as SecuritySource } : null);
@@ -396,6 +462,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     exposure: parseExposure(raw),
     install: parseInstall(raw),
     rateLimits: parseRateLimits(raw.rateLimits),
+    bridges: parseBridges(raw.bridges),
     mavlink: parseMavlink(raw.mavlink),
   };
 }
@@ -677,6 +744,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'rate_limits_off', 'rate_limits_loose', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'jwt_eddsa_on', 'jwt_hs256_refused'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'rate_limits_off', 'rate_limits_loose', 'bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'jwt_eddsa_on', 'jwt_hs256_refused'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }

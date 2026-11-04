@@ -494,3 +494,46 @@ describe('the request limits per address', () => {
     expect(knownWarnings(['rate_limits_off', 'rate_limits_loose', 'other'])).toEqual(['rate_limits_off', 'rate_limits_loose']);
   });
 });
+
+import { bridgeOptionId, bridgesChangeNeedsConfirmation, bridgesPatch } from '../src/lib/serverSecurity';
+
+describe('the switches of the machine bridges', () => {
+  const opt = (value: boolean | string, def: boolean | string, risky: Array<boolean | string>, extra: object = {}) => ({ value, source: value === def ? 'default' : 'config', default: def, risky, localName: 'LOCAL', ...extra });
+  const reported = {
+    bridges: {
+      delivery: 'gateway_off',
+      droids: { globalStop: opt(false, false, []), cutOnGlobalStop: opt(true, true, [false]) },
+      uav: { missionUploadEnabled: opt(false, false, [true]) },
+      amr: { publishState: opt(false, false, []), zoneUnknown: opt('pause', 'pause', ['ignore'], { choices: ['pause', 'ignore'] }) },
+      openpnp: { boardCode: opt('off', 'off', [], { choices: ['off', 'advisory', 'required'] }) },
+    },
+  };
+  const state = () => parseSecurityState({ ...answer, ...reported })?.bridges ?? null;
+  const values = () => Object.fromEntries(state()!.options.map(o => [bridgeOptionId(o), o.value]));
+
+  it('reads every switch with its value, origin, default and risky values, and is absent when the server predates them or reports one damaged', () => {
+    expect(state()!.delivery).toBe('gateway_off');
+    expect(state()!.options.map(bridgeOptionId)).toEqual(['droids.globalStop', 'droids.cutOnGlobalStop', 'uav.missionUploadEnabled', 'amr.publishState', 'amr.zoneUnknown', 'openpnp.boardCode']);
+    const zone = state()!.options.find(o => o.key === 'zoneUnknown')!;
+    expect(zone).toMatchObject({ value: 'pause', source: 'default', default: 'pause', risky: ['ignore'], choices: ['pause', 'ignore'] });
+    expect(parseSecurityState({ ...answer })?.bridges).toBeNull();
+    expect(parseSecurityState({ ...answer, bridges: { ...reported.bridges, delivery: 'maybe' } })?.bridges).toBeNull();
+    expect(parseSecurityState({ ...answer, bridges: { ...reported.bridges, uav: { missionUploadEnabled: { value: 'x' } } } })?.bridges).toBeNull();
+  });
+
+  it('sends only what changed and nothing when nothing did', () => {
+    expect(bridgesPatch(state()!, values())).toBeNull();
+    expect(bridgesPatch(state()!, { ...values(), 'amr.publishState': true, 'openpnp.boardCode': 'advisory' })).toEqual({ bridges: { amr: { publishState: true }, openpnp: { boardCode: 'advisory' } } });
+  });
+
+  it('asks for a confirmation only when a risky value is chosen', () => {
+    const s = state()!;
+    const ask = (change: Record<string, boolean | string>) => bridgesChangeNeedsConfirmation(s, bridgesPatch(s, { ...values(), ...change })!);
+    expect(ask({ 'uav.missionUploadEnabled': true })).toBe(true);
+    expect(ask({ 'amr.zoneUnknown': 'ignore' })).toBe(true);
+    expect(ask({ 'droids.cutOnGlobalStop': false })).toBe(true);
+    expect(ask({ 'amr.publishState': true })).toBe(false);
+    expect(ask({ 'openpnp.boardCode': 'required' })).toBe(false);
+    expect(knownWarnings(['bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'other'])).toEqual(['bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop']);
+  });
+});

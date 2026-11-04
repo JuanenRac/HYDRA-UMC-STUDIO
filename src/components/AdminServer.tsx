@@ -25,7 +25,7 @@ import { apiUrl } from '../lib/apiBase';
 import { authFetch } from '../lib/session';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
-import { RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
+import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
 
 interface HydraInfo {
@@ -118,6 +118,8 @@ export function AdminServer() {
   const [rlEnabled, setRlEnabled] = useState(true);
   const [rlTexts, setRlTexts] = useState<Record<RateLimitKey, string>>({ loginMax: '', loginWindowSeconds: '', refreshMax: '', apiMax: '', sensitiveMax: '', apiWindowSeconds: '', stopAllMax: '', stopAllWindowSeconds: '' });
   const [pendingRl, setPendingRl] = useState<RateLimitsPatchBody | null>(null);
+  const [bridgeValues, setBridgeValues] = useState<Record<string, BridgeValue>>({});
+  const [pendingBridges, setPendingBridges] = useState<BridgesPatchBody | null>(null);
   const [mavlinkKey, setMavlinkKey] = useState('');
   const [mavlinkUnsigned, setMavlinkUnsigned] = useState(false);
   const [pendingMavlink, setPendingMavlink] = useState<MavlinkPatchBody | null>(null);
@@ -155,6 +157,7 @@ export function AdminServer() {
         setRlEnabled(state.rateLimits.enabled.value);
         setRlTexts(Object.fromEntries(RATE_LIMIT_KEYS.map(key => [key, String(state.rateLimits!.numbers[key].value)])) as Record<RateLimitKey, string>);
       }
+      if (state.bridges) setBridgeValues(Object.fromEntries(state.bridges.options.map(o => [bridgeOptionId(o), o.value])));
       if (state.install) setInstall({ cameraCredentialsViaEnv: state.install.cameraCredentialsViaEnv.value, newInstallTls: state.install.newInstallTls.value });
       if (state.mavlink) {
         setMavlinkKey(state.mavlink.signingKeyFile.value);
@@ -195,6 +198,7 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('log_redaction_off')) setWarning(t('ecosystem.admin_security_exposure_log_warning'));
       if (knownWarnings(data.warnings).includes('camera_credentials_in_arguments')) setWarning(t('ecosystem.admin_security_install_camera_warning'));
       if (knownWarnings(data.warnings).includes('new_install_tls_off')) setWarning(t('ecosystem.admin_security_install_tls_warning'));
+      if (knownWarnings(data.warnings).some(w => w.startsWith('bridge_'))) setWarning(t('ecosystem.admin_bridges_warning'));
       if (knownWarnings(data.warnings).includes('rate_limits_loose')) setWarning(t('ecosystem.admin_security_rl_loose_warning'));
       if (knownWarnings(data.warnings).includes('rate_limits_off')) setWarning(t('ecosystem.admin_security_rl_off_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_unsigned_allowed')) setWarning(t('ecosystem.admin_security_mavlink_unsigned_warning'));
@@ -328,6 +332,15 @@ export function AdminServer() {
     const body = rateLimitsPatch(current, rlEnabled, rlTexts);
     if (!body) return;
     if (rateLimitsChangeNeedsConfirmation(current, rlEnabled)) setPendingRl(body);
+    else void saveSecurity(body);
+  };
+
+  const saveBridges = () => {
+    const current = security?.bridges;
+    if (!current) return;
+    const body = bridgesPatch(current, bridgeValues);
+    if (!body) return;
+    if (bridgesChangeNeedsConfirmation(current, body)) setPendingBridges(body);
     else void saveSecurity(body);
   };
 
@@ -956,6 +969,55 @@ export function AdminServer() {
             </div>
           )}
 
+          {security.bridges && (
+            <div className="space-y-2" data-testid="security-bridges">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_bridges_title')}</h5>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_bridges_help')}</div>
+              <div className="text-[10px] text-slate-400" data-testid="bridges-delivery">{t(security.bridges.delivery === 'gateway_on' ? 'ecosystem.admin_bridges_delivery_on' : 'ecosystem.admin_bridges_delivery_off')}</div>
+              {security.bridges.options.map(o => {
+                const id = bridgeOptionId(o);
+                const label = t(`ecosystem.admin_bridges_opt_${o.bridge}_${o.key}`);
+                const value = bridgeValues[id] ?? o.value;
+                return (
+                  <div key={id} className="flex flex-col gap-0.5" data-testid={`bridge-${id}`}>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">BRIDGE-{o.bridge.toUpperCase()}</span>
+                    {o.choices ? (
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                        {label}
+                        <select
+                          data-testid={`bridge-select-${id}`}
+                          value={String(value)}
+                          disabled={saving}
+                          onChange={e => setBridgeValues({ ...bridgeValues, [id]: e.target.value })}
+                          className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-200 outline-none focus:border-sky-500"
+                        >
+                          {o.choices.map(c => <option key={c} value={c}>{t(`ecosystem.admin_bridges_choice_${c}`)}</option>)}
+                        </select>
+                      </label>
+                    ) : (
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                        <input
+                          type="checkbox"
+                          data-testid={`bridge-check-${id}`}
+                          checked={value === true}
+                          disabled={saving}
+                          onChange={e => setBridgeValues({ ...bridgeValues, [id]: e.target.checked })}
+                        />
+                        {label}
+                      </label>
+                    )}
+                    <span className="text-[10px] text-slate-500">
+                      {t(`ecosystem.admin_security_source_${o.source}`)} · {t('ecosystem.admin_bridges_default_label')}: {typeof o.default === 'boolean' ? t(o.default ? 'ecosystem.admin_bridges_on' : 'ecosystem.admin_bridges_off') : t(`ecosystem.admin_bridges_choice_${o.default}`)} · {t('ecosystem.admin_bridges_local_label')}: {o.localName}
+                    </span>
+                  </div>
+                );
+              })}
+              <button onClick={saveBridges} disabled={saving} data-testid="bridges-save" className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-wider">
+                <Save size={14} /> {t('ecosystem.admin_bridges_save')}
+              </button>
+            </div>
+          )}
+
           {security.safety && (
             <div className="space-y-2">
               <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_stop_title')}</h5>
@@ -1107,6 +1169,13 @@ export function AdminServer() {
         message={t('ecosystem.admin_security_install_confirm')}
         onConfirm={() => { const body = pendingInstall; setPendingInstall(null); if (body) void saveSecurity(body); }}
         onCancel={() => setPendingInstall(null)}
+      />
+
+      <ConfirmDialog
+        open={pendingBridges !== null}
+        message={t('ecosystem.admin_bridges_confirm')}
+        onConfirm={() => { const body = pendingBridges; setPendingBridges(null); if (body) void saveSecurity(body); }}
+        onCancel={() => setPendingBridges(null)}
       />
 
       <ConfirmDialog
