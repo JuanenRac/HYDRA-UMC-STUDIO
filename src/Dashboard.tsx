@@ -115,6 +115,7 @@ const KinematicBrainStage = React.lazy(() => import('./components/KinematicBrain
 // HYDRA-UMC-SERVER route it talks to.
 const EcosystemServices = React.lazy(() => import('./components/EcosystemServices').then(m => ({ default: m.EcosystemServices })));
 const AiFamilyStatus = React.lazy(() => import('./components/AiFamilyStatus').then(m => ({ default: m.AiFamilyStatus })));
+const AiDashboardPanel = React.lazy(() => import('./components/AiDashboardPanel').then(m => ({ default: m.AiDashboardPanel })));
 const EcosystemMap = React.lazy(() => import('./components/EcosystemMap').then(m => ({ default: m.EcosystemMap })));
 const EcosystemHealth = React.lazy(() => import('./components/EcosystemHealth').then(m => ({ default: m.EcosystemHealth })));
 const EcosystemPlanning = React.lazy(() => import('./components/EcosystemPlanning').then(m => ({ default: m.EcosystemPlanning })));
@@ -360,6 +361,7 @@ export default function Dashboard() {
                   <button onClick={() => setActiveTab('ecosystemPlanning')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemPlanning' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.planning_menu')}</button>
                   <button onClick={() => setActiveTab('ecosystemTelemetry')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemTelemetry' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_telemetry')}</button>
                   <button onClick={() => setActiveTab('aiFamilyStatus')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'aiFamilyStatus' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_ai_family')}</button>
+                  <button onClick={() => setActiveTab('aiDashboard')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'aiDashboard' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_ai_dashboard')}</button>
                   {isAdmin && <>
                     <button onClick={() => setActiveTab('adminClients')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'adminClients' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_clients')}</button>
                     <button onClick={() => setActiveTab('adminLogs')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'adminLogs' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_logs')}</button>
@@ -414,6 +416,7 @@ export default function Dashboard() {
                {activeTab === 'ecosystemPlanning' && <EcosystemPlanning />}
                {activeTab === 'ecosystemTelemetry' && <EcosystemTelemetry />}
                {activeTab === 'aiFamilyStatus' && <AiFamilyStatus />}
+               {activeTab === 'aiDashboard' && <AiDashboardPanel />}
                {activeTab === 'adminClients' && <AdminClients />}
                {activeTab === 'adminLogs' && <AdminLogs />}
                {activeTab === 'adminServer' && <AdminServer />}
