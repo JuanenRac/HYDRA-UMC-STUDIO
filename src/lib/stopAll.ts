@@ -11,7 +11,7 @@
 
 import { apiUrl } from './apiBase';
 import { authHeaders } from './session';
-import { failureCodeForStatus, type CommandFailureCode } from './commandResult';
+import { failureCodeForStatus, type CommandFailureCode, type CommandResult } from './commandResult';
 
 /** One robot of the answer of POST /api/stop-all. */
 export interface StopAllRobot {
@@ -162,4 +162,57 @@ export const STOP_ALL_SHORTCUT_LABEL = 'Ctrl+Shift+Space';
 
 export function isStopAllShortcut(event: { code: string; ctrlKey: boolean; shiftKey: boolean; altKey: boolean; metaKey: boolean; repeat: boolean }): boolean {
   return event.code === 'Space' && event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey && !event.repeat;
+}
+
+/** The delay before the one retry of a command that failed on the network. */
+const NETWORK_RETRY_MS = 400;
+
+/**
+ * The per-robot stop of every target (and its valves and pumps off), used only when the global route is rate limited (429) or
+ * missing (404, an older server). Same report shape as the global answer. `post` sends one command to one robot.
+ */
+export async function stopRobotByRobot(
+  targets: Array<{ controllerId: string; robot: { id: number; name: string; valves?: readonly boolean[]; pumps?: readonly boolean[] } }>,
+  post: (id: number, command: string, params?: Record<string, unknown>) => Promise<CommandResult>,
+  retryDelayMs: number = NETWORK_RETRY_MS,
+): Promise<StopAllReport> {
+  const withOneRetry = async (id: number, command: string, params?: Record<string, unknown>): Promise<CommandResult> => {
+    let result = await post(id, command, params);
+    if (!result.ok && result.code === 'network') {
+      await new Promise<void>((resolve) => setTimeout(resolve, retryDelayMs));
+      result = await post(id, command, params);
+    }
+    return result;
+  };
+  const robots: StopAllRobot[] = await Promise.all(targets.map(async ({ controllerId, robot }) => {
+    const stop = withOneRetry(robot.id, 'stop');
+    // Switch the outputs off too: a stopped arm with a pump still running is not a stopped robot.
+    const valveJobs: Promise<CommandResult>[] = [];
+    const pumpJobs: Promise<CommandResult>[] = [];
+    robot.valves?.forEach((on, index) => { if (on) valveJobs.push(withOneRetry(robot.id, 'valve', { index, state: false })); });
+    robot.pumps?.forEach((on, index) => { if (on) pumpJobs.push(withOneRetry(robot.id, 'pump', { index, state: false })); });
+    const stopResult = await stop;
+    const valveResults = await Promise.all(valveJobs);
+    const pumpResults = await Promise.all(pumpJobs);
+    const problem = [stopResult, ...valveResults, ...pumpResults].find((r) => !r.ok);
+    return {
+      robotId: robot.id,
+      controllerId,
+      name: robot.name,
+      stopped: stopResult.ok,
+      valvesOff: valveResults.filter((r) => r.ok).length,
+      pumpsOff: pumpResults.filter((r) => r.ok).length,
+      reservedBy: null,
+      error: problem ? [problem.code, problem.detail].filter(Boolean).join(': ') || null : null,
+    };
+  }));
+  const stoppedCount = robots.filter((r) => r.stopped).length;
+  return {
+    success: stoppedCount === robots.length,
+    stoppedCount,
+    failedCount: robots.length - stoppedCount,
+    persisted: true,
+    robots,
+    viaFallback: true,
+  };
 }

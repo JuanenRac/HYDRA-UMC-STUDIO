@@ -18,6 +18,7 @@ import {
   requestStopAll,
   requestStopAllWithRetry,
   shouldFallBackToPerRobot,
+  stopRobotByRobot,
 } from '../src/lib/stopAll';
 
 const goodBody = {
@@ -160,5 +161,37 @@ describe('the keyboard shortcut', () => {
     expect(isStopAllShortcut({ ...base, altKey: true })).toBe(false);
     expect(isStopAllShortcut({ ...base, metaKey: true })).toBe(false);
     expect(isStopAllShortcut({ ...base, repeat: true })).toBe(false);
+  });
+});
+
+describe('stopRobotByRobot', () => {
+  const ok = { ok: true, status: 200, code: null, detail: null, serverCode: null, warnings: [] };
+  const net = { ...ok, ok: false, status: 0, code: 'network' as const };
+  const targets = [
+    { controllerId: 'c1', robot: { id: 1, name: 'A', valves: [true, false] as [boolean, boolean], pumps: [true, false] as [boolean, boolean] } },
+    { controllerId: 'c1', robot: { id: 2, name: 'B', valves: undefined, pumps: undefined } },
+  ];
+
+  it('stops every robot and switches its open valves and running pumps off', async () => {
+    const sent: string[] = [];
+    const post = vi.fn(async (id: number, command: string, params?: Record<string, unknown>) => {
+      sent.push(`${id}:${command}${params ? JSON.stringify(params) : ''}`);
+      return ok;
+    });
+    const report = await stopRobotByRobot(targets, post, 0);
+    expect(report).toMatchObject({ success: true, stoppedCount: 2, failedCount: 0, viaFallback: true, persisted: true });
+    expect(report.robots[0]).toMatchObject({ valvesOff: 1, pumpsOff: 1, error: null });
+    expect(sent.sort()).toEqual(['1:pump{"index":0,"state":false}', '1:stop', '1:valve{"index":0,"state":false}', '2:stop']);
+  });
+
+  it('retries a network failure once and reports a robot that still did not stop', async () => {
+    const post = vi.fn(async (id: number, _command: string) => (id === 1 ? net : ok));
+    const report = await stopRobotByRobot(targets, post, 0);
+    expect(report.success).toBe(false);
+    expect(report.failedCount).toBe(1);
+    expect(report.robots[0].stopped).toBe(false);
+    expect(report.robots[0].error).toContain('network');
+    expect(post.mock.calls.filter(([id, command]) => id === 1 && command === 'stop')).toHaveLength(2);
+    expect(report.robots[1].stopped).toBe(true);
   });
 });
