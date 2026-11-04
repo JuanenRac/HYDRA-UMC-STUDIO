@@ -190,7 +190,7 @@
     "add_custom_model": "Aggiungi Modello Personalizzato",
     "software_integrations": "Integrazioni Software",
     "enabled": "Abilitato",
-    "port": "Port",
+    "port": "Porta",
     "paths": "Percorsi di Lavoro",
     "work_paths": "Directory di Lavoro per Punti",
     "work_paths_desc": "Definisci percorsi virtuali per ogni robot.",

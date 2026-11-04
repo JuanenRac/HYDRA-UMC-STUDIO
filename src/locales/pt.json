@@ -509,7 +509,7 @@
     "vacuum_table_title": "Mesa de vácuo",
     "vacuum_model": "Modelo da mesa",
     "vacuum_model_note": "A largura e o comprimento são editáveis em passos de 5 mm (10–5000 mm). A área é escalada; a espessura mantém-se. Selecionar uma predefinição repõe as dimensões originais. Os tamanhos personalizados sincronizam-se através do SERVER; os furos/canais escalados são uma disposição visual, não um STL de fabrico regenerado.",
-    "heated_model": "Modelo da cama aquecida",
+    "heated_model": "Modelo da mesa aquecida",
     "rack_width": "Largura útil (mm)",
     "machine_assets_note": "Cópias STL independentes para JuanenPnP, JuanenCNC e JuanenLaser; a LumenPnP mantém-se original. Edite cada modelo na sua própria pasta. Usam-se as dimensões do CAD; as definições de tamanho antigas não esticam o modelo.",
     "machine_mesh_error": "Não foi possível carregar a malha da máquina selecionada.",
@@ -519,7 +519,7 @@
     "rack_mesh_error": "Não foi possível carregar o STL do rack.",
     "rack_preview": "Pré-visualizar rack",
     "heated_model_note": "Quatro predefinições STL: 100×100, 200×100, 200×200 e 255×255 mm, todas com 5 mm de espessura. A largura/comprimento ajustam-se em passos de 5 mm (25–5000 mm); selecionar uma predefinição repõe as suas dimensões sem alterar o aquecimento. Apenas modelo visual, não um projeto elétrico nem de fabrico.",
-    "heated_model_error": "Pré-visualização STL da cama aquecida indisponível.",
+    "heated_model_error": "Pré-visualização STL da mesa aquecida indisponível.",
     "vacuum_model_error": "Não foi possível carregar o modelo da mesa de vácuo.",
     "xy_table_title": "Mesa XY",
     "rack_manager_title": "Gestor de racks",
@@ -607,7 +607,7 @@
     "vertical": "Vertical",
     "x_axis": "Eixo X",
     "y_axis": "Eixo Y",
-    "ssr_confirm": "O relé de estado sólido liga a rede de 230 V à cama aquecida. Ligá-lo?"
+    "ssr_confirm": "O relé de estado sólido liga a rede de 230 V à mesa aquecida. Ligá-lo?"
   },
   "help": {
     "title": "Ajuda",
@@ -832,7 +832,7 @@
   },
   "kbstage": {
     "title": "Etapa do Kinematic Brain",
-    "subtitle": "Etapa local de 6 eixos do STM32H745: mesa XY, cama aquecida, revólver ATC, tapete rolante",
+    "subtitle": "Etapa local de 6 eixos do STM32H745: mesa XY, mesa aquecida, revólver ATC, tapete rolante",
     "gantry": "Pórtico XY (X, Y1, Y2, Z)",
     "height_z": "Altura (Z mm)",
     "ssr_230vac": "SSR, rede de 230 VAC",
@@ -1138,7 +1138,7 @@
     "services_all_families": "Todas",
     "ai_family_device_mismatch": "{{family}} tem nós ativos, mas o seu dispositivo Hailo está como Nenhum em Config > IA/Hailo - defina-o como {{device}} para coincidir com o que está realmente a correr.",
     "ai_family_live_count": "{{live}} / {{total}} em direto",
-    "clients_stat_connected": "Ligadas",
+    "clients_stat_connected": "Ligados",
     "clients_stat_admins": "Admins",
     "logs_search_placeholder": "Pesquisar texto do registo...",
     "logs_all_tags": "Todas",

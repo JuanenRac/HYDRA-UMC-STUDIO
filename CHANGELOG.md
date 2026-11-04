@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Three translations corrected:** the Italian label of the port is `Porta` (it was left in English), the Portuguese counter of connected apps agrees in gender (`Ligados`) and the heated bed is the heated table (`mesa aquecida`) in Portuguese, as in the rest of the family.
+
 - **The trajectory files and the G-code export moved out of the robot screen:** the listing of the WORKS folder and the save of the recorded points are in `hooks/useWorkFiles.ts` and the G-code text in `lib/gcodeExport.ts`, unchanged, with nine tests.
 
 - **The session moved out of the global state provider:** the token read on the first render, the sign-in with its second step, the silent renewal and the sign-out are in `hooks/useAuthSession.ts`, unchanged, with eight tests; the provider keeps the settings, the socket and the robots.
