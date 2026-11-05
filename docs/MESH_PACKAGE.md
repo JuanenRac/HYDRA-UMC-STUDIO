@@ -32,6 +32,13 @@ is kept in a cache folder and reused, and the page never downloads anything itse
 The environment overrides the file: `HYDRA_UMC_MESH_SOURCE`, `HYDRA_UMC_MESH_URL`, `HYDRA_UMC_MESH_CACHE` and
 `HYDRA_UMC_MESH_PACKAGE`. A damaged config file falls back to the defaults.
 
+## One library folder for both apps
+
+`HYDRA_UMC_LIBRARY_DIR` names one existing folder with the layout of `public/models` (category / model / files). When it is set, the dev and preview
+servers answer `/models/...` from it, a production build copies it into `dist/models`, and the desktop app and the STL editor read the same folder, so a
+model is edited in one place. The package is never installed over it (`status` and `check` still compare it with the manifest). Unset, or naming
+something that is not a folder, nothing changes.
+
 ## Commands
 
 ```

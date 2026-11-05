@@ -8,12 +8,15 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { injectCsp, resolveCsp } from './scripts/csp.ts'
+import { libraryDirPlugin } from './scripts/libraryDirPlugin.ts'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    // HYDRA_UMC_LIBRARY_DIR: one folder of 3D models shared with the desktop app and the STL editor (see scripts/library_dir.mjs).
+    libraryDirPlugin(),
     {
       // The Content-Security-Policy goes only into the production page: the dev server needs inline scripts for
       // hot reload. HYDRA_STUDIO_CSP=off omits it (see scripts/csp.ts).

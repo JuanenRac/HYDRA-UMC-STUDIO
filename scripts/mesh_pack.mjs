@@ -29,10 +29,11 @@ import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
 import zlib from 'node:zlib';
+import { meshRoot, sharedDir } from './library_dir.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(HERE, '..');
-export const MESH_DIR = path.join(ROOT, 'public', 'models');
+export const MESH_DIR = meshRoot(path.join(ROOT, 'public', 'models'));
 export const MANIFEST_PATH = path.join(ROOT, 'meshes.pack.json');
 export const CONFIG_PATH = path.join(ROOT, 'mesh_pack.config.json');
 export const SOURCES = ['local', 'auto', 'download'];
@@ -57,6 +58,7 @@ export const MESSAGES = {
     cached: 'Using the package already stored at {path}.',
     hint_network: 'Without network: download {file} once on a computer with Internet ({url}), copy it to {cache} (or set HYDRA_UMC_MESH_PACKAGE to its path) and run this again.',
     package_file_bad: 'The package file {path} is missing or does not match the pinned manifest; nothing was installed.',
+    shared: 'The models are served from the shared library folder {path} (HYDRA_UMC_LIBRARY_DIR); nothing is fetched or replaced there.',
   },
   es: {
     local: 'Paquete de mallas: el origen es local, se usan las mallas del árbol de trabajo; no se descarga nada.',
@@ -74,6 +76,7 @@ export const MESSAGES = {
     cached: 'Se usa el paquete ya guardado en {path}.',
     hint_network: 'Sin red: descarga {file} una vez en un equipo con Internet ({url}), cópialo a {cache} (o pon en HYDRA_UMC_MESH_PACKAGE su ruta) y vuelve a ejecutar.',
     package_file_bad: 'El fichero del paquete {path} no existe o no coincide con el manifiesto fijado; no se instaló nada.',
+    shared: 'Los modelos se sirven de la carpeta de biblioteca compartida {path} (HYDRA_UMC_LIBRARY_DIR); no se descarga ni se reemplaza nada allí.',
   },
   de: {
     local: 'Netzpaket: Quelle ist lokal, die Netze des Arbeitsverzeichnisses werden verwendet; es wird nichts heruntergeladen.',
@@ -91,6 +94,7 @@ export const MESSAGES = {
     cached: 'Das bereits unter {path} gespeicherte Paket wird verwendet.',
     hint_network: 'Ohne Netzwerk: Lade {file} einmal auf einem Rechner mit Internet herunter ({url}), kopiere es nach {cache} (oder setze HYDRA_UMC_MESH_PACKAGE auf seinen Pfad) und starte erneut.',
     package_file_bad: 'Die Paketdatei {path} fehlt oder passt nicht zum festgelegten Manifest; es wurde nichts installiert.',
+    shared: 'Die Modelle werden aus dem gemeinsamen Bibliotheksordner {path} bereitgestellt (HYDRA_UMC_LIBRARY_DIR); dort wird nichts geladen oder ersetzt.',
   },
   fr: {
     local: "Paquet de maillages : la source est locale, les maillages de l'arborescence sont utilisés ; rien n'est téléchargé.",
@@ -108,6 +112,7 @@ export const MESSAGES = {
     cached: 'Utilisation du paquet déjà enregistré dans {path}.',
     hint_network: 'Sans réseau : téléchargez {file} une fois sur un ordinateur avec Internet ({url}), copiez-le dans {cache} (ou placez son chemin dans HYDRA_UMC_MESH_PACKAGE) puis relancez.',
     package_file_bad: "Le fichier du paquet {path} est absent ou ne correspond pas au manifeste fixé ; rien n'a été installé.",
+    shared: "Les modèles sont servis depuis le dossier de bibliothèque partagé {path} (HYDRA_UMC_LIBRARY_DIR) ; rien n'y est téléchargé ni remplacé.",
   },
   it: {
     local: "Pacchetto di mesh: la sorgente è locale, si usano le mesh dell'albero di lavoro; non viene scaricato nulla.",
@@ -125,6 +130,7 @@ export const MESSAGES = {
     cached: 'Si usa il pacchetto già salvato in {path}.',
     hint_network: 'Senza rete: scarica {file} una volta su un computer con Internet ({url}), copialo in {cache} (oppure imposta HYDRA_UMC_MESH_PACKAGE sul suo percorso) e riavvia.',
     package_file_bad: 'Il file del pacchetto {path} manca o non corrisponde al manifesto fissato; non è stato installato nulla.',
+    shared: 'I modelli sono serviti dalla cartella di libreria condivisa {path} (HYDRA_UMC_LIBRARY_DIR); lì non viene scaricato né sostituito nulla.',
   },
   ja: {
     local: 'メッシュパッケージ：ソースはローカルです。作業ツリーのメッシュを使用し、ダウンロードは行いません。',
@@ -142,6 +148,7 @@ export const MESSAGES = {
     cached: '{path} に保存済みのパッケージを使用します。',
     hint_network: 'ネットワークがない場合：インターネットに接続できるコンピューターで {file} を一度ダウンロードし（{url}）、{cache} にコピーして（または HYDRA_UMC_MESH_PACKAGE にそのパスを設定して）もう一度実行してください。',
     package_file_bad: 'パッケージファイル {path} が存在しないか、固定されたマニフェストと一致しません。何もインストールされませんでした。',
+    shared: 'モデルは共有ライブラリフォルダ {path} (HYDRA_UMC_LIBRARY_DIR) から提供されます。そこでは何も取得・置換されません。',
   },
   zh: {
     local: '网格包：来源为本地，使用工作树中的网格；不会下载任何内容。',
@@ -159,6 +166,7 @@ export const MESSAGES = {
     cached: '使用已保存在 {path} 的软件包。',
     hint_network: '没有网络时：在可联网的电脑上下载一次 {file}（{url}），复制到 {cache}（或将 HYDRA_UMC_MESH_PACKAGE 设为其路径），然后重新运行。',
     package_file_bad: '软件包文件 {path} 不存在或与固定的清单不符；未安装任何内容。',
+    shared: '模型从共享库文件夹 {path}（HYDRA_UMC_LIBRARY_DIR）提供；不会在那里下载或替换任何内容。',
   },
   pt: {
     local: 'Pacote de malhas: a origem é local, usam-se as malhas da árvore de trabalho; não se transfere nada.',
@@ -176,6 +184,7 @@ export const MESSAGES = {
     cached: 'A usar o pacote já guardado em {path}.',
     hint_network: 'Sem rede: transfira {file} uma vez num computador com Internet ({url}), copie-o para {cache} (ou defina HYDRA_UMC_MESH_PACKAGE com o seu caminho) e execute novamente.',
     package_file_bad: 'O ficheiro do pacote {path} não existe ou não corresponde ao manifesto fixado; não foi instalado nada.',
+    shared: 'Os modelos são servidos da pasta de biblioteca partilhada {path} (HYDRA_UMC_LIBRARY_DIR); nada é transferido nem substituído aí.',
   },
 };
 
@@ -443,6 +452,11 @@ export async function ensure({
   if (!SOURCES.includes(mode)) throw new MeshPackError('bad_source', { value: mode });
   if (mode === 'local') {
     log(say('local', lang));
+    return 0;
+  }
+  if (meshDir === MESH_DIR && sharedDir() !== null) {
+    // the common library belongs to whoever edits it (the STL editor, the desktop app): a package never replaces what is in it
+    log(say('shared', lang, { path: meshDir }));
     return 0;
   }
   const manifest = loadManifest(manifestPath);
