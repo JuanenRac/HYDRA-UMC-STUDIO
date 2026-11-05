@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-986%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1109%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.1-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | バージョン | `0.8.1.1` |
 | 成熟度 | 機能する |
-| テスト | 986 (`npm test`) |
+| テスト | 1109 (`npm test`) |
 | 技術 | React 19 / Vite / Three.js / Tailwind CSS |
 | 対象 | HYDRA-UMC セルの Raspberry Pi CM5 |
 | 実機での確認 | ベンチ環境で動作：上の正直さの確認に、どの部分が実機で動いたかが書かれています |
@@ -53,7 +53,7 @@ GPL-3.0-or-later - see LICENSE
 | 領域 | 状態 | ここでの意味 |
 |---|---|---|
 | ソフトウェア | 🟡 | 主な目的では動作します。足りない点は上の正直さの確認に書かれています |
-| テスト | 🟢 | 自動テスト 986 件。変更のたびに実行されます |
+| テスト | 🟢 | 自動テスト 1109 件。変更のたびに実行されます |
 | 実機 | 🟡 | ベンチ環境で動作：上の正直さの確認に、どの部分が実機で動いたかが書かれています |
 | インターフェースとプロトコル | 🟡 | 提供するルートやメッセージは文書化され、クライアントで試験済みです。すべてのクライアントがまだ使ったわけではありません |
 | 連携 | 🟡 | メッセージとルートは SDK の共通契約に照らして検証されていますが、実機と一緒に動かしたことはありません |
@@ -144,7 +144,7 @@ GPL-3.0-or-later - see LICENSE
 
 13 社のメーカーにまたがる 24 個の実在するロボットモデルに加え、汎用プレースホルダーがあるということです——この一覧が要約する正確なモデル↔メーカー↔ライセンスの対応は、下部のライセンス表を参照してください。すべての実在モデル（汎用を除くすべて）は、リンクごとに実際の STL メッシュジオメトリを読み込み、そのメーカー自身の実際の関節変換チェーンを通じて駆動します——様式化されたプレースホルダーではありません。正／逆運動学は各ロボット自身の実際のジオメトリに対して計算されます（位置についてはニュートン・ラフソン法で解き、ロボットが定義している場合は実際の関節ごとの限位を使用）。そのため、記録された軌道やジョグされた直交座標の目標は、実際の物理ロボットが実際に動くのと同じように正しいアームを動かします。Universal Robots の 5 つの e-Series モデルはさらに、1 つの共通 FK/IK エンジン（`src/examples/urKinematicsShared.ts`）と 1 つの共通 3D リグレンダラー（`src/components/3d/URArm.tsx`）を共有しています。これは、すべての UR e-Series 関節がまったく同じ運動学的構造を共有しているためで、モデルごとに異なるのは数値上のリンク長のみです。3 つのクラシック UR モデル（UR3/UR5/UR10）は代わりにそれぞれ独自のエンジンとレンダラーを共有しています（`src/examples/urClassicKinematics.ts`、`src/components/3d/UrClassicArm.tsx`）。この旧世代の関節は e-Series のように共通のローカル Z 軸をすべて共有しているわけではないためです。
 
-各ロボットのジョグ制御には、各軸に対する**速度**と**加速度**両方のロータリーノブ＋スライダーが含まれ、CAN-OTA が実機ハードウェアに接続されると、完全なエンドストップ/ステータス表示とともに、実時間の「ロボットコントローラーボード」ステータスカードが表示されます。各ノブ／スライダーは、連続的に動くのではなく、それぞれのコンボボックスで選択されたジョグ**ステップ**値（0.1° から 100°/mm まで）にスナップします。ロボット **A1** は、異なるレイアウトの実験的な概念実証です：その速度／加速度／J1-J6／XYZ ジョグ制御は、他のすべてのロボットが引き続き使用する下部パネルではなく、3D ビューポート自体の上にあるドラッグ可能なフローティングパネル内にあります（XYZ パッドは `Joystick3D.tsx`）——`src/components/robots/A1.tsx` を参照してください。
+各ロボットのジョグ制御には、各軸に対する**速度**と**加速度**両方のロータリーノブ＋スライダーが含まれ、CAN-OTA が実機ハードウェアに接続されると、完全なエンドストップ/ステータス表示とともに、実時間の「ロボットコントローラーボード」ステータスカードが表示されます。各ノブ／スライダーは、連続的に動くのではなく、それぞれのコンボボックスで選択されたジョグ**ステップ**値（0.1° から 100°/mm まで）にスナップします。すべてのロボットで、速度／加速度／J1-J6／XYZ ジョグ制御は 3D ビューポート自体の上にあるドラッグ可能なフローティングパネル内にあります（XYZ パッドは `Joystick3D.tsx`）——`src/components/robotDetail/FloatingJogOverlays.tsx` を参照してください。
 
 ### Kinematic Brain ステージ
 
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 テスト
 
-`npm test` で自動テスト 986 件を実行します。 ハードウェアも、このマシンの外にあるものも必要ありません。
+`npm test` で自動テスト 1109 件を実行します。 ハードウェアも、このマシンの外にあるものも必要ありません。
 
 CI は `HYDRA_UMC_CI=1 python tools/ci_validate.py` を実行し、マニフェスト、文書、8 つの README、図を検査します。
 

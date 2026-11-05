@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-986%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1109%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.1-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Versión | `0.8.1.1` |
 | Madurez | Funcional |
-| Tests | 986 (`npm test`) |
+| Tests | 1109 (`npm test`) |
 | Tecnología | React 19 / Vite / Three.js / Tailwind CSS |
 | Destino | La Raspberry Pi CM5 de una celda HYDRA-UMC |
 | En hardware real | Ejecutado en un banco de pruebas: la comprobación de honestidad de arriba dice qué partes funcionaron en hardware real |
@@ -53,7 +53,7 @@ Cada línea es una parte de este repositorio y la luz dice hasta dónde llega ho
 | Área | Estado | Qué significa aquí |
 |---|---|---|
 | Software | 🟡 | Funciona para su propósito principal; la comprobación de honestidad de arriba lista lo que aún falta |
-| Pruebas | 🟢 | 986 pruebas automáticas, ejecutadas en cada cambio |
+| Pruebas | 🟢 | 1109 pruebas automáticas, ejecutadas en cada cambio |
 | Hardware real | 🟡 | Ejecutado en un banco de pruebas: la comprobación de honestidad de arriba dice qué partes funcionaron en hardware real |
 | Interfaz y protocolos | 🟡 | Las rutas o los mensajes que ofrece están documentados y probados con un cliente; aún no los han usado todos los clientes |
 | Integración | 🟡 | Sus mensajes y rutas se comprueban contra los contratos compartidos del SDK; no ha funcionado junto con el equipo real |
@@ -144,7 +144,7 @@ Gestiona varios robots independientes de 6 grados de libertad (6-DOF) simultáne
 
 Son 24 modelos de robot reales repartidos en 13 fabricantes, más el placeholder Genérico - ver la tabla de licencias más abajo para el mapeo exacto modelo↔fabricante↔licencia que resume esta lista. Cada modelo real (todos excepto el Genérico) carga la geometría de malla STL real por eslabón y la mueve a través de la cadena real de transformación de articulaciones propia de ese fabricante - no un placeholder estilizado. La cinemática directa/inversa se calcula contra la geometría real propia de cada robot (resolución Newton-Raphson para la posición, límites reales por articulación donde el robot los define), de modo que una trayectoria grabada o un objetivo cartesiano jogeado mueve el brazo correcto tal como lo haría el robot físico real. Los 5 modelos e-Series de Universal Robots comparten además un único motor FK/IK común (`src/examples/urKinematicsShared.ts`) y un único renderizador de rig 3D común (`src/components/3d/URArm.tsx`), ya que cada articulación de la e-Series de UR comparte exactamente la misma estructura cinemática - solo difieren por modelo las longitudes numéricas de los eslabones. Los 3 modelos clásicos de UR (UR3/UR5/UR10) comparten en cambio su propio motor y renderizador separados (`src/examples/urClassicKinematics.ts`, `src/components/3d/UrClassicArm.tsx`), ya que esa generación anterior no comparte un mismo eje Z local en todas sus articulaciones como sí lo hace la e-Series.
 
-Los controles de jog por robot incluyen una perilla giratoria + deslizador tanto para **velocidad** como para **aceleración** en cada eje, y una lectura completa de endstop/estado junto a una tarjeta de estado "Robot Controller Board" en vivo una vez que CAN-OTA está conectado a hardware real. Cada perilla/deslizador se ajusta al valor de **Step** de jog seleccionado en su propio combobox (de 0.1° hasta 100°/mm) en vez de moverse de forma continua. El robot **A1** es una prueba de concepto en marcha para una disposición distinta: sus controles de jog Speed/Acceleration/J1-J6/XYZ viven en un panel flotante arrastrable sobre el propio visor 3D (`Joystick3D.tsx` para el pad XYZ) en vez del panel debajo que todos los demás robots siguen usando - ver `src/components/robots/A1.tsx`.
+Los controles de jog por robot incluyen una perilla giratoria + deslizador tanto para **velocidad** como para **aceleración** en cada eje, y una lectura completa de endstop/estado junto a una tarjeta de estado "Robot Controller Board" en vivo una vez que CAN-OTA está conectado a hardware real. Cada perilla/deslizador se ajusta al valor de **Step** de jog seleccionado en su propio combobox (de 0.1° hasta 100°/mm) en vez de moverse de forma continua. En todos los robots, los controles de jog Speed/Acceleration/J1-J6/XYZ viven en paneles flotantes arrastrables sobre el propio visor 3D (`Joystick3D.tsx` para el pad XYZ) - ver `src/components/robotDetail/FloatingJogOverlays.tsx`.
 
 ### Etapa Kinematic Brain
 
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Pruebas
 
-986 pruebas automáticas se ejecutan con `npm test`. No necesitan hardware ni nada fuera de esta máquina.
+1109 pruebas automáticas se ejecutan con `npm test`. No necesitan hardware ni nada fuera de esta máquina.
 
 El CI ejecuta `HYDRA_UMC_CI=1 python tools/ci_validate.py`, que comprueba el manifiesto, los documentos, los ocho README y las imágenes.
 
@@ -341,7 +341,7 @@ Ejecuta el propio servidor de desarrollo de Vite (`vite` simple, puerto `5173`) 
 ### Pruebas Automatizadas
 
 ```bash
-npm test          # vitest run - 986 pruebas reales sobre src/examples/
+npm test          # vitest run - 1109 pruebas reales sobre src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

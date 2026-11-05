@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-986%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1109%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.1-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Version | `0.8.1.1` |
 | Reifegrad | Funktionsfähig |
-| Tests | 986 (`npm test`) |
+| Tests | 1109 (`npm test`) |
 | Technik | React 19 / Vite / Three.js / Tailwind CSS |
 | Ziel | Der Raspberry Pi CM5 einer HYDRA-UMC-Zelle |
 | Auf echter Hardware | Auf einem Prüfstand gelaufen: die Ehrlichkeitsprüfung oben sagt, welche Teile auf echter Hardware liefen |
@@ -53,7 +53,7 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 | Bereich | Stand | Was das hier bedeutet |
 |---|---|---|
 | Software | 🟡 | Funktioniert für seinen Hauptzweck; die Ehrlichkeitsprüfung oben nennt, was noch fehlt |
-| Tests | 🟢 | 986 automatische Tests, bei jeder Änderung ausgeführt |
+| Tests | 🟢 | 1109 automatische Tests, bei jeder Änderung ausgeführt |
 | Echte Hardware | 🟡 | Auf einem Prüfstand gelaufen: die Ehrlichkeitsprüfung oben sagt, welche Teile auf echter Hardware liefen |
 | Schnittstelle und Protokolle | 🟡 | Die angebotenen Routen oder Nachrichten sind dokumentiert und mit einem Client getestet; noch nicht jeder Client hat sie benutzt |
 | Integration | 🟡 | Seine Nachrichten und Routen werden gegen die gemeinsamen Verträge des SDK geprüft; es lief noch nicht zusammen mit der echten Ausrüstung |
@@ -144,7 +144,7 @@ Verwalten Sie mehrere unabhängige Roboter mit 6 Freiheitsgraden (6-DOF) gleichz
 
 Das sind 24 echte Robotermodelle von 13 Herstellern, plus der Generisch-Platzhalter - siehe die Lizenztabelle weiter unten für die genaue Modell↔Hersteller↔Lizenz-Zuordnung, die diese Liste zusammenfasst. Jedes echte Modell (alle außer Generisch) lädt seine tatsächliche STL-Mesh-Geometrie pro Glied und steuert sie über die eigene reale Gelenktransformationskette dieses Herstellers - kein stilisierter Platzhalter. Vorwärts-/Rückwärtskinematik wird gegen die eigene reale Geometrie jedes Roboters berechnet (Newton-Raphson-Lösung für die Position, reale Gelenkgrenzen pro Achse, wo der Roboter sie definiert), sodass eine aufgezeichnete Trajektorie oder ein gejogtes kartesisches Ziel den richtigen Arm so bewegt, wie es der physische Roboter tatsächlich tun würde. Die 5 e-Series-Modelle von Universal Robots teilen sich zusätzlich eine gemeinsame FK/IK-Engine (`src/examples/urKinematicsShared.ts`) und einen gemeinsamen 3D-Rig-Renderer (`src/components/3d/URArm.tsx`), da jedes Gelenk der UR-e-Series exakt dieselbe kinematische Struktur teilt - nur die numerischen Gliedlängen unterscheiden sich je Modell. Die 3 klassischen UR-Modelle (UR3/UR5/UR10) teilen sich stattdessen ihre eigene, separate Engine und ihren eigenen Renderer (`src/examples/urClassicKinematics.ts`, `src/components/3d/UrClassicArm.tsx`), da diese ältere Baureihe nicht in jedem Gelenk dieselbe lokale Z-Achse teilt, wie es die e-Series tut.
 
-Die Jog-Steuerungen pro Roboter umfassen einen Drehknopf + Schieberegler sowohl für **Geschwindigkeit** als auch für **Beschleunigung** auf jeder Achse, sowie eine vollständige Endschalter-/Statusanzeige neben einer Live-Statuskarte "Robot Controller Board", sobald CAN-OTA mit echter Hardware verkabelt ist. Jeder Drehknopf/Schieberegler rastet auf den in seinem eigenen Kombinationsfeld ausgewählten Jog-**Step**-Wert (0,1° bis 100°/mm) ein, statt sich kontinuierlich zu bewegen. Roboter **A1** ist ein laufender Proof of Concept für ein anderes Layout: seine Speed-/Acceleration-/J1-J6-/XYZ-Jog-Steuerungen befinden sich in einem verschiebbaren schwebenden Panel über dem 3D-Viewport selbst (`Joystick3D.tsx` für das XYZ-Pad) anstelle des Panels darunter, das alle anderen Roboter weiterhin verwenden - siehe `src/components/robots/A1.tsx`.
+Die Jog-Steuerungen pro Roboter umfassen einen Drehknopf + Schieberegler sowohl für **Geschwindigkeit** als auch für **Beschleunigung** auf jeder Achse, sowie eine vollständige Endschalter-/Statusanzeige neben einer Live-Statuskarte "Robot Controller Board", sobald CAN-OTA mit echter Hardware verkabelt ist. Jeder Drehknopf/Schieberegler rastet auf den in seinem eigenen Kombinationsfeld ausgewählten Jog-**Step**-Wert (0,1° bis 100°/mm) ein, statt sich kontinuierlich zu bewegen. Bei jedem Roboter befinden sich die Speed-/Acceleration-/J1-J6-/XYZ-Jog-Steuerungen in verschiebbaren schwebenden Panels über dem 3D-Viewport selbst (`Joystick3D.tsx` für das XYZ-Pad) - siehe `src/components/robotDetail/FloatingJogOverlays.tsx`.
 
 ### Kinematic Brain Stage
 
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Tests
 
-986 automatische Tests laufen mit `npm test`. Sie brauchen weder Hardware noch etwas außerhalb dieses Rechners.
+1109 automatische Tests laufen mit `npm test`. Sie brauchen weder Hardware noch etwas außerhalb dieses Rechners.
 
 Die CI führt `HYDRA_UMC_CI=1 python tools/ci_validate.py` aus; das prüft das Manifest, die Dokumente, die acht READMEs und die Bilder.
 
@@ -341,7 +341,7 @@ Führt den eigenen Dev-Server von Vite aus (einfaches `vite`, Port `5173`) mit L
 ### Automatisierte Tests
 
 ```bash
-npm test          # vitest run - 986 echte Tests über src/examples/
+npm test          # vitest run - 1109 echte Tests über src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

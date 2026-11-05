@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-986%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1109%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.1-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | 版本 | `0.8.1.1` |
 | 成熟度 | 可用 |
-| 测试 | 986 (`npm test`) |
+| 测试 | 1109 (`npm test`) |
 | 技术栈 | React 19 / Vite / Three.js / Tailwind CSS |
 | 目标 | HYDRA-UMC 工作单元的 Raspberry Pi CM5 |
 | 真实硬件 | 已在试验台上运行：上面的诚实性检查说明了哪些部分在真实硬件上运行过 |
@@ -53,7 +53,7 @@ GPL-3.0-or-later - see LICENSE
 | 领域 | 状态 | 在这里的含义 |
 |---|---|---|
 | 软件 | 🟡 | 主要用途可用；上面的诚实性检查列出了仍然缺少的内容 |
-| 测试 | 🟢 | 986 项自动测试，每次变更都会运行 |
+| 测试 | 🟢 | 1109 项自动测试，每次变更都会运行 |
 | 真实硬件 | 🟡 | 已在试验台上运行：上面的诚实性检查说明了哪些部分在真实硬件上运行过 |
 | 接口与协议 | 🟡 | 提供的路由或消息已有文档，并用客户端测试过；尚未被所有客户端使用 |
 | 集成 | 🟡 | 其消息和路由已对照 SDK 的共享契约检查；尚未与真实设备一起运行 |
@@ -144,7 +144,7 @@ GPL-3.0-or-later - see LICENSE
 
 也就是横跨 13 家制造商的 24 个真实机器人型号，外加通用占位型号——具体的型号↔制造商↔许可证映射汇总见下方的许可证表。每一个真实型号（除通用型号外的全部）都会为每个连杆加载其实际的 STL 网格几何，并通过该制造商自身真实的关节变换链驱动它——而非风格化的占位符。正向/逆向运动学是针对每个机器人自身真实的几何数据进行计算的（位置采用牛顿-拉夫逊求解，在机器人自身定义了限位的地方使用真实的每关节限位），因此一条已记录的轨迹或一个点动的笛卡尔目标，会像真实的物理机器人那样移动正确的机械臂。Universal Robots 的 5 个 e-Series 型号还共享同一个通用的正向/逆向运动学引擎（`src/examples/urKinematicsShared.ts`）和同一个通用的 3D 装配渲染器（`src/components/3d/URArm.tsx`），因为每一个 UR e-Series 关节都共享完全相同的运动学结构——每个型号之间只有数值上的连杆长度不同。3 个经典 UR 型号（UR3/UR5/UR10）则共享它们自己独立的引擎和渲染器（`src/examples/urClassicKinematics.ts`、`src/components/3d/UrClassicArm.tsx`），因为那一代较早的关节并不像 e-Series 那样都共享一个共同的局部 Z 轴。
 
-每个机器人的点动控制在每根轴上都包含用于**速度**和**加速度**的旋钮 + 滑块，还有完整的限位/状态读数，一旦 CAN-OTA 与真实硬件连通后，还会附带一张实时的“机器人控制器板”状态卡。每个旋钮/滑块都会吸附到其自身组合框中所选的点动**步进**值（0.1° 到 100°/mm），而非连续移动。机器人 **A1** 是一种不同布局的实验性概念验证：其速度/加速度/J1-J6/XYZ 点动控制位于 3D 视口本身上方的一个可拖动浮动面板中（XYZ 面板对应 `Joystick3D.tsx`），而不是所有其他机器人仍在使用的下方面板——参见 `src/components/robots/A1.tsx`。
+每个机器人的点动控制在每根轴上都包含用于**速度**和**加速度**的旋钮 + 滑块，还有完整的限位/状态读数，一旦 CAN-OTA 与真实硬件连通后，还会附带一张实时的“机器人控制器板”状态卡。每个旋钮/滑块都会吸附到其自身组合框中所选的点动**步进**值（0.1° 到 100°/mm），而非连续移动。在每个机器人上，速度/加速度/J1-J6/XYZ 点动控制都位于 3D 视口本身上方的可拖动浮动面板中（XYZ 面板对应 `Joystick3D.tsx`）——参见 `src/components/robotDetail/FloatingJogOverlays.tsx`。
 
 ### 运动大脑阶段
 
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 测试
 
-运行 `npm test` 会执行 986 个自动测试。 不需要硬件，也不需要这台机器以外的任何东西。
+运行 `npm test` 会执行 1109 个自动测试。 不需要硬件，也不需要这台机器以外的任何东西。
 
 CI 运行 `HYDRA_UMC_CI=1 python tools/ci_validate.py`，检查清单、文档、八个 README 和图片。
 
