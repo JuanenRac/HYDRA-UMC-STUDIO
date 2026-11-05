@@ -57,30 +57,7 @@ import { useCommandFeedback, useFleet, useServerStatus, useSession, useSettingsS
 
 // Lazy-loaded Panels
 const RobotDetail = React.lazy(() => import('./components/RobotDetail').then(m => ({ default: m.RobotDetail })));
-// Per-robot entry points (see robots/A1.tsx for the
-// rationale) - Dashboard.tsx dispatches to the matching one by robot.id so
-// each robot has its own file to diverge from in the future, falling back
-// to the shared RobotDetail above for any robot id beyond the fixed A1-A8
-// roster (defensive only - the store caps at 8 today).
-const A1RobotDetail = React.lazy(() => import('./components/robots/A1'));
-const A2RobotDetail = React.lazy(() => import('./components/robots/A2'));
-const A3RobotDetail = React.lazy(() => import('./components/robots/A3'));
-const A4RobotDetail = React.lazy(() => import('./components/robots/A4'));
-const A5RobotDetail = React.lazy(() => import('./components/robots/A5'));
-const A6RobotDetail = React.lazy(() => import('./components/robots/A6'));
-const A7RobotDetail = React.lazy(() => import('./components/robots/A7'));
-const A8RobotDetail = React.lazy(() => import('./components/robots/A8'));
-// `RobotDetail` above is ALREADY a `React.lazy(...)` result, i.e. already
-// `LazyExoticComponent<...>` - `React.LazyExoticComponent<typeof RobotDetail>`
-// therefore double-wraps it (`LazyExoticComponent<LazyExoticComponent<...>>`),
-// which doesn't match the single-wrapped A1RobotDetail..A8RobotDetail values
-// actually stored below. `typeof A1RobotDetail` is the correctly-shaped type
-// (identical across all 8, since every robots/A*.tsx re-exports the same
-// component) without re-wrapping it a second time.
-const ROBOT_DETAIL_BY_ID: Record<number, typeof A1RobotDetail> = {
-  1: A1RobotDetail, 2: A2RobotDetail, 3: A3RobotDetail, 4: A4RobotDetail,
-  5: A5RobotDetail, 6: A6RobotDetail, 7: A7RobotDetail, 8: A8RobotDetail,
-};
+// Every robot A1-A8 is drawn by the shared RobotDetail; the panel below is keyed by robot id so that switching robot remounts it.
 const CamerasView = React.lazy(() => import('./components/CamerasView').then(m => ({ default: m.CamerasView })));
 const CameraMediaView = React.lazy(() => import('./components/CameraMediaView').then(m => ({ default: m.CameraMediaView })));
 const XYTableConfig = React.lazy(() => import('./components/XYTableConfig').then(m => ({ default: m.XYTableConfig })));
@@ -391,8 +368,7 @@ export default function Dashboard() {
             <div className={cn("w-full h-full overflow-hidden flex flex-col", !hideUI && "pt-8 px-8 pb-4")}>
                {activeTab === 'overview' && !hideUI && <OverviewPanel />}
                {activeTab === 'robot' && activeRobot && (() => {
-                 const RobotComponent = ROBOT_DETAIL_BY_ID[activeRobot.id] || RobotDetail;
-                 return <RobotComponent key={activeRobot.id} robot={activeRobot} viewportOnly={hideUI} onNavigateToRobot={(id) => { setSelectedRobotId(id); setActiveTab('robot'); }} />;
+                 return <RobotDetail key={activeRobot.id} robot={activeRobot} viewportOnly={hideUI} onNavigateToRobot={(id) => { setSelectedRobotId(id); setActiveTab('robot'); }} />;
                })()}
                {activeTab === 'cameras' && <CamerasView />}
                {activeTab === 'robots' && <RobotsCatalogView />}

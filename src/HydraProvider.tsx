@@ -6,7 +6,7 @@
 
 import { publishClaimsEvent } from './lib/claimsFeed';
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { apiUrl, wsUrl } from './lib/apiBase';
+import { apiUrl } from './lib/apiBase';
 import { saveConflictText, saveFailureText } from './lib/serverErrors';
 import { applyRobotCommandMutation, rollbackRobotCommand } from './robotCommandTransition';
 import { type CommandResult } from './lib/commandResult';
@@ -18,16 +18,18 @@ import { applyOverlay, loadOverlay, saveOverlay, splitSettingsUpdate, usernameFr
 import { browserStorage } from './lib/robotDetailHelpers';
 import { getModeState, getSafetyState } from './lib/accessStore';
 import { fetchRobot } from './lib/accessApi';
-import { robotRevisions } from './lib/revisions';
 import { isUnknownCommand, markTableCommand, serverHasTableCommand } from './lib/tableMove';
 import { createEditQueue, markEditCommands, planRobotEdits, serverHasEditCommands, type RobotEditCommand } from './lib/robotEdits';
-import { isTemperatureWarning, parseWarnings } from './lib/safetyLimits';
 import { type StopAllReport, requestStopAllWithRetry, stopRobotByRobot } from './lib/stopAll';
 import { HydraStoreProviders } from './storeContexts';
 import { useAuthSession } from './hooks/useAuthSession';
 import { useCommandIssues } from './hooks/useCommandIssues';
 import { useSafetyLimitsSync } from './hooks/useSafetyLimitsSync';
 import { useSceneFiles } from './hooks/useSceneFiles';
+import { useSettingsSocket } from './hooks/useSettingsSocket';
+import { useDeferredSettingsSave } from './hooks/useDeferredSettingsSave';
+import { defaultSystemSettings } from './lib/defaultSettings';
+import { controllersFromServer, currentHost, hostIntegrations, pickActiveControllerId, seedControllers } from './lib/serverState';
 import { postRobotCommand as postRobotCommandRequest, tableThroughJogs as tableThroughJogsRequest, type PostRobotCommand } from './lib/robotCommandPost';
 import { saveSettingsTree, type FetchLike } from './lib/settingsConcurrency';
 import { type CameraState, type HydraController, type RobotState, type SystemSettings, defaultControllers } from './store';
@@ -45,50 +47,7 @@ function rememberSettingsEtag(ref: { current: string | null }, response: Respons
 export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [controllers, setControllers] = useState<HydraController[]>(defaultControllers);
   const [activeControllerId, setActiveControllerId] = useState<string>('192.168.1.100');
-  const [settings, setSettings] = useState<SystemSettings>({
-    visibleModules: ['Vision/Cameras', 'Robots', 'Macros/Tasks', 'Node Network', 'Settings'],
-    integrations: {
-      openPnP: { enabled: false, ip: '192.168.1.100', port: 8080 },
-      slic3r: { enabled: false, ip: '192.168.1.100', port: 8080 },
-      prusaSlicer: { enabled: false, ip: '192.168.1.100', port: 8080 },
-      cnc: { software: 'LinuxCNC', enabled: false, ip: '192.168.1.100', port: 8080 },
-      laser: { software: 'LightBurn', enabled: false, ip: '192.168.1.100', port: 8080 },
-      ros2: { enabled: false, ip: '192.168.1.100', port: 8000 },
-      printer3d: { enabled: false, software: 'OrcaSlicer', ip: '192.168.1.100', port: 8080 },
-    },
-    customModels: [],
-    modelSubmissions: {
-      enabled: false,
-      destinationFolder: 'models/submitted',
-    },
-    autoConnectRobots: false,
-    theme: "HYDRA-UMC Studio Fasion",
-    language: "en",
-    worksPaths: {},
-    canOta: {
-      transport: 'mock',
-      robotControllerBoardMcu: 'STM32G474RET6',
-      firmwarePaths: {},
-    },
-    aiHailo: {
-      visionDevice: 'hailo8',
-      cognitiveDevice: 'none',
-      modelRegistryPath: 'models/hailo',
-    },
-    uiLayout: {
-      rightPanelWidth: 320,
-      pointsTableHeight: 300,
-    },
-    remoteAccess: {
-      enabled: true,
-      suite: true,
-      android: true,
-      ios: true,
-      watch: true,
-      dsi: true,
-    },
-    serverName: "HYDRA-UMC TEST",
-  });
+  const [settings, setSettings] = useState<SystemSettings>(defaultSystemSettings);
   const [isLoaded, setIsLoaded] = useState(false);
   // the real, live "have we actually heard from a real Server"
   // signal - starts false (honest: nothing confirmed yet) and is set from
@@ -218,37 +177,12 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (dataJson === lastPayloadJsonRef.current) return;
         lastPayloadJsonRef.current = dataJson;
       }
-      let host = '192.168.1.100';
-      if (typeof window !== 'undefined' && window.location.hostname) {
-        host = window.location.hostname;
-      }
-      
+      const host = currentHost();
+
       if (data && Object.keys(data).length > 0) {
-        // Assign data.settings directly rather than merging it onto prev
-        // (`{...prev, ...data.settings}`) - the server always sends the
-        // FULL settings tree (REMOTE_API.md section 2, never a partial
-        // diff), and every field this app reads from settings already
-        // falls back gracefully via ?./?? when absent (see e.g.
-        // remoteAccess/modelSubmissions above), so there's nothing a
-        // merge with the previous value protects against. A merge DOES
-        // actively break the echo guard above: `{...prev, ...x}`
-        // preserves PREV's own key insertion order, which can differ
-        // from data.settings's own order (built server-side, potentially
-        // with fields added to the schema at different points) - so
-        // JSON.stringify()-ing the merged result never exactly equals
-        // the dataJson the guard just recorded, and the debounced save
-        // effect below (which serializes settings/controllers again to
-        // compare against that same recorded string) sees a false
-        // mismatch, POSTs a no-op "change" back, which the server
-        // broadcasts again, which lands right back here - a full
-        // multi-hundred-KB settings.json bouncing over the WebSocket in
-        // a tight loop every time ANYONE's edit (e.g. every single jog
-        // tick, since that's what drives this branch continuously)
-        // comes back around. Assigning data.settings directly keeps the
-        // client's own object graph byte-for-byte identical to what the
-        // guard already fingerprinted, so the round-trip actually
-        // terminates in one hop like the guard's own comment above
-        // assumes it does.
+        // Assign data.settings directly rather than merging it onto prev: the server always sends the FULL tree, and a
+        // merge would change the key order and defeat the echo guard above (the debounced save would see a false
+        // mismatch and POST a no-op change back, forever).
         // An account that cannot change the global settings keeps its local choices (theme, language, layout) over what the server sends.
         const overlay = !accountRef.current.mayEditGlobal && accountRef.current.username ? loadOverlay(browserStorage(), accountRef.current.username) : {};
         if (data.settings && Object.keys(overlay).length > 0) {
@@ -257,65 +191,12 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setSettings(merged);
         } else if (data.settings) setSettings(data.settings);
         else setSettings(prev => ({ ...prev, ...data })); // fallback for a pre-nested-envelope settings.json - genuinely incomplete on its own, so a merge onto known-good defaults is correct here, not the bug described above
-        let finalControllers: any[] = [];
-        if (data.controllers && data.controllers.length > 0) {
-          const parsed = data.controllers;
-          parsed.forEach((c: any) => {
-            // If the saved controller is from the cloud environment, auto-correct it to the current local host
-            if (typeof c.id === 'string' && c.id.includes('.run.app')) {
-              c.id = host;
-              c.ip = host;
-              c.name = `HYDRA-UMC (${host})`;
-            }
-            c.robots?.forEach((r: any) => {
-            if (!r.playbackState) r.playbackState = { isPlaying: false, activeStep: 0, speed: 100 };
-            });
-          });
-          setControllers(parsed);
-          finalControllers = parsed;
-        } else {
-          // Only defaultControllers[0] ("HYDRA-UMC Master") is meant as a
-          // real seed here, rewritten below to this actual host - and
-          // ONLY that one. defaultControllers[1] ("HYDRA-UMC Node 2",
-          // hardcoded at the fixed demo IP 192.168.1.101, never rewritten)
-          // used to come along for the ride via JSON.stringify(defaultControllers)
-          // wholesale, so a factory reset (which POSTs {} to /api/settings,
-          // landing right back in this empty-controllers branch on reload)
-          // resurrected that second, fictitious controller every time -
-          // exactly the "phantom server entry" a real deployment (which
-          // only ever has the one real controller this app is talking to)
-          // has no business showing. Slicing to just the one real seed
-          // before rewriting fixes that without touching defaultControllers
-          // itself (still used elsewhere as a plain not-undefined fallback).
-          const def = [JSON.parse(JSON.stringify(defaultControllers[0]))];
-          def[0].ip = host;
-          def[0].id = host;
-          setControllers(def);
-          finalControllers = def;
-        }
-        let actId = data.activeControllerId || host;
-        if (!finalControllers.some(c => c.id === actId)) actId = finalControllers[0]?.id || host;
-        setActiveControllerId(actId);
+        const finalControllers = controllersFromServer(data, host);
+        setControllers(finalControllers);
+        setActiveControllerId(pickActiveControllerId(data.activeControllerId, finalControllers, host));
       } else {
-        setSettings(prev => ({
-           ...prev,
-           integrations: {
-             openPnP: { enabled: false, ip: host, port: 8080 },
-             slic3r: { enabled: false, ip: host, port: 8080 },
-             prusaSlicer: { enabled: false, ip: host, port: 8080 },
-             cnc: { software: 'LinuxCNC', enabled: false, ip: host, port: 8080 },
-             laser: { software: 'LightBurn', enabled: false, ip: host, port: 8080 },
-             ros2: { enabled: false, ip: host, port: 8000 },
-             printer3d: { enabled: false, software: 'OrcaSlicer', ip: host, port: 8080 },
-           }
-        }));
-        // Same fix, same reason as the empty-data.controllers branch above:
-        // only the one real seed controller, not the whole defaultControllers
-        // demo array (which includes a second, fixed-IP phantom entry).
-        const def = [JSON.parse(JSON.stringify(defaultControllers[0]))];
-        def[0].ip = host;
-        def[0].id = host;
-        setControllers(def);
+        setSettings(prev => ({ ...prev, integrations: hostIntegrations(host) }));
+        setControllers(seedControllers(host));
         setActiveControllerId(host);
       }
       setIsLoaded(true);
@@ -391,11 +272,6 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // GET /api/settings needs a session like every other route: without a token the server answers 401 and the
     // dashboard shows the login screen (see settingsLoadError below).
-    // Explicit Record<string, string> annotation: without it TS infers the
-    // ternary's two branches as distinct object shapes ({Authorization:
-    // string} vs {}) and the resulting union doesn't structurally satisfy
-    // fetch()'s HeadersInit (which needs a plain Record<string, string> on
-    // this branch), even though both are actually valid header objects.
     const headers: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
 
     fetch(apiUrl('/api/settings'), { headers }).then(async (r) => {
@@ -412,205 +288,32 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return;
       }
       const data = await r.json();
-      // this fetch actually succeeding IS the real evidence a
-      // live Server answered - set before applyServerData so even the
-      // "server answered but has no saved controllers yet" branch (a
-      // genuinely fresh install) still shows System Online, honestly.
+      // This fetch succeeding IS the real evidence a live server answered; set before applyServerData so even a fresh
+      // install with no saved controllers shows System Online.
       if (!cancelled) { setServerReachable(true); setSettingsLoadError(null); applyServerData(data); }
     }).catch(() => {
       if (!cancelled) { setServerReachable(false); setIsLoaded(true); }
     });
-
-    // Live sync: any client (this tab, another tab, HYDRA-UMC SUITE, a
-    // mobile control app) that POSTs /api/settings, POSTs the atomic
-    // /api/robot/:id/command, or sends a WS "settings" message gets
-    // broadcast back to every connected client, this one included - see
-    // server.ts's own broadcastSettings(). Without this, two open tabs (or
-    // a native remote client and a tab) silently overwrite each other on
-    // their own next unrelated save, since neither ever re-fetches after
-    // its initial mount-time load. server.ts's /ws upgrade REQUIRES the
-    // token (the hydra.bearer subprotocol; it closes with code 1008
-    // otherwise, even for this app's own tab) - skip opening it at all without one rather than
-    // reconnect-loop against a server that will keep rejecting it.
-    let ws: WebSocket | null = null;
-    // The token travels as a WebSocket subprotocol (`hydra.bearer`, <token>) so that it stays out of the address that proxies and logs record. The server refuses
-    // `/ws?token=` by default, so there is no second form to fall back to.
-    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    // WS_RECONNECT_MS matches every other client's own fixed 3s reconnect
-    // delay (HYDRA-UMC SUITE's own RECONNECT_DELAY_S, the mobile apps' own
-    // RECONNECT_DELAY_MS) - this tab previously had NONE at all (a dropped
-    // socket - laptop slept, Wi-Fi blipped - just stayed dead until
-    // `authToken` happened to change, per the delta-sync design's
-    // own finding). That gap matters more now than it used to: Play/Pause/
-    // Stop (see RobotDetail.tsx's own handlePlay/handleStop) stopped
-    // optimistically mutating local state as of this same change, relying
-    // on this same WS round-trip to reflect what the robot is actually
-    // doing - a socket that can't reconnect itself would leave the UI
-    // showing stale playback state indefinitely, not just missing a live
-    // update.
-    const WS_RECONNECT_MS = 3000;
-
-    const openWs = () => {
-      if (cancelled || !authToken) return;
-      try {
-        // ?remoteApiVersion=2 declares this connection understands a real
-        // targeted delta (see server.ts's own per-connection `schema` and
-        // the delta-sync design) - the server only ever sends
-        // schema 2 to a connection that asked for it, so an older/other
-        // deployment of this same server (schema field absent or ignored)
-        // just never exercises that branch and this still behaves exactly
-        // like before.
-        const socket = new WebSocket(wsUrl('/ws?remoteApiVersion=2'), ['hydra.bearer', authToken]);
-        ws = socket;
-        // Real diagnostic for a live-reported bug still under investigation:
-        // Android's embedded 3D viewport (ThreeDScreen.kt's WebView, this
-        // exact page loaded via ?hideUI=true&robotId=...&token=...) was
-        // reported as not reflecting play/pause/stop triggered from a
-        // separate STUDIO browser tab, and vice versa - console.* here
-        // reaches that WebView's own logcat (ThreeDScreenConsole, see
-        // ThreeDScreen.kt), so the next real repro attempt can confirm
-        // directly whether this embedded session's own WS connection is
-        // even opening/staying open and receiving deltas at all, rather
-        // than guessing blind. Left in permanently, not stripped after -
-        // low-noise (one line per connect + one per delta) and equally
-        // useful for a real desktop STUDIO tab's own devtools console.
-        socket.onopen = () => {
-          console.log(`[WS] connected (robotId param: ${new URLSearchParams(window.location.search).get('robotId') ?? 'none'})`);
-          setServerReachable(true);
-        };
-        socket.onmessage = (ev) => {
-          try {
-            const msg = JSON.parse(ev.data);
-            if (msg?.type === 'delta' && msg.schema === 2 && msg.robotId !== undefined) {
-              console.log(`[WS] delta robotId=${msg.robotId} keys=${Object.keys(msg.patch || {}).join(',')}`);
-              applyRobotDelta(msg);
-            } else if (msg && (msg.type === 'settings' || msg.type === 'delta') && msg.payload) {
-              // "delta" without schema 2 (server hasn't heard us declare
-              // support, or is an older deployment) and "settings" both
-              // carry the SAME full-tree payload shape - only the label
-              // differs, see server.ts's own broadcastSettings() - so both
-              // apply identically here.
-              applyServerData(msg.payload);
-            } else if (msg?.type === 'claims') {
-              // who reserves which robot, pushed when it changes (see lib/claimsFeed.ts)
-              publishClaimsEvent(msg);
-            } else if (msg?.type === 'canota_progress' && msg.payload) {
-              setCanotaProgress(msg.payload);
-            } else if (msg?.error) {
-              console.warn('[WS] ' + msg.error);
-            }
-          } catch {
-            // ignore malformed frames rather than tear down the connection
-          }
-        };
-        socket.onclose = (ev) => {
-          console.log(`[WS] closed code=${ev.code} reason=${ev.reason || '(none)'}`);
-          if (ws === socket) ws = null;
-          // a dropped socket is real, live evidence the Server
-          // connection is no longer confirmed - reflect that immediately
-          // rather than leaving the badge stuck on the last known-good
-          // state until (or unless) a reconnect happens to succeed.
-          setServerReachable(false);
-          if (cancelled) return;
-          // Real bug found and fixed 2026-09-08 (C08): server.ts always
-          // closes an auth-rejected connection with code 1008 (no token/
-          // invalid token/session revoked - see server.ts's own 4 ws.close(
-          // 1008, ...) call sites), never anything else. Before this fix,
-          // reconnecting here unconditionally meant a token that just
-          // expired or was revoked kept being retried with itself forever -
-          // an infinite 1008 loop, never surfaced to the user.
-          //
-          // C08 follow-up, same day: forcing a full logout() on EVERY 1008
-          // was still overly broad - the single most common real cause of
-          // a 1008 (the access token's own JWT_EXPIRES_IN elapsing on a
-          // dashboard tab left open) doesn't mean the account was actually
-          // revoked. attemptTokenRefresh() tries server.ts's own new
-          // POST /api/refresh first (silent, no lost view/robot selection);
-          // only if THAT also fails (a genuinely revoked session, an
-          // expired/never-issued refresh token, or a server predating this
-          // feature) does this fall back to logout(), same as before.
-          if (ev.code === 1008) {
-            attemptTokenRefresh().then((recovered) => {
-              if (!recovered) logout();
-            });
-            return;
-          }
-          reconnectTimer = setTimeout(openWs, WS_RECONNECT_MS);
-        };
-        // onerror always precedes onclose for a WebSocket - no separate
-        // reconnect scheduling needed here, that would double-schedule.
-        socket.onerror = () => {};
-      } catch {
-        // WebSocket unavailable (very old browser, or a dev proxy that
-        // doesn't forward upgrades) - the app still works via the existing
-        // fetch-once/debounced-POST path below, just without live push.
-        // Retries on the same delay rather than giving up permanently, in
-        // case this was a transient dev-proxy hiccup rather than a real
-        // capability gap.
-        if (!cancelled) reconnectTimer = setTimeout(openWs, WS_RECONNECT_MS);
-      }
-    };
-    if (authToken) openWs();
-
-    return () => {
-      cancelled = true;
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      ws?.close();
-    };
+    return () => { cancelled = true; };
   }, [applyServerData, applyRobotDelta, authToken, attemptTokenRefresh, logout]);
 
-  // The save timer lives in a ref and not in the effect's cleanup. A change that arrives from the server (a
-  // delta) re-runs the effect, and cancelling the pending save there used to drop an edit the operator made a
-  // moment earlier: it was never saved until some later edit. The payload is built when the timer fires, from the
-  // latest state, so whatever a delta changed meanwhile is part of what is sent.
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); }, []);
+  // Live sync: any client that writes the settings or a robot is broadcast back to every connected client
+  // (hooks/useSettingsSocket.ts). Without a token the socket is not opened at all.
+  useSettingsSocket({
+    authToken, applyRobotDelta, applyServerData, publishClaims: publishClaimsEvent, setCanotaProgress, setServerReachable,
+    attemptTokenRefresh, logout,
+  });
 
-  useEffect(() => {
-    if (!isLoaded) return;
-    // This exact controllers/settings/activeControllerId change already came from applyRobotDelta() or
-    // sendRobotCommand() (see skipNextSaveRef's own header comment): it is in sync with the server, so no new save
-    // is scheduled - but one already pending for an earlier local edit is left alone. Consumed (reset to false) so
-    // the NEXT change, a genuine local edit, is still saved normally.
-    if (skipNextSaveRef.current) {
-      skipNextSaveRef.current = false;
-      return;
-    }
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      saveTimerRef.current = null;
-      const payloadJson = JSON.stringify({
-        settings: settingsRef.current,
-        controllers: controllersRef.current,
-        activeControllerId: activeControllerIdRef.current,
-      });
-      if (payloadJson === lastPayloadJsonRef.current) return; // unchanged since the last send/receive - nothing to do
-      if (!settingsSaveAllowed(role)) {
-        // An operator cannot save the tree: it would be a 403 after every edit. The edit stays in this window.
-        setOperatorEdited(true);
-        setSettingsSaveError(null);
-        return;
-      }
-
-      void persistTree(payloadJson, false).then((outcome) => {
-        if (outcome.kind === 'failed') {
-          // Real failure (401 expired session, 403 non-admin role, 5xx, network) - NOT marked as sent (lastPayloadJsonRef
-          // stays behind), so the next real change - or a manual Retry via flushSettingsSave() - tries again
-          // instead of silently giving up on it forever.
-          setSettingsSaveError(saveFailureText('save', outcome.status));
-          return;
-        }
-        if (outcome.kind === 'conflict') return; // persistTree has already shown the server's version and said so
-        lastPayloadJsonRef.current = payloadJson;
-        setSettingsSaveError(null);
-        // Saving the whole tree changes the robots on the server too: what was known of their revisions is stale.
-        robotRevisions.forget();
-        // The server lowers a bed target above the ceiling of its model and says so.
-        const lowered = parseWarnings(outcome.body).find(isTemperatureWarning);
-        if (lowered) reportCommandIssue({ code: 'temperature_limit', command: 'settings', robotIds: lowered.robotId === null ? [] : [lowered.robotId], detail: `${lowered.requested ?? '?'} -> ${lowered.applied ?? '?'}` });
-      });
-    }, 500);
-  }, [settings, controllers, activeControllerId, isLoaded, reportCommandIssue, role, persistTree]);
+  // The deferred save of the tree (500 ms after a local edit): hooks/useDeferredSettingsSave.ts.
+  useDeferredSettingsSave({
+    isLoaded, watch: [settings, controllers, activeControllerId], role, skipNextSaveRef, lastPayloadJsonRef,
+    buildPayloadJson: () => JSON.stringify({
+      settings: settingsRef.current,
+      controllers: controllersRef.current,
+      activeControllerId: activeControllerIdRef.current,
+    }),
+    persistTree, setOperatorEdited, setSettingsSaveError, reportCommandIssue,
+  });
 
   const activeController = useMemo(() => controllers.find(c => c.id === activeControllerId) || controllers[0] || defaultControllers[0], [controllers, activeControllerId]);
   const robots = activeController?.robots || [];

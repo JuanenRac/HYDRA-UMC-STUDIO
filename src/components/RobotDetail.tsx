@@ -4,9 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import { useRef, useState, useEffect, useLayoutEffect } from 'react';
-import { RotaryKnob } from "./RotaryKnob";
-import { FuturisticSlider } from "./FuturisticSlider";
+import { useRef, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motionSource } from '../motionSource';
 import { type RobotState } from '../store';
@@ -19,17 +17,16 @@ import { CameraPIP } from './robotDetail/CameraPIP';
 import { VirtualKinematics } from './VirtualKinematics';
 import { JointControlsOverlay, JoystickOverlay, XYTableOverlay } from './robotDetail/FloatingJogOverlays';
 import { examples } from '../examples/kinematics';
-import { jointLimitsFor, resolveTargetJoints } from '../examples/robotKinematicsDispatch';
+import { jointLimitsFor } from '../examples/robotKinematicsDispatch';
 import { ConfirmDialog } from './ConfirmDialog';
 import { usePanelLayout } from '../hooks/usePanelLayout';
 import { useRobotCommands } from '../hooks/useRobotCommands';
 import { TrajectoryPreview } from './TrajectoryPreview';
-import { analyzeTrajectory, previewEnabled, savePreviewEnabled, type PreviewReport } from '../lib/trajectoryPreview';
 import { useReachGate } from '../hooks/useReachGate';
+import { usePlayback } from '../hooks/usePlayback';
 import { trajectorySender } from '../lib/trajectoryCommand';
 import { RobotAccessBar } from './RobotAccessBar';
-import { currentPlaybackStep } from '../lib/playbackStep';
-import { withCartesian, browserStorage, normalizeTrajectoryForRobot } from '../lib/robotDetailHelpers';
+import { withCartesian, normalizeTrajectoryForRobot } from '../lib/robotDetailHelpers';
 import { useCommandFeedback, useFleet, useSession, useSettingsStore } from '../storeContexts';
 import { useWorkFiles } from '../hooks/useWorkFiles';
 import { buildGCode, gcodeFileName } from '../lib/gcodeExport';
@@ -237,25 +234,6 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   };
 
 
-  // stop/play fire the atomic command (server-side fans out to
-  // combinedWith itself via affectedIds - see server.ts's own switch) with
-  // a matching localMutate covering self + combinedWith locally too, so
-  // the UI reflects it instantly instead of waiting on the WS round-trip -
-  // see store.tsx's own sendRobotCommand comment. Mirrors exactly what
-  // server.ts's own "stop"/"play" case now does (isFinished/finished reset
-  // included - see that case's own comment) so the optimistic mutation and
-  // the real delta that follows agree, instead of one silently overwriting
-  // the other's own isFinished value moments later.
-  const handleStop = () => {
-    sendRobotCommand(
-      robot.id,
-      'stop',
-      undefined,
-      (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: false, activeStep: -1, isPaused: false, paused: false, isFinished: false } }),
-      [robot.id, ...(robot.combinedWith || [])]
-    );
-  };
-
   // The E-STOP button is the GLOBAL stop (the same as the STOP in the header): every robot of every controller, one
   // click, no confirmation, valves and pumps off, every answer checked - a stop the server never received is shown,
   // not swallowed. The `online` flag is telemetry and is left alone. The per-robot STOP/START control is handleStop.
@@ -263,57 +241,14 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     void emergencyStop();
   };
 
-  // With the check switched on (Config tab, off by default) Play first shows the path and what is wrong with it.
-  const [previewOn, setPreviewOn] = useState<boolean>(() => previewEnabled(browserStorage()));
-  const [pendingPreview, setPendingPreview] = useState<PreviewReport | null>(null);
-  const changePreviewOn = (on: boolean) => setPreviewOn(savePreviewEnabled(browserStorage(), on));
-  const handlePlay = async () => {
-    if (robot.recordedPoints.length === 0) return;
-    if (previewOn) {
-      setPendingPreview(analyzeTrajectory(robot.recordedPoints, robot.model));
-      return;
-    }
-    startPlay();
-  };
-  const runPendingPreview = () => {
-    setPendingPreview(null);
-    startPlay();
-  };
-  const startPlay = () => {
-    // Only THIS robot mutated optimistically here, matching the original
-    // scope of this local update - a combined sibling's own playbackState
-    // still lands correctly (the server always fans "play" out to
-    // combinedWith - see server.ts's own affectedIds), it just does so via
-    // that sibling's own component reacting to ITS OWN
-    // robot.playbackState.isPlaying changing once the delta arrives (the
-    // effect just below watching that exact field), same propagation path
-    // this app already relied on before sendRobotCommand existed.
-    sendRobotCommand(
-      robot.id,
-      'play',
-      undefined,
-      (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: true, activeStep: 0, isPaused: false, paused: false, isFinished: false } })
-    );
-    // playRobotTrajectory (the ~215-line local interpolation loop that
-    // used to live here, recorded-point by recorded-point with a real
-    // velocity/acceleration curve) is removed:
-    // server.ts's own V0 playback engine (see its own header comment) is
-    // now the SOLE driver of playback motion, for every client including
-    // this one - it replays this robot's recordedPoints itself and
-    // broadcasts a real delta on every step, which this component
-    // already renders reactively via robot.pos/robot.joints/
-    // robot.playbackState like any other incoming state. Two independent
-    // drivers writing the same robot's position (this loop AND the
-    // server, both real, both timed) would be a real problem on physical
-    // hardware, not just a UI glitch - see the "Started from outside"
-    // effect this same change also removed below, which existed only to
-    // start this loop when another client's own 'play' command arrived.
-    // The server's engine is deliberately a linear point-to-point
-    // replay, not yet this loop's own smooth curve - see server.ts's own
-    // comment on that scope boundary. Full history in git.
-  };
-
   
+  // Play, stop, the preview before Play, speed and acceleration and the correction of the joints while it plays:
+  // hooks/usePlayback.ts.
+  const {
+    handleStop, handlePlay, previewOn, changePreviewOn, pendingPreview, runPendingPreview, cancelPreview,
+    playbackSpeed, playbackAcceleration, handleSpeedChange, handleAccelerationChange,
+  } = usePlayback({ robot, sendRobotCommand, updateRobot });
+
   const { rightPanelWidth, beginResizeRightPanel, threeDHeight, beginResizeThreeD } = usePanelLayout(settings.uiLayout, updateSettings);
 
       const [rightTab, setRightTab] = useState<'trajectories' | 'config' | 'io'>('trajectories');
@@ -321,135 +256,10 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   const [controlMode, setControlMode] = useState<'translate' | 'rotate' | 'scale' | 'none'>('none');
   const toggleControl = (mode: 'translate' | 'rotate' | 'scale') => setControlMode(prev => prev === mode ? 'none' : mode);
 
-  // Was scoped to robot A1 only as a proof of concept; it now applies to every robot.
-  // Speed/Acceleration/Step/J1-J6 live in JointControlsOverlay, XYZ jog in
-  // JoystickOverlay, and (when hasXYTable) the XY table controls in
-  // XYTableOverlay - all three float ON the 3D viewport instead of the
-  // classic panel below it, which is why this used to be a per-robot flag
-  // rather than a constant: none of those 3 components have anything A1-
-  // specific baked in (robot/jogStep/handlers are plain props), so turning
-  // this into `true` for every robot needed no other change.
-  const isFloatingLayout = true;
-
   const hasXYTable = robot.hasXYTable;
 
   const combinedBotsInfo = (robot.combinedWith || []).map(id => robots.find(r => r.id === id)).filter(Boolean) as RobotState[];
   const isStartAll = combinedBotsInfo.length > 0;
-
-  const [playbackSpeed, setPlaybackSpeed] = useState<number>(robot.playbackState?.speed || 100);
-  const [playbackAcceleration, setPlaybackAcceleration] = useState<number>(robot.playbackState?.acceleration || 100);
-
-  // Real "adjust state during render" pattern: playbackSpeed/Acceleration
-  // are optimistic local buffers (handleSpeedChange/handleAccelerationChange
-  // below set them immediately, ahead of the server round-trip), but they
-  // also need to pick up a value that arrived from elsewhere (another
-  // client, or the server's own confirmation) once robot.playbackState
-  // catches up - same condition the effects used, just evaluated every
-  // render instead of only on a dependency change, so it also covers a
-  // robot switch without needing robot.id listed separately.
-  if (robot.playbackState?.speed !== undefined && robot.playbackState.speed !== playbackSpeed) {
-    setPlaybackSpeed(robot.playbackState.speed);
-  }
-  if (robot.playbackState?.acceleration !== undefined && robot.playbackState.acceleration !== playbackAcceleration) {
-    setPlaybackAcceleration(robot.playbackState.acceleration);
-  }
-
-  const handleSpeedChange = (newSpeed: number) => {
-    setPlaybackSpeed(newSpeed);
-    // Atomic 'speed' command - see toggleValve's own comment above.
-    sendRobotCommand(robot.id, 'speed', { speed: newSpeed }, (r) => ({ playbackState: { ...(r.playbackState || {}), speed: newSpeed } }));
-  };
-
-  // We'd always had a speed control here but never one for acceleration -
-  // same 10-500% scale as speed, same RotaryKnob+FuturisticSlider pair.
-  const handleAccelerationChange = (newAcceleration: number) => {
-    setPlaybackAcceleration(newAcceleration);
-    sendRobotCommand(robot.id, 'speed', { acceleration: newAcceleration }, (r) => ({ playbackState: { ...(r.playbackState || {}), acceleration: newAcceleration } }));
-  };
-  const playbackPausedRef = useRef(false);
-  useEffect(() => {
-    playbackPausedRef.current = robot.playbackState?.isPaused || false;
-  }, [robot.playbackState?.isPaused]);
-
-
-  // Removed: this effect used to call handlePlay()/
-  // handleStop() locally whenever robot.playbackState.isPlaying toggled
-  // from an external source (another client's own play/stop command),
-  // so that THIS tab's own local playRobotTrajectory loop would start
-  // driving motion too. Now that server.ts's own V0 playback engine is
-  // the sole driver (see handlePlay's own comment above), that call would
-  // be actively harmful, not just redundant: handlePlay() still sends a
-  // real 'play' command, and server.ts's 'play' case always resets
-  // activeStep to 0 - so this effect reacting to the server's OWN
-  // broadcast by resending 'play' would restart the trajectory from the
-  // beginning in a loop, never actually progressing. No replacement is
-  // needed: this component already renders robot.pos/robot.joints/
-  // robot.playbackState reactively from whatever the server broadcasts,
-  // same as every other client.
-
-  useEffect(() => {
-    const current = currentPlaybackStep(robot.playbackState?.activeStep);
-    if (robot.playbackState?.isPlaying && current >= 0) {
-      const el = document.getElementById(`step-${robot.id}-${current}`);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }
-  }, [robot.playbackState?.activeStep, robot.playbackState?.isPlaying, robot.id]);
-
-  // Real regression fix, live-reproduced: server.ts's own V0 playback engine
-  // (startServerPlayback) broadcasts each recordedPoints[] entry's {j1..j6}
-  // AS-IS, unmodified - correct only for the truly generic model, where
-  // those numbers ARE the robot's real joints. For every model with its own
-  // real kinematics (Parol6/Faze4/AR3/AR4/UR*/xArm6/... - resolveTargetJoints's
-  // own long dispatch above), a loaded example's {j1..j6} was computed
-  // against the shared GENERIC 160mm/200mm formula instead (see withCartesian's
-  // own comment) - applying those numbers directly as this robot's real
-  // joints is what made played-back examples/WORKS files move the arm
-  // through incoherent, nonsensical poses instead of the intended path.
-  // STUDIO's OWN removed client-side playback loop used to re-solve this
-  // exact way (see resolveTargetJoints's header comment: "re-solve the
-  // resolved Cartesian target... against that robot's own real kinematics
-  // instead, so recorded/played trajectories move it sensibly") - moving
-  // playback server-side dropped that step, since server.ts has no access
-  // to any of these per-model IK solvers (they're pure three.js-dependent
-  // TS, not a quick port). Re-deriving it here, purely client-side, restores the exact same
-  // correctness for every connected client (STUDIO's browser tab AND
-  // Android's WebView-embedded copy of this same page) without needing
-  // server.ts to know anything about per-model kinematics at all -
-  // `robot.pos`'s x/y/z/a/b/c is already the real, robot-agnostic Cartesian
-  // target this point means to reach, exactly like a live jog. Scoped to
-  // ONLY fire during active playback (not every robot.pos change) so a
-  // direct joint-slider edit (onJointChange, which never touches
-  // robot.pos) is never fought with a stale re-derivation.
-  // useLayoutEffect, not useEffect: fires before the browser paints the
-  // just-arrived (wrong) broadcast joints, so the correction lands in the
-  // very next commit instead of one extra visible frame of the wrong pose.
-  const playbackTrajectoryMode = (robot.playbackState as any)?.trajectoryMode;
-  useLayoutEffect(() => {
-    if (!robot.playbackState?.isPlaying) return;
-    if (playbackTrajectoryMode === 'model-joints') return;
-    const target = playbackTrajectoryMode === 'legacy-generic'
-      ? withCartesian(robot.joints)
-      : robot.pos;
-    if (typeof target?.x !== 'number') return;
-    const resolved = resolveTargetJoints(
-      robot.model, target.x, target.y, target.z,
-      target.a ?? 0, target.b ?? 0, target.c ?? 0,
-      robot.joints,
-      robot.joints,
-    );
-    const changed = (['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const).some(
-      (k) => Math.abs((resolved[k] ?? 0) - (robot.joints[k] ?? 0)) > 0.01
-    );
-    if (changed) {
-      updateRobot(robot.id, { joints: resolved });
-    }
-  }, [
-    robot.pos, robot.pos?.x, robot.pos?.y, robot.pos?.z, robot.pos?.a, robot.pos?.b, robot.pos?.c,
-    robot.joints, robot.playbackState?.isPlaying, robot.model, robot.id, updateRobot,
-    playbackTrajectoryMode,
-  ]);
 
   const [reset3DKey, setReset3DKey] = useState(0);
   // Cross-client RESET 3D sync - watches robot.reset3DTrigger (bumped by
@@ -516,7 +326,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
         confirmLabel={pendingPreview && !pendingPreview.clean ? t('trajectory_preview.play_anyway') : t('trajectory_preview.play')}
         danger={pendingPreview ? !pendingPreview.clean : false}
         onConfirm={runPendingPreview}
-        onCancel={() => setPendingPreview(null)}
+        onCancel={cancelPreview}
       />
       <ConfirmDialog
         open={pendingReach !== null}
@@ -650,7 +460,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
               </>
             )}
 
-            {isFloatingLayout && !viewportOnly && (
+            {!viewportOnly && (
               <JointControlsOverlay
                 robot={robot}
                 jogStep={jogStep}
@@ -664,7 +474,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
               />
             )}
 
-            {isFloatingLayout && !viewportOnly && (
+            {!viewportOnly && (
               <JoystickOverlay
                 jogStep={jogStep}
                 onXYZJog={handleXYZJog}
@@ -675,7 +485,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
               />
             )}
 
-            {isFloatingLayout && !viewportOnly && hasXYTable && (
+            {!viewportOnly && hasXYTable && (
               <XYTableOverlay
                 robot={robot}
                 jogStep={jogStep}
@@ -1001,12 +811,8 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
               <Repeat size={16} className={cn(robot.playbackState?.isLooping && "animate-spin-slow")} /> {!isAndroidApp && t('robot_detail.repeat', 'Repeat')}
             </button>
 
-            {/* Add/Delete Point mini-frame - floating layout only (see
-                isFloatingLayout's own header comment). Non-floating robots
-                keep these 2 buttons in the classic Joint Controls panel
-                below, unchanged - this is purely a layout move, same
-                handlers either way. */}
-            {isFloatingLayout && (
+            {/* Add/Delete Point mini-frame */}
+            {(
               <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 rounded-lg px-2 py-1">
                 <button
                   onClick={handleAddPoint}
@@ -1026,177 +832,6 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
             )}
           </div>
 
-          {/* Joint Controls - classic layout only (isFloatingLayout puts
-              Step/Speed/Acceleration/Joints in JointControlsOverlay, XYZ
-              jog in JoystickOverlay, XY table in XYTableOverlay, and
-              Add/Delete Point in the button row above - nothing left to
-              show here, so the whole panel goes away and the 3D view above
-              expands to fill the freed vertical space via its own existing
-              flex:1 sizing). */}
-          {!isFloatingLayout && (
-          <div className={cn("bg-slate-900 border border-slate-800 rounded-xl p-4 shrink-0 shadow-sm", isFullscreen && "hidden")}>
-            <div className="flex flex-wrap items-center justify-between mb-4 gap-4">
-              <div className="flex flex-wrap items-center gap-3">
-                
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={handleAddPoint}
-                    className="px-4 py-2 min-h-[44px] bg-sky-500/20 hover:bg-sky-500/30 text-sky-400 border border-sky-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors"
-                  >
-                    {t('robot_detail.add_point', '+ Add Point')}
-                  </button>
-                  <button 
-                    onClick={() => setPendingAction('delete_points')}
-                    className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-4">
-                {!isFloatingLayout && (
-                <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 min-h-[44px]">
-                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('robot_detail.speed', 'Speed:')}</span>
-                  <RotaryKnob
-                    min={10}
-                    max={500}
-                    value={playbackSpeed}
-                    onChange={handleSpeedChange}
-                    size={40}
-                    step={jogStep}
-                  />
-                  <div className="w-32 ml-2">
-                    <FuturisticSlider
-                      min={10}
-                      max={500}
-                      value={playbackSpeed}
-                      onChange={handleSpeedChange}
-                      step={jogStep}
-                    />
-                  </div>
-                  <span className="text-xs font-mono text-sky-400 w-10 text-right">{playbackSpeed}%</span>
-                </div>
-                )}
-
-                {!isFloatingLayout && (
-                <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 min-h-[44px]">
-                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('robot_detail.acceleration', 'Acceleration:')}</span>
-                  <RotaryKnob
-                    min={10}
-                    max={500}
-                    value={playbackAcceleration}
-                    onChange={handleAccelerationChange}
-                    size={40}
-                    step={jogStep}
-                  />
-                  <div className="w-32 ml-2">
-                    <FuturisticSlider
-                      min={10}
-                      max={500}
-                      value={playbackAcceleration}
-                      onChange={handleAccelerationChange}
-                      step={jogStep}
-                    />
-                  </div>
-                  <span className="text-xs font-mono text-amber-400 w-10 text-right">{playbackAcceleration}%</span>
-                </div>
-                )}
-
-                <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 min-h-[44px]">
-                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t('robot_detail.step', 'Step:')}</span>
-                  <select value={jogStep} onChange={e => setJogStep(Number(e.target.value))} className="bg-transparent border-none text-sm outline-none font-mono text-slate-200">
-                    <option value={0.1}>0.1</option>
-                    <option value={1}>1</option>
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={22.5}>22.5</option>
-                    <option value={25}>25</option>
-                    <option value={45}>45</option>
-                    <option value={50}>50</option>
-                    <option value={90}>90</option>
-                    <option value={100}>100</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* No isFloatingLayout hint paragraph here anymore - this whole
-                panel is now wrapped in `{!isFloatingLayout && (...)}` above,
-                so a floating-layout hint inside it could never actually
-                render; the floating windows (JointControlsOverlay,
-                JoystickOverlay, XYTableOverlay) are self-explanatory on
-                their own. */}
-
-            {!isFloatingLayout && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {(['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const).map(j => {
-                  // Parol6/AR4 have real, narrower per-joint limits (from their own URDF/
-                  // config) than the generic +/-180 range every other model uses - clamping
-                  // the sliders to them keeps jogging from wandering into unreachable/
-                  // self-colliding angles. Faze4/AR3 declare every joint "continuous" in
-                  // their own URDFs (genuinely no limit), so they keep the generic range.
-                  const [jMin, jMax] = jointLimitsFor(robot.model, j);
-                  return (
-                  <div key={j} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-400 uppercase">{j}</span>
-                      <span className="text-xs font-mono text-sky-400">{robot.joints[j as keyof typeof robot.joints]?.toFixed(2)}Â°</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <RotaryKnob
-                        min={jMin}
-                        max={jMax}
-                        value={robot.joints[j as keyof typeof robot.joints]}
-                        onChange={val => setRobotJoints(robot.id, { ...robot.joints, [j]: val })}
-                        size={44}
-                        step={jogStep}
-                      />
-                      <FuturisticSlider min={jMin} max={jMax} value={robot.joints[j as keyof typeof robot.joints]} onChange={val => setRobotJoints(robot.id, { ...robot.joints, [j]: val })} className="flex-1" step={jogStep} />
-                    </div>
-                  </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {hasXYTable && (
-              <div className="mt-4 pt-4 border-t border-slate-800">
-                <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-wider"><Crosshair size={16} /> {t('robot_detail.xy_table_controls', 'XY Table Controls')}</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {(['tx', 'ty'] as const).map(axis => {
-                    const maxVal = axis === 'tx' ? (robot.xyTable?.tableSize?.width || 500) : (robot.xyTable?.tableSize?.length || 500);
-                    return (
-                    <div key={axis} className="flex flex-col gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-slate-400 uppercase">{axis}</span>
-                        <span className="text-xs font-mono text-sky-400">{robot.pos[axis]?.toFixed(2) || 0}</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <RotaryKnob
-                          min={0}
-                          max={maxVal}
-                          value={robot.pos[axis] || 0}
-                          onChange={val => handleXYAxisChange(axis, val)}
-                          size={44}
-                          step={jogStep}
-                        />
-                        <FuturisticSlider
-                          min={0}
-                          max={maxVal}
-                          value={robot.pos[axis] || 0}
-                          onChange={val => handleXYAxisChange(axis, val)}
-                          className="flex-1"
-                          step={jogStep}
-                        />
-                      </div>
-                    </div>
-                  )})}
-                </div>
-              </div>
-            )}
-          </div>
-          )}
           </div>
           )}
         </div>
