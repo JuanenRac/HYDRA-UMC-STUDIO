@@ -14,13 +14,15 @@ import { createCommandSequence } from './lib/commandSequence';
 import { authHeaders } from './lib/session';
 import { guardCommand } from './lib/motionGuard';
 import { settingsLocalOnly, settingsSaveAllowed } from './lib/settingsSave';
-import { applyOverlay, loadOverlay, saveOverlay, splitSettingsUpdate, usernameFromToken } from './lib/settingsScope';
+import { applyOverlay, loadOverlay, saveOverlay, usernameFromToken } from './lib/settingsScope';
 import { browserStorage } from './lib/robotDetailHelpers';
 import { getModeState, getSafetyState } from './lib/accessStore';
 import { fetchRobot } from './lib/accessApi';
 import { isUnknownCommand, markTableCommand, serverHasTableCommand } from './lib/tableMove';
 import { createEditQueue, markEditCommands, planRobotEdits, serverHasEditCommands, type RobotEditCommand } from './lib/robotEdits';
 import { type StopAllReport, requestStopAllWithRetry, stopRobotByRobot } from './lib/stopAll';
+import { parseRobotDelta, deltaTargetExists, patchControllers } from './lib/robotDelta';
+import { planSettingsUpdate } from './lib/settingsUpdate';
 import { HydraStoreProviders } from './storeContexts';
 import { useAuthSession } from './hooks/useAuthSession';
 import { useCommandIssues } from './hooks/useCommandIssues';
@@ -239,22 +241,15 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
    * robot from a partial patch (section 5b's mitigation (b), non-optional).
    */
   const applyRobotDelta = useCallback((msg: any) => {
-    const { controllerId, robotId, patch, cameraId, cameraPatch } = msg;
-    if (typeof controllerId !== 'string' || typeof robotId !== 'number' || !patch || typeof patch !== 'object') return;
-    const controller = controllersRef.current.find(c => c.id === controllerId);
-    const robotExists = controller?.robots?.some(r => r.id === robotId);
-    if (!controller || !robotExists) {
+    const delta = parseRobotDelta(msg);
+    if (!delta) return;
+    if (!deltaTargetExists(controllersRef.current, delta)) {
       const headers: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
       fetch(apiUrl('/api/settings'), { headers }).then(r => { rememberSettingsEtag(settingsEtagRef, r); return r.json(); }).then(data => applyServerData(data)).catch(() => {});
       return;
     }
     setControllers(prev => {
-      const next = prev.map((c) => {
-        if (c.id !== controllerId) return c;
-        const robots = c.robots.map((r) => (r.id === robotId ? { ...r, ...patch } : r));
-        const cameras = (cameraId !== undefined && cameraPatch) ? c.cameras.map((cam) => (cam.id === cameraId ? { ...cam, ...cameraPatch } : cam)) : c.cameras;
-        return { ...c, robots, cameras };
-      });
+      const next = patchControllers(prev, delta);
       // Marks the save-effect's very next run as "already in sync, skip" -
       // without this, applying a delta (which necessarily changes the
       // `controllers` reference) would look to that effect like a fresh
@@ -565,18 +560,17 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // panels: lib/settingsScope.ts), which stay in this browser; a global one is refused here and the interface says so
   // (the server refuses it as well).
   const updateSettings = (updates: Partial<SystemSettings>) => {
-    if (settingsSaveAllowed(role)) {
+    const plan = planSettingsUpdate(settingsSaveAllowed(role), updates, settingsRef.current);
+    if (plan.mode === 'global') {
       setSettings(prev => ({ ...prev, ...updates }));
       return;
     }
-    const parts = splitSettingsUpdate(updates);
-    if (parts.hasGlobal) reportCommandIssue({ code: 'settings_admin_only', command: 'settings', robotIds: [], detail: Object.keys(parts.global).join(', ') });
-    if (!parts.hasLocal) return;
+    if (plan.refusedKeys.length > 0) reportCommandIssue({ code: 'settings_admin_only', command: 'settings', robotIds: [], detail: plan.refusedKeys.join(', ') });
+    if (Object.keys(plan.local).length === 0) return;
     const username = usernameFromToken(authToken);
-    const next = { ...settingsRef.current, ...parts.local };
-    if (JSON.stringify(next) !== JSON.stringify(settingsRef.current)) skipNextSaveRef.current = true;
-    if (username) saveOverlay(browserStorage(), username, { ...loadOverlay(browserStorage(), username), ...parts.local });
-    setSettings(prev => ({ ...prev, ...parts.local }));
+    if (plan.changes) skipNextSaveRef.current = true;
+    if (username) saveOverlay(browserStorage(), username, { ...loadOverlay(browserStorage(), username), ...plan.local });
+    setSettings(prev => ({ ...prev, ...plan.local }));
   };
 
   const addController = (controller: HydraController) => {
