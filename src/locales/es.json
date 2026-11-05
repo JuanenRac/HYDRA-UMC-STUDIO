@@ -1683,6 +1683,26 @@
     "reset_done": "Inicio de sesión en dos pasos quitado a {{user}}.",
     "reset_error": "No se pudo quitar el inicio de sesión en dos pasos."
   },
+  "plannerIdentity": {
+    "title": "Planificador semántico: quién aprueba un plan",
+    "desc": "El planificador semántico libera un plan solo cuando la persona que lo aprueba ha iniciado sesión con un token de este servidor y es la persona nombrada en la aprobación. Este interruptor lo relaja para un banco sin el servidor. Está activado por defecto; solo un administrador puede cambiarlo, relajarlo pide una confirmación y cada cambio queda registrado.",
+    "label": "Exigir un operador con sesión iniciada para aprobar un plan",
+    "state_on": "Activado: la aprobación la hace la persona con sesión iniciada (por defecto).",
+    "state_off": "Desactivado: la aprobación son las palabras de la petición (solo para un banco).",
+    "unsupported": "Este servidor no ofrece los ajustes del planificador semántico.",
+    "not_configured": "El planificador semántico no está configurado en este servidor.",
+    "forbidden": "Solo un administrador puede leer o cambiar este interruptor.",
+    "load_error": "No se pudo leer el interruptor de identidad del planificador semántico.",
+    "needs_key": "El planificador no tiene clave de identidad, así que el interruptor no se puede cambiar desde aquí.",
+    "kept_file": "El cambio se conserva en el fichero de configuración del planificador tras los reinicios.",
+    "kept_memory": "El cambio dura hasta que el planificador se reinicie (no tiene fichero de configuración).",
+    "save": "Guardar",
+    "saved": "Guardado.",
+    "save_error": "Se rechazó el cambio: {{reason}}",
+    "confirm_title": "¿Relajar la identidad de la aprobación?",
+    "confirm_message": "Los planes se liberarán con las palabras de la petición, sin que la persona haya iniciado sesión. Relájalo solo en un banco sin el servidor.",
+    "confirm_button": "Relajar"
+  },
   "hubGate": {
     "title": "Hub de conectores: llamantes sin identidad",
     "desc": "La puerta de decisiones del hub de conectores solo responde a quien presenta un token firmado de este servidor. Este interruptor permite responder sin token a un llamante de la propia máquina del hub. Está apagado por defecto; solo un administrador puede cambiarlo, encenderlo pide una confirmación y cada cambio queda registrado.",

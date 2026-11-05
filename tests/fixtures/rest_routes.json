@@ -42,6 +42,7 @@
   "/api/robot/{p}/jog-arm",
   "/api/robot/{p}/release",
   "/api/safety-limits",
+  "/api/semantic-planner/settings",
   "/api/settings",
   "/api/stop-all",
   "/api/system/bluetooth/pair",

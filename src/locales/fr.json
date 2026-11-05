@@ -1683,6 +1683,26 @@
     "reset_done": "Connexion en deux étapes retirée pour {{user}}.",
     "reset_error": "Impossible de retirer la connexion en deux étapes."
   },
+  "plannerIdentity": {
+    "title": "Planificateur sémantique : qui approuve un plan",
+    "desc": "Le planificateur sémantique ne libère un plan que si la personne qui l'approuve est connectée avec un jeton de ce serveur et est celle nommée dans l'approbation. Cet interrupteur l'assouplit pour un banc sans le serveur. Il est activé par défaut ; seul un administrateur peut le modifier, l'assouplir demande une confirmation et chaque changement est enregistré.",
+    "label": "Exiger un opérateur connecté pour approuver un plan",
+    "state_on": "Activé : l'approbation est faite par la personne connectée (par défaut).",
+    "state_off": "Désactivé : l'approbation est la parole de la requête (uniquement pour un banc).",
+    "unsupported": "Ce serveur ne propose pas les réglages du planificateur sémantique.",
+    "not_configured": "Le planificateur sémantique n'est pas configuré sur ce serveur.",
+    "forbidden": "Seul un administrateur peut lire ou modifier cet interrupteur.",
+    "load_error": "Impossible de lire l'interrupteur d'identité du planificateur sémantique.",
+    "needs_key": "Le planificateur n'a pas de clé d'identité : l'interrupteur ne peut pas être modifié d'ici.",
+    "kept_file": "Le changement est conservé dans le fichier de configuration du planificateur après les redémarrages.",
+    "kept_memory": "Le changement dure jusqu'au redémarrage du planificateur (il n'a pas de fichier de configuration).",
+    "save": "Enregistrer",
+    "saved": "Enregistré.",
+    "save_error": "Le changement a été refusé : {{reason}}",
+    "confirm_title": "Assouplir l'identité de l'approbation ?",
+    "confirm_message": "Les plans seront libérés sur la parole de la requête, sans que la personne soit connectée. N'assouplissez cela que sur un banc sans le serveur.",
+    "confirm_button": "Assouplir"
+  },
   "hubGate": {
     "title": "Hub de connecteurs : appelants sans identité",
     "desc": "La porte de décision du hub de connecteurs ne répond qu'aux appelants qui présentent un jeton signé de ce serveur. Cet interrupteur permet de répondre sans jeton à un appelant situé sur la machine même du hub. Il est désactivé par défaut ; seul un administrateur peut le changer, l'activer demande une confirmation et chaque changement est consigné.",

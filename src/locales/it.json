@@ -1683,6 +1683,26 @@
     "reset_done": "Accesso in due passaggi rimosso per {{user}}.",
     "reset_error": "Impossibile rimuovere l'accesso in due passaggi."
   },
+  "plannerIdentity": {
+    "title": "Pianificatore semantico: chi approva un piano",
+    "desc": "Il pianificatore semantico rilascia un piano solo quando la persona che lo approva ha effettuato l'accesso con un token di questo server ed è la persona indicata nell'approvazione. Questo interruttore lo attenua per un banco senza il server. È attivo per impostazione predefinita; solo un amministratore può modificarlo, attenuarlo richiede una conferma e ogni modifica viene registrata.",
+    "label": "Richiedere un operatore con accesso effettuato per approvare un piano",
+    "state_on": "Attivo: l'approvazione è fatta dalla persona che ha effettuato l'accesso (predefinito).",
+    "state_off": "Disattivo: l'approvazione è la parola della richiesta (solo per un banco).",
+    "unsupported": "Questo server non offre le impostazioni del pianificatore semantico.",
+    "not_configured": "Il pianificatore semantico non è configurato su questo server.",
+    "forbidden": "Solo un amministratore può leggere o modificare questo interruttore.",
+    "load_error": "Impossibile leggere l'interruttore di identità del pianificatore semantico.",
+    "needs_key": "Il pianificatore non ha una chiave di identità, quindi l'interruttore non può essere modificato da qui.",
+    "kept_file": "La modifica viene conservata nel file di configurazione del pianificatore dopo i riavvii.",
+    "kept_memory": "La modifica dura fino al riavvio del pianificatore (non ha un file di configurazione).",
+    "save": "Salva",
+    "saved": "Salvato.",
+    "save_error": "La modifica è stata rifiutata: {{reason}}",
+    "confirm_title": "Attenuare l'identità dell'approvazione?",
+    "confirm_message": "I piani verranno rilasciati sulla parola della richiesta, senza che la persona abbia effettuato l'accesso. Attenualo solo su un banco senza il server.",
+    "confirm_button": "Attenua"
+  },
   "hubGate": {
     "title": "Hub dei connettori: chiamanti senza identità",
     "desc": "Il gate decisionale dell'hub dei connettori risponde solo ai chiamanti che presentano un token firmato di questo server. Questo interruttore permette di rispondere senza token a un chiamante sulla macchina stessa dell'hub. È spento per impostazione predefinita; solo un amministratore può cambiarlo, accenderlo richiede una conferma e ogni modifica viene registrata.",

@@ -1683,6 +1683,26 @@
     "reset_done": "Início de sessão em dois passos removido para {{user}}.",
     "reset_error": "Não foi possível remover o início de sessão em dois passos."
   },
+  "plannerIdentity": {
+    "title": "Planeador semântico: quem aprova um plano",
+    "desc": "O planeador semântico só liberta um plano quando a pessoa que o aprova tem sessão iniciada com um token deste servidor e é a pessoa indicada na aprovação. Este interruptor relaxa isso para uma bancada sem o servidor. Está ativado por predefinição; só um administrador o pode alterar, relaxá-lo pede uma confirmação e cada alteração fica registada.",
+    "label": "Exigir um operador com sessão iniciada para aprovar um plano",
+    "state_on": "Ativado: a aprovação é feita pela pessoa com sessão iniciada (predefinição).",
+    "state_off": "Desativado: a aprovação são as palavras do pedido (só para uma bancada).",
+    "unsupported": "Este servidor não oferece as definições do planeador semântico.",
+    "not_configured": "O planeador semântico não está configurado neste servidor.",
+    "forbidden": "Só um administrador pode ler ou alterar este interruptor.",
+    "load_error": "Não foi possível ler o interruptor de identidade do planeador semântico.",
+    "needs_key": "O planeador não tem chave de identidade, por isso o interruptor não pode ser alterado a partir daqui.",
+    "kept_file": "A alteração mantém-se no ficheiro de configuração do planeador após os reinícios.",
+    "kept_memory": "A alteração dura até o planeador reiniciar (não tem ficheiro de configuração).",
+    "save": "Guardar",
+    "saved": "Guardado.",
+    "save_error": "A alteração foi recusada: {{reason}}",
+    "confirm_title": "Relaxar a identidade da aprovação?",
+    "confirm_message": "Os planos serão libertados com base nas palavras do pedido, sem que a pessoa tenha sessão iniciada. Relaxe isto apenas numa bancada sem o servidor.",
+    "confirm_button": "Relaxar"
+  },
   "hubGate": {
     "title": "Hub de conectores: chamadores sem identidade",
     "desc": "A porta de decisão do hub de conectores só responde a quem apresenta um token assinado deste servidor. Este interruptor permite responder sem token a um chamador na própria máquina do hub. Está desligado por omissão; só um administrador o pode alterar, ligá-lo pede uma confirmação e cada alteração fica registada.",

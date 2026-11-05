@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Server Admin shows and changes whether the approval of a plan needs the person who is signed in:** the semantic planner releases a plan only when the approver is signed in with a token of the server and is the person named in the approval (on by default). A new section reads the switch through `GET /api/semantic-planner/settings`, relaxing it asks for a confirmation on screen and sends `confirm: true`, tightening it again needs none, and nothing is shown when the server has no planner set up. Eight languages; 8 tests.
+
 - **Server Admin shows the switch of the connector hub gate that answers a caller without identity:** it reads and changes `allowLoopbackNoIdentity` of the hub through the server (`GET` and `POST /api/connector-hub/gate/settings`). It is off by default, turning it on asks for a confirmation on screen, it tells whether the change is kept in the hub settings file or only until the hub restarts, and nothing is shown on a server that has no such gate. Eight languages.
 
 - **Portuguese camera badge:** the live badge of the camera matrix reads `EM DIRETO`, the whole expression.
