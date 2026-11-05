@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Server Admin shows and changes whether a real command needs a pass verdict of the twin:** a section for the switch `require_twin_pass` of the HIL bridge (`GET` and `POST /api/hil-bridge/settings`). It is off by default, any change asks for a confirmation on screen and sends `confirm: true`, what the bridge would refuse (locked on, no twin key or robot, no identity key) is said before saving, and nothing is shown when the server has no such bridge. Eight languages; 9 tests.
+
 - **The build test of the repository compiles only on CI or when allowed:** for the stacks that compile (`rust`, `go`, `android`, `flutter`, `firmware-c`), `tools/build_test.py` prints `BUILD_TEST=SKIPPED` with exit status 2 on a plain PC, never a pass; `ALLOW_LOCAL_BUILD=1` allows it and a CI runner always may. The `python` and `node` stacks are not locked.
 
 - **One folder for the 3D model library, shared with the desktop app and the STL editor:** with `HYDRA_UMC_LIBRARY_DIR` set to an existing folder (the layout of `public/models`: category / model / files) the dev and preview servers answer `/models/...` from it, a production build copies it into `dist/models`, and the mesh package (`npm run meshes`, `predev`, `prebuild`) never installs over it. A request can never leave the folder. Unset (the default), or naming something that is not a folder, nothing changes. The sentence the command line prints is in the eight languages; 10 tests.
