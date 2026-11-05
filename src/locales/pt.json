@@ -461,7 +461,7 @@
   "cameras": {
     "title": "Matriz de visão octal",
     "cam": "Cam",
-    "live": "DIRETO",
+    "live": "EM DIRETO",
     "usb_vision": "Câmara de visão USB",
     "ip_vision_main": "Câmara de visão IP - transmissão principal",
     "ip_vision_sub": "Câmara de visão IP - subtransmissão",

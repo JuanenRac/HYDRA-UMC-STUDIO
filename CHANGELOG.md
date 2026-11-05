@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Portuguese camera badge:** the live badge of the camera matrix reads `EM DIRETO`, the whole expression.
+
 - **The firmware downloader reads the release assets of HYDRA-UMC:** the images of the controller and kinematic boards are no longer in the repository, so the manifest, each image and its signature file come from the latest release (the CRC32 of the manifest and the SHA-256 of the manifest or, failing that, the one GitHub states for the asset are checked before anything is flashed); URTC keeps being read from its repository. Five tests.
 
 - **Three translations corrected:** the Italian label of the port is `Porta` (it was left in English), the Portuguese counter of connected apps agrees in gender (`Ligados`) and the heated bed is the heated table (`mesa aquecida`) in Portuguese, as in the rest of the family.
