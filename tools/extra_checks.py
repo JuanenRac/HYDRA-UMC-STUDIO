@@ -15,6 +15,7 @@ from pathlib import Path
 PICTURE_CHECKS = (
     ("make_architecture.py", "architecture.json", ["--check"]),
     ("make_structure.py", "structure.json", ["--check", "--readmes"]),
+    ("sync_sdk_answers.py", "architecture.json", ["--check"]),
 )
 
 
