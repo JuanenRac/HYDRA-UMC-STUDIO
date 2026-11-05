@@ -8,6 +8,8 @@ All notable changes to this project are documented here.
 
 - **Server Admin shows whether the settings sent to the machine bridges can be signed:** under the switches of the machine bridges it lists, for each bridge, the state of the key that signs its settings (ready, not made yet, or unusable), when a message was last signed and the path of the key file, never the key. A bridge applies a setting only with a valid, current signature, so a bridge without the key keeps its own configuration. In the eight languages (Portuguese from Portugal). 1 more test.
 
+- **Server Admin shows the identity of the server in its calls to the services:** a new section "Identity of the services" (administrators only) shows whether the server presents its signed token to the services, whether its key can sign, which services take the identity, which keep a verifier of their own and which do not yet, and the safe order of the steps. The switch is off by default, turning it on asks for a confirmation, turning it off warns that a service whose identity key is on will refuse the server, and the key itself is still given to each service on the machine. Available in eight languages.
+
 - **Server Admin shows the switch of the connector hub gate that answers a caller without identity:** it reads and changes `allowLoopbackNoIdentity` of the hub through the server (`GET` and `POST /api/connector-hub/gate/settings`). It is off by default, turning it on asks for a confirmation on screen, it tells whether the change is kept in the hub settings file or only until the hub restarts, and nothing is shown on a server that has no such gate. Eight languages.
 
 - **Portuguese camera badge:** the live badge of the camera matrix reads `EM DIRETO`, the whole expression.

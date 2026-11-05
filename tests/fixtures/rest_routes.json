@@ -5,6 +5,7 @@
   "/api/admin/restart",
   "/api/admin/safety-limits",
   "/api/admin/server-config",
+  "/api/admin/service-identity",
   "/api/ai/anomaly-detector/rul",
   "/api/ai/datalake/windows",
   "/api/ai/job-dispatcher/dispatch/eta",
