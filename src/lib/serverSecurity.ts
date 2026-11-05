@@ -59,6 +59,10 @@ export interface SecurityState {
     jwtAlgorithm: { value: JwtAlgorithm; source: SecuritySource };
     acceptHs256: { value: boolean; source: SecuritySource };
   } | null;
+  /** Absent when the server predates the read-out protection option of a production flash. */
+  production: {
+    rdpLevel: { value: 0 | 1; source: SecuritySource };
+  } | null;
   /** Absent when the server predates the history of connections. */
   connections: {
     recordAddress: { value: boolean; source: SecuritySource };
@@ -167,6 +171,13 @@ function parseAuth(raw: any): SecurityState['auth'] {
   if (!algorithm || !JWT_ALGORITHMS.includes(algorithm.value) || !isSource(algorithm.source)) return null;
   if (!accept || typeof accept.value !== 'boolean' || !isSource(accept.source)) return null;
   return { jwtAlgorithm: { value: algorithm.value, source: algorithm.source }, acceptHs256: { value: accept.value, source: accept.source } };
+}
+
+function parseProduction(raw: any): SecurityState['production'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const level = raw.rdpLevel;
+  if (!level || (level.value !== 0 && level.value !== 1) || !isSource(level.source)) return null;
+  return { rdpLevel: { value: level.value, source: level.source } };
 }
 
 function parseConnections(raw: any): SecurityState['connections'] {
@@ -471,6 +482,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     voice: parseVoice(raw.voice),
     robots: parseRobots(raw.robots),
     auth: parseAuth(raw.auth),
+    production: parseProduction(raw.production),
     connections: parseConnections(raw.connections),
     health: parseHealth(raw.health),
     ecosystemHealth: parseEcosystemHealth(raw.ecosystemHealth),
@@ -579,6 +591,18 @@ export function authPatch(change: { jwtAlgorithm?: JwtAlgorithm; acceptHs256?: b
 /** Refusing HS256 tokens signs out every session that still holds one: ask first. Accepting them again never asks. */
 export function authChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
   return current && !next;
+}
+
+export type ProductionPatchBody = { production: { rdpLevel: 0 | 1 } };
+
+/** The request body for the read-out protection level of a production flash: 1 turns it on, 0 off (the default; level 2 is permanent and never offered). */
+export function productionPatch(on: boolean): ProductionPatchBody {
+  return { production: { rdpLevel: on ? 1 : 0 } };
+}
+
+/** Turning the protection on is the change that cannot be taken back without erasing the chip: ask first. Turning it off never asks. */
+export function productionChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
+  return !current && next;
 }
 
 export type ConnectionsPatchBody = { connections: { recordAddress: boolean } };

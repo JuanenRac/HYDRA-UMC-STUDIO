@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { productionPatch, productionChangeNeedsConfirmation, parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -553,5 +553,25 @@ describe('the switches of the machine bridges', () => {
     expect(ask({ 'amr.publishState': true })).toBe(false);
     expect(ask({ 'openpnp.boardCode': 'required' })).toBe(false);
     expect(knownWarnings(['bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'other'])).toEqual(['bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop']);
+  });
+});
+
+describe('the read-out protection level of a production flash', () => {
+  it('reads the level the server reports and shows nothing for a server that predates it', () => {
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: { value: 0, source: 'default' } } })?.production).toEqual({ rdpLevel: { value: 0, source: 'default' } });
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: { value: 1, source: 'config' } } })?.production).toEqual({ rdpLevel: { value: 1, source: 'config' } });
+    expect(parseSecurityState(answer)?.production).toBeNull();
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: { value: 2, source: 'default' } } })?.production).toBeNull();
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: { value: true, source: 'default' } } })?.production).toBeNull();
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: { value: 0, source: 'nowhere' } } })?.production).toBeNull();
+  });
+
+  it('builds the request with level 0 or 1 only and asks only before turning it on', () => {
+    expect(productionPatch(true)).toEqual({ production: { rdpLevel: 1 } });
+    expect(productionPatch(false)).toEqual({ production: { rdpLevel: 0 } });
+    expect(productionChangeNeedsConfirmation(false, true)).toBe(true);
+    expect(productionChangeNeedsConfirmation(true, false)).toBe(false);
+    expect(productionChangeNeedsConfirmation(true, true)).toBe(false);
+    expect(productionChangeNeedsConfirmation(false, false)).toBe(false);
   });
 });

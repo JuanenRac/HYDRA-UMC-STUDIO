@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Server Admin has a switch for the read-out protection level of a production flash, in eight languages:** the Security tab shows `production.rdpLevel` of the server (off by default; level 2 is never offered), says whether the environment locks it, and asks for a confirmation before turning it on, because only a full erase of the chip undoes level 1. It only records the choice; no flashing tool reads it yet.
+
 - **The global state provider and the robot screen lose more of their size:** the problem of the last command and the answer of the global STOP (`hooks/useCommandIssues.ts`), the safety limits poll (`hooks/useSafetyLimitsSync.ts`), the POST of a robot command and the table move as jogs (`lib/robotCommandPost.ts`), the save and load of trajectories and scenes (`hooks/useSceneFiles.ts`), the reach check of a trajectory (`hooks/useReachGate.ts`) and the command that loads a Work or an example (`lib/trajectoryCommand.ts`, built once instead of three times) moved out unchanged; the provider goes from 1046 to under 950 lines and the robot screen from 1317 to about 1230. 11 tests.
 
 - **Wording corrections in the translations:** the Japanese counter of connected apps reads `接続済み` (connected, not connecting), the Portuguese standard mode is `Padrão`, the Portuguese pause buttons are the verb `Pausar`, the flasher uses the European Portuguese `gravar` (write) instead of `flashar`, the save-configuration button is spelled out in German, French and Italian, and the labels of Spanish, French and Italian no longer capitalise every word.
