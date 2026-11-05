@@ -208,20 +208,20 @@ describe('fetchGithubFirmwareReleases', () => {
 
   it('keeps the order of the components of the tier and skips those the manifest lacks', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, json: async () => manifestOf({ h745_cm4_application: comp('cm4'), h745_cm7_application: comp('cm7'), unrelated: comp('x') }) })));
-    const assets = await fetchGithubFirmwareReleases('JuanenRac/HYDRA-UMC', 'kinematicBrain');
+    const assets = await fetchGithubFirmwareReleases('JuanenRac/URTC', 'kinematicBrain');
     expect(assets.map((a) => a.name)).toEqual(['cm7.bin', 'cm4.bin']);
   });
 
   it('builds the raw URL of each image from the repository, branch and file name', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, json: async () => manifestOf({ g474_application: comp('rcb') }) })));
-    const [asset] = await fetchGithubFirmwareReleases('JuanenRac/HYDRA-UMC', 'controllerBoard', 'dev');
-    expect(asset.url).toBe('https://raw.githubusercontent.com/JuanenRac/HYDRA-UMC/dev/firmware/rcb.bin');
+    const [asset] = await fetchGithubFirmwareReleases('JuanenRac/URTC', 'controllerBoard', 'dev');
+    expect(asset.url).toBe('https://raw.githubusercontent.com/JuanenRac/URTC/dev/firmware/rcb.bin');
     expect(asset).toMatchObject({ releaseTag: '1.0.0', hardwareId: '0x1', isBootloader: false });
   });
 
   it('returns nothing for a tier with no components', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, json: async () => manifestOf({ g474_application: comp('rcb') }) })));
-    expect(await fetchGithubFirmwareReleases('JuanenRac/HYDRA-UMC', 'urtcExpansion')).toEqual([]);
+    expect(await fetchGithubFirmwareReleases('JuanenRac/URTC', 'noSuchTier' as never)).toEqual([]);
   });
 });
 
