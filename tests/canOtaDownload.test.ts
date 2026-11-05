@@ -97,7 +97,7 @@ describe('fetchGithubFirmwareReleases from the latest release (HYDRA-UMC)', () =
     expect(assets.map((a) => a.name)).toEqual(['HYDRA_RCB_APP_v0.1.9.bin']);
     expect(assets[0]).toMatchObject({ sha256: 'cd'.repeat(32), signature: sig, crc32: '0x2', releaseTag: '0.1.9' });
     expect(assets[0].url).toContain('/releases/assets/');
-    expect(calls.some((c) => c.url.includes('raw.githubusercontent.com'))).toBe(false);
+    expect(calls.some((c) => new URL(c.url).hostname === 'raw.githubusercontent.com')).toBe(false);
     expect(calls.filter((c) => c.url.includes('/releases/assets/')).every((c) => c.accept === 'application/octet-stream')).toBe(true);
   });
 

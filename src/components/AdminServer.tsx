@@ -980,6 +980,17 @@ export function AdminServer() {
               <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_bridges_title')}</h5>
               <div className="text-[10px] text-slate-500">{t('ecosystem.admin_bridges_help')}</div>
               <div className="text-[10px] text-slate-400" data-testid="bridges-delivery">{t(security.bridges.delivery === 'gateway_on' ? 'ecosystem.admin_bridges_delivery_on' : 'ecosystem.admin_bridges_delivery_off')}</div>
+              {security.bridges.signing.length > 0 && (
+                <div className="space-y-0.5" data-testid="bridges-signing">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">{t('ecosystem.admin_bridges_signing_title')}</span>
+                  <div className="text-[10px] text-slate-500">{t('ecosystem.admin_bridges_signing_help')}</div>
+                  {security.bridges.signing.map(s => (
+                    <div key={s.bridge} className="text-[10px] text-slate-400" data-testid={`bridge-signing-${s.bridge}`}>
+                      BRIDGE-{s.bridge.toUpperCase()}: {t(`ecosystem.admin_bridges_signing_key_${s.key}`)} · {t('ecosystem.admin_bridges_signing_last')}: {s.lastSignedAt ?? t('ecosystem.admin_bridges_signing_never')} · {t('ecosystem.admin_bridges_signing_file')}: {s.keyFile}
+                    </div>
+                  ))}
+                </div>
+              )}
               {security.bridges.options.map(o => {
                 const id = bridgeOptionId(o);
                 const label = t(`ecosystem.admin_bridges_opt_${o.bridge}_${o.key}`);

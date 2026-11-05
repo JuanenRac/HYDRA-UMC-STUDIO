@@ -521,6 +521,24 @@ describe('the switches of the machine bridges', () => {
     expect(parseSecurityState({ ...answer, bridges: { ...reported.bridges, uav: { missionUploadEnabled: { value: 'x' } } } })?.bridges).toBeNull();
   });
 
+  it('reads the state of the key that signs the settings of each bridge, never a key, and an older server gives an empty list', () => {
+    expect(state()!.signing).toEqual([]);
+    const signed = parseSecurityState({
+      ...answer,
+      ...reported,
+      bridgeSigning: {
+        droids: { keyFile: '/keys/droids.key', key: 'present', lastSignedAt: '1970-01-01T00:00:01.000Z', seq: 7 },
+        amr: { keyFile: '/keys/amr.key', key: 'missing', lastSignedAt: null, seq: 0 },
+        uav: { keyFile: '/keys/uav.key', key: 'broken', lastSignedAt: null, seq: 0 },
+      },
+    })?.bridges;
+    expect(signed?.signing).toEqual([
+      { bridge: 'droids', keyFile: '/keys/droids.key', key: 'present', lastSignedAt: '1970-01-01T00:00:01.000Z', seq: 7 },
+      { bridge: 'amr', keyFile: '/keys/amr.key', key: 'missing', lastSignedAt: null, seq: 0 },
+    ]);
+    expect(JSON.stringify(signed?.signing)).not.toMatch(/secret|private/i);
+  });
+
   it('sends only what changed and nothing when nothing did', () => {
     expect(bridgesPatch(state()!, values())).toBeNull();
     expect(bridgesPatch(state()!, { ...values(), 'amr.publishState': true, 'openpnp.boardCode': 'advisory' })).toEqual({ bridges: { amr: { publishState: true }, openpnp: { boardCode: 'advisory' } } });

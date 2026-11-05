@@ -299,15 +299,35 @@ export interface BridgeOption {
   /** The name the bridge reads on its own host. */
   localName: string;
 }
+/** The key that signs the settings the server sends to one bridge: where its file is (never the key), whether it can be used, and when a message was last signed. */
+export interface BridgeSigning {
+  bridge: string;
+  keyFile: string;
+  key: 'present' | 'missing' | 'unusable';
+  lastSignedAt: string | null;
+  seq: number;
+}
 export interface BridgesState {
   /** Whether the bridge gateway is on, which is what carries the values to the bridges. */
   delivery: 'gateway_on' | 'gateway_off';
   options: BridgeOption[];
+  /** One entry per bridge; empty when the server predates the signed settings. */
+  signing: BridgeSigning[];
 }
 
 const isBridgeScalar = (v: unknown): v is BridgeValue => typeof v === 'boolean' || typeof v === 'string';
 
-function parseBridges(raw: any): BridgesState | null {
+function parseBridgeSigning(raw: any): BridgeSigning[] {
+  if (!raw || typeof raw !== 'object') return [];
+  const out: BridgeSigning[] = [];
+  for (const [bridge, entry] of Object.entries(raw as Record<string, any>)) {
+    if (!entry || typeof entry.keyFile !== 'string' || (entry.key !== 'present' && entry.key !== 'missing' && entry.key !== 'unusable')) continue;
+    out.push({ bridge, keyFile: entry.keyFile, key: entry.key, lastSignedAt: typeof entry.lastSignedAt === 'string' ? entry.lastSignedAt : null, seq: typeof entry.seq === 'number' ? entry.seq : 0 });
+  }
+  return out;
+}
+
+function parseBridges(raw: any, signing?: any): BridgesState | null {
   if (!raw || typeof raw !== 'object') return null;
   if (raw.delivery !== 'gateway_on' && raw.delivery !== 'gateway_off') return null;
   const options: BridgeOption[] = [];
@@ -320,7 +340,7 @@ function parseBridges(raw: any): BridgesState | null {
       options.push({ bridge, key, value: entry.value, source: entry.source, default: entry.default, risky: entry.risky, choices, localName: entry.localName });
     }
   }
-  return options.length === 0 ? null : { delivery: raw.delivery, options };
+  return options.length === 0 ? null : { delivery: raw.delivery, options, signing: parseBridgeSigning(signing) };
 }
 
 /** The identity of an option in the form: `bridge.key`. */
@@ -462,7 +482,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     exposure: parseExposure(raw),
     install: parseInstall(raw),
     rateLimits: parseRateLimits(raw.rateLimits),
-    bridges: parseBridges(raw.bridges),
+    bridges: parseBridges(raw.bridges, raw.bridgeSigning),
     mavlink: parseMavlink(raw.mavlink),
   };
 }
