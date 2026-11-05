@@ -1711,6 +1711,28 @@
     "confirm_message": "Les plans seront libérés sur la parole de la requête, sans que la personne soit connectée. N'assouplissez cela que sur un banc sans le serveur.",
     "confirm_button": "Assouplir"
   },
+  "opsProposals": {
+    "title": "Veilleur de nœuds : propositions en attente d'une personne",
+    "desc": "Le veilleur de nœuds n'ouvre jamais de lui-même un incident de maintenance à partir d'une proposition : chacune attend ici qu'un administrateur l'approuve ou la rejette. Approuver demande une confirmation et chaque décision est consignée sous votre nom.",
+    "none": "Aucune proposition en attente.",
+    "meta": "{{id}} - nœud {{node}} - gravité {{severity}} - détectée {{at}}",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "refresh": "Actualiser",
+    "approved": "Approuvée : {{id}}.",
+    "rejected": "Rejetée : {{id}}.",
+    "decided_approved": "{{id}} approuvée par {{by}} ({{at}})",
+    "decided_rejected": "{{id}} rejetée par {{by}} ({{at}})",
+    "unsupported": "Ce serveur n'offre pas les propositions du veilleur de nœuds.",
+    "not_configured": "Le veilleur de nœuds n'est pas configuré sur ce serveur.",
+    "forbidden": "Seul un administrateur peut lire ou décider les propositions.",
+    "not_pending": "Cette proposition n'est plus en attente.",
+    "load_error": "Impossible de lire les propositions du veilleur de nœuds.",
+    "decide_error": "La décision a été refusée : {{reason}}",
+    "confirm_title": "Approuver cette proposition ?",
+    "confirm_message": "Approuver {{id}} l'ouvre comme incident de maintenance. La décision est consignée sous votre nom.",
+    "confirm_button": "Approuver"
+  },
   "hubGate": {
     "title": "Hub de connecteurs : appelants sans identité",
     "desc": "La porte de décision du hub de connecteurs ne répond qu'aux appelants qui présentent un jeton signé de ce serveur. Cet interrupteur permet de répondre sans jeton à un appelant situé sur la machine même du hub. Il est désactivé par défaut ; seul un administrateur peut le changer, l'activer demande une confirmation et chaque changement est consigné.",

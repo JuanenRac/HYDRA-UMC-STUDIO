@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Server Admin lists the proposals of the node watchdog and lets an administrator decide them:** the proposals that wait for a person are read through `GET /api/ops-agent/proposals`; approving asks for a confirmation on screen and sends `confirm: true`, rejecting needs none, and the decision is made in the name of the signed-in account (no name is sent). The last decisions are listed and nothing is shown when the server has no channel to the watchdog. Eight languages; 7 tests.
+
 - **Server Admin shows and changes whether the approval of a plan needs the person who is signed in:** the semantic planner releases a plan only when the approver is signed in with a token of the server and is the person named in the approval (on by default). A new section reads the switch through `GET /api/semantic-planner/settings`, relaxing it asks for a confirmation on screen and sends `confirm: true`, tightening it again needs none, and nothing is shown when the server has no planner set up. Eight languages; 8 tests.
 
 - **Server Admin shows whether the settings sent to the machine bridges can be signed:** under the switches of the machine bridges it lists, for each bridge, the state of the key that signs its settings (ready, not made yet, or unusable), when a message was last signed and the path of the key file, never the key. A bridge applies a setting only with a valid, current signature, so a bridge without the key keeps its own configuration. In the eight languages (Portuguese from Portugal). 1 more test.

@@ -1711,6 +1711,28 @@
     "confirm_message": "I piani verranno rilasciati sulla parola della richiesta, senza che la persona abbia effettuato l'accesso. Attenualo solo su un banco senza il server.",
     "confirm_button": "Attenua"
   },
+  "opsProposals": {
+    "title": "Sorvegliante dei nodi: proposte in attesa di una persona",
+    "desc": "Il sorvegliante dei nodi non apre mai da solo un incidente di manutenzione a partire da una proposta: ciascuna attende qui finché un amministratore la approva o la rifiuta. Approvare richiede una conferma e ogni decisione viene registrata a tuo nome.",
+    "none": "Nessuna proposta in attesa.",
+    "meta": "{{id}} - nodo {{node}} - gravità {{severity}} - rilevata {{at}}",
+    "approve": "Approva",
+    "reject": "Rifiuta",
+    "refresh": "Aggiorna",
+    "approved": "Approvata: {{id}}.",
+    "rejected": "Rifiutata: {{id}}.",
+    "decided_approved": "{{id}} approvata da {{by}} ({{at}})",
+    "decided_rejected": "{{id}} rifiutata da {{by}} ({{at}})",
+    "unsupported": "Questo server non offre le proposte del sorvegliante dei nodi.",
+    "not_configured": "Il sorvegliante dei nodi non è configurato su questo server.",
+    "forbidden": "Solo un amministratore può leggere o decidere le proposte.",
+    "not_pending": "Quella proposta non è più in attesa.",
+    "load_error": "Impossibile leggere le proposte del sorvegliante dei nodi.",
+    "decide_error": "La decisione è stata rifiutata: {{reason}}",
+    "confirm_title": "Approvare questa proposta?",
+    "confirm_message": "Approvare {{id}} la apre come incidente di manutenzione. La decisione viene registrata a tuo nome.",
+    "confirm_button": "Approva"
+  },
   "hubGate": {
     "title": "Hub dei connettori: chiamanti senza identità",
     "desc": "Il gate decisionale dell'hub dei connettori risponde solo ai chiamanti che presentano un token firmato di questo server. Questo interruttore permette di rispondere senza token a un chiamante sulla macchina stessa dell'hub. È spento per impostazione predefinita; solo un amministratore può cambiarlo, accenderlo richiede una conferma e ogni modifica viene registrata.",

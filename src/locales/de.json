@@ -1711,6 +1711,28 @@
     "confirm_message": "Pläne werden auf die Worte der Anfrage hin freigegeben, ohne dass die Person angemeldet ist. Lockern Sie das nur an einem Prüfstand ohne den Server.",
     "confirm_button": "Lockern"
   },
+  "opsProposals": {
+    "title": "Knoten-Wächter: Vorschläge, die auf eine Person warten",
+    "desc": "Der Knoten-Wächter öffnet aus einem Vorschlag nie von selbst einen Wartungsvorfall: Jeder wartet hier, bis ein Administrator ihn genehmigt oder ablehnt. Das Genehmigen verlangt eine Bestätigung, und jede Entscheidung wird unter deinem Namen festgehalten.",
+    "none": "Es wartet kein Vorschlag.",
+    "meta": "{{id}} - Knoten {{node}} - Schweregrad {{severity}} - erkannt {{at}}",
+    "approve": "Genehmigen",
+    "reject": "Ablehnen",
+    "refresh": "Aktualisieren",
+    "approved": "Genehmigt: {{id}}.",
+    "rejected": "Abgelehnt: {{id}}.",
+    "decided_approved": "{{id}} genehmigt von {{by}} ({{at}})",
+    "decided_rejected": "{{id}} abgelehnt von {{by}} ({{at}})",
+    "unsupported": "Dieser Server bietet die Vorschläge des Knoten-Wächters nicht an.",
+    "not_configured": "Der Knoten-Wächter ist auf diesem Server nicht eingerichtet.",
+    "forbidden": "Nur ein Administrator kann die Vorschläge lesen oder entscheiden.",
+    "not_pending": "Dieser Vorschlag wartet nicht mehr.",
+    "load_error": "Die Vorschläge des Knoten-Wächters konnten nicht gelesen werden.",
+    "decide_error": "Die Entscheidung wurde abgelehnt: {{reason}}",
+    "confirm_title": "Diesen Vorschlag genehmigen?",
+    "confirm_message": "Das Genehmigen von {{id}} öffnet ihn als Wartungsvorfall. Die Entscheidung wird unter deinem Namen festgehalten.",
+    "confirm_button": "Genehmigen"
+  },
   "hubGate": {
     "title": "Connector-Hub: Aufrufer ohne Identität",
     "desc": "Das Entscheidungs-Gate des Connector-Hubs antwortet nur Aufrufern, die ein signiertes Token dieses Servers vorlegen. Mit diesem Schalter wird ein Aufrufer auf dem Rechner des Hubs auch ohne Token beantwortet. Er ist standardmäßig aus; nur ein Administrator kann ihn ändern, das Einschalten verlangt eine Bestätigung, und jede Änderung wird protokolliert.",

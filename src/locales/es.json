@@ -1711,6 +1711,28 @@
     "confirm_message": "Los planes se liberarán con las palabras de la petición, sin que la persona haya iniciado sesión. Relájalo solo en un banco sin el servidor.",
     "confirm_button": "Relajar"
   },
+  "opsProposals": {
+    "title": "Vigilante de nodos: propuestas a la espera de una persona",
+    "desc": "El vigilante de nodos nunca abre por sí solo un incidente de mantenimiento a partir de una propuesta: cada una espera aquí hasta que un administrador la aprueba o la rechaza. Aprobar pide una confirmación y cada decisión queda registrada con tu nombre.",
+    "none": "No hay ninguna propuesta en espera.",
+    "meta": "{{id}} - nodo {{node}} - gravedad {{severity}} - detectada {{at}}",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "refresh": "Actualizar",
+    "approved": "Aprobada: {{id}}.",
+    "rejected": "Rechazada: {{id}}.",
+    "decided_approved": "Aprobada {{id}} por {{by}} ({{at}})",
+    "decided_rejected": "Rechazada {{id}} por {{by}} ({{at}})",
+    "unsupported": "Este servidor no ofrece las propuestas del vigilante de nodos.",
+    "not_configured": "El vigilante de nodos no está configurado en este servidor.",
+    "forbidden": "Solo un administrador puede leer o decidir las propuestas.",
+    "not_pending": "Esa propuesta ya no está en espera.",
+    "load_error": "No se pudieron leer las propuestas del vigilante de nodos.",
+    "decide_error": "Se rechazó la decisión: {{reason}}",
+    "confirm_title": "¿Aprobar esta propuesta?",
+    "confirm_message": "Aprobar {{id}} la abre como incidente de mantenimiento. La decisión queda registrada con tu nombre.",
+    "confirm_button": "Aprobar"
+  },
   "hubGate": {
     "title": "Hub de conectores: llamantes sin identidad",
     "desc": "La puerta de decisiones del hub de conectores solo responde a quien presenta un token firmado de este servidor. Este interruptor permite responder sin token a un llamante de la propia máquina del hub. Está apagado por defecto; solo un administrador puede cambiarlo, encenderlo pide una confirmación y cada cambio queda registrado.",

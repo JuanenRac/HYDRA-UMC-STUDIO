@@ -1711,6 +1711,28 @@
     "confirm_message": "计划将依据请求中的内容放行，而无需人员登录。仅在没有服务器的台架上放宽。",
     "confirm_button": "放宽"
   },
+  "opsProposals": {
+    "title": "节点看守：等待人员处理的提案",
+    "desc": "节点看守绝不会自行根据提案开立维护事件：每条提案都在此等待，直到管理员批准或拒绝。批准需要确认，每项决定都会以你的名字记录。",
+    "none": "没有等待中的提案。",
+    "meta": "{{id}} - 节点 {{node}} - 严重程度 {{severity}} - 检测于 {{at}}",
+    "approve": "批准",
+    "reject": "拒绝",
+    "refresh": "刷新",
+    "approved": "已批准：{{id}}。",
+    "rejected": "已拒绝：{{id}}。",
+    "decided_approved": "{{id}} 已由 {{by}} 批准（{{at}}）",
+    "decided_rejected": "{{id}} 已由 {{by}} 拒绝（{{at}}）",
+    "unsupported": "此服务器不提供节点看守的提案。",
+    "not_configured": "此服务器上未配置节点看守。",
+    "forbidden": "只有管理员可以查看或决定提案。",
+    "not_pending": "该提案已不再等待。",
+    "load_error": "无法读取节点看守的提案。",
+    "decide_error": "决定被拒绝：{{reason}}",
+    "confirm_title": "批准此提案？",
+    "confirm_message": "批准 {{id}} 会将其作为维护事件开立。该决定将以你的名字记录。",
+    "confirm_button": "批准"
+  },
   "hubGate": {
     "title": "连接器中心：无身份的调用者",
     "desc": "连接器中心的决策闸门只回应出示本服务器签名令牌的调用者。此开关允许对中心所在机器上的调用者在没有令牌时也予以回应。它默认关闭；只有管理员可以更改，开启时需要确认，每次更改都会被记录。",

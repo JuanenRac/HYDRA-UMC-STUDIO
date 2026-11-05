@@ -36,6 +36,8 @@
   "/api/logout",
   "/api/models",
   "/api/models/{p}/{p}/download",
+  "/api/ops-agent/proposals",
+  "/api/ops-agent/proposals/decide",
   "/api/refresh",
   "/api/robot/{p}",
   "/api/robot/{p}/claim",

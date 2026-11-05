@@ -1711,6 +1711,28 @@
     "confirm_message": "Plans will be released on the words of the request, without the person being signed in. Relax this only on a bench without the server.",
     "confirm_button": "Relax"
   },
+  "opsProposals": {
+    "title": "Node watchdog: proposals waiting for a person",
+    "desc": "The node watchdog never opens a maintenance incident from a proposal on its own: each one waits here until an administrator approves or rejects it. Approving asks for a confirmation and every decision is recorded under your name.",
+    "none": "No proposal is waiting.",
+    "meta": "{{id}} - node {{node}} - severity {{severity}} - detected {{at}}",
+    "approve": "Approve",
+    "reject": "Reject",
+    "refresh": "Refresh",
+    "approved": "Approved: {{id}}.",
+    "rejected": "Rejected: {{id}}.",
+    "decided_approved": "Approved {{id}} by {{by}} ({{at}})",
+    "decided_rejected": "Rejected {{id}} by {{by}} ({{at}})",
+    "unsupported": "This server does not offer the proposals of the node watchdog.",
+    "not_configured": "The node watchdog is not configured on this server.",
+    "forbidden": "Only an administrator can read or decide the proposals.",
+    "not_pending": "That proposal is no longer waiting.",
+    "load_error": "The proposals of the node watchdog could not be read.",
+    "decide_error": "The decision was refused: {{reason}}",
+    "confirm_title": "Approve this proposal?",
+    "confirm_message": "Approving {{id}} opens it as a maintenance incident. The decision is recorded under your name.",
+    "confirm_button": "Approve"
+  },
   "hubGate": {
     "title": "Connector hub: callers without identity",
     "desc": "The decision gate of the connector hub answers only callers that present a signed token of this server. This switch lets a caller on the hub's own machine be answered without a token. It is off by default; only an administrator can change it, turning it on asks for a confirmation, and every change is recorded.",

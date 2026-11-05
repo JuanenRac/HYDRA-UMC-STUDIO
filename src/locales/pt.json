@@ -1711,6 +1711,28 @@
     "confirm_message": "Os planos serão libertados com base nas palavras do pedido, sem que a pessoa tenha sessão iniciada. Relaxe isto apenas numa bancada sem o servidor.",
     "confirm_button": "Relaxar"
   },
+  "opsProposals": {
+    "title": "Vigilante de nós: propostas à espera de uma pessoa",
+    "desc": "O vigilante de nós nunca abre por si só um incidente de manutenção a partir de uma proposta: cada uma aguarda aqui até um administrador a aprovar ou rejeitar. Aprovar pede uma confirmação e cada decisão fica registada com o seu nome.",
+    "none": "Nenhuma proposta em espera.",
+    "meta": "{{id}} - nó {{node}} - gravidade {{severity}} - detetada {{at}}",
+    "approve": "Aprovar",
+    "reject": "Rejeitar",
+    "refresh": "Atualizar",
+    "approved": "Aprovada: {{id}}.",
+    "rejected": "Rejeitada: {{id}}.",
+    "decided_approved": "{{id}} aprovada por {{by}} ({{at}})",
+    "decided_rejected": "{{id}} rejeitada por {{by}} ({{at}})",
+    "unsupported": "Este servidor não oferece as propostas do vigilante de nós.",
+    "not_configured": "O vigilante de nós não está configurado neste servidor.",
+    "forbidden": "Só um administrador pode ler ou decidir as propostas.",
+    "not_pending": "Essa proposta já não está em espera.",
+    "load_error": "Não foi possível ler as propostas do vigilante de nós.",
+    "decide_error": "A decisão foi recusada: {{reason}}",
+    "confirm_title": "Aprovar esta proposta?",
+    "confirm_message": "Aprovar {{id}} abre-a como incidente de manutenção. A decisão fica registada com o seu nome.",
+    "confirm_button": "Aprovar"
+  },
   "hubGate": {
     "title": "Hub de conectores: chamadores sem identidade",
     "desc": "A porta de decisão do hub de conectores só responde a quem apresenta um token assinado deste servidor. Este interruptor permite responder sem token a um chamador na própria máquina do hub. Está desligado por omissão; só um administrador o pode alterar, ligá-lo pede uma confirmação e cada alteração fica registada.",
