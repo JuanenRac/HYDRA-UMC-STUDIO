@@ -9,29 +9,26 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { apiUrl, wsUrl } from './lib/apiBase';
 import { saveConflictText, saveFailureText } from './lib/serverErrors';
 import { applyRobotCommandMutation, rollbackRobotCommand } from './robotCommandTransition';
-import {
-  type CommandIssue,
-  type CommandResult,
-  interpretCommandResponse,
-  networkFailure,
-} from './lib/commandResult';
-import { createCommandSequence, isNumberedCommand } from './lib/commandSequence';
+import { type CommandResult } from './lib/commandResult';
+import { createCommandSequence } from './lib/commandSequence';
 import { authHeaders } from './lib/session';
-import { getControllerId } from './lib/controllerSession';
 import { guardCommand } from './lib/motionGuard';
 import { settingsLocalOnly, settingsSaveAllowed } from './lib/settingsSave';
 import { applyOverlay, loadOverlay, saveOverlay, splitSettingsUpdate, usernameFromToken } from './lib/settingsScope';
 import { browserStorage } from './lib/robotDetailHelpers';
-import { getModeState, getSafetyState, setSafetyState } from './lib/accessStore';
-import { fetchRobot, fetchSafetyLimits } from './lib/accessApi';
-import { revisionOf, robotRevisions } from './lib/revisions';
-import { isUnknownCommand, markTableCommand, serverHasTableCommand, tableAsJogs } from './lib/tableMove';
+import { getModeState, getSafetyState } from './lib/accessStore';
+import { fetchRobot } from './lib/accessApi';
+import { robotRevisions } from './lib/revisions';
+import { isUnknownCommand, markTableCommand, serverHasTableCommand } from './lib/tableMove';
 import { createEditQueue, markEditCommands, planRobotEdits, serverHasEditCommands, type RobotEditCommand } from './lib/robotEdits';
 import { isTemperatureWarning, parseWarnings } from './lib/safetyLimits';
 import { type StopAllReport, requestStopAllWithRetry, stopRobotByRobot } from './lib/stopAll';
-import { downloadJson, kinematicsFileName, readSceneFile, readTrajectoryFile } from './lib/sceneFiles';
 import { HydraStoreProviders } from './storeContexts';
 import { useAuthSession } from './hooks/useAuthSession';
+import { useCommandIssues } from './hooks/useCommandIssues';
+import { useSafetyLimitsSync } from './hooks/useSafetyLimitsSync';
+import { useSceneFiles } from './hooks/useSceneFiles';
+import { postRobotCommand as postRobotCommandRequest, tableThroughJogs as tableThroughJogsRequest, type PostRobotCommand } from './lib/robotCommandPost';
 import { saveSettingsTree, type FetchLike } from './lib/settingsConcurrency';
 import { type CameraState, type HydraController, type RobotState, type SystemSettings, defaultControllers } from './store';
 
@@ -123,20 +120,11 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // is then the built-in sample, not the system, and the interface says so.
   const [settingsLoadError, setSettingsLoadError] = useState<'login_required' | 'server' | null>(null);
 
-  // The problem the last command ran into, kept on screen until it is dismissed (see lib/commandResult.ts).
-  const [commandIssue, setCommandIssue] = useState<CommandIssue | null>(null);
-  const issueSequenceRef = useRef(0);
-  const reportCommandIssue = useCallback((issue: Omit<CommandIssue, 'id'>) => {
-    issueSequenceRef.current += 1;
-    setCommandIssue({ ...issue, id: issueSequenceRef.current });
-  }, []);
-  const dismissCommandIssue = useCallback(() => setCommandIssue(null), []);
-
-  // The newest answer of the global STOP, robot by robot (see lib/stopAll.ts), until it is dismissed; and how many
-  // global STOPs are on the wire right now.
-  const [stopAllReport, setStopAllReport] = useState<StopAllReport | null>(null);
-  const [stopAllInFlight, setStopAllInFlight] = useState(0);
-  const dismissStopAllReport = useCallback(() => setStopAllReport(null), []);
+  // The problem of the last command and the answer of the global STOP live in hooks/useCommandIssues.ts.
+  const {
+    commandIssue, setCommandIssue, reportCommandIssue, dismissCommandIssue,
+    stopAllReport, setStopAllReport, stopAllInFlight, setStopAllInFlight, dismissStopAllReport,
+  } = useCommandIssues();
 
   // The session (token, sign-in, silent renewal, sign-out) lives in hooks/useAuthSession.ts.
   const { authToken, setAuthToken, loginError, loginNeedsCode, accountRef, role, login, attemptTokenRefresh, logout } = useAuthSession();
@@ -213,20 +201,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const settingsRef = useRef(settings);
   useEffect(() => { settingsRef.current = settings; }, [settings]);
 
-  // The safety limits come from the server (every client is held to the same ones), read after sign-in and again
-  // every half minute so a change by an administrator reaches the open windows. A server without the route keeps
-  // the conservative defaults.
-  useEffect(() => {
-    if (!authToken) return;
-    let cancelled = false;
-    const load = async () => {
-      const read = await fetchSafetyLimits();
-      if (!cancelled && read) setSafetyState(read.state);
-    };
-    void load();
-    const timer = setInterval(() => { void load(); }, 30_000);
-    return () => { cancelled = true; clearInterval(timer); };
-  }, [authToken]);
+  // The safety limits come from the server: hooks/useSafetyLimitsSync.ts.
+  useSafetyLimitsSync(authToken);
 
   // Per-robot generation counter guarding sendRobotCommand()'s own
   // rollback-on-failure - see that function's own comment and its
@@ -690,48 +666,9 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     for (const edit of sent) void editQueue.enqueue(id, edit);
   };
 
-  // One POST of a robot command, answered as a typed result. A 401 means the access token ran out: it is refreshed
-  // once and the command sent again before giving up, so an expired session no longer makes a STOP vanish.
-  const postRobotCommand = async (
-    id: number,
-    command: string,
-    params?: Record<string, unknown>
-  ): Promise<CommandResult> => {
-    const send = async (): Promise<CommandResult> => {
-      // The revision this window last saw of the robot goes along as If-Match (never for STOP): when the robot changed
-      // in between, the server answers 412 instead of overwriting what someone else did.
-      const ticket = robotRevisions.begin(id, command);
-      const headers = authHeaders({ 'Content-Type': 'application/json' });
-      if (ticket.ifMatch) headers['If-Match'] = ticket.ifMatch;
-      try {
-        const res = await fetch(apiUrl(`/api/robot/${id}/command`), {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(isNumberedCommand(command) ? { command, params, controllerId: getControllerId(), seq: commandSequence.next() } : { command, params, controllerId: getControllerId() }),
-        });
-        let body: unknown = null;
-        try { body = await res.json(); } catch { /* an answer without a JSON body */ }
-        robotRevisions.finish(id, ticket.seq, revisionOf(body));
-        return interpretCommandResponse(res.status, res.ok, body);
-      } catch (error) {
-        robotRevisions.finish(id, ticket.seq, null);
-        return networkFailure(error instanceof Error ? error.message : undefined);
-      }
-    };
-    let result = await send();
-    if (!result.ok && result.code === 'session_expired' && (await attemptTokenRefresh())) result = await send();
-    return result;
-  };
-
-  // The table move as the jogs of a server that has no table command (the first failing answer is the result).
-  const tableThroughJogs = async (id: number, params: Record<string, unknown>): Promise<CommandResult> => {
-    let last: CommandResult = { ok: true, status: 200, code: null, detail: null, serverCode: null, warnings: [] };
-    for (const jog of tableAsJogs(params)) {
-      last = await postRobotCommand(id, 'jog', jog);
-      if (!last.ok) return last;
-    }
-    return last;
-  };
+  // One POST of a robot command, answered as a typed result (lib/robotCommandPost.ts).
+  const postRobotCommand: PostRobotCommand = (id, command, params) => postRobotCommandRequest({ attemptTokenRefresh, commandSequence }, id, command, params);
+  const tableThroughJogs = (id: number, params: Record<string, unknown>) => tableThroughJogsRequest(postRobotCommand, id, params);
 
   // Reads one robot again (GET /api/robot/:id, which also gives the revision to use next) and puts it on screen.
   // Called after a 412: the robot changed under this window, and what is shown may be behind.
@@ -952,56 +889,10 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const saveKinematics = (id: number) => {
-    const robot = robots.find(r => r.id === id);
-    if (!robot || robot.recordedPoints.length === 0) return;
-    downloadJson(kinematicsFileName(robot.name, settings.worksPaths?.[robot.id]), robot.recordedPoints);
-  };
-
-  const loadKinematics = (id: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const read = readTrajectoryFile(String(event.target?.result ?? ''));
-      if (read.kind === 'points') {
-        // The atomic trajectory command: the server stores the points and resets the playback cursor, so the Play
-        // that follows plays THESE points (a plain settings edit reached it half a second later, or not at all).
-        void sendRobotCommand(
-          id,
-          'trajectory',
-          { points: read.points },
-          () => ({ recordedPoints: read.points as RobotState['recordedPoints'] }),
-        );
-      } else if (read.kind === 'pose') {
-        updateRobot(id, { pos: read.pose as unknown as RobotState['pos'] });
-      } else {
-        reportCommandIssue({ code: 'import_invalid', command: 'trajectory', robotIds: [id], detail: read.detail });
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  };
-
-  const exportScene = () => {
-    downloadJson('hydra_scene.json', robots);
-  };
-
-  const importScene = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const read = readSceneFile(String(event.target?.result ?? ''));
-      if (!read.ok) {
-        reportCommandIssue({ code: 'import_invalid', command: 'scene', robotIds: [], detail: read.detail });
-        return;
-      }
-      updateController(activeControllerId, { robots: read.robots as unknown as RobotState[] });
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  };
+  // Save and load of the trajectory and the scene: hooks/useSceneFiles.ts.
+  const { saveKinematics, loadKinematics, exportScene, importScene } = useSceneFiles({
+    robots, worksPaths: settings.worksPaths, activeControllerId, sendRobotCommand, updateRobot, updateController, reportCommandIssue,
+  });
 
   const factoryReset = async () => {
     // POST /api/settings requires auth like every other write - without this

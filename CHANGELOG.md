@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The global state provider and the robot screen lose more of their size:** the problem of the last command and the answer of the global STOP (`hooks/useCommandIssues.ts`), the safety limits poll (`hooks/useSafetyLimitsSync.ts`), the POST of a robot command and the table move as jogs (`lib/robotCommandPost.ts`), the save and load of trajectories and scenes (`hooks/useSceneFiles.ts`), the reach check of a trajectory (`hooks/useReachGate.ts`) and the command that loads a Work or an example (`lib/trajectoryCommand.ts`, built once instead of three times) moved out unchanged; the provider goes from 1046 to under 950 lines and the robot screen from 1317 to about 1230. 11 tests.
+
+- **Wording corrections in the translations:** the Japanese counter of connected apps reads `接続済み` (connected, not connecting), the Portuguese standard mode is `Padrão`, the Portuguese pause buttons are the verb `Pausar`, the flasher uses the European Portuguese `gravar` (write) instead of `flashar`, the save-configuration button is spelled out in German, French and Italian, and the labels of Spanish, French and Italian no longer capitalise every word.
+
 - **Server Admin shows and changes whether a real command needs a pass verdict of the twin:** a section for the switch `require_twin_pass` of the HIL bridge (`GET` and `POST /api/hil-bridge/settings`). It is off by default, any change asks for a confirmation on screen and sends `confirm: true`, what the bridge would refuse (locked on, no twin key or robot, no identity key) is said before saving, and nothing is shown when the server has no such bridge. Eight languages; 9 tests.
 
 - **The build test of the repository compiles only on CI or when allowed:** for the stacks that compile (`rust`, `go`, `android`, `flutter`, `firmware-c`), `tools/build_test.py` prints `BUILD_TEST=SKIPPED` with exit status 2 on a plain PC, never a pass; `ALLOW_LOCAL_BUILD=1` allows it and a CI runner always may. The `python` and `node` stacks are not locked.

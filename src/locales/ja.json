@@ -1138,7 +1138,7 @@
     "services_all_families": "すべて",
     "ai_family_device_mismatch": "{{family}} には稼働中のノードがありますが、Hailo デバイスは「設定 > AI/Hailo」で「なし」に設定されています - 実際に稼働しているものに合わせて {{device}} に設定してください。",
     "ai_family_live_count": "{{live}} / {{total}} 稼働中",
-    "clients_stat_connected": "接続中",
+    "clients_stat_connected": "接続済み",
     "clients_stat_admins": "管理者",
     "logs_search_placeholder": "ログテキストを検索...",
     "logs_all_tags": "すべて",

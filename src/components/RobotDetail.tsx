@@ -25,7 +25,8 @@ import { usePanelLayout } from '../hooks/usePanelLayout';
 import { useRobotCommands } from '../hooks/useRobotCommands';
 import { TrajectoryPreview } from './TrajectoryPreview';
 import { analyzeTrajectory, previewEnabled, savePreviewEnabled, type PreviewReport } from '../lib/trajectoryPreview';
-import { buildReachReport, findReachScale, loadReachTolerance, reachNeedsConfirmation, scalePortablePoints, type ReachReport, type ReachScale } from '../lib/reachCheck';
+import { useReachGate } from '../hooks/useReachGate';
+import { trajectorySender } from '../lib/trajectoryCommand';
 import { RobotAccessBar } from './RobotAccessBar';
 import { currentPlaybackStep } from '../lib/playbackStep';
 import { withCartesian, browserStorage, normalizeTrajectoryForRobot } from '../lib/robotDetailHelpers';
@@ -191,25 +192,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
         // this panel already displayed the newly loaded points. The atomic
         // trajectory command persists, resets the cursor and broadcasts the
         // same points as one operation.
-        const sendPoints = (pts: any[]) => sendRobotCommand(
-          robot.id,
-          'trajectory',
-          { points: pts, selectedWorkFile: fileName },
-          () => ({
-            selectedWorkFile: fileName,
-            recordedPoints: pts,
-            playbackState: {
-              ...(robot.playbackState || {}),
-              isPlaying: false,
-              playing: false,
-              isPaused: false,
-              paused: false,
-              activeStep: -1,
-              isFinished: false,
-              finished: false,
-            },
-          }),
-        );
+        const sendPoints = trajectorySender(sendRobotCommand, robot, { selectedWorkFile: fileName });
         await sendUnlessUnreachable(residuals, () => setSelectedWorkFile(robot.selectedWorkFile || ''), () => sendPoints(points), { raw: rawPoints as unknown[], target: robot, sendPoints });
       } else {
         updateRobot(robot.id, { selectedWorkFile: fileName });
@@ -231,20 +214,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     try {
       const residuals: Array<number | null> = [];
       const points = normalizeTrajectoryForRobot(ex.points.map(withCartesian), robot, residuals);
-      const sendPoints = (pts: any[]) => sendRobotCommand(
-        robot.id,
-        'trajectory',
-        { points: pts, selectedExample: id },
-        () => ({
-          selectedExample: id,
-          recordedPoints: pts,
-          playbackState: {
-            ...(robot.playbackState || {}),
-            isPlaying: false, playing: false, isPaused: false, paused: false,
-            activeStep: -1, isFinished: false, finished: false,
-          },
-        }),
-      );
+      const sendPoints = trajectorySender(sendRobotCommand, robot, { selectedExample: id });
       await sendUnlessUnreachable(residuals, () => setSelectedExample(robot.selectedExample || ''), () => sendPoints(points), { raw: ex.points.map(withCartesian), target: robot, sendPoints });
     } catch (error) {
       console.error('Unable to prepare example trajectory', error);
@@ -259,20 +229,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     try {
       const residuals: Array<number | null> = [];
       const points = normalizeTrajectoryForRobot(ex.points.map(withCartesian), targetRobot, residuals);
-      const sendPoints = (pts: any[]) => sendRobotCommand(
-        botId,
-        'trajectory',
-        { points: pts, selectedExample: exId },
-        () => ({
-          selectedExample: exId,
-          recordedPoints: pts,
-          playbackState: {
-            ...(targetRobot.playbackState || {}),
-            isPlaying: false, playing: false, isPaused: false, paused: false,
-            activeStep: -1, isFinished: false, finished: false,
-          },
-        }),
-      );
+      const sendPoints = trajectorySender(sendRobotCommand, targetRobot, { selectedExample: exId });
       await sendUnlessUnreachable(residuals, () => undefined, () => sendPoints(points), { raw: ex.points.map(withCartesian), target: targetRobot, sendPoints });
     } catch (error) {
       console.error('Unable to prepare combined robot example trajectory', error);
@@ -518,50 +475,8 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   const [pendingTool, setPendingTool] = useState<string | null>(null);
   // Same for the model: kinematics, joint limits and the 3D view all follow it.
   const [pendingModel, setPendingModel] = useState<string | null>(null);
-  // A trajectory with points the arm cannot reach asks first (see src/lib/reachCheck.ts).
-  const [pendingReach, setPendingReach] = useState<{ report: ReachReport; fit: ReachScale | null; sendScaled: (() => Promise<unknown>) | null; decline: () => void } | null>(null);
-  const [reachTolerance, setReachTolerance] = useState<number>(() => loadReachTolerance(browserStorage()));
-  // A trajectory with points the arm cannot reach is refused, with the list of those points. The operator can
-  // accept the same trajectory scaled to the reach of this model (about the base of the robot), or cancel.
-  // `scaling` carries what is needed to build the scaled trajectory; without it only the refusal is offered.
-  const sendUnlessUnreachable = async (
-    residuals: Array<number | null>,
-    decline: () => void,
-    send: () => Promise<unknown>,
-    scaling?: { raw: unknown[]; target: Pick<RobotState, 'model' | 'joints'>; sendPoints: (points: any[]) => Promise<unknown> },
-  ) => {
-    const tolerance = loadReachTolerance(browserStorage());
-    const report = buildReachReport(residuals, tolerance);
-    if (!reachNeedsConfirmation(report)) {
-      await send();
-      return;
-    }
-    let fit: ReachScale | null = null;
-    let sendScaled: (() => Promise<unknown>) | null = null;
-    if (scaling) {
-      const scaledAt = (scale: number) => scalePortablePoints(scaling.raw, scale, withCartesian);
-      fit = findReachScale((scale) => {
-        const measured: Array<number | null> = [];
-        try { normalizeTrajectoryForRobot(scaledAt(scale), scaling.target, measured); } catch { return [Number.POSITIVE_INFINITY]; }
-        return measured;
-      }, tolerance, scaling.raw.length > 500 ? 0.1 : 0.05);
-      if (fit.scale < 1 && fit.remaining < report.count) {
-        const chosen = fit.scale;
-        sendScaled = () => scaling.sendPoints(normalizeTrajectoryForRobot(scaledAt(chosen), scaling.target));
-      }
-    }
-    setPendingReach({ report, fit, sendScaled, decline });
-  };
-  const runPendingReach = () => {
-    const pending = pendingReach;
-    setPendingReach(null);
-    if (pending?.sendScaled) void pending.sendScaled();
-  };
-  const cancelPendingReach = () => {
-    const pending = pendingReach;
-    setPendingReach(null);
-    pending?.decline();
-  };
+  // The reach check of a trajectory before it is sent: hooks/useReachGate.ts.
+  const { pendingReach, reachTolerance, setReachTolerance, sendUnlessUnreachable, runPendingReach, cancelPendingReach } = useReachGate();
   const { handleAddPoint, handleXYZJog, handleJ1Jog, resetPose, handleResetXY, handleReset3D, handleXYAxisChange, toggleValve, togglePump } = useRobotCommands({ robot, jogStep, sendRobotCommand, updateRobot, reportCommandIssue, stopPlayback: handleStop });
   const handleHome = () => setPendingAction('home');
   const handleReset = () => setPendingAction('reset');
