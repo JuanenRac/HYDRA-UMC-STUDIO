@@ -1683,6 +1683,27 @@
     "reset_done": "Accesso in due passaggi rimosso per {{user}}.",
     "reset_error": "Impossibile rimuovere l'accesso in due passaggi."
   },
+  "hubGate": {
+    "title": "Hub dei connettori: chiamanti senza identità",
+    "desc": "Il gate decisionale dell'hub dei connettori risponde solo ai chiamanti che presentano un token firmato di questo server. Questo interruttore permette di rispondere senza token a un chiamante sulla macchina stessa dell'hub. È spento per impostazione predefinita; solo un amministratore può cambiarlo, accenderlo richiede una conferma e ogni modifica viene registrata.",
+    "label": "Rispondere senza token a un chiamante sulla macchina stessa dell'hub",
+    "state_on": "Acceso: un chiamante sulla macchina dell'hub riceve risposta senza identità.",
+    "state_off": "Spento: ogni chiamante ha bisogno di un token firmato (predefinito).",
+    "unsupported": "Questo server non offre le impostazioni del gate dell'hub dei connettori.",
+    "not_configured": "Il gate decisionale dell'hub dei connettori non è configurato su questo server.",
+    "forbidden": "Solo un amministratore può leggere o cambiare questo interruttore.",
+    "load_error": "Impossibile leggere l'interruttore del gate dell'hub dei connettori.",
+    "loopback_only": "L'hub non è in ascolto su un indirizzo di loopback, quindi l'interruttore non può essere acceso.",
+    "needs_key": "L'hub non ha una chiave che verifichi i token, quindi l'interruttore non può essere spento da qui.",
+    "kept_file": "La modifica resta nel file delle impostazioni dell'hub e sopravvive ai riavvii.",
+    "kept_memory": "La modifica dura fino al riavvio dell'hub (l'hub non ha un file delle impostazioni).",
+    "save": "Salva",
+    "saved": "Salvato.",
+    "save_error": "La modifica è stata rifiutata: {{reason}}",
+    "confirm_title": "Accendere le risposte senza identità?",
+    "confirm_message": "Qualsiasi cosa giri sulla macchina dell'hub potrà chiedere decisioni al gate senza un token firmato. Accendilo solo su una macchina che controlli.",
+    "confirm_button": "Accendi"
+  },
   "connections": {
     "title": "Cronologia delle connessioni",
     "desc": "Chi ha effettuato l'accesso a questo server: le app e le sessioni viste e gli ultimi accessi e uscite. Non conserva password né token.",

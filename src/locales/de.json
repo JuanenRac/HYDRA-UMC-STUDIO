@@ -1683,6 +1683,27 @@
     "reset_done": "Anmeldung in zwei Schritten für {{user}} entfernt.",
     "reset_error": "Die Anmeldung in zwei Schritten konnte nicht entfernt werden."
   },
+  "hubGate": {
+    "title": "Connector-Hub: Aufrufer ohne Identität",
+    "desc": "Das Entscheidungs-Gate des Connector-Hubs antwortet nur Aufrufern, die ein signiertes Token dieses Servers vorlegen. Mit diesem Schalter wird ein Aufrufer auf dem Rechner des Hubs auch ohne Token beantwortet. Er ist standardmäßig aus; nur ein Administrator kann ihn ändern, das Einschalten verlangt eine Bestätigung, und jede Änderung wird protokolliert.",
+    "label": "Einen Aufrufer auf dem Rechner des Hubs ohne Token beantworten",
+    "state_on": "Ein: Ein Aufrufer auf dem Rechner des Hubs wird ohne Identität beantwortet.",
+    "state_off": "Aus: Jeder Aufrufer braucht ein signiertes Token (Standard).",
+    "unsupported": "Dieser Server bietet die Einstellungen des Connector-Hub-Gates nicht an.",
+    "not_configured": "Das Entscheidungs-Gate des Connector-Hubs ist auf diesem Server nicht eingerichtet.",
+    "forbidden": "Nur ein Administrator kann diesen Schalter lesen oder ändern.",
+    "load_error": "Der Schalter des Connector-Hub-Gates konnte nicht gelesen werden.",
+    "loopback_only": "Der Hub lauscht nicht auf einer Loopback-Adresse, daher lässt sich der Schalter nicht einschalten.",
+    "needs_key": "Der Hub hat keinen Schlüssel zum Prüfen von Tokens, daher lässt sich der Schalter von hier nicht ausschalten.",
+    "kept_file": "Die Änderung bleibt in der Einstellungsdatei des Hubs über Neustarts erhalten.",
+    "kept_memory": "Die Änderung gilt bis zum Neustart des Hubs (der Hub hat keine Einstellungsdatei).",
+    "save": "Speichern",
+    "saved": "Gespeichert.",
+    "save_error": "Die Änderung wurde abgelehnt: {{reason}}",
+    "confirm_title": "Antworten ohne Identität einschalten?",
+    "confirm_message": "Alles, was auf dem Rechner des Hubs läuft, kann dann das Gate ohne signiertes Token um Entscheidungen bitten. Schalte das nur auf einem Rechner ein, den du kontrollierst.",
+    "confirm_button": "Einschalten"
+  },
   "connections": {
     "title": "Verbindungsverlauf",
     "desc": "Wer sich an diesem Server angemeldet hat: die bekannten Apps und Sitzungen sowie die letzten An- und Abmeldungen. Es werden keine Passwörter oder Token gespeichert.",

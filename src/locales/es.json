@@ -1683,6 +1683,27 @@
     "reset_done": "Inicio de sesión en dos pasos quitado a {{user}}.",
     "reset_error": "No se pudo quitar el inicio de sesión en dos pasos."
   },
+  "hubGate": {
+    "title": "Hub de conectores: llamantes sin identidad",
+    "desc": "La puerta de decisiones del hub de conectores solo responde a quien presenta un token firmado de este servidor. Este interruptor permite responder sin token a un llamante de la propia máquina del hub. Está apagado por defecto; solo un administrador puede cambiarlo, encenderlo pide una confirmación y cada cambio queda registrado.",
+    "label": "Responder sin token a un llamante de la propia máquina del hub",
+    "state_on": "Encendido: se responde sin identidad a un llamante de la máquina del hub.",
+    "state_off": "Apagado: todo llamante necesita un token firmado (por defecto).",
+    "unsupported": "Este servidor no ofrece los ajustes de la puerta del hub de conectores.",
+    "not_configured": "La puerta de decisiones del hub de conectores no está configurada en este servidor.",
+    "forbidden": "Solo un administrador puede leer o cambiar este interruptor.",
+    "load_error": "No se pudo leer el interruptor de la puerta del hub de conectores.",
+    "loopback_only": "El hub no escucha en una dirección de loopback, así que el interruptor no se puede encender.",
+    "needs_key": "El hub no tiene una clave que verifique tokens, así que el interruptor no se puede apagar desde aquí.",
+    "kept_file": "El cambio se guarda en el fichero de ajustes del hub y sobrevive a los reinicios.",
+    "kept_memory": "El cambio dura hasta que el hub se reinicie (el hub no tiene fichero de ajustes).",
+    "save": "Guardar",
+    "saved": "Guardado.",
+    "save_error": "Se rechazó el cambio: {{reason}}",
+    "confirm_title": "¿Encender las respuestas sin identidad?",
+    "confirm_message": "Cualquier cosa que se ejecute en la máquina del hub podrá pedir decisiones a la puerta sin un token firmado. Enciéndelo solo en una máquina que controles.",
+    "confirm_button": "Encender"
+  },
   "connections": {
     "title": "Historial de conexiones",
     "desc": "Quién ha entrado en este servidor: las aplicaciones y sesiones que ha visto, y las últimas entradas y salidas. No guarda contraseñas ni tokens.",

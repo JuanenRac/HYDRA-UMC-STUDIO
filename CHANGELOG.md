@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Server Admin shows the switch of the connector hub gate that answers a caller without identity:** it reads and changes `allowLoopbackNoIdentity` of the hub through the server (`GET` and `POST /api/connector-hub/gate/settings`). It is off by default, turning it on asks for a confirmation on screen, it tells whether the change is kept in the hub settings file or only until the hub restarts, and nothing is shown on a server that has no such gate. Eight languages.
+
 - **Portuguese camera badge:** the live badge of the camera matrix reads `EM DIRETO`, the whole expression.
 
 - **The firmware downloader reads the release assets of HYDRA-UMC:** the images of the controller and kinematic boards are no longer in the repository, so the manifest, each image and its signature file come from the latest release (the CRC32 of the manifest and the SHA-256 of the manifest or, failing that, the one GitHub states for the asset are checked before anything is flashed); URTC keeps being read from its repository. Five tests.
