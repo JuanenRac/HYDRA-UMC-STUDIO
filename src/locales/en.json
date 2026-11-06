@@ -356,7 +356,8 @@
     "not_active_connection": "Not the active connection - this app only checks the one it's currently using.",
     "updates": "Updates",
     "security_tab": "Security",
-    "installation": "Installation"
+    "installation": "Installation",
+    "remote_setup_tab": "Remote access setup"
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -2071,5 +2072,26 @@
     "all_done": "All the steps are done.",
     "cannot_tell": "Some steps could not be checked.",
     "no_installer": "This server has no route that installs, repairs or reinstalls anything, so this list only checks and tells; it changes nothing on the machine."
+  },
+  "remote_setup": {
+    "title": "Remote access in three steps",
+    "intro": "Lets the Android and iOS apps, the watch, the DSI screen and the desktop SUITE find this server. The choices are the same as in the Remote Access tab.",
+    "step1": "1. The address to type in the app",
+    "step1_hint": "Type it in the app, or scan the code with the camera of the phone.",
+    "local_warning": "This page was opened from the machine itself (localhost): a phone cannot use this address. Open STUDIO with the name or IP address of the machine in the browser and come back here.",
+    "qr_label": "QR code of the server address",
+    "qr_too_long": "The address is too long for a QR code. Type it by hand.",
+    "step2": "2. Which apps may find the server",
+    "step2_hint": "An app that is turned off sees this server as if it were not here. Turn off what you do not use.",
+    "client_suite": "Desktop SUITE",
+    "client_android": "Android app",
+    "client_ios": "iOS app",
+    "client_watch": "Watch",
+    "client_dsi": "DSI screen",
+    "open_count": "{{open}} of {{total}} kinds of app can find the server.",
+    "close_all": "Close all",
+    "close_all_confirm": "Every kind of app will stop finding this server. Apps that are already connected may need to sign in again. Continue?",
+    "step3": "3. Check from the phone",
+    "step3_hint": "Put the phone on the same network, open the app and let it search or type the address. If it does not find the server, check that its kind of app is turned on above and that nothing blocks the connection on the network."
   }
 }

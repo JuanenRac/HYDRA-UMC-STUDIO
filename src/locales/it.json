@@ -356,7 +356,8 @@
     "not_active_connection": "Non è la connessione attiva: questa app controlla solo quella che sta usando.",
     "updates": "Aggiornamenti",
     "security_tab": "Sicurezza",
-    "installation": "Installazione"
+    "installation": "Installazione",
+    "remote_setup_tab": "Configurazione dell'accesso remoto"
   },
   "robot_detail": {
     "back": "Torna alla Dashboard",
@@ -2071,5 +2072,26 @@
     "all_done": "Tutti i passi sono completati.",
     "cannot_tell": "Alcuni passi non è stato possibile verificarli.",
     "no_installer": "Questo server non ha alcuna rotta che installi, ripari o reinstalli qualcosa: questo elenco controlla e avvisa soltanto, non cambia nulla sulla macchina."
+  },
+  "remote_setup": {
+    "title": "Accesso remoto in tre passi",
+    "intro": "Permette alle app Android e iOS, all'orologio, allo schermo DSI e alla SUITE desktop di trovare questo server. Le scelte sono le stesse della scheda Accesso remoto.",
+    "step1": "1. L'indirizzo da digitare nell'app",
+    "step1_hint": "Digitala nell'app o scansiona il codice con la fotocamera del telefono.",
+    "local_warning": "Questa pagina è stata aperta dalla macchina stessa (localhost): un telefono non può usare questo indirizzo. Apri STUDIO nel browser con il nome o l'indirizzo IP della macchina e torna qui.",
+    "qr_label": "Codice QR dell'indirizzo del server",
+    "qr_too_long": "L'indirizzo è troppo lungo per un codice QR. Digitalo a mano.",
+    "step2": "2. Quali app possono trovare il server",
+    "step2_hint": "Un'app disattivata vede questo server come se non ci fosse. Disattiva ciò che non usi.",
+    "client_suite": "SUITE desktop",
+    "client_android": "App Android",
+    "client_ios": "App iOS",
+    "client_watch": "Orologio",
+    "client_dsi": "Schermo DSI",
+    "open_count": "{{open}} tipi di app su {{total}} possono trovare il server.",
+    "close_all": "Chiudi tutto",
+    "close_all_confirm": "Nessun tipo di app troverà più questo server. Le app già connesse potrebbero doversi autenticare di nuovo. Continuare?",
+    "step3": "3. Verifica dal telefono",
+    "step3_hint": "Metti il telefono sulla stessa rete, apri l'app e lasciala cercare oppure digita l'indirizzo. Se non trova il server, controlla che il suo tipo di app sia attivo qui sopra e che nulla blocchi la connessione in rete."
   }
 }

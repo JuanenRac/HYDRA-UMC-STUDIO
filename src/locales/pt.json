@@ -356,7 +356,8 @@
     "not_active_connection": "Não é a ligação ativa: esta aplicação só verifica a que está a usar.",
     "updates": "Atualizações",
     "security_tab": "Segurança",
-    "installation": "Instalação"
+    "installation": "Instalação",
+    "remote_setup_tab": "Assistente de acesso remoto"
   },
   "robot_detail": {
     "back": "Voltar ao painel",
@@ -2071,5 +2072,26 @@
     "all_done": "Todos os passos estão feitos.",
     "cannot_tell": "Alguns passos não puderam ser verificados.",
     "no_installer": "Este servidor não tem nenhuma rota que instale, repare ou reinstale seja o que for, por isso esta lista só verifica e avisa; não altera nada na máquina."
+  },
+  "remote_setup": {
+    "title": "Acesso remoto em três passos",
+    "intro": "Permite que as apps Android e iOS, o relógio, o ecrã DSI e a SUITE de secretária encontrem este servidor. As opções são as mesmas do separador Acesso remoto.",
+    "step1": "1. O endereço a escrever na app",
+    "step1_hint": "Escreva-a na app ou leia o código com a câmara do telemóvel.",
+    "local_warning": "Esta página foi aberta a partir da própria máquina (localhost): um telemóvel não pode usar este endereço. Abra o STUDIO no navegador com o nome ou o endereço IP da máquina e volte aqui.",
+    "qr_label": "Código QR do endereço do servidor",
+    "qr_too_long": "O endereço é demasiado longo para um código QR. Escreva-o à mão.",
+    "step2": "2. Que apps podem encontrar o servidor",
+    "step2_hint": "Uma app desligada vê este servidor como se não existisse. Desligue o que não usa.",
+    "client_suite": "SUITE de secretária",
+    "client_android": "App Android",
+    "client_ios": "App iOS",
+    "client_watch": "Relógio",
+    "client_dsi": "Ecrã DSI",
+    "open_count": "{{open}} de {{total}} tipos de app podem encontrar o servidor.",
+    "close_all": "Fechar tudo",
+    "close_all_confirm": "Nenhum tipo de app voltará a encontrar este servidor. As apps já ligadas podem ter de iniciar sessão de novo. Continuar?",
+    "step3": "3. Verifique a partir do telemóvel",
+    "step3_hint": "Ponha o telemóvel na mesma rede, abra a app e deixe-a procurar ou escreva o endereço. Se não encontrar o servidor, verifique se o seu tipo de app está ligado acima e se nada bloqueia a ligação na rede."
   }
 }

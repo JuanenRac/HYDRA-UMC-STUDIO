@@ -356,7 +356,8 @@
     "not_active_connection": "No es la conexión activa: esta aplicación solo comprueba la que está usando.",
     "updates": "Actualizaciones",
     "security_tab": "Seguridad",
-    "installation": "Instalación"
+    "installation": "Instalación",
+    "remote_setup_tab": "Asistente de acceso remoto"
   },
   "robot_detail": {
     "back": "Volver al Panel",
@@ -2071,5 +2072,26 @@
     "all_done": "Todos los pasos están hechos.",
     "cannot_tell": "Algunos pasos no se han podido comprobar.",
     "no_installer": "Este servidor no tiene ninguna ruta que instale, repare o reinstale nada, así que esta lista solo comprueba y avisa; no cambia nada en la máquina."
+  },
+  "remote_setup": {
+    "title": "Acceso remoto en tres pasos",
+    "intro": "Permite que las apps Android e iOS, el reloj, la pantalla DSI y la SUITE de escritorio encuentren este servidor. Las opciones son las mismas que en la pestaña Acceso remoto.",
+    "step1": "1. La dirección que se escribe en la app",
+    "step1_hint": "Escríbela en la app o escanea el código con la cámara del móvil.",
+    "local_warning": "Esta página se abrió desde la propia máquina (localhost): un móvil no puede usar esta dirección. Abre STUDIO con el nombre o la dirección IP de la máquina en el navegador y vuelve aquí.",
+    "qr_label": "Código QR de la dirección del servidor",
+    "qr_too_long": "La dirección es demasiado larga para un código QR. Escríbela a mano.",
+    "step2": "2. Qué apps pueden encontrar el servidor",
+    "step2_hint": "Una app desactivada ve este servidor como si no estuviera. Desactiva lo que no uses.",
+    "client_suite": "SUITE de escritorio",
+    "client_android": "App Android",
+    "client_ios": "App iOS",
+    "client_watch": "Reloj",
+    "client_dsi": "Pantalla DSI",
+    "open_count": "{{open}} de {{total}} tipos de app pueden encontrar el servidor.",
+    "close_all": "Cerrar todo",
+    "close_all_confirm": "Ningún tipo de app volverá a encontrar este servidor. Las apps ya conectadas puede que tengan que volver a iniciar sesión. ¿Continuar?",
+    "step3": "3. Comprueba desde el móvil",
+    "step3_hint": "Pon el móvil en la misma red, abre la app y deja que busque o escribe la dirección. Si no encuentra el servidor, comprueba que su tipo de app está activado arriba y que nada bloquea la conexión en la red."
   }
 }

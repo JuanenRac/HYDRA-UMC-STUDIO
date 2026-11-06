@@ -356,7 +356,8 @@
     "not_active_connection": "不是当前活动连接：此应用仅检查它正在使用的连接。",
     "updates": "更新",
     "security_tab": "安全",
-    "installation": "安装"
+    "installation": "安装",
+    "remote_setup_tab": "远程访问设置"
   },
   "robot_detail": {
     "back": "返回仪表盘",
@@ -2071,5 +2072,26 @@
     "all_done": "所有步骤均已完成。",
     "cannot_tell": "部分步骤无法检查。",
     "no_installer": "此服务器没有用于安装、修复或重装的接口，因此此清单只做检查和提示，不会更改机器上的任何内容。"
+  },
+  "remote_setup": {
+    "title": "三步完成远程访问",
+    "intro": "让 Android 和 iOS 应用、手表、DSI 屏幕和桌面 SUITE 都能找到此服务器。选项与“远程访问”页相同。",
+    "step1": "1. 在应用中输入的地址",
+    "step1_hint": "在应用中输入，或用手机相机扫描二维码。",
+    "local_warning": "此页面是从本机（localhost）打开的，手机无法使用该地址。请在浏览器中用本机的名称或 IP 地址打开 STUDIO，再回到这里。",
+    "qr_label": "服务器地址二维码",
+    "qr_too_long": "地址太长，无法生成二维码，请手动输入。",
+    "step2": "2. 允许哪些应用找到服务器",
+    "step2_hint": "被关闭的应用会认为这台服务器不存在。请关闭不使用的应用。",
+    "client_suite": "桌面 SUITE",
+    "client_android": "Android 应用",
+    "client_ios": "iOS 应用",
+    "client_watch": "手表",
+    "client_dsi": "DSI 屏幕",
+    "open_count": "{{total}} 类应用中有 {{open}} 类可以找到服务器。",
+    "close_all": "全部关闭",
+    "close_all_confirm": "所有类型的应用都将无法再找到此服务器，已连接的应用可能需要重新登录。是否继续？",
+    "step3": "3. 在手机上检查",
+    "step3_hint": "让手机连接同一网络，打开应用让它搜索，或手动输入地址。如果找不到服务器，请检查上方对应的应用类型是否已开启，以及网络中是否有东西阻止了连接。"
   }
 }

@@ -29,6 +29,7 @@ import { PathsTab } from './config/PathsTab';
 import { CanOtaTab } from './config/CanOtaTab';
 import { AiHailoTab } from './config/AiHailoTab';
 import { UpdatesTab } from './config/UpdatesTab';
+import { RemoteAccessSetupTab } from './config/RemoteAccessSetupTab';
 import { InstallationTab } from './config/InstallationTab';
 import { SecurityTab } from './config/SecurityTab';
 
@@ -43,7 +44,7 @@ function PanelLoadingFallback() {
   );
 }
 
-type ConfigTab = 'identity' | 'controllers' | 'ui' | 'robots' | 'cameras' | 'models' | 'integrations' | 'remoteaccess' | 'users' | 'paths' | 'canota' | 'aihailo' | 'gamepad' | 'updates' | 'security' | 'installation';
+type ConfigTab = 'identity' | 'controllers' | 'ui' | 'robots' | 'cameras' | 'models' | 'integrations' | 'remoteaccess' | 'users' | 'paths' | 'canota' | 'aihailo' | 'gamepad' | 'updates' | 'security' | 'installation' | 'remotesetup';
 
 export function Config({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
@@ -76,6 +77,7 @@ export function Config({ onClose }: { onClose: () => void }) {
     { id: 'updates', label: t('config.updates') },
     { id: 'security', label: t('config.security_tab') },
     { id: 'installation', label: t('config.installation') },
+    { id: 'remotesetup', label: t('config.remote_setup_tab') },
   ];
 
   return (
@@ -126,6 +128,8 @@ export function Config({ onClose }: { onClose: () => void }) {
             {configTab === 'security' && <SecurityTab />}
 
             {configTab === 'installation' && <InstallationTab />}
+
+            {configTab === 'remotesetup' && <RemoteAccessSetupTab />}
 
             {configTab === 'gamepad' && (
               <div className="animate-in zoom-in-95 fade-in duration-500">

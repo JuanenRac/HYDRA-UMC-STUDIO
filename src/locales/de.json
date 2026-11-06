@@ -356,7 +356,8 @@
     "not_active_connection": "Nicht die aktive Verbindung - diese App prüft nur die gerade verwendete.",
     "updates": "Aktualisierungen",
     "security_tab": "Sicherheit",
-    "installation": "Installation"
+    "installation": "Installation",
+    "remote_setup_tab": "Einrichtung des Fernzugriffs"
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",
@@ -2071,5 +2072,26 @@
     "all_done": "Alle Schritte sind erledigt.",
     "cannot_tell": "Einige Schritte ließen sich nicht prüfen.",
     "no_installer": "Dieser Server hat keine Route, die etwas installiert, repariert oder neu installiert; diese Liste prüft und informiert daher nur und ändert nichts am Rechner."
+  },
+  "remote_setup": {
+    "title": "Fernzugriff in drei Schritten",
+    "intro": "Damit finden die Android- und iOS-Apps, die Uhr, der DSI-Bildschirm und die Desktop-SUITE diesen Server. Die Optionen sind dieselben wie im Reiter Fernzugriff.",
+    "step1": "1. Die Adresse für die App",
+    "step1_hint": "In der App eintippen oder den Code mit der Handykamera scannen.",
+    "local_warning": "Diese Seite wurde auf dem Rechner selbst geöffnet (localhost): Ein Handy kann diese Adresse nicht nutzen. Öffnen Sie STUDIO im Browser mit Namen oder IP-Adresse des Rechners und kommen Sie hierher zurück.",
+    "qr_label": "QR-Code der Serveradresse",
+    "qr_too_long": "Die Adresse ist für einen QR-Code zu lang. Bitte von Hand eintippen.",
+    "step2": "2. Welche Apps den Server finden dürfen",
+    "step2_hint": "Eine ausgeschaltete App sieht diesen Server, als wäre er nicht da. Schalten Sie aus, was Sie nicht nutzen.",
+    "client_suite": "Desktop-SUITE",
+    "client_android": "Android-App",
+    "client_ios": "iOS-App",
+    "client_watch": "Uhr",
+    "client_dsi": "DSI-Bildschirm",
+    "open_count": "{{open}} von {{total}} App-Arten können den Server finden.",
+    "close_all": "Alles schließen",
+    "close_all_confirm": "Keine App-Art findet diesen Server mehr. Bereits verbundene Apps müssen sich eventuell neu anmelden. Fortfahren?",
+    "step3": "3. Vom Handy aus prüfen",
+    "step3_hint": "Das Handy ins selbe Netz bringen, die App öffnen und suchen lassen oder die Adresse eintippen. Findet sie den Server nicht, prüfen Sie, ob ihre App-Art oben eingeschaltet ist und ob im Netz nichts die Verbindung blockiert."
   }
 }

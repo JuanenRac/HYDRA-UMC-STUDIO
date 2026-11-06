@@ -356,7 +356,8 @@
     "not_active_connection": "Pas la connexion active : cette application ne vérifie que celle qu'elle utilise.",
     "updates": "Mises à jour",
     "security_tab": "Sécurité",
-    "installation": "Installation"
+    "installation": "Installation",
+    "remote_setup_tab": "Assistant d'accès à distance"
   },
   "robot_detail": {
     "back": "Retour au Tableau de Bord",
@@ -2071,5 +2072,26 @@
     "all_done": "Toutes les étapes sont faites.",
     "cannot_tell": "Certaines étapes n'ont pas pu être vérifiées.",
     "no_installer": "Ce serveur n'a aucune route qui installe, répare ou réinstalle quoi que ce soit : cette liste vérifie et informe seulement, elle ne change rien sur la machine."
+  },
+  "remote_setup": {
+    "title": "Accès à distance en trois étapes",
+    "intro": "Permet aux applis Android et iOS, à la montre, à l'écran DSI et à la SUITE de bureau de trouver ce serveur. Les choix sont les mêmes que dans l'onglet Accès à distance.",
+    "step1": "1. L'adresse à saisir dans l'appli",
+    "step1_hint": "Saisissez-la dans l'appli ou scannez le code avec la caméra du téléphone.",
+    "local_warning": "Cette page a été ouverte depuis la machine elle-même (localhost) : un téléphone ne peut pas utiliser cette adresse. Ouvrez STUDIO dans le navigateur avec le nom ou l'adresse IP de la machine et revenez ici.",
+    "qr_label": "QR code de l'adresse du serveur",
+    "qr_too_long": "L'adresse est trop longue pour un QR code. Saisissez-la à la main.",
+    "step2": "2. Quelles applis peuvent trouver le serveur",
+    "step2_hint": "Une appli désactivée voit ce serveur comme s'il n'existait pas. Désactivez ce que vous n'utilisez pas.",
+    "client_suite": "SUITE de bureau",
+    "client_android": "Appli Android",
+    "client_ios": "Appli iOS",
+    "client_watch": "Montre",
+    "client_dsi": "Écran DSI",
+    "open_count": "{{open}} types d'applis sur {{total}} peuvent trouver le serveur.",
+    "close_all": "Tout fermer",
+    "close_all_confirm": "Aucun type d'appli ne trouvera plus ce serveur. Les applis déjà connectées devront peut-être se reconnecter. Continuer ?",
+    "step3": "3. Vérifier depuis le téléphone",
+    "step3_hint": "Mettez le téléphone sur le même réseau, ouvrez l'appli et laissez-la chercher ou saisissez l'adresse. Si elle ne trouve pas le serveur, vérifiez que son type d'appli est activé ci-dessus et que rien ne bloque la connexion sur le réseau."
   }
 }
