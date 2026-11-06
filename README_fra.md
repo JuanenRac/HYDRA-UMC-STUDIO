@@ -203,7 +203,7 @@ Les deux peuvent télécharger de vraies versions de firmware directement depuis
 
 ### Support Manette
 
-Intégration de manettes USB et Bluetooth avec mappages personnalisés par bouton/par axe, pour effectuer le jog des robots et accessoires sans souris/clavier. Les actions en temps réel (jog des articulations/de la table, E-STOP, START/STOP, vitesse de lecture) déclenchent la même voie atomique `sendRobotCommand()` que les boutons de jog du panneau de détail du robot, et non l'enregistrement des réglages avec debounce - voir `GamepadController.tsx`.
+Intégration de manettes USB et Bluetooth avec mappages personnalisés par bouton/par axe, pour effectuer le jog des robots et accessoires sans souris/clavier. Les actions en temps réel (jog des articulations/de la table, E-STOP, START/STOP, vitesse de lecture) déclenchent la même voie atomique `sendRobotCommand()` que les boutons de jog du panneau de détail du robot, et non l'enregistrement des réglages avec debounce - voir `GamepadController.tsx`. Le mode manette est désactivé dans chaque nouvelle fenêtre et s'arme depuis Config > Manette avec une confirmation explicite, un robot sélectionné et une réservation de ce robot détenue par cette fenêtre ; la zone morte, la limite de vitesse et le rythme sont des réglages, STOP est toujours prioritaire et annule ce qui est en file, une manette qui se déconnecte arrête aussitôt tous les robots, et rien n'est lu tant que l'onglet n'a pas le focus. Testé uniquement avec une API Gamepad simulée, pas encore avec une manette physique ; la SUITE de bureau n'a pas de mode manette.
 
 ### Intégration Caméras
 

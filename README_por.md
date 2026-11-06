@@ -203,7 +203,7 @@ Ambos podem descarregar versões de firmware reais diretamente do GitHub (com ba
 
 ### Suporte de comando
 
-Integração de comandos USB e Bluetooth com mapeamentos personalizados por botão/por eixo, para mover robôs e acessórios sem rato/teclado. As ações em tempo real (jog de articulações/mesa, E-STOP, INICIAR/PARAR, velocidade de reprodução) disparam o mesmo caminho atómico `sendRobotCommand()` que os botões de jog do painel de detalhe do robô usam, não a gravação adiada das definições - veja `GamepadController.tsx`.
+Integração de comandos USB e Bluetooth com mapeamentos personalizados por botão/por eixo, para mover robôs e acessórios sem rato/teclado. As ações em tempo real (jog de articulações/mesa, E-STOP, INICIAR/PARAR, velocidade de reprodução) disparam o mesmo caminho atómico `sendRobotCommand()` que os botões de jog do painel de detalhe do robô usam, não a gravação adiada das definições - veja `GamepadController.tsx`. O modo comando está desligado em cada janela nova e ativa-se em Config > Comando com uma confirmação explícita, um robô selecionado e uma reserva dele detida por esta janela; a zona morta, o limite de velocidade e o ritmo são definições, o STOP tem sempre prioridade e cancela o que estiver em fila, um comando que se desligue pára todos os robôs de imediato, e não se lê nada enquanto o separador não tem o foco. Testado apenas com uma API de comando simulada, ainda não com um comando físico; a SUITE de ambiente de trabalho não tem modo comando.
 
 ### Integração de câmaras
 

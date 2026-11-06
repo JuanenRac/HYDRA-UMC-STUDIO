@@ -4,33 +4,31 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { AlertTriangle, X } from 'lucide-react';
 import { jointsToCartesianForModel, jointLimitsFor, resolveTargetJoints } from '../examples/robotKinematicsDispatch';
 import { guardJogStep } from '../lib/motionGuard';
-import { createInFlightCounter, createRateLimiter } from '../lib/inputThrottle';
+import { createInFlightCounter } from '../lib/inputThrottle';
 import { getSelectedRobotId, setSelectedRobotId } from '../lib/selectedRobot';
-import { useCommandFeedback, useFleet, useSettingsStore } from '../storeContexts';
+import { claimsSnapshot } from '../lib/claimsFeed';
+import { claimStanding, decodeJwtUsername } from '../lib/claims';
+import { getControllerId } from '../lib/controllerSession';
+import {
+  createGamepadModeEngine, limitedStep, parseGamepadMode, type GamepadModeEvent, type GamepadModeEngine,
+} from '../lib/gamepadMode';
+import { disarmGamepad, disarmGamepadWithNotice, dismissGamepadNotice, setGamepadStatus, useGamepadSession } from '../lib/gamepadSession';
+import type { RobotState } from '../store';
+import { useCommandFeedback, useFleet, useSession, useSettingsStore } from '../storeContexts';
 
-// A held button or stick becomes at most this many commands per second per action, and none at all while this many
-// earlier commands are still unanswered: sending on every frame (60 per second) would leave requests queued after the
-// stick was released, and they would keep the robot moving.
-const HELD_INPUT_MIN_INTERVAL_MS = 90;
-const MAX_UNANSWERED_COMMANDS = 4;
-
-// Cartesian step per held frame, mm - same magnitude as this file's own
-// table jog step just below (TX+/TX-/TY+/TY-, also 2mm/frame). Unlike
-// RobotDetail.tsx's floating Joystick3D overlay (which reads a
-// user-selectable jogStep), a gamepad button has no per-session step
-// selector of its own here, so a single fixed real-world value is the
-// honest choice rather than inventing a second step control nothing else
-// surfaces.
+// Cartesian step of a full push, mm - the same magnitude as the table step just below. The speed limit of the mode (and how far the
+// stick is pushed) scales it; a gamepad button has no step selector of its own here.
 const CARTESIAN_JOG_STEP_MM = 2;
+const JOINT_JOG_STEP_DEG = 1.5;
+const TABLE_JOG_STEP_MM = 2;
 
-// One real (dx, dy, dz) direction per cartesian action - the 6 single-axis
-// moves plus the 4 diagonal XY moves Joystick3D's own corner D-pad buttons
-// already make (ArrowUpLeft/UpRight/DownLeft/DownRight - one real jog with
-// both dx and dy non-zero at once), added because a gamepad button should
-// be able to match that same widget's own layout.
+// One real (dx, dy, dz) direction per cartesian action - the 6 single-axis moves plus the 4 diagonal XY moves Joystick3D's own corner
+// D-pad buttons already make.
 const CARTESIAN_JOG_DELTAS: Record<string, [dx: number, dy: number, dz: number]> = {
   'X+': [1, 0, 0], 'X-': [-1, 0, 0],
   'Y+': [0, 1, 0], 'Y-': [0, -1, 0],
@@ -42,38 +40,34 @@ const JOINT_KEYS = ['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const;
 type JointKey = (typeof JOINT_KEYS)[number];
 
 /**
- * Reads a physical gamepad (navigator.getGamepads(), polled once per
- * animation frame) and maps its buttons/axes to real robot actions via
- * settings.gamepadMapping.
+ * The gamepad mode. It reads a physical gamepad (navigator.getGamepads(), once per animation frame) and turns it into robot commands, but
+ * only while the operator has armed the mode (lib/gamepadSession.ts: off in every new window, armed after a confirmation, with a robot
+ * this window has reserved). What decides - dead zone, speed limit, rate, STOP first, lost pad, focus - is lib/gamepadMode.ts; its numbers
+ * are in settings.gamepadMode and the mapping of inputs in settings.gamepadMapping.
  *
- * Real-time actions (joint/table jog, E-STOP, START/STOP, speed) fire the
- * atomic sendRobotCommand()/POST /api/robot/:id/command path - the SAME
- * one RobotDetail.tsx's own jog buttons/E-STOP/play/pause use - instead
- * of updateRobot()'s 500ms-debounced full-tree POST /api/settings. A held
- * gamepad joystick is inherently low-latency input; routing it through a
- * half-second-delayed save made every other connected client (and this
- * one's own optimistic UI) lag a held stick by up to 500ms, on top of
- * paying that debounce's full-tree serialization cost on every single
- * frame the stick was held (see store.tsx's own sendRobotCommand comment
- * for why that full-tree cost is real, not theoretical). ADD POINT stays
- * on updateRobot() below - recording a point is not a real-time action,
- * and its shape (a full RecordedPoint object) has no atomic command of
- * its own on the server.
+ * Real-time actions fire the atomic sendRobotCommand()/POST /api/robot/:id/command path, the SAME one the jog buttons of the robot panel
+ * use. ADD POINT stays on updateRobot(): a recorded point is not a real-time action.
  */
 export function GamepadController() {
+  const { t } = useTranslation();
   const { emergencyStop, reportCommandIssue } = useCommandFeedback();
   const { settings } = useSettingsStore();
+  const { authToken } = useSession();
   const { activeController, updateRobot, sendRobotCommand } = useFleet();
+  const session = useGamepadSession();
   const requestRef = useRef<number>(0);
-  const lastState = useRef<Record<string, boolean>>({});
   const settingsRef = useRef(settings);
   const activeControllerRef = useRef(activeController);
   const updateRobotRef = useRef(updateRobot);
   const sendRobotCommandRef = useRef(sendRobotCommand);
   const emergencyStopRef = useRef(emergencyStop);
   const reportCommandIssueRef = useRef(reportCommandIssue);
-  const rateLimiter = useRef(createRateLimiter(HELD_INPUT_MIN_INTERVAL_MS));
+  const tokenRef = useRef(authToken);
   const unanswered = useRef(createInFlightCounter());
+  const engineRef = useRef<GamepadModeEngine | null>(null);
+
+  const config = useMemo(() => parseGamepadMode(settings.gamepadMode), [settings.gamepadMode]);
+  const configRef = useRef(config);
 
   // Every command goes through here so the number of unanswered ones is known.
   const sendTracked = (...args: Parameters<typeof sendRobotCommand>) => unanswered.current.track(sendRobotCommandRef.current(...args));
@@ -85,294 +79,217 @@ export function GamepadController() {
     sendRobotCommandRef.current = sendRobotCommand;
     emergencyStopRef.current = emergencyStop;
     reportCommandIssueRef.current = reportCommandIssue;
-  }, [settings, activeController, updateRobot, sendRobotCommand, emergencyStop, reportCommandIssue]);
+    tokenRef.current = authToken;
+  }, [settings, activeController, updateRobot, sendRobotCommand, emergencyStop, reportCommandIssue, authToken]);
+
+  // The switch of the feature goes off: the mode goes off with it.
+  useEffect(() => {
+    if (!settings.gamepadEnabled) disarmGamepad();
+  }, [settings.gamepadEnabled]);
+
+  // The numbers changed: a new engine (it starts waiting for every input to be let go).
+  useEffect(() => {
+    configRef.current = config;
+    engineRef.current = createGamepadModeEngine(config);
+  }, [config]);
 
   useEffect(() => {
-    if (!settings.gamepadEnabled) {
+    if (!settings.gamepadEnabled || !session.armed) {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      engineRef.current?.reset();
       return;
     }
 
-    const poll = () => {
-      const gamepads = navigator.getGamepads();
-      const gp = document.hidden ? undefined : gamepads.find(g => g !== null);
-      if (!gp) {
-        // Unplugged, or the page is hidden: nothing is held any more. Forget the pressed state so that
-        // nothing carries on when the gamepad comes back with a button reported as down.
-        lastState.current = {};
-        rateLimiter.current.reset();
+    // One event of the engine, carried out. A STOP and a lost pad are the global stop: what was counted as unanswered is forgotten.
+    const carryOut = (event: GamepadModeEvent) => {
+      const currentRobot = activeControllerRef.current.robots.find((r) => r.id === getSelectedRobotId());
+      if (event.type === 'stop') {
+        unanswered.current.reset();
+        void emergencyStopRef.current();
+      } else if (event.type === 'lost') {
+        unanswered.current.reset();
+        void emergencyStopRef.current();
+        disarmGamepadWithNotice('lost');
+        engineRef.current?.reset();
+      } else if (event.type === 'hold') {
+        if (currentRobot) holdAction(currentRobot, event.action, event.scale);
+      } else if (event.type === 'press') {
+        pressAction(currentRobot, event.action);
       }
+    };
 
-      if (gp && settingsRef.current.gamepadMapping) {
-        const mapping = settingsRef.current.gamepadMapping;
-        const currentState: Record<string, boolean> = {};
-
-        gp.buttons.forEach((b, i) => { currentState[`B${i}`] = b.pressed; });
-        const DEADZONE = 0.2;
-        gp.axes.forEach((val, i) => {
-          currentState[`AXIS_${i}_NEG`] = val < -DEADZONE;
-          currentState[`AXIS_${i}_POS`] = val > DEADZONE;
-        });
-
-        for (const [input, isPressed] of Object.entries(currentState)) {
-          const action = mapping[input];
-          if (!action) continue;
-
-          const wasPressed = lastState.current[input] || false;
-          const justPressed = isPressed && !wasPressed;
-
-          if (isPressed) {
-            const currentRobot = activeControllerRef.current.robots.find(r => r.id === getSelectedRobotId());
-            if (!currentRobot) continue;
-            // A held input is sent at a fixed rate and only while the earlier commands have been answered. This
-            // gates only the held moves below; one-press actions (E-STOP, START, STOP...) are further down and
-            // are never held back.
-            const heldBlocked = unanswered.current.count() >= MAX_UNANSWERED_COMMANDS
-              || !rateLimiter.current.allow(`${currentRobot.id}:${action}`, performance.now());
-
-            if (heldBlocked) {
-              // too soon after the last one, or too many unanswered: send nothing this frame
-            } else if (CARTESIAN_JOG_DELTAS[action]) {
-              // Cartesian XYZ jog (single-axis or diagonal) - mirrors
-              // RobotDetail.tsx's own handleXYZJog exactly: forward
-              // kinematics to find the current tool point, apply the real
-              // combined delta (both dx and dy at once for a diagonal, not
-              // two independent single-axis solves), resolveTargetJoints
-              // ONCE for this model's own real inverse kinematics against
-              // that true target, then one real command per non-zero axis
-              // - all carrying that SAME resolved `joints` override, same
-              // as handleXYZJog's own per-axis send loop - so a
-              // gamepad-driven move lands on the identical per-model IK
-              // solution the floating Joystick3D overlay would produce for
-              // the same button, not a second, possibly-diverging formula.
-              const [dx, dy, dz] = CARTESIAN_JOG_DELTAS[action];
-              const cart = jointsToCartesianForModel(currentRobot.model, currentRobot.joints);
-              const x = cart.x + dx * CARTESIAN_JOG_STEP_MM;
-              const y = cart.y + dy * CARTESIAN_JOG_STEP_MM;
-              const z = cart.z + dz * CARTESIAN_JOG_STEP_MM;
-              const newJoints = resolveTargetJoints(currentRobot.model, x, y, z, cart.a, cart.b, cart.c, currentRobot.joints, currentRobot.joints);
-              const verdict = guardJogStep({ robotId: currentRobot.id, from: currentRobot.joints, to: newJoints });
-              if (!verdict.ok) {
-                reportCommandIssueRef.current(verdict.issue);
-                continue;
-              }
-              const axes: { axis: 'x' | 'y' | 'z'; amount: number; value: number }[] = [
-                { axis: 'x' as const, amount: dx * CARTESIAN_JOG_STEP_MM, value: x },
-                { axis: 'y' as const, amount: dy * CARTESIAN_JOG_STEP_MM, value: y },
-                { axis: 'z' as const, amount: dz * CARTESIAN_JOG_STEP_MM, value: z },
-              ].filter((a) => a.amount !== 0);
-              for (const a of axes) {
-                sendTracked(
-                  currentRobot.id,
-                  'jog',
-                  { axis: a.axis, amount: a.amount, target: 'robot', joints: newJoints },
-                  (r) => ({ pos: { ...r.pos, [a.axis]: a.value, a: cart.a, b: cart.b, c: cart.c }, joints: newJoints })
-                );
-              }
-            } else if (action === 'ROT+' || action === 'ROT-') {
-              // Base rotation (J1) - the exact same real move as
-              // RobotDetail.tsx's own handleJ1Jog, the 2 dedicated buttons
-              // that sit right next to Joystick3D in that same floating
-              // overlay. Listed as its own action (not only reachable via
-              // J1+/J1- below) so a gamepad mapping can group it with the
-              // cartesian moves the same way that widget's own layout
-              // does - identical outcome to J1+/J1- either way.
-              const isPos = action === 'ROT+';
-              const step = isPos ? 1.5 : -1.5;
-              const [jMin, jMax] = jointLimitsFor(currentRobot.model, 'j1');
-              const currentVal = currentRobot.joints.j1 || 0;
-              const newVal = Math.min(jMax, Math.max(jMin, currentVal + step));
-              if (newVal !== currentVal) {
-                const newJoints = { ...currentRobot.joints, j1: newVal };
-                const newCart = jointsToCartesianForModel(currentRobot.model, newJoints);
-                sendTracked(
-                  currentRobot.id,
-                  'jog',
-                  { axis: 'x', amount: 0, target: 'robot', joints: newJoints },
-                  () => ({
-                    pos: { ...currentRobot.pos, x: newCart.x, y: newCart.y, z: newCart.z, a: newCart.a, b: newCart.b, c: newCart.c },
-                    joints: newJoints,
-                  })
-                );
-              }
-            } else if (action.startsWith('J')) {
-              // Action format: J1+, J1- ... J6+, J6-. Fires the atomic
-              // 'jog' command with a client-resolved `joints` override -
-              // exactly the mechanism RobotDetail.tsx's own handleJ1Jog
-              // uses (see that function's own comment on why: the server's
-              // generic calculateJoints() doesn't know this model's real
-              // per-model kinematics chain). Clamped to this model's real
-              // joint limits via the shared jointLimitsFor(), same as
-              // every other jog surface - a held gamepad button can't walk
-              // a joint past what the real robot could ever reach.
-              const jointKey = action.substring(0, 2).toLowerCase() as JointKey;
-              if (!JOINT_KEYS.includes(jointKey)) continue;
-              const isPos = action.endsWith('+');
-              const step = isPos ? 1.5 : -1.5;
-              const [jMin, jMax] = jointLimitsFor(currentRobot.model, jointKey);
-              const currentVal = (currentRobot.joints as any)[jointKey] || 0;
-              const newVal = Math.min(jMax, Math.max(jMin, currentVal + step));
-              if (newVal === currentVal) continue; // already at a real limit - no-op, not a clamped-but-sent command
-
-              const newJoints = { ...currentRobot.joints, [jointKey]: newVal };
-              const newCart = jointsToCartesianForModel(currentRobot.model, newJoints);
-              sendTracked(
-                currentRobot.id,
-                'jog',
-                { axis: 'x', amount: 0, target: 'robot', joints: newJoints },
-                () => ({
-                  pos: { ...currentRobot.pos, x: newCart.x, y: newCart.y, z: newCart.z, a: newCart.a, b: newCart.b, c: newCart.c },
-                  joints: newJoints,
-                })
-              );
-            } else if (action.startsWith('T')) {
-              // Action format: TX+, TY-. Fires the atomic 'jog' command
-              // with target:'xytable' - the real server-side branch
-              // (server.ts's own jog case) that updates robot.xyTable.pos,
-              // rather than robot.pos directly (target:'robot' only
-              // accepts the real ROBOT_AXES set - x/y/z/a/b/c - 'tx'/'ty'
-              // are this project's own pos-mirror keys, not real server
-              // axis names). pos.tx/ty is still mutated locally alongside
-              // xyTable.pos so ADD POINT's own pos.tx/ty snapshot (below)
-              // stays consistent, same dual-field shape
-              // RobotDetail.tsx's XYTableOverlay onAxisChange already uses.
-              if (!currentRobot.hasXYTable || !currentRobot.xyTable) continue;
-              const axisStr = action.substring(0, 2).toLowerCase(); // "tx" or "ty"
-              const tableAxis = axisStr === 'tx' ? 'x' : 'y';
-              const isPos = action.endsWith('+');
-              const step = isPos ? 2 : -2;
-              const xyTable = currentRobot.xyTable;
-              const newTableVal = ((xyTable.pos as any)[tableAxis] || 0) + step;
-
-              // One atomic "table" move, relative to where the table is now.
-              sendTracked(
-                currentRobot.id,
-                'table',
-                { x: tableAxis === 'x' ? step : 0, y: tableAxis === 'y' ? step : 0, mode: 'relative' },
-                () => ({
-                  pos: { ...currentRobot.pos, [axisStr]: newTableVal },
-                  xyTable: { ...xyTable, pos: { ...xyTable.pos, [tableAxis]: newTableVal } },
-                })
-              );
-            } else if (action.startsWith('SPEED')) {
-              // SPEED+, SPEED- - mirrors RobotDetail.tsx's own speed
-              // slider (sendRobotCommand(id, 'speed', ...)), not the
-              // playback-loop-local speed the removed local player used.
-              const isPos = action.endsWith('+');
-              const pb = currentRobot.playbackState || { isPlaying: false, activeStep: -1, speed: 100 };
-              const currentSpeed = pb.speed || 100;
-              let newSpeed = isPos ? currentSpeed + 1 : currentSpeed - 1;
-              // The server accepts 10-500 (the speed knob's own range); below 10 it ignores the value.
-              if (newSpeed < 10) newSpeed = 10;
-              if (newSpeed > 500) newSpeed = 500;
-              if (newSpeed === currentSpeed) continue;
-              sendTracked(
-                currentRobot.id,
-                'speed',
-                { speed: newSpeed },
-                (r) => ({ playbackState: { ...(r.playbackState || {}), speed: newSpeed } })
-              );
-            }
-          }
-
-          if (justPressed) {
-            const currentRobot = activeControllerRef.current.robots.find(r => r.id === getSelectedRobotId());
-
-            if (action.startsWith('select_robot_')) {
-              const id = parseInt(action.replace('select_robot_', ''));
-              setSelectedRobotId(id);
-            } else if (action === 'E-STOP' || action === 'E-STOP ALL') {
-              // Both actions are the global STOP now (every robot of every controller, one press, no confirmation);
-              // the two names stay so a saved button mapping keeps working.
-              void emergencyStopRef.current();
-            } else if (action === 'START') {
-              if (currentRobot && currentRobot.recordedPoints.length > 0) {
-                sendTracked(
-                  currentRobot.id,
-                  'play',
-                  undefined,
-                  (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: true, activeStep: 0, isPaused: false, paused: false, isFinished: false } })
-                );
-              }
-            } else if (action === 'START ALL') {
-              activeControllerRef.current.robots.forEach(r => {
-                if (r.recordedPoints.length === 0) return;
-                sendTracked(
-                  r.id,
-                  'play',
-                  undefined,
-                  (robot) => ({ playbackState: { ...(robot.playbackState || {}), isPlaying: true, activeStep: 0, isPaused: false, paused: false, isFinished: false } })
-                );
-              });
-            } else if (action === 'STOP') {
-              if (currentRobot) {
-                sendTracked(
-                  currentRobot.id,
-                  'stop',
-                  undefined,
-                  (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: false, activeStep: -1, isPaused: false, paused: false, isFinished: false } }),
-                  [currentRobot.id, ...(currentRobot.combinedWith || [])]
-                );
-              }
-            } else if (action === 'STOP ALL') {
-              activeControllerRef.current.robots.forEach(r => {
-                sendTracked(
-                  r.id,
-                  'stop',
-                  undefined,
-                  (robot) => ({ playbackState: { ...(robot.playbackState || {}), isPlaying: false, activeStep: -1, isPaused: false, paused: false, isFinished: false } }),
-                  [r.id, ...(r.combinedWith || [])]
-                );
-              });
-            } else if (action === 'ADD POINT') {
-              // Not a real-time action - a recorded point is a full
-              // object with no atomic command of its own on the server,
-              // so this stays on the plain debounced settings path like
-              // every other point-list edit (delete/rename/reorder).
-              if (currentRobot) {
-                const newPoint = {
-                  id: Date.now().toString(),
-                  name: `P${currentRobot.recordedPoints.length + 1}`,
-                  x: currentRobot.pos.x,
-                  y: currentRobot.pos.y,
-                  z: currentRobot.pos.z,
-                  a: currentRobot.pos.a,
-                  b: currentRobot.pos.b,
-                  c: currentRobot.pos.c,
-                  tx: currentRobot.pos.tx,
-                  ty: currentRobot.pos.ty,
-                  trz: currentRobot.pos.trz,
-                  j1: currentRobot.joints.j1,
-                  j2: currentRobot.joints.j2,
-                  j3: currentRobot.joints.j3,
-                  j4: currentRobot.joints.j4,
-                  j5: currentRobot.joints.j5,
-                  j6: currentRobot.joints.j6,
-                  speed: (currentRobot.playbackState?.speed || 100),
-                  // Native joint values of this robot: played as they are (see RobotDetail's own Add Point).
-                  motionType: 'model-joints'
-                };
-                updateRobotRef.current(currentRobot.id, {
-                  // @ts-ignore
-                  recordedPoints: [...currentRobot.recordedPoints, newPoint]
-                });
-              }
-            }
-          }
+    const holdAction = (currentRobot: RobotState, action: string, scale: number) => {
+      if (CARTESIAN_JOG_DELTAS[action]) {
+        // Cartesian XYZ jog (single-axis or diagonal) - mirrors RobotDetail.tsx's own handleXYZJog: forward kinematics to find the current
+        // tool point, the combined delta, the model's own inverse kinematics ONCE, then one command per non-zero axis carrying the same
+        // resolved joints.
+        const [dx, dy, dz] = CARTESIAN_JOG_DELTAS[action];
+        const step = limitedStep(CARTESIAN_JOG_STEP_MM, scale);
+        const cart = jointsToCartesianForModel(currentRobot.model, currentRobot.joints);
+        const x = cart.x + dx * step;
+        const y = cart.y + dy * step;
+        const z = cart.z + dz * step;
+        const newJoints = resolveTargetJoints(currentRobot.model, x, y, z, cart.a, cart.b, cart.c, currentRobot.joints, currentRobot.joints);
+        const verdict = guardJogStep({ robotId: currentRobot.id, from: currentRobot.joints, to: newJoints });
+        if (!verdict.ok) {
+          reportCommandIssueRef.current(verdict.issue);
+          return;
         }
-
-        lastState.current = currentState;
+        const axes = [
+          { axis: 'x' as const, amount: dx * step, value: x },
+          { axis: 'y' as const, amount: dy * step, value: y },
+          { axis: 'z' as const, amount: dz * step, value: z },
+        ].filter((a) => a.amount !== 0);
+        for (const a of axes) {
+          sendTracked(
+            currentRobot.id,
+            'jog',
+            { axis: a.axis, amount: a.amount, target: 'robot', joints: newJoints },
+            (r) => ({ pos: { ...r.pos, [a.axis]: a.value, a: cart.a, b: cart.b, c: cart.c }, joints: newJoints })
+          );
+        }
+      } else if (action === 'ROT+' || action === 'ROT-' || /^J[1-6][+-]$/.test(action)) {
+        // Base rotation (J1) or one joint: the same real move as RobotDetail.tsx's handleJ1Jog, clamped to the limits of the model.
+        const jointKey: JointKey = action.startsWith('ROT') ? 'j1' : (action.substring(0, 2).toLowerCase() as JointKey);
+        if (!JOINT_KEYS.includes(jointKey)) return;
+        const step = limitedStep(JOINT_JOG_STEP_DEG, scale) * (action.endsWith('+') ? 1 : -1);
+        const [jMin, jMax] = jointLimitsFor(currentRobot.model, jointKey);
+        const currentVal = (currentRobot.joints as any)[jointKey] || 0;
+        const newVal = Math.min(jMax, Math.max(jMin, currentVal + step));
+        if (newVal === currentVal) return; // already at a real limit: nothing is sent
+        const newJoints = { ...currentRobot.joints, [jointKey]: newVal };
+        const newCart = jointsToCartesianForModel(currentRobot.model, newJoints);
+        sendTracked(
+          currentRobot.id,
+          'jog',
+          { axis: 'x', amount: 0, target: 'robot', joints: newJoints },
+          () => ({
+            pos: { ...currentRobot.pos, x: newCart.x, y: newCart.y, z: newCart.z, a: newCart.a, b: newCart.b, c: newCart.c },
+            joints: newJoints,
+          })
+        );
+      } else if (action.startsWith('T')) {
+        // Table move TX+, TY-: one atomic relative 'table' move (the table of the robot, if it has one).
+        if (!currentRobot.hasXYTable || !currentRobot.xyTable) return;
+        const axisStr = action.substring(0, 2).toLowerCase(); // "tx" or "ty"
+        const tableAxis = axisStr === 'tx' ? 'x' : 'y';
+        const step = limitedStep(TABLE_JOG_STEP_MM, scale) * (action.endsWith('+') ? 1 : -1);
+        const xyTable = currentRobot.xyTable;
+        const newTableVal = ((xyTable.pos as any)[tableAxis] || 0) + step;
+        sendTracked(
+          currentRobot.id,
+          'table',
+          { x: tableAxis === 'x' ? step : 0, y: tableAxis === 'y' ? step : 0, mode: 'relative' },
+          () => ({
+            pos: { ...currentRobot.pos, [axisStr]: newTableVal },
+            xyTable: { ...xyTable, pos: { ...xyTable.pos, [tableAxis]: newTableVal } },
+          })
+        );
+      } else if (action.startsWith('SPEED')) {
+        // SPEED+, SPEED-: the speed of the playback, 10 to a ceiling that follows the speed limit of the mode (500 at 100 percent).
+        const ceiling = Math.max(10, Math.round(500 * configRef.current.maxSpeedPercent / 100));
+        const pb = currentRobot.playbackState || { isPlaying: false, activeStep: -1, speed: 100 };
+        const currentSpeed = pb.speed || 100;
+        const newSpeed = Math.min(ceiling, Math.max(10, currentSpeed + (action.endsWith('+') ? 1 : -1)));
+        if (newSpeed === currentSpeed) return;
+        sendTracked(
+          currentRobot.id,
+          'speed',
+          { speed: newSpeed },
+          (r) => ({ playbackState: { ...(r.playbackState || {}), speed: newSpeed } })
+        );
       }
+    };
 
+    const pressAction = (currentRobot: RobotState | undefined, action: string) => {
+      const robots = activeControllerRef.current.robots;
+      if (action.startsWith('select_robot_')) {
+        setSelectedRobotId(parseInt(action.replace('select_robot_', ''), 10));
+      } else if (action === 'NEXT_ROBOT' || action === 'PREV_ROBOT') {
+        if (robots.length === 0) return;
+        const index = robots.findIndex((r) => r.id === getSelectedRobotId());
+        const next = (index + (action === 'NEXT_ROBOT' ? 1 : -1) + robots.length) % robots.length;
+        setSelectedRobotId(robots[next].id);
+      } else if (action === 'START') {
+        if (currentRobot && currentRobot.recordedPoints.length > 0) {
+          sendTracked(currentRobot.id, 'play', undefined,
+            (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: true, activeStep: 0, isPaused: false, paused: false, isFinished: false } }));
+        }
+      } else if (action === 'START ALL') {
+        robots.forEach((r) => {
+          if (r.recordedPoints.length === 0) return;
+          sendTracked(r.id, 'play', undefined,
+            (robot) => ({ playbackState: { ...(robot.playbackState || {}), isPlaying: true, activeStep: 0, isPaused: false, paused: false, isFinished: false } }));
+        });
+      } else if (action === 'STOP') {
+        if (currentRobot) {
+          sendTracked(currentRobot.id, 'stop', undefined,
+            (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: false, activeStep: -1, isPaused: false, paused: false, isFinished: false } }),
+            [currentRobot.id, ...(currentRobot.combinedWith || [])]);
+        }
+      } else if (action === 'STOP ALL') {
+        robots.forEach((r) => {
+          sendTracked(r.id, 'stop', undefined,
+            (robot) => ({ playbackState: { ...(robot.playbackState || {}), isPlaying: false, activeStep: -1, isPaused: false, paused: false, isFinished: false } }),
+            [r.id, ...(r.combinedWith || [])]);
+        });
+      } else if (action === 'ADD POINT') {
+        // Not a real-time action: a recorded point is a full object with no atomic command of its own on the server.
+        if (currentRobot) {
+          const newPoint = {
+            id: Date.now().toString(),
+            name: `P${currentRobot.recordedPoints.length + 1}`,
+            x: currentRobot.pos.x, y: currentRobot.pos.y, z: currentRobot.pos.z,
+            a: currentRobot.pos.a, b: currentRobot.pos.b, c: currentRobot.pos.c,
+            tx: currentRobot.pos.tx, ty: currentRobot.pos.ty, trz: currentRobot.pos.trz,
+            j1: currentRobot.joints.j1, j2: currentRobot.joints.j2, j3: currentRobot.joints.j3,
+            j4: currentRobot.joints.j4, j5: currentRobot.joints.j5, j6: currentRobot.joints.j6,
+            speed: (currentRobot.playbackState?.speed || 100),
+            // Native joint values of this robot: played as they are (see RobotDetail's own Add Point).
+            motionType: 'model-joints',
+          };
+          updateRobotRef.current(currentRobot.id, {
+            // @ts-ignore
+            recordedPoints: [...currentRobot.recordedPoints, newPoint],
+          });
+        }
+      }
+    };
+
+    let lastStatus = '';
+    const poll = () => {
+      const engine = engineRef.current;
+      if (engine) {
+        const pad = Array.from(navigator.getGamepads?.() ?? []).find((g): g is Gamepad => !!g) ?? null;
+        const selected = activeControllerRef.current.robots.find((r) => r.id === getSelectedRobotId());
+        const standing = claimStanding(claimsSnapshot()?.find((c) => c.robotId === getSelectedRobotId()), getControllerId(), decodeJwtUsername(tokenRef.current));
+        const canMove = !!selected && (!configRef.current.requireClaim || standing === 'mine');
+        const focused = !document.hidden && document.hasFocus();
+        const { events, status } = engine.step({
+          pad, armed: true, focused, canMove, unanswered: unanswered.current.count(), nowMs: performance.now(),
+          mapping: settingsRef.current.gamepadMapping ?? {},
+        });
+        if (status !== lastStatus) { lastStatus = status; setGamepadStatus(status); }
+        // The stop is the only event of its frame; any other event is carried out in the order the engine gave.
+        for (const event of events) carryOut(event);
+      }
       requestRef.current = requestAnimationFrame(poll);
     };
 
     requestRef.current = requestAnimationFrame(poll);
-
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, [settings.gamepadEnabled]);
+  }, [settings.gamepadEnabled, session.armed]);
 
-  return null;
+  if (!session.notice) return null;
+  return (
+    <div role="alert" data-testid="gamepad-notice" className="fixed top-14 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 px-4 py-3 rounded-lg border border-rose-500/60 bg-rose-950/90 text-rose-100 shadow-2xl text-sm">
+      <AlertTriangle size={18} className="shrink-0 text-rose-300" />
+      <span>{t(`gamepad_config.mode.notice_${session.notice}`)}</span>
+      <button type="button" onClick={dismissGamepadNotice} aria-label={t('gamepad_config.mode.dismiss')} className="p-1 rounded hover:bg-rose-800/60">
+        <X size={14} />
+      </button>
+    </div>
+  );
 }

@@ -1432,7 +1432,9 @@
       "stop_all": "STOP ALL",
       "add_point": "AGGIUNGI PUNTO",
       "speed_plus": "Velocità +",
-      "speed_minus": "Velocità -"
+      "speed_minus": "Velocità -",
+      "next_robot": "Robot successivo",
+      "prev_robot": "Robot precedente"
     },
     "buttons": {
       "B0": "A / Croce",
@@ -1460,7 +1462,38 @@
       "AXIS_3_NEG": "Stick Destro Su",
       "AXIS_3_POS": "Stick Destro Giù"
     },
-    "controlling": "Il gamepad muove {{robot}}, il robot selezionato nell'elenco"
+    "controlling": "Il gamepad muove {{robot}}, il robot selezionato nell'elenco",
+    "mode": {
+      "title": "Modalità gamepad",
+      "off_hint": "Spento. Il gamepad non muove nulla finché non lo armi.",
+      "armed_hint": "Armato. Il gamepad muove {{robot}}; STOP ha sempre la precedenza.",
+      "arm": "Arma la modalità gamepad",
+      "disarm": "Disarma",
+      "refuse_no_robot": "Seleziona prima un robot.",
+      "refuse_no_claim": "Prenota prima {{robot}} per questa finestra (Accesso al robot > Prenota): il gamepad muove solo un robot prenotato da questa finestra.",
+      "refuse_no_pad": "Nessun gamepad rilevato - premi prima un pulsante.",
+      "status_ready": "Pronto: il gamepad muove il robot selezionato.",
+      "status_blocked": "In pausa: questa finestra non ha prenotato il robot selezionato. Funzionano solo STOP e la scelta del robot.",
+      "status_unfocused": "In pausa: questa scheda non ha il focus. Cliccaci sopra e rilascia tutti gli stick e i pulsanti.",
+      "status_no_pad": "Nessun gamepad: ricollegalo e riarma la modalità.",
+      "status_stopped": "STOP premuto: nulla si muove finché resta premuto.",
+      "status_off": "Spento",
+      "deadzone": "Zona morta",
+      "max_speed": "Limite di velocità",
+      "interval": "Tempo tra i comandi",
+      "max_unanswered": "Massimo di comandi senza risposta",
+      "require_claim": "Muovi solo un robot prenotato da questa finestra",
+      "stop_on_disconnect": "Ferma tutti i robot se il gamepad si scollega",
+      "require_focus": "Leggi il gamepad solo mentre questa scheda ha il focus",
+      "preview": "Ingressi in tempo reale",
+      "preview_empty": "Nulla è premuto.",
+      "confirm_title": "Armare il gamepad?",
+      "confirm_message": "Il gamepad muoverà {{robot}} davvero. Verifica che l'area sia libera. STOP resta sul pulsante assegnato; se il gamepad si scollega, tutti i robot si fermano. Armarlo?",
+      "notice_lost": "Il gamepad si è scollegato: tutti i robot sono stati fermati e la modalità gamepad è spenta. Ricollegalo e riarma la modalità.",
+      "dismiss": "Chiudi",
+      "badge_armed": "armato",
+      "badge_off": "spento"
+    }
   },
   "bluetooth_pairing": {
     "title": "Accoppia un dispositivo Bluetooth a questo CM5",

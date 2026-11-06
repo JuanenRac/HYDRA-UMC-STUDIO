@@ -191,6 +191,8 @@ export function gamepadActionSpecs(): GamepadActionSpec[] {
     { value: 'ADD POINT', key: 'gamepad_config.actions.add_point', fallback: 'ADD POINT' },
     { value: 'SPEED+', key: 'gamepad_config.actions.speed_plus', fallback: 'Speed +' },
     { value: 'SPEED-', key: 'gamepad_config.actions.speed_minus', fallback: 'Speed -' },
+    { value: 'NEXT_ROBOT', key: 'gamepad_config.actions.next_robot', fallback: 'Next robot' },
+    { value: 'PREV_ROBOT', key: 'gamepad_config.actions.prev_robot', fallback: 'Previous robot' },
   ];
 }
 

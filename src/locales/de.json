@@ -1432,7 +1432,9 @@
       "stop_all": "STOP ALL",
       "add_point": "PUNKT HINZUFÜGEN",
       "speed_plus": "Geschwindigkeit +",
-      "speed_minus": "Geschwindigkeit -"
+      "speed_minus": "Geschwindigkeit -",
+      "next_robot": "Nächster Roboter",
+      "prev_robot": "Vorheriger Roboter"
     },
     "buttons": {
       "B0": "A / Kreuz",
@@ -1460,7 +1462,38 @@
       "AXIS_3_NEG": "Rechter Stick Hoch",
       "AXIS_3_POS": "Rechter Stick Runter"
     },
-    "controlling": "Das Gamepad bewegt {{robot}} - den in der Liste gewählten Roboter"
+    "controlling": "Das Gamepad bewegt {{robot}} - den in der Liste gewählten Roboter",
+    "mode": {
+      "title": "Steuermodus",
+      "off_hint": "Aus. Das Gamepad bewegt nichts, bis Sie es scharf schalten.",
+      "armed_hint": "Scharf. Das Gamepad bewegt {{robot}}; STOP hat immer Vorrang.",
+      "arm": "Steuermodus aktivieren",
+      "disarm": "Deaktivieren",
+      "refuse_no_robot": "Wählen Sie zuerst einen Roboter.",
+      "refuse_no_claim": "Reservieren Sie zuerst {{robot}} für dieses Fenster (Roboterzugriff > Reservieren): Das Gamepad bewegt nur einen Roboter, den dieses Fenster reserviert hat.",
+      "refuse_no_pad": "Kein Gamepad erkannt - drücken Sie zuerst eine Taste darauf.",
+      "status_ready": "Bereit: Das Gamepad bewegt den gewählten Roboter.",
+      "status_blocked": "Pausiert: Dieses Fenster hat den gewählten Roboter nicht reserviert. Nur STOP und die Roboterwahl funktionieren.",
+      "status_unfocused": "Pausiert: Dieser Tab hat keinen Fokus. Klicken Sie hinein und lassen Sie alle Sticks und Tasten los.",
+      "status_no_pad": "Kein Gamepad: Verbinden Sie es neu und aktivieren Sie den Modus erneut.",
+      "status_stopped": "STOP gedrückt: Solange er gehalten wird, bewegt sich nichts.",
+      "status_off": "Aus",
+      "deadzone": "Totzone",
+      "max_speed": "Geschwindigkeitsgrenze",
+      "interval": "Zeit zwischen Befehlen",
+      "max_unanswered": "Höchstzahl unbeantworteter Befehle",
+      "require_claim": "Nur einen Roboter bewegen, den dieses Fenster reserviert hat",
+      "stop_on_disconnect": "Alle Roboter stoppen, wenn das Gamepad getrennt wird",
+      "require_focus": "Gamepad nur lesen, solange dieser Tab den Fokus hat",
+      "preview": "Live-Eingaben",
+      "preview_empty": "Nichts ist gedrückt.",
+      "confirm_title": "Gamepad aktivieren?",
+      "confirm_message": "Das Gamepad bewegt {{robot}} wirklich. Prüfen Sie, ob der Bereich frei ist. STOP bleibt auf der zugewiesenen Taste; wird das Gamepad getrennt, stoppen alle Roboter. Aktivieren?",
+      "notice_lost": "Das Gamepad wurde getrennt: Alle Roboter wurden gestoppt und der Steuermodus ist aus. Verbinden Sie es neu und aktivieren Sie den Modus erneut.",
+      "dismiss": "Schließen",
+      "badge_armed": "scharf",
+      "badge_off": "aus"
+    }
   },
   "bluetooth_pairing": {
     "title": "Bluetooth-Gerät mit diesem CM5 koppeln",

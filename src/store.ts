@@ -503,6 +503,8 @@ export interface SystemSettings {
   gamepadEnabled?: boolean;
   gamepadConnectionType?: 'USB' | 'Bluetooth';
   gamepadMapping?: Record<string, string>;
+  // The numbers and switches of the gamepad mode (lib/gamepadMode.ts); a missing or out-of-range value falls back to the safe default.
+  gamepadMode?: Partial<import('./lib/gamepadMode').GamepadModeConfig>;
   // Deployment-level Hailo AI accelerator config - same "describes what's
   // physically installed on this deployment" role canOta plays for the
   // CAN-OTA chain above. Two SEPARATE devices, not one: Hailo-8 already

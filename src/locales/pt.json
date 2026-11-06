@@ -1432,7 +1432,9 @@
       "stop_all": "PARAR TODOS",
       "add_point": "ADICIONAR PONTO",
       "speed_plus": "Velocidade +",
-      "speed_minus": "Velocidade -"
+      "speed_minus": "Velocidade -",
+      "next_robot": "Robô seguinte",
+      "prev_robot": "Robô anterior"
     },
     "buttons": {
       "B0": "A / Cruz",
@@ -1460,7 +1462,38 @@
       "AXIS_3_NEG": "Manípulo dir. para cima",
       "AXIS_3_POS": "Manípulo dir. para baixo"
     },
-    "controlling": "O comando move {{robot}}, o robô selecionado na lista"
+    "controlling": "O comando move {{robot}}, o robô selecionado na lista",
+    "mode": {
+      "title": "Modo comando",
+      "off_hint": "Desligado. O comando não move nada até o ativar.",
+      "armed_hint": "Ativo. O comando move {{robot}}; o STOP tem sempre prioridade.",
+      "arm": "Ativar o modo comando",
+      "disarm": "Desativar",
+      "refuse_no_robot": "Selecione primeiro um robô.",
+      "refuse_no_claim": "Reserve primeiro {{robot}} para esta janela (Acesso ao robô > Reservar): o comando só move um robô que esta janela tenha reservado.",
+      "refuse_no_pad": "Nenhum comando detetado - prima primeiro um botão.",
+      "status_ready": "Pronto: o comando move o robô selecionado.",
+      "status_blocked": "Em pausa: esta janela não reservou o robô selecionado. Só funcionam o STOP e a seleção de robô.",
+      "status_unfocused": "Em pausa: este separador não tem o foco. Clique nele e largue todos os manípulos e botões.",
+      "status_no_pad": "Sem comando: volte a ligá-lo e ative o modo outra vez.",
+      "status_stopped": "STOP premido: nada se move enquanto estiver premido.",
+      "status_off": "Desligado",
+      "deadzone": "Zona morta",
+      "max_speed": "Limite de velocidade",
+      "interval": "Tempo entre comandos",
+      "max_unanswered": "Máximo de comandos sem resposta",
+      "require_claim": "Mover só um robô que esta janela tenha reservado",
+      "stop_on_disconnect": "Parar todos os robôs se o comando se desligar",
+      "require_focus": "Ler o comando só enquanto este separador tem o foco",
+      "preview": "Entradas em direto",
+      "preview_empty": "Nada está premido.",
+      "confirm_title": "Ativar o comando?",
+      "confirm_message": "O comando vai mover {{robot}} a sério. Verifique se a zona está livre. O STOP continua no botão atribuído; se o comando se desligar, todos os robôs param. Ativar?",
+      "notice_lost": "O comando desligou-se: todos os robôs foram parados e o modo comando está desligado. Volte a ligá-lo e ative o modo outra vez.",
+      "dismiss": "Fechar",
+      "badge_armed": "ativo",
+      "badge_off": "desligado"
+    }
   },
   "bluetooth_pairing": {
     "title": "Emparelhar um dispositivo Bluetooth com este CM5",

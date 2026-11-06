@@ -203,7 +203,7 @@ Entrambi possono scaricare release di firmware reali direttamente da GitHub (bas
 
 ### Supporto Gamepad
 
-Integrazione di controller USB e Bluetooth con mapping personalizzati per pulsante/per asse, per fare jog di robot e accessori senza mouse/tastiera. Le azioni in tempo reale (jog di giunti/tavola, E-STOP, START/STOP, velocità di riproduzione) attivano lo stesso percorso atomico `sendRobotCommand()` usato dai pulsanti di jog nel pannello dei dettagli del robot, non il salvataggio delle impostazioni con debounce - vedi `GamepadController.tsx`.
+Integrazione di controller USB e Bluetooth con mapping personalizzati per pulsante/per asse, per fare jog di robot e accessori senza mouse/tastiera. Le azioni in tempo reale (jog di giunti/tavola, E-STOP, START/STOP, velocità di riproduzione) attivano lo stesso percorso atomico `sendRobotCommand()` usato dai pulsanti di jog nel pannello dei dettagli del robot, non il salvataggio delle impostazioni con debounce - vedi `GamepadController.tsx`. La modalità gamepad è spenta in ogni nuova finestra e si arma da Config > Gamepad con una conferma esplicita, un robot selezionato e una sua prenotazione detenuta da questa finestra; zona morta, limite di velocità e ritmo sono impostazioni, STOP ha sempre la precedenza e annulla ciò che è in coda, un gamepad che si scollega ferma subito tutti i robot e non si legge nulla mentre la scheda non ha il focus. Provata solo con una Gamepad API simulata, non ancora con un gamepad fisico; la SUITE desktop non ha la modalità gamepad.
 
 ### Integrazione Telecamere
 

@@ -203,7 +203,7 @@ Beide können echte Firmware-Releases direkt von GitHub herunterladen (basierend
 
 ### Gamepad-Unterstützung
 
-USB- und Bluetooth-Controller-Integration mit benutzerdefinierten Zuordnungen pro Taste/pro Achse, zum Joggen von Robotern und Zubehör ohne Maus/Tastatur. Echtzeitaktionen (Gelenk-/Tisch-Jog, E-STOP, START/STOP, Wiedergabegeschwindigkeit) lösen denselben atomaren `sendRobotCommand()`-Pfad aus, den auch die Jog-Schaltflächen im Roboter-Detailpanel verwenden, nicht das entprellte Speichern der Einstellungen - siehe `GamepadController.tsx`.
+USB- und Bluetooth-Controller-Integration mit benutzerdefinierten Zuordnungen pro Taste/pro Achse, zum Joggen von Robotern und Zubehör ohne Maus/Tastatur. Echtzeitaktionen (Gelenk-/Tisch-Jog, E-STOP, START/STOP, Wiedergabegeschwindigkeit) lösen denselben atomaren `sendRobotCommand()`-Pfad aus, den auch die Jog-Schaltflächen im Roboter-Detailpanel verwenden, nicht das entprellte Speichern der Einstellungen - siehe `GamepadController.tsx`. Der Gamepad-Modus ist in jedem neuen Fenster aus und wird unter Config > Gamepad mit ausdrücklicher Bestätigung, einem gewählten Roboter und einer von diesem Fenster gehaltenen Reservierung scharf geschaltet; Totzone, Geschwindigkeitsgrenze und Takt sind Einstellungen, STOP hat immer Vorrang und verwirft alles Eingereihte, ein getrenntes Gamepad stoppt sofort alle Roboter, und solange der Tab keinen Fokus hat, wird nichts gelesen. Getestet nur mit einer simulierten Gamepad-API, noch nicht mit einem echten Gamepad; die Desktop-SUITE hat keinen Gamepad-Modus.
 
 ### Kamera-Integration
 

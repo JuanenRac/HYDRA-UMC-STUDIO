@@ -8,8 +8,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Gamepad2 } from 'lucide-react';
 import { BluetoothPairing } from './BluetoothPairing';
-import { useSettingsStore } from '../storeContexts';
+import { useFleet, useSession, useSettingsStore } from '../storeContexts';
 import { GAMEPAD_BUTTONS, activeGamepadInputs, gamepadActionSpecs, withMapping } from '../lib/moduleConfigs';
+import { GAMEPAD_MODE_LIMITS, canArm, parseGamepadMode, previewInputs, type GamepadModeConfig, type InputPreviewRow } from '../lib/gamepadMode';
+import { armGamepad, disarmGamepad, useGamepadSession } from '../lib/gamepadSession';
+import { claimsSnapshot } from '../lib/claimsFeed';
+import { claimStanding, decodeJwtUsername } from '../lib/claims';
+import { getControllerId } from '../lib/controllerSession';
+import { getSelectedRobotId } from '../lib/selectedRobot';
+import { ConfirmDialog } from './ConfirmDialog';
 
 /**
  * Executes the  gamepad config logic.
@@ -18,6 +25,14 @@ import { GAMEPAD_BUTTONS, activeGamepadInputs, gamepadActionSpecs, withMapping }
 export function GamepadConfig() {
   const { t } = useTranslation();
   const { settings, updateSettings } = useSettingsStore();
+  const { authToken } = useSession();
+  const { activeController } = useFleet();
+  const session = useGamepadSession();
+  const modeConfig = parseGamepadMode(settings.gamepadMode);
+  const [confirmArm, setConfirmArm] = useState(false);
+  const [armRefusal, setArmRefusal] = useState<'no-robot' | 'no-claim' | 'no-pad' | null>(null);
+  const [preview, setPreview] = useState<InputPreviewRow[]>([]);
+  const padRef = useRef<Gamepad | null>(null);
 
   const gamepadEnabled = settings.gamepadEnabled || false;
   const mapping = settings.gamepadMapping || {};
@@ -28,11 +43,15 @@ export function GamepadConfig() {
   const [connectedGamepad, setConnectedGamepad] = useState<{ id: string; buttons: number; axes: number; mapping: string } | null>(null);
   const [activeInputs, setActiveInputs] = useState<Set<string>>(new Set());
   const detectRequestRef = useRef<number>(0);
+  const mappingRef = useRef(mapping);
+  const deadzoneRef = useRef(modeConfig.deadzone);
+  useEffect(() => { mappingRef.current = mapping; deadzoneRef.current = modeConfig.deadzone; });
 
   useEffect(() => {
     if (!gamepadEnabled) {
       setConnectedGamepad(null);
       setActiveInputs(new Set());
+      setPreview([]);
       return;
     }
 
@@ -45,10 +64,12 @@ export function GamepadConfig() {
     const poll = () => {
       const gamepads = navigator.getGamepads();
       const gp = gamepads.find(g => g !== null) || null;
+      padRef.current = gp;
 
       setConnectedGamepad(gp ? { id: gp.id, buttons: gp.buttons.length, axes: gp.axes.length, mapping: gp.mapping || t('gamepad_config.mapping_raw', 'raw (non-standard)') } : null);
 
       setActiveInputs(gp ? activeGamepadInputs(gp.buttons, gp.axes, DEADZONE) : new Set<string>());
+      setPreview(previewInputs(gp, mappingRef.current, deadzoneRef.current));
 
       detectRequestRef.current = requestAnimationFrame(poll);
     };
@@ -60,14 +81,31 @@ export function GamepadConfig() {
   }, [gamepadEnabled, t]);
 
   const toggleGamepad = () => {
+    if (gamepadEnabled) disarmGamepad();
     updateSettings({ gamepadEnabled: !gamepadEnabled });
   };
+
+  const setMode = (patch: Partial<GamepadModeConfig>) => updateSettings({ gamepadMode: { ...modeConfig, ...patch } });
+
+  // Arming asks for a robot, a reservation of it (unless that safety switch is off) and a pad, then for an explicit confirmation.
+  const askToArm = () => {
+    const robotId = getSelectedRobotId();
+    const robotSelected = activeController.robots.some((r) => r.id === robotId);
+    const standing = claimStanding(claimsSnapshot()?.find((c) => c.robotId === robotId), getControllerId(), decodeJwtUsername(authToken));
+    const verdict = canArm({ robotSelected, standing, padPresent: padRef.current !== null, config: modeConfig });
+    if (!verdict.ok) { setArmRefusal(verdict.reason); return; }
+    setArmRefusal(null);
+    setConfirmArm(true);
+  };
+  const selectedName = activeController.robots.find((r) => r.id === getSelectedRobotId())?.name ?? `#${getSelectedRobotId()}`;
 
   const updateMapping = (btn: string, action: string) => {
     updateSettings({ gamepadMapping: withMapping(mapping, btn, action) });
   };
 
   const ACTIONS = gamepadActionSpecs().map(spec => ({ value: spec.value, label: spec.params ? t(spec.key, spec.fallback, spec.params) : t(spec.key, spec.fallback) }));
+
+  const actionLabel = (value: string): string => ACTIONS.find((a) => a.value === value)?.label ?? value;
 
   const BUTTONS = GAMEPAD_BUTTONS.map(button => ({ id: button.id, name: t(`gamepad_config.buttons.${button.id}`, button.fallback) }));
 
@@ -122,6 +160,79 @@ export function GamepadConfig() {
           )}
         </div>
       )}
+
+      {gamepadEnabled && (
+        <section className="rounded-lg border border-slate-800 bg-slate-900 p-4 space-y-4" data-testid="gamepad-mode">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">{t('gamepad_config.mode.title')}</h4>
+              <p className="text-xs text-slate-500">{t(session.armed ? 'gamepad_config.mode.armed_hint' : 'gamepad_config.mode.off_hint', { robot: selectedName })}</p>
+            </div>
+            <button
+              type="button"
+              data-testid="gamepad-arm"
+              onClick={session.armed ? disarmGamepad : askToArm}
+              className={`px-3 py-1 rounded text-xs font-bold border ${session.armed ? 'bg-rose-500/20 text-rose-300 border-rose-500/50' : 'bg-slate-800 text-slate-300 border-slate-700'}`}
+            >
+              {session.armed ? t('gamepad_config.mode.disarm') : t('gamepad_config.mode.arm')}
+            </button>
+          </div>
+          {armRefusal && <p role="alert" className="text-xs text-amber-300" data-testid="gamepad-arm-refusal">{t(`gamepad_config.mode.refuse_${armRefusal.replace('-', '_')}`, { robot: selectedName })}</p>}
+          {session.armed && <p className="text-xs text-sky-300" data-testid="gamepad-status">{t(`gamepad_config.mode.status_${session.status.replace('-', '_')}`)}</p>}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+            <label className="space-y-1 block">
+              <span>{t('gamepad_config.mode.deadzone')}: {Math.round(modeConfig.deadzone * 100)} %</span>
+              <input type="range" className="w-full" min={GAMEPAD_MODE_LIMITS.deadzone[0]} max={GAMEPAD_MODE_LIMITS.deadzone[1]} step={0.01} value={modeConfig.deadzone} onChange={(e) => setMode({ deadzone: Number(e.target.value) })} />
+            </label>
+            <label className="space-y-1 block">
+              <span>{t('gamepad_config.mode.max_speed')}: {Math.round(modeConfig.maxSpeedPercent)} %</span>
+              <input type="range" className="w-full" min={GAMEPAD_MODE_LIMITS.maxSpeedPercent[0]} max={GAMEPAD_MODE_LIMITS.maxSpeedPercent[1]} step={5} value={modeConfig.maxSpeedPercent} onChange={(e) => setMode({ maxSpeedPercent: Number(e.target.value) })} />
+            </label>
+            <label className="space-y-1 block">
+              <span>{t('gamepad_config.mode.interval')}: {modeConfig.heldIntervalMs} ms</span>
+              <input type="range" className="w-full" min={GAMEPAD_MODE_LIMITS.heldIntervalMs[0]} max={GAMEPAD_MODE_LIMITS.heldIntervalMs[1]} step={10} value={modeConfig.heldIntervalMs} onChange={(e) => setMode({ heldIntervalMs: Number(e.target.value) })} />
+            </label>
+            <label className="space-y-1 block">
+              <span>{t('gamepad_config.mode.max_unanswered')}: {modeConfig.maxUnanswered}</span>
+              <input type="range" className="w-full" min={GAMEPAD_MODE_LIMITS.maxUnanswered[0]} max={GAMEPAD_MODE_LIMITS.maxUnanswered[1]} step={1} value={modeConfig.maxUnanswered} onChange={(e) => setMode({ maxUnanswered: Number(e.target.value) })} />
+            </label>
+          </div>
+          <div className="space-y-1 text-xs text-slate-300">
+            {([['requireClaim', 'require_claim'], ['stopOnDisconnect', 'stop_on_disconnect'], ['requireFocus', 'require_focus']] as const).map(([key, text]) => (
+              <label key={key} className="flex items-center gap-2">
+                <input type="checkbox" checked={modeConfig[key]} onChange={(e) => setMode({ [key]: e.target.checked })} />
+                <span>{t(`gamepad_config.mode.${text}`)}</span>
+              </label>
+            ))}
+          </div>
+
+          <div data-testid="gamepad-preview">
+            <h5 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('gamepad_config.mode.preview')}</h5>
+            {preview.length === 0 ? (
+              <p className="text-xs text-slate-500">{t('gamepad_config.mode.preview_empty')}</p>
+            ) : (
+              <ul className="text-xs text-slate-300 space-y-0.5">
+                {preview.map((row) => (
+                  <li key={row.input} className="flex justify-between gap-3">
+                    <span>{t(`gamepad_config.buttons.${row.input}`, row.input)}</span>
+                    <span className="font-mono">{Math.round(row.push * 100)} % &rarr; {row.action ? actionLabel(row.action) : t('gamepad_config.actions.none')}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
+      )}
+
+      <ConfirmDialog
+        open={confirmArm}
+        title={t('gamepad_config.mode.confirm_title')}
+        message={t('gamepad_config.mode.confirm_message', { robot: selectedName })}
+        confirmLabel={t('gamepad_config.mode.arm')}
+        onConfirm={() => { setConfirmArm(false); armGamepad(); }}
+        onCancel={() => setConfirmArm(false)}
+      />
 
       {gamepadEnabled && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

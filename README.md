@@ -203,7 +203,7 @@ Both can download real firmware releases straight from GitHub (`firmware_manifes
 
 ### Gamepad Support
 
-USB and Bluetooth controller integration with custom per-button/per-axis mappings, for jogging robots and accessories without a mouse/keyboard. Real-time actions (joint/table jog, E-STOP, START/STOP, playback speed) fire the same atomic `sendRobotCommand()` path the jog buttons in the robot detail panel use, not the debounced settings save - see `GamepadController.tsx`.
+USB and Bluetooth controller integration with custom per-button/per-axis mappings, for jogging robots and accessories without a mouse/keyboard. Real-time actions (joint/table jog, E-STOP, START/STOP, playback speed) fire the same atomic `sendRobotCommand()` path the jog buttons in the robot detail panel use, not the debounced settings save - see `GamepadController.tsx`. The gamepad mode is off in every new window and must be armed from Config > Gamepad with an explicit confirmation, a selected robot and a reservation of it held by this window; the dead zone, the speed limit and the pace are settings, STOP always comes first and cancels what is queued, a gamepad that disconnects stops every robot at once, and nothing is read while the tab has no focus. It has been tested with a simulated Gamepad API only, not yet with a physical gamepad; the desktop SUITE has no gamepad mode.
 
 ### Camera Integration
 

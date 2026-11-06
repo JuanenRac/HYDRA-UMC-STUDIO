@@ -203,7 +203,7 @@ Ambos pueden descargar releases de firmware reales directamente desde GitHub (ba
 
 ### Soporte de Mando
 
-Integración de mandos USB y Bluetooth con mapeos personalizados por botón/por eje, para jogear robots y accesorios sin ratón/teclado. Las acciones en tiempo real (jog de articulaciones/mesa, E-STOP, START/STOP, velocidad de reproducción) disparan la misma vía atómica `sendRobotCommand()` que usan los botones de jog en el panel de detalle del robot, no el guardado de ajustes con debounce - ver `GamepadController.tsx`.
+Integración de mandos USB y Bluetooth con mapeos personalizados por botón/por eje, para jogear robots y accesorios sin ratón/teclado. Las acciones en tiempo real (jog de articulaciones/mesa, E-STOP, START/STOP, velocidad de reproducción) disparan la misma vía atómica `sendRobotCommand()` que usan los botones de jog en el panel de detalle del robot, no el guardado de ajustes con debounce - ver `GamepadController.tsx`. El modo mando está apagado en cada ventana nueva y se activa desde Config > Mando con una confirmación explícita, un robot seleccionado y una reserva suya en esta ventana; la zona muerta, el límite de velocidad y el ritmo son ajustes, STOP va siempre primero y cancela lo que esté en cola, un mando que se desconecta para todos los robots al instante, y no se lee nada mientras la pestaña no tiene el foco. Se ha probado solo con una API de mando simulada, aún no con un mando físico; la SUITE de escritorio no tiene modo mando.
 
 ### Integración de Cámaras
 

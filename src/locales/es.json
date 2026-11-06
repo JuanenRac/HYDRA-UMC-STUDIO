@@ -1432,7 +1432,9 @@
       "stop_all": "STOP ALL",
       "add_point": "AÑADIR PUNTO",
       "speed_plus": "Velocidad +",
-      "speed_minus": "Velocidad -"
+      "speed_minus": "Velocidad -",
+      "next_robot": "Siguiente robot",
+      "prev_robot": "Robot anterior"
     },
     "buttons": {
       "B0": "A / Cruz",
@@ -1460,7 +1462,38 @@
       "AXIS_3_NEG": "Stick Derecho Arriba",
       "AXIS_3_POS": "Stick Derecho Abajo"
     },
-    "controlling": "El mando mueve {{robot}}, el robot seleccionado en la lista"
+    "controlling": "El mando mueve {{robot}}, el robot seleccionado en la lista",
+    "mode": {
+      "title": "Modo mando",
+      "off_hint": "Apagado. El mando no mueve nada hasta que lo actives.",
+      "armed_hint": "Activo. El mando mueve {{robot}}; STOP siempre va primero.",
+      "arm": "Activar modo mando",
+      "disarm": "Desactivar",
+      "refuse_no_robot": "Selecciona un robot primero.",
+      "refuse_no_claim": "Reserva primero {{robot}} para esta ventana (Acceso al robot > Reservar): el mando solo mueve un robot que esta ventana tiene reservado.",
+      "refuse_no_pad": "No se detecta ningún mando: pulsa antes un botón.",
+      "status_ready": "Listo: el mando mueve el robot seleccionado.",
+      "status_blocked": "En pausa: esta ventana no tiene reservado el robot seleccionado. Solo funcionan STOP y la selección de robot.",
+      "status_unfocused": "En pausa: esta pestaña no tiene el foco. Haz clic en ella y suelta todas las palancas y botones.",
+      "status_no_pad": "Sin mando: reconéctalo y activa el modo de nuevo.",
+      "status_stopped": "STOP pulsado: nada se mueve mientras siga pulsado.",
+      "status_off": "Apagado",
+      "deadzone": "Zona muerta",
+      "max_speed": "Límite de velocidad",
+      "interval": "Tiempo entre órdenes",
+      "max_unanswered": "Máximo de órdenes sin respuesta",
+      "require_claim": "Mover solo un robot que esta ventana ha reservado",
+      "stop_on_disconnect": "Parar todos los robots si el mando se desconecta",
+      "require_focus": "Leer el mando solo mientras esta pestaña tiene el foco",
+      "preview": "Entradas en vivo",
+      "preview_empty": "No hay nada pulsado.",
+      "confirm_title": "¿Activar el mando?",
+      "confirm_message": "El mando moverá {{robot}} de verdad. Comprueba que la zona está despejada. STOP sigue en su botón asignado; si el mando se desconecta, todos los robots se paran. ¿Activarlo?",
+      "notice_lost": "El mando se desconectó: todos los robots se pararon y el modo mando está apagado. Reconéctalo y activa el modo de nuevo.",
+      "dismiss": "Cerrar",
+      "badge_armed": "activo",
+      "badge_off": "apagado"
+    }
   },
   "bluetooth_pairing": {
     "title": "Emparejar un dispositivo Bluetooth a esta CM5",

@@ -19,7 +19,7 @@ describe('the menu of gamepad actions', () => {
     expect(values.slice(0, 10)).toEqual(['', 'select_robot_1', 'select_robot_2', 'select_robot_3', 'select_robot_4', 'select_robot_5', 'select_robot_6', 'select_robot_7', 'select_robot_8', 'X+']);
     expect(values.slice(9, 21)).toEqual(['X+', 'X-', 'Y+', 'Y-', 'Z+', 'Z-', 'XY++', 'XY+-', 'XY-+', 'XY--', 'ROT+', 'ROT-']);
     expect(values.slice(21, 33)).toEqual(['J1+', 'J1-', 'J2+', 'J2-', 'J3+', 'J3-', 'J4+', 'J4-', 'J5+', 'J5-', 'J6+', 'J6-']);
-    expect(values.slice(33)).toEqual(['TX+', 'TX-', 'TY+', 'TY-', 'E-STOP', 'E-STOP ALL', 'START', 'START ALL', 'STOP', 'STOP ALL', 'ADD POINT', 'SPEED+', 'SPEED-']);
+    expect(values.slice(33)).toEqual(['TX+', 'TX-', 'TY+', 'TY-', 'E-STOP', 'E-STOP ALL', 'START', 'START ALL', 'STOP', 'STOP ALL', 'ADD POINT', 'SPEED+', 'SPEED-', 'NEXT_ROBOT', 'PREV_ROBOT']);
     expect(new Set(values).size).toBe(values.length);
   });
   it('every text exists in the English catalogue and its placeholders are given', () => {

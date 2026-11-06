@@ -1432,7 +1432,9 @@
       "stop_all": "全部停止",
       "add_point": "添加点位",
       "speed_plus": "速度 +",
-      "speed_minus": "速度 -"
+      "speed_minus": "速度 -",
+      "next_robot": "下一个机器人",
+      "prev_robot": "上一个机器人"
     },
     "buttons": {
       "B0": "A / 叉",
@@ -1460,7 +1462,38 @@
       "AXIS_3_NEG": "右摇杆上",
       "AXIS_3_POS": "右摇杆下"
     },
-    "controlling": "手柄控制 {{robot}}——列表中选中的机器人"
+    "controlling": "手柄控制 {{robot}}——列表中选中的机器人",
+    "mode": {
+      "title": "手柄控制模式",
+      "off_hint": "已关闭。启用之前手柄不会移动任何东西。",
+      "armed_hint": "已启用。手柄控制 {{robot}}；STOP 始终优先。",
+      "arm": "启用控制模式",
+      "disarm": "停用",
+      "refuse_no_robot": "请先选择一个机器人。",
+      "refuse_no_claim": "请先为此窗口预约 {{robot}}（机器人访问 > 预约）：手柄只会移动此窗口已预约的机器人。",
+      "refuse_no_pad": "未检测到手柄——请先按下其上的任意按键。",
+      "status_ready": "就绪：手柄控制所选机器人。",
+      "status_blocked": "已暂停：此窗口没有预约所选机器人。只有 STOP 和机器人选择可用。",
+      "status_unfocused": "已暂停：此标签页没有焦点。请点击它，然后松开所有摇杆和按键。",
+      "status_no_pad": "没有手柄：请重新连接，然后再次启用该模式。",
+      "status_stopped": "已按下 STOP：按住期间不会有任何移动。",
+      "status_off": "关闭",
+      "deadzone": "死区",
+      "max_speed": "速度限制",
+      "interval": "命令间隔",
+      "max_unanswered": "未应答命令的上限",
+      "require_claim": "只移动此窗口已预约的机器人",
+      "stop_on_disconnect": "手柄断开时停止所有机器人",
+      "require_focus": "仅在此标签页有焦点时读取手柄",
+      "preview": "实时输入",
+      "preview_empty": "没有任何输入被按下。",
+      "confirm_title": "启用手柄？",
+      "confirm_message": "手柄将真实移动 {{robot}}。请确认周围区域无人。STOP 仍在其映射的按键上；手柄断开时所有机器人都会停止。确定启用？",
+      "notice_lost": "手柄已断开：所有机器人已停止，控制模式已关闭。请重新连接并再次启用该模式。",
+      "dismiss": "关闭",
+      "badge_armed": "已启用",
+      "badge_off": "关闭"
+    }
   },
   "bluetooth_pairing": {
     "title": "将蓝牙设备与此 CM5 配对",

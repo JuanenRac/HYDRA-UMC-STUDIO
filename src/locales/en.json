@@ -1432,7 +1432,9 @@
       "stop_all": "STOP ALL",
       "add_point": "ADD POINT",
       "speed_plus": "Speed +",
-      "speed_minus": "Speed -"
+      "speed_minus": "Speed -",
+      "next_robot": "Next robot",
+      "prev_robot": "Previous robot"
     },
     "buttons": {
       "B0": "A / Cross",
@@ -1460,7 +1462,38 @@
       "AXIS_3_NEG": "Right Stick Up",
       "AXIS_3_POS": "Right Stick Down"
     },
-    "controlling": "The gamepad moves {{robot}} - the robot selected in the list"
+    "controlling": "The gamepad moves {{robot}} - the robot selected in the list",
+    "mode": {
+      "title": "Control mode",
+      "off_hint": "Off. The gamepad moves nothing until you arm it.",
+      "armed_hint": "Armed. The gamepad moves {{robot}}; STOP is always first.",
+      "arm": "Arm control mode",
+      "disarm": "Disarm",
+      "refuse_no_robot": "Select a robot first.",
+      "refuse_no_claim": "Reserve {{robot}} for this window first (Robot access > Reserve): the gamepad only moves a robot this window has reserved.",
+      "refuse_no_pad": "No gamepad detected - press a button on it first.",
+      "status_ready": "Ready: the gamepad moves the selected robot.",
+      "status_blocked": "Paused: this window has no reservation of the selected robot. Only STOP and robot selection work.",
+      "status_unfocused": "Paused: this tab has no focus. Click it, then let go of every stick and button.",
+      "status_no_pad": "No gamepad: reconnect it, then arm the mode again.",
+      "status_stopped": "STOP pressed: nothing moves while it is held.",
+      "status_off": "Off",
+      "deadzone": "Dead zone",
+      "max_speed": "Speed limit",
+      "interval": "Time between commands",
+      "max_unanswered": "Most unanswered commands",
+      "require_claim": "Move only a robot this window has reserved",
+      "stop_on_disconnect": "Stop every robot when the gamepad disconnects",
+      "require_focus": "Read the gamepad only while this tab has focus",
+      "preview": "Live inputs",
+      "preview_empty": "Nothing is pushed.",
+      "confirm_title": "Arm the gamepad?",
+      "confirm_message": "The gamepad will move {{robot}} for real. Check that the area is clear. STOP stays on its mapped button; a disconnected gamepad stops every robot. Arm it?",
+      "notice_lost": "The gamepad disconnected: every robot was stopped and the control mode is off. Reconnect it and arm the mode again.",
+      "dismiss": "Close",
+      "badge_armed": "armed",
+      "badge_off": "off"
+    }
   },
   "bluetooth_pairing": {
     "title": "Pair a Bluetooth device to this CM5",

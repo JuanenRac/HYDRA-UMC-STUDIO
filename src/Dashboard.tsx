@@ -15,6 +15,7 @@ import { CommandIssueBanner } from './components/CommandIssueBanner';
 import { StopAllButton, StopAllReportBanner, StopAllShortcut } from './components/StopAll';
 import { authFetch } from './lib/session';
 import { setSelectedRobotId, useSelectedRobotId } from './lib/selectedRobot';
+import { useGamepadSession } from './lib/gamepadSession';
 import type { CanOtaTier } from './lib/canOta';
 import {
   Activity, Layers,
@@ -114,6 +115,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<string>('overview');
   // Shared with the gamepad, which moves the robot selected here.
   const selectedRobotId = useSelectedRobotId();
+  const gamepadSession = useGamepadSession();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -420,8 +422,8 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-8 shrink-0">
             {settings.gamepadEnabled && (
-              <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-sky-300" title={t('gamepad_config.controlling', { robot: robots.find(r => r.id === selectedRobotId)?.name ?? `#${selectedRobotId}` })}>
-                <Gamepad2 size={14} /> {robots.find(r => r.id === selectedRobotId)?.name ?? `#${selectedRobotId}`}
+              <span data-testid="gamepad-badge" className={cn("flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border", gamepadSession.armed ? "border-emerald-500/60 text-emerald-300" : "border-slate-700 text-slate-500")} title={t('gamepad_config.controlling', { robot: robots.find(r => r.id === selectedRobotId)?.name ?? `#${selectedRobotId}` })}>
+                <Gamepad2 size={14} /> {robots.find(r => r.id === selectedRobotId)?.name ?? `#${selectedRobotId}`} - {gamepadSession.armed ? t('gamepad_config.mode.badge_armed') : t('gamepad_config.mode.badge_off')}
               </span>
             )}
             <StopAllButton variant="footer" />

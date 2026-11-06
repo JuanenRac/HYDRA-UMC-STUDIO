@@ -1432,7 +1432,9 @@
       "stop_all": "STOP ALL",
       "add_point": "AJOUTER UN POINT",
       "speed_plus": "Vitesse +",
-      "speed_minus": "Vitesse -"
+      "speed_minus": "Vitesse -",
+      "next_robot": "Robot suivant",
+      "prev_robot": "Robot précédent"
     },
     "buttons": {
       "B0": "A / Croix",
@@ -1460,7 +1462,38 @@
       "AXIS_3_NEG": "Stick Droit en Haut",
       "AXIS_3_POS": "Stick Droit en Bas"
     },
-    "controlling": "La manette déplace {{robot}}, le robot sélectionné dans la liste"
+    "controlling": "La manette déplace {{robot}}, le robot sélectionné dans la liste",
+    "mode": {
+      "title": "Mode manette",
+      "off_hint": "Désactivé. La manette ne déplace rien tant que vous ne l'armez pas.",
+      "armed_hint": "Armé. La manette déplace {{robot}} ; STOP est toujours prioritaire.",
+      "arm": "Armer le mode manette",
+      "disarm": "Désarmer",
+      "refuse_no_robot": "Sélectionnez d'abord un robot.",
+      "refuse_no_claim": "Réservez d'abord {{robot}} pour cette fenêtre (Accès au robot > Réserver) : la manette ne déplace qu'un robot réservé par cette fenêtre.",
+      "refuse_no_pad": "Aucune manette détectée - appuyez d'abord sur un bouton.",
+      "status_ready": "Prêt : la manette déplace le robot sélectionné.",
+      "status_blocked": "En pause : cette fenêtre n'a pas réservé le robot sélectionné. Seuls STOP et le choix du robot fonctionnent.",
+      "status_unfocused": "En pause : cet onglet n'a pas le focus. Cliquez dessus puis relâchez tous les sticks et boutons.",
+      "status_no_pad": "Pas de manette : reconnectez-la puis réarmez le mode.",
+      "status_stopped": "STOP enfoncé : rien ne bouge tant qu'il est maintenu.",
+      "status_off": "Désactivé",
+      "deadzone": "Zone morte",
+      "max_speed": "Limite de vitesse",
+      "interval": "Délai entre commandes",
+      "max_unanswered": "Maximum de commandes sans réponse",
+      "require_claim": "Ne déplacer qu'un robot réservé par cette fenêtre",
+      "stop_on_disconnect": "Arrêter tous les robots si la manette se déconnecte",
+      "require_focus": "Lire la manette seulement quand cet onglet a le focus",
+      "preview": "Entrées en direct",
+      "preview_empty": "Rien n'est actionné.",
+      "confirm_title": "Armer la manette ?",
+      "confirm_message": "La manette va déplacer {{robot}} pour de vrai. Vérifiez que la zone est dégagée. STOP reste sur son bouton assigné ; si la manette se déconnecte, tous les robots s'arrêtent. L'armer ?",
+      "notice_lost": "La manette s'est déconnectée : tous les robots ont été arrêtés et le mode manette est désactivé. Reconnectez-la puis réarmez le mode.",
+      "dismiss": "Fermer",
+      "badge_armed": "armé",
+      "badge_off": "désactivé"
+    }
   },
   "bluetooth_pairing": {
     "title": "Associer un appareil Bluetooth à ce CM5",
