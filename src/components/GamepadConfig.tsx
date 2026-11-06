@@ -67,7 +67,7 @@ export function GamepadConfig() {
     updateSettings({ gamepadMapping: withMapping(mapping, btn, action) });
   };
 
-  const ACTIONS = gamepadActionSpecs().map(spec => ({ value: spec.value, label: t(spec.key, spec.fallback, spec.params) }));
+  const ACTIONS = gamepadActionSpecs().map(spec => ({ value: spec.value, label: spec.params ? t(spec.key, spec.fallback, spec.params) : t(spec.key, spec.fallback) }));
 
   const BUTTONS = GAMEPAD_BUTTONS.map(button => ({ id: button.id, name: t(`gamepad_config.buttons.${button.id}`, button.fallback) }));
 
