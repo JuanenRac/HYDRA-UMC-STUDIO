@@ -4,6 +4,7 @@
  * Copyright (C) 2026 JuanenRac (Electro Hobby 3D). GPL-3.0
  */
 import { useSyncExternalStore } from 'react';
+import { bool, browserStorage, createPrefs, nullableFraction, oneOf, type Prefs } from 'hydra-umc-studio-kit';
 
 export type AssistantPrefs = {
   assistant: boolean;
@@ -19,41 +20,37 @@ export type AssistantPrefs = {
 const KEY = 'hydra_assistant_prefs';
 const DEFAULTS: AssistantPrefs = { assistant: true, assistantSpeak: false, assistantPinned: false, assistantX: null, assistantY: null, assistantSize: 'normal', assistantAutoOpen: false };
 
-let cached: AssistantPrefs | null = null;
-const listeners = new Set<() => void>();
+// The rules (one validator per field, a storage that fails, the defaults) are the ones of the shared kit. The preferences are read the first time
+// they are needed, not when this file loads.
+let prefs: Prefs<AssistantPrefs> | null = null;
 
-function read(): AssistantPrefs {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<AssistantPrefs>;
-      const fraction = (value: unknown): number | null => (typeof value === 'number' && value >= 0 && value <= 1 ? value : null);
-      return {
-        assistant: typeof parsed.assistant === 'boolean' ? parsed.assistant : DEFAULTS.assistant,
-        assistantSpeak: parsed.assistantSpeak === true,
-        assistantPinned: parsed.assistantPinned === true,
-        assistantX: fraction(parsed.assistantX),
-        assistantY: fraction(parsed.assistantY),
-        assistantSize: parsed.assistantSize === 'small' || parsed.assistantSize === 'large' ? parsed.assistantSize : 'normal',
-        assistantAutoOpen: parsed.assistantAutoOpen === true,
-      };
-    }
-  } catch { /* storage unavailable: defaults */ }
-  return DEFAULTS;
+function store(): Prefs<AssistantPrefs> {
+  prefs ??= createPrefs<AssistantPrefs>({
+    storage: browserStorage('localStorage'),
+    key: KEY,
+    defaults: DEFAULTS,
+    schema: {
+      assistant: bool,
+      assistantSpeak: bool,
+      assistantPinned: bool,
+      assistantX: nullableFraction,
+      assistantY: nullableFraction,
+      assistantSize: oneOf('small', 'normal', 'large'),
+      assistantAutoOpen: bool,
+    },
+  });
+  return prefs;
 }
 
 export function getPrefs(): AssistantPrefs {
-  if (!cached) cached = read();
-  return cached;
+  return store().get();
 }
 
 export function setPrefs(patch: Partial<AssistantPrefs>): void {
-  cached = { ...getPrefs(), ...patch };
-  try { localStorage.setItem(KEY, JSON.stringify(cached)); } catch { /* not persisted: kept for this session only */ }
-  listeners.forEach(listener => listener());
+  store().set(patch);
 }
 
-const subscribe = (listener: () => void): (() => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
+const subscribe = (listener: () => void): (() => void) => store().subscribe(listener);
 
 export function usePrefs(): AssistantPrefs {
   return useSyncExternalStore(subscribe, getPrefs, getPrefs);
