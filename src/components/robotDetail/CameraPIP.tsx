@@ -24,14 +24,9 @@ export const CameraPIP = ({ bot, initialX, initialY, label, t: _t }: { bot: Robo
   const { settings, updateSettings } = useSettingsStore();
   const { cameras } = useFleet();
   const mediaTicket = useMediaTicket(authToken);
-  // Real gap closed: this panel used to always show a decorative
-  // CameraIcon regardless of connection state - HYDRA-UMC-SERVER's own
-  // GET /api/camera/:id/stream is a real proxy now (see that repo's own
-  // CHANGELOG), so this renders the real MJPEG stream via a plain <img>
-  // (a browser natively understands multipart/x-mixed-replace on an
-  // <img> src - no <video>/MSE plumbing needed for MJPEG specifically)
-  // once a camera is actually assigned and connected, same isVisionActive
-  // gating this file's own top-level component already uses elsewhere.
+  // Renders the real MJPEG stream (GET /api/camera/:id/stream of HYDRA-UMC-SERVER, a proxy) through a plain <img> (a browser understands
+  // multipart/x-mixed-replace natively, no <video>/MSE plumbing) once a camera is assigned and connected, with the same isVisionActive gating this
+  // file's top-level component uses elsewhere; before that the decorative CameraIcon shows.
   const camera = cameras.find(c => c.assignedRobotId === bot.id);
   const isStreaming = bot.visionEnabled && (camera?.connected ?? false);
   const controls = useDragControls();

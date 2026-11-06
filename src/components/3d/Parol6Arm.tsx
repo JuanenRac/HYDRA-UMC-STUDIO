@@ -91,7 +91,7 @@ function useRealScaleSTL(fileName: string): THREE.BufferGeometry {
     }
     return geometry;
   }, [raw]);
-  // Real gap found while auditing the code: this clone is exclusively
+  // This clone is exclusively
   // owned by this hook instance (never the shared useLoader cache `raw`
   // itself, which stays cached/reused across mounts on purpose) -
   // dispose it when a new one replaces it or this component unmounts,

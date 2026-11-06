@@ -37,18 +37,9 @@ import { lerpAngleDeg } from '../../lib/angles';
 type Joints = RobotState['joints'];
 const JOINT_KEYS: (keyof Joints)[] = ['j1', 'j2', 'j3', 'j4', 'j5', 'j6'];
 
-// Real gap closed: every joint rotation across all ~26 model-specific
-// Arm components below used to bind directly to the raw
-// telemetry-driven robot.joints value with zero interpolation - a robot
-// updated at whatever rate telemetry actually arrives (well under
-// 60fps) visibly snapped between poses instead of moving smoothly. This
-// hook owns one smoothed copy of `joints`, advanced toward the real
-// target every render frame (useFrame - genuinely decoupled from
-// telemetry's own update rate, not driven by it) - a single point of
-// change here covers every model, instead of repeating this in each of
-// the ~26 files. Snaps immediately (no slide) the moment `robot.id`
-// changes, since that means a genuinely different robot is now being
-// shown, not the same one moving.
+// Every joint rotation across the model-specific Arm components binds to a smoothed copy of `joints`, advanced toward the real target every render
+// frame (useFrame, decoupled from the telemetry rate, which is well under 60fps), so a robot does not snap between poses. One point of change covers
+// every model. It snaps immediately (no slide) when `robot.id` changes, since a different robot is then shown, not the same one moving.
 function useSmoothedJoints(joints: Joints, robotId: number): Joints {
     const [smoothed, setSmoothed] = useState<Joints>(joints);
     const smoothedRef = useRef(smoothed);

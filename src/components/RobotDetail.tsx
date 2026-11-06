@@ -569,16 +569,9 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
             )}
           </div>
 
-          {/* This whole action-row/joint-controls panel used to be a
-              second flex-1 sibling of the 3D viewport above, splitting
-              the available height roughly in half regardless of
-              orientation - the real cause of "the 3D view doesn't fill
-              the screen" reported live on the Android embedded viewport
-              (viewportOnly). Gone entirely there now; its own real
-              replacement (RobotDetail-*.tsx has none rendered outside of
-              it - see the overlay panel inside the 3D viewport div
-              above, gated on viewportOnly the other way around) covers
-              the same controls without taking a share of the layout. */}
+          {/* This action-row/joint-controls panel is not rendered on the embedded Android viewport (viewportOnly): as a second flex-1 sibling of the 3D
+              viewport it would split the available height roughly in half and the 3D view would not fill the screen. The overlay panel inside the 3D viewport
+              div above covers the same controls without taking a share of the layout. */}
           {!viewportOnly && (
           <div className="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-2 pb-2">
             {/* Action Buttons */}

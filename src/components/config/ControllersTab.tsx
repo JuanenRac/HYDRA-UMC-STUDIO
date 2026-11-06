@@ -25,15 +25,8 @@ export function ControllersTab() {
             </thead>
             <tbody>
               {controllers.map(c => {
-                // this table's `status` cell used to
-                // render c.status verbatim - a saved config value
-                // with no live check behind it - as if it were a
-                // real reachability check. This app only ever
-                // holds one live connection at a time (to
-                // whichever controller is active), so that's the
-                // one row where a real signal (serverReachable)
-                // actually exists; every other listed node is
-                // genuinely unverified from here and says so
+                // The `status` cell is not the saved c.status (a config value with no live check behind it): this app holds one live connection at a time (to the
+                // active controller), so that is the one row with a real signal (serverReachable); every other listed node is unverified from here and says so
                 // rather than showing a stale/fixture pill.
                 const isActiveRow = c.id === activeControllerId;
                 const knownOnline = isActiveRow && serverReachable;

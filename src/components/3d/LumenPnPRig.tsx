@@ -35,16 +35,8 @@
 //              z_carriage_left's Z per machine.xml's own z2
 //              input-axis-id="z1" mapping)
 //              -> nozzle_right   (rotates "B" only)
-// Real bug fixed 2026-09-08: an earlier revision of this rig merged each
-// Z-carriage housing and its nozzle into ONE rigid mesh per side
-// (z_carriage_n1/n2) that translated AND rotated together - a real, visible
-// error, not a harmless simplification: the housing's own real footprint is
-// ~44x51mm at that joint (measured off the real per-part CAD bounding box),
-// so the whole rectangular slider block visibly swung around the Z axis
-// every time a nozzle rotated, which the physical machine never does (only
-// the ~10x10mm nozzle barrel itself spins). Splitting them into the 7 real
-// links above - already the formal URDF's own link split - fixes it: only
-// nozzle_left/nozzle_right rotate now.
+// The Z-carriage housing and its nozzle are separate links (the 7 links above, the split the formal URDF uses): only the ~10x10mm nozzle barrel
+// rotates, as on the machine, while the ~44x51mm housing (measured off the per-part CAD bounding box) stays put.
 // Which real CAD parts belong to which link was determined by opening the
 // real assembly.FCStd headless (FreeCAD 1.1's own Python API) and reading
 // every leaf part's real bounding box - e.g. GT2BeltClamp's own bbox
@@ -94,8 +86,8 @@ const PartColorsContext = createContext<Record<string, string>>({});
 
 // Real, individually-named CAD parts (public/models/machine-pnp/lumenpnp/parts/*.glb -
 // legs, control box, frame extrusions, cameras/lights, feeders, nozzle
-// hardware, X/Y gantry brackets) added 2026-09-08 alongside the 7 rigid-
-// body groups above, so the rig is no longer just those 7 silhouettes -
+// hardware, X/Y gantry brackets) that sit alongside the 7 rigid-
+// body groups above, so the rig is more than those 7 silhouettes -
 // see parts/manifest.json for the exact CAD source label, real assembled
 // bounding box and triangle count behind every file here, and
 // ATTRIBUTION.txt for the full methodology (same headless FreeCAD export,
@@ -126,8 +118,7 @@ const BASE_STATIC_PARTS = [
   'board-mount-static_001', 'board-mount-dynamic_001', 'board-support_001',
   'extrusion-cable-clip004', 'extrusion-cable-clip005',
   'xy-limit_001',
-  // Batch 2 (2026-09-08, found missing by the user looking at the live
-  // rig): the 2 real Y motors are bolted to the FIXED frame at the rear
+  // Batch 2 (parts that were missing from the live rig): the 2 real Y motors are bolted to the FIXED frame at the rear
   // (they drive belts, they don't ride the bridge) - same for their own
   // paired rear pulleys and the front idlers closing each belt loop.
   'NEMA17-stepper003', 'NEMA17-stepper004', 'GT2-pulley002', 'GT2-pulley003', 'GT2-idler002', 'GT2-idler003',
@@ -302,7 +293,7 @@ export default function LumenPnPRig({ module, machineType = 'lumenPnP' }: { modu
     // convention in this folder) - one outer flip to Three.js's Y-up,
     // same as URArm.tsx's own root wrapper. CAD Z=0 is the machine's own
     // WORK surface (where openpnp's real 0-90mm Z-axis travel starts),
-    // not its feet - the real legs added 2026-09-08 reach down to
+    // not its feet - the real legs reach down to
     // Z=-100.81mm (front-leg-extension's own real bbox min, see
     // parts/manifest.json) to actually touch the floor. Without this
     // offset the rig's local Y=0 sits at the WORK surface, so those legs

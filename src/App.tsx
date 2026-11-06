@@ -16,18 +16,8 @@ import SplashSvg from './assets/HYDRA_UMC_SPLASHSCREEN.svg';
  * This function handles the necessary computations and state updates.
  */
 function App() {
-  // Real complaint this fixes, live-reproduced: this splash used to show
-  // unconditionally for a fixed 10s on every single mount, including
-  // HYDRA-UMC-ANDROID-CONTROL's embedded 3D-viewport WebView (ThreeDScreen.kt
-  // loads this exact page fresh via `?hideUI=true&robotId=...` every time
-  // that tab opens) - reported as "el splashscreen de studio... me hace
-  // esperar un tiempo innecesario". `hideUI=true` already means "embedded,
-  // no chrome" (Dashboard.tsx's own header/sidebar hide on it) - there's no
-  // reason to show 10s of desktop-kiosk branding in that same case, so this
-  // reads the same URL flag once at mount and skips the splash entirely
-  // there. Not memoized via useMemo like Dashboard.tsx's own `hideUI` read -
-  // this only needs to run once, before first paint, to pick the initial
-  // showSplash value.
+  // The splash is skipped when the page is embedded (`hideUI=true`, as the 3D viewport WebView of the Android app loads it): there is no reason to
+  // show desktop-kiosk branding there. The URL flag is read once at mount, before the first paint, to pick the initial showSplash value.
   //
   // `skipSplash=true` is a second, independent flag for the same "skip the
   // 10s splash" need but WITHOUT hideUI's other effect of hiding the

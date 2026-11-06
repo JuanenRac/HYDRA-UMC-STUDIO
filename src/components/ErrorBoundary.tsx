@@ -17,21 +17,11 @@ interface State {
 }
 
 /**
- * Real gap closed: every one of Dashboard.tsx's own panels (CamerasView
- * included) is React.lazy()-split into its own content-hashed chunk
- * (vite.config.ts's own comment explains why), and NOTHING in this app
- * used to catch a render error - so a single uncaught exception in ANY
- * one panel unmounted the WHOLE React tree, leaving a blank page (this
- * app's own background is near-black, so that reads as a literal "black
- * screen" - confirmed for real on the CM5's own kiosk display: a stale
- * browser tab left open across a redeploy tried to dynamically import()
- * its OLD-hashed CamerasView-<oldhash>.js chunk, which the redeploy had
- * just overwritten with a new hash - a 404 the browser's own JS engine
- * has no way to recover from on its own). See main.tsx's own
- * `vite:preloadError` listener for the OTHER half of this same real fix
- * (auto-reloads once for exactly that stale-chunk case, before this
- * boundary would ever need to show the fallback below at all) - this
- * boundary is the backstop for every OTHER kind of render crash.
+ * Catches the render errors of the panels. Every panel of Dashboard.tsx (CamerasView included) is React.lazy()-split into its own content-hashed
+ * chunk (vite.config.ts explains why), so without a boundary one uncaught exception in ANY panel unmounts the WHOLE React tree and leaves a blank,
+ * near-black page. A stale browser tab left open across a redeploy hits exactly that: it imports the OLD-hashed chunk, which the redeploy
+ * overwrote, and the 404 cannot be recovered by the JS engine. See the `vite:preloadError` listener in main.tsx for the other half (it reloads once
+ * for exactly that stale-chunk case); this boundary is the backstop for every OTHER kind of render crash.
  */
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false };

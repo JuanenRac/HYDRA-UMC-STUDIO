@@ -656,9 +656,8 @@ export const createDefaultRobots = (): RobotState[] => {
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
 export const createDefaultCameras = (): CameraState[] => {
-  // same reasoning as createDefaultRobots above - `connected`
-  // used to default to true for the first 2 example cameras, a fixture
-  // value indistinguishable from a real detected camera.
+  // same reasoning as createDefaultRobots above - `connected` starts false: a true on the first 2 example cameras would be a fixture value
+  // indistinguishable from a real detected camera.
   return Array.from({ length: 8 }, (_, i) => ({
     id: i + 1,
     connected: false,
@@ -672,16 +671,10 @@ export const createDefaultCameras = (): CameraState[] => {
 };
 
 /** Stores the Default controllers configuration or state data.
- * `status` starts 'offline' - it used to start 'online' before
- * this app had ever actually heard from a real Server, and this field is
- * itself part of the `controllers` array the debounced save effect POSTs
- * back to settings.json, so that fake 'online' claim could persist
- * indefinitely. The "System Online/Offline" badge (Dashboard.tsx) no
- * longer even reads this field - it reads HydraProvider's own
- * `serverReachable`, a real, non-persisted signal set from the actual
- * fetch/WebSocket connection lifecycle. This `status` field remains only
- * for schema/backward-compat with an older settings.json that still has
- * it. */
+ * `status` starts 'offline': it is part of the `controllers` array the debounced save effect POSTs back to settings.json, so a fake 'online' claim
+ * made before this app has heard from a real Server could persist indefinitely. The "System Online/Offline" badge (Dashboard.tsx) does not read
+ * this field; it reads HydraProvider's `serverReachable`, a real, non-persisted signal set from the actual fetch/WebSocket connection lifecycle.
+ * This `status` field remains only for schema/backward-compat with an older settings.json that still has it. */
 export const defaultControllers: HydraController[] = [
   {
     id: '192.168.1.100',

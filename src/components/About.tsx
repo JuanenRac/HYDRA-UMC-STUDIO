@@ -27,12 +27,8 @@ const STUDIO_VERSION = studioPackage.version;
 export function About({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const { authToken, logout } = useSession();
-  // Real bug fixed: this used to be a single "Version" row showing only
-  // HYDRA-UMC-SERVER's own appVersion (from GET /api/hydra-info),
-  // labeled generically enough that it looked like STUDIO's own version -
-  // a mismatch was invisible (e.g. after deploying a new STUDIO build
-  // without restarting SERVER, or vice versa). Now shows both,
-  // separately labeled.
+  // Both versions are shown, separately labeled: the one of HYDRA-UMC-SERVER (GET /api/hydra-info) and the one of this STUDIO, so a mismatch after
+  // deploying only one of them is visible.
   const [serverVersion, setServerVersion] = useState<string | null>(null);
 
   useEffect(() => {

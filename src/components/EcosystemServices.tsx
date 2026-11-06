@@ -123,12 +123,8 @@ const COLOR_DOT: Record<HealthColor, string> = {
   slate: 'fill-slate-600 text-slate-600',
 };
 
-// Real feedback from live testing: the version number and the Live/
-// Running/Down/Stopped/N/A status used to share a single bordered badge -
-// two different facts ("is it up" and "which build") crammed into one
-// frame read as one fact at a glance. Split into two separate frames
-// instead: the health status keeps its own color-coded border, the
-// version gets its own neutral frame right below it.
+// The health status (Live/Running/Down/Stopped/N/A) and the version number are two different facts ("is it up" and "which build"), so they get two
+// separate frames: the health status keeps its own color-coded border, the version gets its own neutral frame right below it.
 function StatusBadge({ color, label, version }: { color: HealthColor; label: string; version: string | null }) {
   return (
     <div className="flex flex-col items-end gap-1 shrink-0">

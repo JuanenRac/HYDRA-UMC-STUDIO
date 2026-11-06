@@ -118,10 +118,8 @@ export function XYTableConfig() {
     updateRobot(selectedRobot.id, { hasXYTable: true });
   };
 
-  // Export the current table config to a downloadable JSON file - the
-  // "Save Config" button below used to render with no onClick at all (a
-  // silent no-op click), unlike the identically-labeled button in
-  // ATCToolsConfig.tsx, which this mirrors.
+  // Export the current table config to a downloadable JSON file, the same as the identically-labeled "Save Config" button of ATCToolsConfig.tsx,
+  // which this mirrors.
   const saveConfig = () => {
     if (!selectedRobot || !xyTable) return;
     const data = JSON.stringify(xyTable, null, 2);

@@ -22,18 +22,9 @@ export function GamepadConfig() {
   const gamepadEnabled = settings.gamepadEnabled || false;
   const mapping = settings.gamepadMapping || {};
 
-  // Real gap found live: a non-standard or low-button-count controller
-  // (browsers only assign the well-known B0=A/B12=D-pad-Up/etc. layout
-  // below when the Gamepad API reports mapping:"standard" - anything
-  // else keeps whatever raw button order its own driver reports) had no
-  // way to be identified from this screen at all - an operator plugging
-  // in an unusual pad had to guess which row corresponds to which
-  // physical button. This polls the real navigator.getGamepads() (same
-  // per-frame approach GamepadController.tsx already uses to actually
-  // drive the robot) purely to show which input is live right now, so
-  // pressing a physical button visibly highlights its real row here -
-  // no guessing required regardless of how many buttons the pad has or
-  // whether the browser recognizes it as "standard".
+  // Polls the real navigator.getGamepads() (the same per-frame approach GamepadController.tsx uses to drive the robot) purely to show which input is
+  // live, so pressing a physical button highlights its row: a non-standard or low-button-count pad (the browser only assigns the standard layout when
+  // the Gamepad API reports mapping:"standard") can be identified without guessing which row is which.
   const [connectedGamepad, setConnectedGamepad] = useState<{ id: string; buttons: number; axes: number; mapping: string } | null>(null);
   const [activeInputs, setActiveInputs] = useState<Set<string>>(new Set());
   const detectRequestRef = useRef<number>(0);

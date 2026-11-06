@@ -32,37 +32,15 @@ export function CamerasView() {
   const mediaTicket = useMediaTicket(authToken);
   const { t } = useTranslation();
   const [fullScreenId, setFullScreenId] = useState<number | null>(null);
-  // Real retry state per camera, keyed to WHICH stream it's for - see
-  // the <img> element's own comment for why a plain onError->hide isn't
-  // enough here. Real bug fixed here, found via live user feedback on
-  // camera 4 (2 real streams, switching between them "stopped working
-  // automatically" after a while, needing a manual process kill to
-  // recover): a flat retry counter that never reset meant that once ANY
-  // stream for a camera exhausted its retry budget, EVERY future switch
-  // on that same camera inherited the same exhausted count and got zero
-  // retries - so a stream that came back later (HYDRA-UMC-SERVER's own
-  // camera-process supervisor now self-heals a hung capture process, see
-  // its CHANGELOG) never got picked back up client-side. Tracking
-  // `identity` (the same rtspPath/hardwareSource the <img> keys on)
-  // alongside `attempt` means a genuinely different stream - or the same
-  // one after a real reconnect - always starts its own retry budget from
-  // 0, and there is no longer a hard retry ceiling: the server now
-  // actively kills and respawns a hung camera process on its own
-  // (escalating backoff, up to 30s between attempts), so the client just
-  // needs to keep trying, not give up permanently.
+  // Retry state per camera, keyed to WHICH stream it is for (the same rtspPath/hardwareSource the <img> keys on): a stream that exhausted its retry
+  // budget must not leave a different stream of the same camera, or the same one after a reconnect, with zero retries; each starts its own budget.
   const [streamRetryState, setStreamRetryState] = useState<Record<number, { identity: string; attempt: number }>>({});
   const [recordingIds, setRecordingIds] = useState<Set<number>>(new Set());
   const [connectingIds, setConnectingIds] = useState<Set<number>>(new Set());
   const [flashId, setFlashId] = useState<number | null>(null);
 
-  // Real backend calls, matching sendPtz()'s own auth-header pattern below -
-  // recordingIds now mirrors server truth instead of being purely local
-  // component state. Real bug fixed: this used to just flip a client-side
-  // Set with no backend call at all, so nothing was ever actually saved
-  // (the user could "record" for an hour and have nothing to show for it),
-  // and navigating away and back always reset to "not recording" even if a
-  // capture happened to be running server-side - a stale UI state, not the
-  // recording itself, silently disagreeing with reality either way.
+  // Recording goes through the backend calls (the same auth-header pattern as sendPtz() below): recordingIds mirrors what the server reports,
+  // not a local flag.
   function authHeaders(json = true): Record<string, string> {
     const headers: Record<string, string> = json ? { 'Content-Type': 'application/json' } : {};
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
@@ -71,17 +49,8 @@ export function CamerasView() {
 
   const [recordingError, setRecordingError] = useState<string | null>(null);
 
-  // Pulled out of the mount effect so a toggle can also call it directly -
-  // real bug fixed (found via live testing): a recording can stop itself
-  // server-side with no user action at all (the local mjpeg stream
-  // dropping/restarting, see server.ts's own recording loop) and this tab
-  // never learned about it until the whole panel remounted, so clicking
-  // "stop" on an already-dead recording got a 404 that silently did
-  // nothing - the red REC indicator stayed on even though nothing was
-  // actually recording anymore. Re-syncing from the server's own real
-  // GET /api/camera/media after EVERY toggle attempt (success or failure)
-  // means the indicator can never drift from reality for more than one
-  // round trip, regardless of why the mismatch happened.
+  // Pulled out of the mount effect so a toggle can call it too: a recording can stop itself server-side with no user action, so after EVERY toggle
+  // attempt (success or failure) the indicator is re-synced from GET /api/camera/media and cannot drift for more than one round trip.
   const syncRecordingIds = async () => {
     try {
       const res = await fetch(apiUrl('/api/camera/media'), { headers: authHeaders(false) });
@@ -376,36 +345,10 @@ export function CamerasView() {
                   <>
                     <div className="w-full h-full border border-slate-800 rounded bg-black/40 flex items-center justify-center relative overflow-hidden">
                       <CameraIcon size={32} className="text-slate-800" />
-                      {/* Real gap closed: this whole matrix used to always
-                          show that decorative icon regardless of
-                          connection state - HYDRA-UMC-SERVER's own GET
-                          /api/camera/:id/stream is a real proxy now (see
-                          that repo's own CHANGELOG). A plain <img> renders
-                          multipart/x-mixed-replace MJPEG natively (no
-                          <video>/MSE plumbing needed for this format) -
-                          stacked after the icon above so a real, opaque
-                          frame naturally covers it once one arrives;
-                          hides itself on error (503, no local
-                          mjpeg_server.py running yet for this camera)
-                          so the icon underneath shows through instead of
-                          a broken-image glyph. */}
-                      {/* Real bug fixed here, found via live user feedback:
-                          GET /api/camera/:id/stream is a one-shot proxy
-                          (server.ts fetches the local capture process
-                          exactly once, then pipes bytes) - when the
-                          Vision Center combobox below picks a different
-                          discovered stream, the server correctly
-                          restarts capture against the new rtspPath, but
-                          that KILLS the old proxy's own upstream
-                          connection, which ends this <img>'s response.
-                          A plain <img src="..."> with a constant URL
-                          never re-requests after that - it just freezes
-                          on the last frame forever, so every stream
-                          selection looked identical. Keying on rtspPath
-                          (the field that actually drives which real
-                          stream this camera captures) forces React to
-                          unmount/remount the element - a genuinely new
-                          request - every time the selection changes. */}
+                      {/* The live frame: GET /api/camera/:id/stream is a proxy, and a plain <img> renders multipart MJPEG natively. It is stacked after the icon so an
+                          opaque frame covers it, and it hides itself on error (503, no capture process yet) so the icon shows instead of a broken-image glyph. */}
+                      {/* Keyed on rtspPath: the stream is a one-shot proxy that ends when the server restarts capture on another stream, and an <img> with a constant
+                          URL never re-requests, so the key forces a new request every time the selection changes. */}
                       {(() => {
                         const identity = c.rtspPath || c.hardwareSource || 'default';
                         const retryInfo = streamRetryState[c.id];
@@ -454,16 +397,8 @@ export function CamerasView() {
                           />
                         );
                       })()}
-                      {/* Real gap closed: a stream stuck on its backoff
-                          retry loop (e.g. after a server restart the
-                          browser tab was already open for) looked
-                          identical to one still starting up for the
-                          first time - just the decorative camera icon,
-                          no explanation, no way to force a fresh attempt
-                          without reloading the whole page. After a few
-                          consecutive failures, offer a real manual retry
-                          that bypasses the remaining backoff wait by
-                          bumping the attempt counter immediately. */}
+                      {/* After a few consecutive failures a manual retry is offered, bypassing the remaining backoff wait by bumping the attempt counter, so a stuck
+                          stream is not mistaken for one still starting up. */}
                       {(() => {
                         const identity = c.rtspPath || c.hardwareSource || 'default';
                         const retryInfo = streamRetryState[c.id];

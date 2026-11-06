@@ -31,17 +31,9 @@ export function useWorkFiles({ robotId, robotName, worksPaths, authToken, record
   // setState turns a superseded response into a no-op instead of a race.
   const worksFetchIdRef = useRef(0);
 
-  // Depends on the resolved PATH STRING for this one robot, not the whole
-  // settings.worksPaths object - that object is a fresh reference every
-  // time ANY setting anywhere changes (see store.tsx's own applyServerData,
-  // which used to make this worse by reshaping settings on every WebSocket
-  // broadcast), so depending on it directly re-ran this real network fetch
-  // (GET /${folderPath}/index.json) on every single jog tick from ANY
-  // connected client the instant a robot panel was open - the concrete
-  // mechanism behind this panel specifically (not other module panels,
-  // which have no such fetch) being far slower than everything else in
-  // the app. A plain string only changes reference (and re-triggers
-  // fetchWorks's own identity, and thus the effect below) when this
+  // Depends on the resolved PATH STRING for this one robot, not the whole settings.worksPaths object: that object is a fresh reference every time ANY
+  // setting anywhere changes, so depending on it would re-run this network fetch (GET /${folderPath}/index.json) on every jog tick from ANY connected
+  // client while a robot panel is open. A plain string only changes reference (and re-triggers fetchWorks, and thus the effect below) when this
   // robot's OWN folder path value actually changes.
   const worksFolderPath = worksPaths?.[robotId] || `WORKS/${robotName.replace(/\s+/g, '')}`;
   const fetchWorks = useCallback(async () => {

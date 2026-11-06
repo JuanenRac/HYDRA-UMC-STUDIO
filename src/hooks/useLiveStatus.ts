@@ -19,19 +19,11 @@ export function useLiveStatus() {
   // activeController.status.
   const [serverReachable, setServerReachable] = useState(false);
 
-  // Real, live "did the last POST /api/settings actually persist" signal -
-  // caught live in production (STUDIO/SUITE/SERVER, camera streams left
-  // running after Vision Center's own stop button): fetch() only rejects
-  // on a real network failure, never on a non-2xx response, so a 401
-  // (expired session token) or 403 (POST /api/settings requires an admin
-  // role - a non-admin session's every save silently 401/403s forever)
-  // used to leave the local UI showing the new value while the server -
-  // and therefore anything server.ts derives from it, like which camera
-  // stream processes should be running - never heard about it at all, with
-  // zero feedback anywhere. Null once the most recent save actually
-  // succeeded (or none has been attempted yet); a real, human-readable
-  // message otherwise. See the debounced save effect, flushSettingsSave()
-  // and factoryReset() below - all three share this one signal.
+  // Live "did the last POST /api/settings actually persist" signal: fetch() only rejects on a network failure, never on a non-2xx response, so a 401
+  // (expired session token) or a 403 (POST /api/settings requires an admin role) would leave the local UI showing the new value while the server, and
+  // anything it derives from it (like which camera stream processes should be running), never heard about it, with no feedback anywhere. Null once
+  // the most recent save succeeded (or none has been attempted yet); a human-readable message otherwise. The debounced save effect, flushSettingsSave()
+  // and factoryReset() all share this one signal.
   const [settingsSaveError, setSettingsSaveError] = useState<string | null>(null);
   // An operator edited the settings tree and, because the server accepts it only from an administrator, nothing was sent.
   const [operatorEdited, setOperatorEdited] = useState(false);

@@ -3,9 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 //
-// HYDRA-UMC STUDIO is now a pure Vite/React client - the Express/WebSocket
-// backend that used to live in this same repo's own server.ts is a
-// separate project, HYDRA-UMC-SERVER (github.com/JuanenRac/HYDRA-UMC-SERVER),
+// HYDRA-UMC STUDIO is a pure Vite/React client - the Express/WebSocket backend is a separate project, HYDRA-UMC-SERVER
 // reached over the network exactly like HYDRA-UMC SUITE/ANDROID-CONTROL/
 // IOS-CONTROL/DSI already reach it.
 //
@@ -41,28 +39,11 @@ function defaultProdBase(): string {
   const hostname = typeof window !== 'undefined' && window.location.hostname
     ? window.location.hostname
     : 'localhost';
-  // Real bug found while investigating the reported Android 3D-viewport
-  // desync: this used to hardcode :3000 regardless of the port this exact
-  // page was actually loaded on. Server almost always runs on 3000, so
-  // that stayed invisible in the common case - but ThreeDScreen.kt's own
-  // WebView loads this page via `http://$ip:$port/...` using whatever port
-  // the user configured in the app, and a page served from a non-default
-  // port would have every fetch()/WebSocket call silently misdirected to
-  // :3000 instead of back to the server that actually served it. Prefer
-  // this page's own real port (window.location.port); :3000 is now only a
-  // fallback for the case a real reverse proxy strips it (port 80/443,
-  // window.location.port === "").
-  // Behind a reverse proxy on 80/443 the page has no port of its own, and the API is on that same origin: the port
-  // is left off (it used to be forced to :3000, a port the proxy does not expose).
+  // The port is this page's own (window.location.port): the page may be served from a port other than 3000 (the Android 3D-viewport WebView loads it
+  // with whatever port was configured). Behind a reverse proxy on 80/443 the page has no port and the API is on that same origin, so the port is left off.
   const port = typeof window !== 'undefined' && window.location.port ? window.location.port : '';
-  // Second real bug, same "everything on the CM5" default deployment: this
-  // used to hardcode http: too, regardless of the scheme this exact page
-  // was itself loaded over. In the default same-origin deployment (STUDIO's
-  // own static files served BY HYDRA-UMC-SERVER - see this file's own
-  // header comment) that server's optional TLS_CERT_PATH/TLS_KEY_PATH
-  // (server.ts) makes this page load over https: - every fetch() computed
-  // from a hardcoded http: origin is then a cross-origin, mixed-content
-  // request a browser refuses outright, not just a wrong-looking URL.
+  // The scheme is this page's own too: with TLS_CERT_PATH/TLS_KEY_PATH the server serves STUDIO over https:, and a request built on a hardcoded
+  // http: origin would be cross-origin mixed content that a browser refuses outright.
   const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https:' : 'http:';
   return port ? `${protocol}//${hostname}:${port}` : `${protocol}//${hostname}`;
 }
