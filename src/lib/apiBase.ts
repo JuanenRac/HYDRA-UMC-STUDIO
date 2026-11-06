@@ -32,44 +32,28 @@
 // or absolute (prod, configurable).
 // =============================================================================
 
-const rawConfiguredBase = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
-const configuredBase = rawConfiguredBase ? rawConfiguredBase.replace(/\/+$/, '') : undefined;
-
-function defaultProdBase(): string {
-  const hostname = typeof window !== 'undefined' && window.location.hostname
-    ? window.location.hostname
-    : 'localhost';
-  // The port is this page's own (window.location.port): the page may be served from a port other than 3000 (the Android 3D-viewport WebView loads it
-  // with whatever port was configured). Behind a reverse proxy on 80/443 the page has no port and the API is on that same origin, so the port is left off.
-  const port = typeof window !== 'undefined' && window.location.port ? window.location.port : '';
-  // The scheme is this page's own too: with TLS_CERT_PATH/TLS_KEY_PATH the server serves STUDIO over https:, and a request built on a hardcoded
-  // http: origin would be cross-origin mixed content that a browser refuses outright.
-  const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https:' : 'http:';
-  return port ? `${protocol}//${hostname}:${port}` : `${protocol}//${hostname}`;
-}
+import { apiUrl as kitApiUrl, resolveApiBase, wsUrl as kitWsUrl } from 'hydra-umc-studio-kit';
 
 /** '' in dev (relative paths, proxied by vite.config.ts's own server.proxy)
- * - a real absolute origin (VITE_API_BASE_URL, or this same host on :3000)
- * in a production build. */
-export const API_BASE: string = import.meta.env.DEV
-  ? ''
-  : (configuredBase || defaultProdBase());
+ * - a real absolute origin (VITE_API_BASE_URL, or this same page's origin) in a production build.
+ * The rules live in the shared kit; the page location is passed in here. The port is this page's own: the page may be served from a port other than 3000
+ * (the Android 3D-viewport WebView loads it with whatever port was configured), and behind a reverse proxy on 80/443 the page has no port. The scheme is this
+ * page's own too: with TLS the server serves STUDIO over https:, and a request built on a hardcoded http: origin would be refused as mixed content. */
+export const API_BASE: string = resolveApiBase({
+  configured: import.meta.env.VITE_API_BASE_URL as string | undefined,
+  dev: import.meta.env.DEV,
+  location: typeof window !== 'undefined' ? window.location : null,
+});
 
 /** Prefixes a backend path ('/api/settings', '/WORKS/Foo/index.json', ...)
  * with API_BASE - relative in dev (proxied), absolute in prod. */
 export function apiUrl(path: string): string {
-  return `${API_BASE}${path}`;
+  // Only a path that starts with a slash goes through the kit; anything else (the empty path, a query) is appended as it always was.
+  return path.startsWith('/') ? kitApiUrl(API_BASE, path) : `${API_BASE}${path}`;
 }
 
 /** Same idea for the /ws upgrade - matches API_BASE's own host/port, just
  * with ws:/wss: instead of http:/https:. */
 export function wsUrl(path: string): string {
-  if (API_BASE) {
-    const wsProto = API_BASE.startsWith('https:') ? 'wss:' : 'ws:';
-    const rest = API_BASE.replace(/^https?:/, '');
-    return `${wsProto}${rest}${path}`;
-  }
-  const proto = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const host = typeof window !== 'undefined' ? window.location.host : 'localhost';
-  return `${proto}//${host}${path}`;
+  return kitWsUrl(API_BASE, path, typeof window !== 'undefined' ? window.location : null);
 }
