@@ -1221,6 +1221,10 @@
     "planning_sim_invalid_request": "Eso no es un plan: debe ser un objeto JSON con una lista de pasos que no esté vacía.",
     "planning_sim_accepted": "Aceptado: el plan no rompe ninguna de las reglas declaradas.",
     "planning_sim_rejected": "Rechazado: el plan rompe las reglas de abajo.",
+    "planning_sim_unchecked": "Sin demostrar: parte del plan no se pudo comprobar (por ejemplo la orientación de la herramienta). No es una aceptación.",
+    "planning_sim_unchecked_list": "Sin comprobar",
+    "planning_traj_run": "Comprobar como trayectoria",
+    "planning_traj_help": "Pregunta a la réplica cinemática, a través del planificador, si los movimientos son alcanzables y están dentro de los límites. No ejecuta nada.",
     "planning_sim_not_executed": "No se ejecutó ni se encoló nada: es una simulación.",
     "planning_sim_violations": "Reglas rotas",
     "planning_sim_timeline": "Cronología (simulada)",
@@ -1958,7 +1962,10 @@
     "state_error": "Con error",
     "state_down": "Parado",
     "state_unknown": "Desconocido",
-    "drift": "La versión difiere de su manifiesto"
+    "drift": "La versión difiere de su manifiesto",
+    "evidence_show": "Mostrar evidencia",
+    "evidence_hint": "Con qué se ha probado cada proyecto, según el registro de madurez que lleva este Studio. Dice lo que se hizo, nunca más.",
+    "evidence_gaps": "{{count}} hueco(s)"
   },
   "trajectory_preview": {
     "title": "Revisar la trayectoria antes de Play",

@@ -77,30 +77,38 @@ export interface TimelineEntry {
 }
 
 export interface Simulation {
-  verdict: 'accepted' | 'rejected';
+  /** `unchecked` is what the kinematic check says when part of the plan (the orientation of the tool) is not shown: it is never an acceptance. */
+  verdict: 'accepted' | 'rejected' | 'unchecked';
   violations: Violation[];
+  /** What was not shown (only with the verdict `unchecked`, or a rejection that also left something unchecked). */
+  unchecked: Violation[];
   timeline: TimelineEntry[];
   makespanMs: number | null;
+}
+
+function parseViolations(list: unknown): Violation[] {
+  const found: Violation[] = [];
+  if (!Array.isArray(list)) return found;
+  for (const item of list) {
+    if (!isObject(item) || typeof item.rule !== 'string') continue;
+    const suggestion = item.suggestion;
+    found.push({
+      rule: item.rule,
+      stepId: str(item.step_id),
+      message: str(item.message) ?? '',
+      suggestion: suggestion === undefined || suggestion === null ? null : typeof suggestion === 'string' ? suggestion : JSON.stringify(suggestion),
+    });
+  }
+  return found;
 }
 
 /** The answer of the dry run; null when it is not the answer of a dry run (including one that claims to have executed or to be executable). */
 export function parseSimulation(raw: unknown): Simulation | null {
   if (!isObject(raw)) return null;
   if (raw.executable !== false || raw.executed !== false) return null;
-  if (raw.verdict !== 'accepted' && raw.verdict !== 'rejected') return null;
-  const violations: Violation[] = [];
-  if (Array.isArray(raw.violations)) {
-    for (const item of raw.violations) {
-      if (!isObject(item) || typeof item.rule !== 'string') continue;
-      const suggestion = item.suggestion;
-      violations.push({
-        rule: item.rule,
-        stepId: str(item.step_id),
-        message: str(item.message) ?? '',
-        suggestion: suggestion === undefined || suggestion === null ? null : typeof suggestion === 'string' ? suggestion : JSON.stringify(suggestion),
-      });
-    }
-  }
+  if (raw.verdict !== 'accepted' && raw.verdict !== 'rejected' && raw.verdict !== 'unchecked') return null;
+  const violations = parseViolations(raw.violations);
+  const unchecked = parseViolations(raw.unchecked);
   const timeline: TimelineEntry[] = [];
   if (Array.isArray(raw.timeline)) {
     for (const item of raw.timeline) {
@@ -112,12 +120,23 @@ export function parseSimulation(raw: unknown): Simulation | null {
     }
   }
   // an accepted plan that lists a violation is not an accepted plan
-  if (raw.verdict === 'accepted' && violations.length > 0) return null;
-  return { verdict: raw.verdict, violations, timeline, makespanMs: num(raw.makespan_ms) };
+  if (raw.verdict === 'accepted' && (violations.length > 0 || unchecked.length > 0)) return null;
+  // `unchecked` needs something that was not shown, and a broken limit makes it a rejection, never an unchecked
+  if (raw.verdict === 'unchecked' && (violations.length > 0 || unchecked.length === 0)) return null;
+  return { verdict: raw.verdict, violations, unchecked, timeline, makespanMs: num(raw.makespan_ms) };
 }
 
 export async function simulatePlan(request: Record<string, unknown>): Promise<Result<Simulation>> {
   const answer = await call('/api/ai/semantic-planner/plan/simulate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request) });
+  if (!answer) return { ok: false, failure: 'network' };
+  if (answer.status !== 200) return failureFor(answer.status, answer.body);
+  const value = parseSimulation(answer.body);
+  return value ? { ok: true, value } : { ok: false, failure: 'malformed', status: answer.status };
+}
+
+/** The kinematic check of the same plan (POST /plan/trajectory-check): the verdict can be `unchecked`, which the screen must never paint as an acceptance. */
+export async function checkTrajectory(request: Record<string, unknown>): Promise<Result<Simulation>> {
+  const answer = await call('/api/ai/semantic-planner/plan/trajectory-check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request) });
   if (!answer) return { ok: false, failure: 'network' };
   if (answer.status !== 200) return failureFor(answer.status, answer.body);
   const value = parseSimulation(answer.body);

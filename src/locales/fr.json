@@ -1221,6 +1221,10 @@
     "planning_sim_invalid_request": "Ce n'est pas un plan : ce doit être un objet JSON avec une liste d'étapes non vide.",
     "planning_sim_accepted": "Accepté : le plan ne viole aucune des règles déclarées.",
     "planning_sim_rejected": "Rejeté : le plan viole les règles listées ci-dessous.",
+    "planning_sim_unchecked": "Non démontré : une partie du plan n'a pas pu être vérifiée (par exemple l'orientation de l'outil). Ce n'est pas une acceptation.",
+    "planning_sim_unchecked_list": "Non vérifié",
+    "planning_traj_run": "Vérifier comme trajectoire",
+    "planning_traj_help": "Demande à la réplique cinématique, via le planificateur, si les mouvements sont atteignables et dans les limites. Rien n'est exécuté.",
     "planning_sim_not_executed": "Rien n'a été exécuté ni mis en file : c'est une simulation.",
     "planning_sim_violations": "Règles violées",
     "planning_sim_timeline": "Chronologie (simulée)",
@@ -1958,7 +1962,10 @@
     "state_error": "Erreur",
     "state_down": "Arrêté",
     "state_unknown": "Inconnu",
-    "drift": "La version diffère de son manifeste"
+    "drift": "La version diffère de son manifeste",
+    "evidence_show": "Afficher les preuves",
+    "evidence_hint": "Sur quoi chaque projet a été essayé, d'après le registre de maturité livré avec ce Studio. Il dit ce qui a été fait, jamais plus.",
+    "evidence_gaps": "{{count}} lacune(s)"
   },
   "trajectory_preview": {
     "title": "Vérifier la trajectoire avant Play",

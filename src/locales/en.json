@@ -1221,6 +1221,10 @@
     "planning_sim_invalid_request": "That is not a plan: it must be a JSON object with a non-empty list of steps.",
     "planning_sim_accepted": "Accepted: the plan breaks none of the declared rules.",
     "planning_sim_rejected": "Rejected: the plan breaks the rules listed below.",
+    "planning_sim_unchecked": "Not shown: part of the plan could not be checked (for example the orientation of the tool). This is not an acceptance.",
+    "planning_sim_unchecked_list": "Not checked",
+    "planning_traj_run": "Check as a trajectory",
+    "planning_traj_help": "Asks the kinematic replica, through the planner, whether the moves are reachable and within the limits. It never executes anything.",
     "planning_sim_not_executed": "Nothing was executed or queued: this is a dry run.",
     "planning_sim_violations": "Broken rules",
     "planning_sim_timeline": "Timeline (simulated)",
@@ -1958,7 +1962,10 @@
     "state_error": "Error",
     "state_down": "Down",
     "state_unknown": "Unknown",
-    "drift": "Version differs from its manifest"
+    "drift": "Version differs from its manifest",
+    "evidence_show": "Show evidence",
+    "evidence_hint": "What each project has been tried on, from the maturity ledger shipped with this Studio. It says what was done, never more.",
+    "evidence_gaps": "{{count}} gap(s)"
   },
   "trajectory_preview": {
     "title": "Check the trajectory before Play",

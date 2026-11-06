@@ -12,7 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CalendarClock, Gauge, ListChecks, PlayCircle, RefreshCw, TrainFront } from 'lucide-react';
 import {
-  estimateRul, formatDuration, loadEta, parsePlanRequest, parseRulPoints, parseTrainPlan, probeWindowStatistics, simulatePlan,
+  checkTrajectory, estimateRul, formatDuration, loadEta, parsePlanRequest, parseRulPoints, parseTrainPlan, probeWindowStatistics, simulatePlan,
   type Eta, type Failure, type RulEstimate, type Simulation, type SwitchState, type TrainPlan,
 } from '../lib/planningApi';
 
@@ -51,13 +51,13 @@ export function EcosystemPlanning() {
   const [busy, setBusy] = useState('');
   const fileInput = useRef<HTMLInputElement>(null);
 
-  const runSimulation = async () => {
+  const runSimulation = async (kind: 'sim' | 'traj' = 'sim') => {
     setSimulation(null);
     setSimulationError('');
     const request = parsePlanRequest(planText);
     if (!request) { setSimulationError(t('ecosystem.planning_sim_invalid_request')); return; }
-    setBusy('sim');
-    const result = await simulatePlan(request);
+    setBusy(kind);
+    const result = await (kind === 'traj' ? checkTrajectory(request) : simulatePlan(request));
     setBusy('');
     if (result.ok) setSimulation(result.value);
     else setSimulationError(say(result.failure, result.message));
@@ -114,14 +114,26 @@ export function EcosystemPlanning() {
         <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2"><PlayCircle size={16} /> {t('ecosystem.planning_sim_title')}</h3>
         <p className="text-[11px] text-slate-500">{t('ecosystem.planning_sim_help')}</p>
         <textarea data-testid="plan-text" rows={10} value={planText} onChange={e => setPlanText(e.target.value)} className={`${input} font-mono`} spellCheck={false} />
-        <button onClick={() => void runSimulation()} disabled={busy === 'sim'} className={button}><PlayCircle size={14} /> {t('ecosystem.planning_sim_run')}</button>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => void runSimulation('sim')} disabled={busy === 'sim' || busy === 'traj'} className={button}><PlayCircle size={14} /> {t('ecosystem.planning_sim_run')}</button>
+          <button data-testid="plan-trajectory-run" onClick={() => void runSimulation('traj')} disabled={busy === 'sim' || busy === 'traj'} className={button}><PlayCircle size={14} /> {t('ecosystem.planning_traj_run')}</button>
+        </div>
+        <p className="text-[11px] text-slate-500">{t('ecosystem.planning_traj_help')}</p>
         {simulationError && <div role="alert" className="text-xs text-rose-400">{simulationError}</div>}
         {simulation && (
           <div className="space-y-2" data-testid="plan-result">
-            <div className={simulation.verdict === 'accepted' ? 'text-sm font-bold text-emerald-400' : 'text-sm font-bold text-rose-400'}>
-              {simulation.verdict === 'accepted' ? t('ecosystem.planning_sim_accepted') : t('ecosystem.planning_sim_rejected')}
+            <div data-testid="plan-verdict" data-verdict={simulation.verdict} className={simulation.verdict === 'accepted' ? 'text-sm font-bold text-emerald-400' : simulation.verdict === 'unchecked' ? 'text-sm font-bold text-amber-400' : 'text-sm font-bold text-rose-400'}>
+              {simulation.verdict === 'accepted' ? t('ecosystem.planning_sim_accepted') : simulation.verdict === 'unchecked' ? t('ecosystem.planning_sim_unchecked') : t('ecosystem.planning_sim_rejected')}
             </div>
             <div className="text-[11px] text-slate-500">{t('ecosystem.planning_sim_not_executed')}</div>
+            {simulation.unchecked.length > 0 && (
+              <div data-testid="plan-unchecked">
+                <div className="text-xs font-bold text-slate-300">{t('ecosystem.planning_sim_unchecked_list')}</div>
+                <ul className="text-xs text-slate-300 list-disc pl-5">
+                  {simulation.unchecked.map((v, i) => <li key={i}><span className="font-mono text-amber-400">{v.rule}</span>{v.stepId ? ` (${v.stepId})` : ''}: {v.message}</li>)}
+                </ul>
+              </div>
+            )}
             {simulation.violations.length > 0 && (
               <div>
                 <div className="text-xs font-bold text-slate-300">{t('ecosystem.planning_sim_violations')}</div>

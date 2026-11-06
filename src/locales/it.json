@@ -1221,6 +1221,10 @@
     "planning_sim_invalid_request": "Questo non è un piano: deve essere un oggetto JSON con un elenco di passi non vuoto.",
     "planning_sim_accepted": "Accettato: il piano non viola nessuna delle regole dichiarate.",
     "planning_sim_rejected": "Rifiutato: il piano viola le regole elencate sotto.",
+    "planning_sim_unchecked": "Non dimostrato: una parte del piano non ha potuto essere verificata (per esempio l'orientamento dell'utensile). Non è un'accettazione.",
+    "planning_sim_unchecked_list": "Non verificato",
+    "planning_traj_run": "Verifica come traiettoria",
+    "planning_traj_help": "Chiede alla replica cinematica, tramite il pianificatore, se i movimenti sono raggiungibili e entro i limiti. Non esegue nulla.",
     "planning_sim_not_executed": "Nulla è stato eseguito o messo in coda: è una simulazione.",
     "planning_sim_violations": "Regole violate",
     "planning_sim_timeline": "Cronologia (simulata)",
@@ -1958,7 +1962,10 @@
     "state_error": "Errore",
     "state_down": "Fermo",
     "state_unknown": "Sconosciuto",
-    "drift": "La versione differisce dal suo manifesto"
+    "drift": "La versione differisce dal suo manifesto",
+    "evidence_show": "Mostra le evidenze",
+    "evidence_hint": "Su che cosa è stato provato ogni progetto, dal registro di maturità incluso in questo Studio. Dice ciò che è stato fatto, mai di più.",
+    "evidence_gaps": "{{count}} lacuna/e"
   },
   "trajectory_preview": {
     "title": "Controlla la traiettoria prima di Play",

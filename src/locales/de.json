@@ -1221,6 +1221,10 @@
     "planning_sim_invalid_request": "Das ist kein Plan: Es muss ein JSON-Objekt mit einer nicht leeren Liste von Schritten sein.",
     "planning_sim_accepted": "Akzeptiert: Der Plan verletzt keine der deklarierten Regeln.",
     "planning_sim_rejected": "Abgelehnt: Der Plan verletzt die unten genannten Regeln.",
+    "planning_sim_unchecked": "Nicht nachgewiesen: Ein Teil des Plans konnte nicht geprüft werden (zum Beispiel die Ausrichtung des Werkzeugs). Das ist keine Freigabe.",
+    "planning_sim_unchecked_list": "Nicht geprüft",
+    "planning_traj_run": "Als Bahn prüfen",
+    "planning_traj_help": "Fragt über den Planer die kinematische Replik, ob die Bewegungen erreichbar sind und innerhalb der Grenzen liegen. Es wird nichts ausgeführt.",
     "planning_sim_not_executed": "Es wurde nichts ausgeführt oder eingereiht: Das ist ein Probelauf.",
     "planning_sim_violations": "Verletzte Regeln",
     "planning_sim_timeline": "Zeitverlauf (simuliert)",
@@ -1958,7 +1962,10 @@
     "state_error": "Fehler",
     "state_down": "Gestoppt",
     "state_unknown": "Unbekannt",
-    "drift": "Version weicht vom Manifest ab"
+    "drift": "Version weicht vom Manifest ab",
+    "evidence_show": "Nachweis anzeigen",
+    "evidence_hint": "Womit jedes Projekt erprobt wurde, aus dem Reifegrad-Register, das dieses Studio mitbringt. Es sagt, was getan wurde, nie mehr.",
+    "evidence_gaps": "{{count}} Lücke(n)"
   },
   "trajectory_preview": {
     "title": "Bahn vor dem Start prüfen",
