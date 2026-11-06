@@ -18,45 +18,30 @@
 // - The refresh token lives in the same storage as the access token it belongs to.
 // =============================================================================
 
-export const TOKEN_KEY = 'hydra_token';
-export const REFRESH_TOKEN_KEY = 'hydra_refresh_token';
+import {
+  DEFAULT_REFRESH_TOKEN_KEY,
+  DEFAULT_TOKEN_KEY,
+  createSession,
+  extractLaunchToken as kitExtractLaunchToken,
+  type SessionStores,
+} from 'hydra-umc-studio-kit';
 
-type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+export const TOKEN_KEY = DEFAULT_TOKEN_KEY;
+export const REFRESH_TOKEN_KEY = DEFAULT_REFRESH_TOKEN_KEY;
 
-function browserStorage(kind: 'localStorage' | 'sessionStorage'): StorageLike | null {
-  try {
-    if (typeof window === 'undefined') return null;
-    return window[kind];
-  } catch {
-    return null; // storage blocked (private mode, embedded view without storage)
-  }
-}
+type Stores = SessionStores;
 
-interface Stores { local: StorageLike | null; session: StorageLike | null }
-
-function defaultStores(): Stores {
-  return { local: browserStorage('localStorage'), session: browserStorage('sessionStorage') };
-}
-
-function safeGet(store: StorageLike | null, key: string): string | null {
-  try { return store ? store.getItem(key) : null; } catch { return null; }
-}
-
-function safeSet(store: StorageLike | null, key: string, value: string): void {
-  try { store?.setItem(key, value); } catch { /* quota or blocked: the session lasts as long as the page */ }
-}
-
-function safeRemove(store: StorageLike | null, key: string): void {
-  try { store?.removeItem(key); } catch { /* nothing to remove */ }
-}
+// The kit holds the rules above. A session is made on every call, so the storages of the page are looked up at the moment of use (as before) and a
+// test can pass its own.
+const sessionOf = (stores?: Stores) => createSession(stores ? { stores } : {});
 
 /** The access token of this page: the one a launch address brought (sessionStorage) wins over a saved login. */
-export function readToken(stores: Stores = defaultStores()): string | null {
-  return safeGet(stores.session, TOKEN_KEY) ?? safeGet(stores.local, TOKEN_KEY);
+export function readToken(stores?: Stores): string | null {
+  return sessionOf(stores).readToken();
 }
 
-export function readRefreshToken(stores: Stores = defaultStores()): string | null {
-  return safeGet(stores.session, REFRESH_TOKEN_KEY) ?? safeGet(stores.local, REFRESH_TOKEN_KEY);
+export function readRefreshToken(stores?: Stores): string | null {
+  return sessionOf(stores).readRefreshToken();
 }
 
 /**
@@ -65,65 +50,34 @@ export function readRefreshToken(stores: Stores = defaultStores()): string | nul
  * address cannot be parsed.
  */
 export function extractLaunchToken(href: string): { token: string; cleanedUrl: string } | null {
-  let url: URL;
-  try {
-    url = new URL(href);
-  } catch {
-    return null;
-  }
-  const fragment = new URLSearchParams(url.hash.replace(/^#/, ''));
-  const token = fragment.get('token') || url.searchParams.get('token');
-  if (!token) return null;
-  fragment.delete('token');
-  url.searchParams.delete('token');
-  url.hash = fragment.toString();
-  return { token, cleanedUrl: url.toString() };
+  return kitExtractLaunchToken(href, { acceptQuery: true });
 }
 
 /** A token received in the address: kept for this view only, and a saved one cannot be mistaken for it later. */
-export function saveLaunchToken(token: string, stores: Stores = defaultStores()): void {
-  safeSet(stores.session, TOKEN_KEY, token);
+export function saveLaunchToken(token: string, stores?: Stores): void {
+  sessionOf(stores).saveLaunchToken(token);
 }
 
 /**
  * A login typed into this page (or a refresh of one). By default it lasts as long as the tab ([persist] false);
  * with [persist] true it is kept across browser restarts and shared by the tabs of this browser.
  */
-export function saveLoginTokens(
-  token: string,
-  refreshToken: string | undefined,
-  stores: Stores = defaultStores(),
-  persist = false,
-): void {
-  const keep = persist ? stores.local : stores.session;
-  const drop = persist ? stores.session : stores.local;
-  // A new login replaces whatever the launch address or an earlier login left in the other storage.
-  safeRemove(drop, TOKEN_KEY);
-  safeSet(keep, TOKEN_KEY, token);
-  if (typeof refreshToken === 'string') {
-    safeSet(keep, REFRESH_TOKEN_KEY, refreshToken);
-    safeRemove(drop, REFRESH_TOKEN_KEY);
-  }
+export function saveLoginTokens(token: string, refreshToken: string | undefined, stores?: Stores, persist = false): void {
+  sessionOf(stores).saveLoginTokens(token, refreshToken, persist);
 }
 
 /** Replaces the access token wherever it currently lives (a silent refresh keeps a launch token a launch token). */
-export function replaceToken(token: string, refreshToken: string | undefined, stores: Stores = defaultStores()): void {
-  const target = safeGet(stores.session, TOKEN_KEY) !== null ? stores.session : stores.local;
-  safeSet(target, TOKEN_KEY, token);
-  if (typeof refreshToken === 'string') safeSet(target, REFRESH_TOKEN_KEY, refreshToken);
+export function replaceToken(token: string, refreshToken: string | undefined, stores?: Stores): void {
+  sessionOf(stores).replaceToken(token, refreshToken);
 }
 
-export function clearTokens(stores: Stores = defaultStores()): void {
-  safeRemove(stores.session, TOKEN_KEY);
-  safeRemove(stores.session, REFRESH_TOKEN_KEY);
-  safeRemove(stores.local, TOKEN_KEY);
-  safeRemove(stores.local, REFRESH_TOKEN_KEY);
+export function clearTokens(stores?: Stores): void {
+  sessionOf(stores).clear();
 }
 
 /** The Authorization header for the current session, or none when signed out. */
-export function authHeaders(extra: Record<string, string> = {}, stores: Stores = defaultStores()): Record<string, string> {
-  const token = readToken(stores);
-  return token ? { ...extra, Authorization: `Bearer ${token}` } : { ...extra };
+export function authHeaders(extra: Record<string, string> = {}, stores?: Stores): Record<string, string> {
+  return sessionOf(stores).authHeaders(extra);
 }
 
 /** fetch() with the session's Authorization header added (a header the caller sets itself is kept). */
