@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-1205%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1247%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.6-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Version | `0.8.1.6` |
 | Maturity | Functional |
-| Tests | 1205 (`npm test`) |
+| Tests | 1247 (`npm test`) |
 | Stack | React 19 / Vite / Three.js / Tailwind CSS |
 | Target | The Raspberry Pi CM5 of a HYDRA-UMC cell |
 | On real hardware | Run on a bench setup: the honesty check above says which parts ran on real hardware |
@@ -53,7 +53,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟡 | Works for its main purpose; the honesty check above lists what is still missing |
-| Tests | 🟢 | 1205 automated tests, run on every change |
+| Tests | 🟢 | 1247 automated tests, run on every change |
 | Real hardware | 🟡 | Run on a bench setup: the honesty check above says which parts ran on real hardware |
 | Interface and protocols | 🟡 | The routes or messages it offers are documented and tested with a client; not every client has used them yet |
 | Integration | 🟡 | Its messages and routes are checked against the shared contracts of the SDK; it has not run together with the real equipment |
@@ -254,6 +254,7 @@ The same `GET`/`POST /api/settings` contract, plus a discovery endpoint (`GET /a
 - **Job dispatcher options in Server Admin** (administrators only): the switch and the robot map of the delivery of the stop requests (`jobDispatcher.stopRelay.enabled` and `robotMap`) and the two options of the replanning (`allowUnconfirmed`, `stopAckTimeoutSeconds`), which the server writes into the configuration file of the dispatcher (it needs `HYDRA_UMC_JOB_DISPATCHER_CONFIG`; the dispatcher is asked to read the file again, and reads it on its next start if it cannot). Switching the delivery on, or letting a job move to another robot without a confirmed stop, asks for a confirmation first.
 - **Planning and operation** (Ecosystem): the dry run of a plan (`POST /plan/simulate` of the semantic planner; it never executes anything, and an answer that claims it did is not shown), the estimates of the job dispatcher (when each unfinished job should start and end, with its range), the remaining useful life of a series of scores, a reader of the output of `train plan --json` of the updater (read from a file and only shown: nothing is installed from here) and the state of the window statistics of the data lake. They go through the relay of the server (only those exact requests), and a function whose service has its switch off says so.
 - **Meshes from one package:** The 3D models are no longer in the repository tree (they weigh 221 MiB and are shared with HYDRA-UMC-SUITE). `meshes.pack.json` pins the SHA-256 of one package (45 MB, published in HYDRA-UMC-MESHES) and of every mesh, and `npm run dev`, `npm run build` and the tests fetch it on the first run: an internet connection is needed once, then the package is kept in `~/.cache/hydra-umc/meshes` (or in `HYDRA_UMC_MESH_CACHE`) and reused. Without network, copy the package there or give its path in `HYDRA_UMC_MESH_PACKAGE`. `npm run meshes -- status | check | ensure | prepare` checks or brings `public/models/`. The source is `auto` (the default), `local` (never downloads) or `download` (checks every mesh), chosen in `mesh_pack.config.json` or with `HYDRA_UMC_MESH_SOURCE`; a package that does not match installs nothing and only `https` addresses are accepted. See [`docs/MESH_PACKAGE.md`](docs/MESH_PACKAGE.md). To keep a single library for STUDIO, the desktop app and the STL editor, point `HYDRA_UMC_LIBRARY_DIR` at one folder with the same layout (category / model / files): all three read it and the package never installs over it; unset (the default), each keeps its own folder.
+- **Settings tabs for the care of an installation (Config):** Updates (the installed version of this Studio, of the server and of each program next to it, read from `GET /api/hydra-info` and `GET /api/ecosystem/status`), Security (checks, the two-step sign-in and, for administrators, the token signing keys with a guarded rotation, read from `GET /api/admin/jwt-keys`), Installation (a first-run checklist), Remote access setup (the address with a QR code, which kinds of app may find the server, and a confirmed close-all), Preferences (level of the Help, density and reduced animations, kept in this browser), Notifications (the state of the push notifications, for administrators) and History (the connections and, for administrators, the audit record). Where the server has no route for something (the newest published version of a program, installing, changing the push switches) the tab says so and changes nothing.
 
 ## 🔒 Security & Safety
 
@@ -315,7 +316,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Testing
 
-1205 automated tests run with `npm test`. They need no hardware and nothing outside this machine.
+1247 automated tests run with `npm test`. They need no hardware and nothing outside this machine.
 
 The CI runs `HYDRA_UMC_CI=1 python tools/ci_validate.py`, which checks the manifest, the documents, the eight READMEs and the pictures.
 
@@ -341,7 +342,7 @@ Runs Vite's own dev server (plain `vite`, port `5173`) with live-reloading. `vit
 ### Automated Tests
 
 ```bash
-npm test          # vitest run - 1205 tests
+npm test          # vitest run - 1247 tests
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-1205%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1247%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.6-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Versão | `0.8.1.6` |
 | Maturidade | Funcional |
-| Testes | 1205 (`npm test`) |
+| Testes | 1247 (`npm test`) |
 | Tecnologia | React 19 / Vite / Three.js / Tailwind CSS |
 | Destino | O Raspberry Pi CM5 de uma célula HYDRA-UMC |
 | Em hardware real | Executado numa bancada de ensaio: a verificação de honestidade acima diz que partes correram em hardware real |
@@ -53,7 +53,7 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 | Área | Estado | O que significa aqui |
 |---|---|---|
 | Software | 🟡 | Funciona para o seu propósito principal; a verificação de honestidade acima lista o que ainda falta |
-| Testes | 🟢 | 1205 testes automáticos, executados a cada alteração |
+| Testes | 🟢 | 1247 testes automáticos, executados a cada alteração |
 | Hardware real | 🟡 | Executado numa bancada de ensaio: a verificação de honestidade acima diz que partes correram em hardware real |
 | Interface e protocolos | 🟡 | As rotas ou mensagens que oferece estão documentadas e testadas com um cliente; ainda nem todos os clientes as usaram |
 | Integração | 🟡 | As suas mensagens e rotas são verificadas contra os contratos partilhados do SDK; ainda não funcionou em conjunto com o equipamento real |
@@ -254,6 +254,7 @@ O `GET /api/system/metrics` alimenta o rodapé do painel Resumo: a carga da CPU 
 - **Opções do despachante de trabalhos no Server Admin** (só administradores): o interruptor e o mapa de robôs da entrega dos pedidos de paragem (`jobDispatcher.stopRelay.enabled` e `robotMap`) e as duas opções do replaneamento (`allowUnconfirmed`, `stopAckTimeoutSeconds`), que o servidor escreve no ficheiro de configuração do despachante (precisa de `HYDRA_UMC_JOB_DISPATCHER_CONFIG`; pede-se ao despachante que volte a ler o ficheiro, ou então lê-o no próximo arranque). Ativar a entrega, ou deixar um trabalho passar a outro robô sem paragem confirmada, pede primeiro uma confirmação.
 - **Planeamento e operação** (Ecossistema): a simulação de um plano (`POST /plan/simulate` do planeador semântico; nunca executa nada, e uma resposta que diga que o fez não é mostrada), as estimativas do despachante de trabalhos (quando cada trabalho por terminar deve começar e acabar, com o seu intervalo), a vida útil restante de uma série de pontuações, um leitor da saída de `train plan --json` do atualizador (lida de um ficheiro e só mostrada: daqui não se instala nada) e o estado das estatísticas por janela do data lake. Passam pelo relé do servidor (só esses pedidos exatos), e uma função cujo serviço tem o interruptor desligado di-lo.
 - **Malhas a partir de um único pacote:** Os modelos 3D já não estão na árvore do repositório (221 MiB, partilhados com o HYDRA-UMC-SUITE). `meshes.pack.json` fixa o SHA-256 de um pacote (45 MB, publicado no HYDRA-UMC-MESHES) e de cada malha, e `npm run dev`, `npm run build` e os testes transferem-no na primeira execução: é preciso ligação à Internet uma vez; depois o pacote fica em `~/.cache/hydra-umc/meshes` (ou em `HYDRA_UMC_MESH_CACHE`) e é reutilizado. Sem rede, copie o pacote para lá ou indique o seu caminho em `HYDRA_UMC_MESH_PACKAGE`. `npm run meshes -- status | check | ensure | prepare` verifica ou repõe `public/models/`. A origem é `auto` (por omissão), `local` (nunca transfere) ou `download` (verifica cada malha), escolhida em `mesh_pack.config.json` ou com `HYDRA_UMC_MESH_SOURCE`; um pacote que não coincide não instala nada e só se aceitam endereços `https`. Ver [`docs/MESH_PACKAGE.md`](docs/MESH_PACKAGE.md). Para manter uma única biblioteca para o STUDIO, a aplicação de secretária e o editor de STL, aponte `HYDRA_UMC_LIBRARY_DIR` para uma pasta com a mesma estrutura (categoria / modelo / ficheiros): os três leem-na e o pacote nunca é instalado por cima; sem definir (predefinição), cada um mantém a sua própria pasta.
+- **Separadores de definições para o cuidado de uma instalação (Config):** Atualizações (a versão instalada deste Studio, do servidor e de cada programa junto dele, lida de `GET /api/hydra-info` e `GET /api/ecosystem/status`), Segurança (verificações, o início de sessão em dois passos e, para administradores, as chaves de assinatura dos tokens com uma rotação protegida, lidas de `GET /api/admin/jwt-keys`), Instalação (uma lista da primeira colocação em serviço), Assistente de acesso remoto (o endereço com um código QR, que tipos de app podem encontrar o servidor e um fechar tudo com confirmação), Preferências (nível da Ajuda, densidade e animações reduzidas, guardadas neste navegador), Notificações (o estado das notificações push, para administradores) e Histórico (as ligações e, para administradores, o registo de auditoria). Onde o servidor não tem rota para algo (a última versão publicada de um programa, instalar, alterar os interruptores do push) o separador di-lo e não altera nada.
 
 ## 🔒 Segurança e proteção
 
@@ -315,7 +316,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Testes
 
-1205 testes automáticos correm com `npm test`. Não precisam de hardware nem de nada fora desta máquina.
+1247 testes automáticos correm com `npm test`. Não precisam de hardware nem de nada fora desta máquina.
 
 A CI executa `HYDRA_UMC_CI=1 python tools/ci_validate.py`, que verifica o manifesto, os documentos, os oito README e as imagens.
 

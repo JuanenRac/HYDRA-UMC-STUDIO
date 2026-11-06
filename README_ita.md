@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-1205%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1247%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.6-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Versione | `0.8.1.6` |
 | Maturità | Funzionale |
-| Test | 1205 (`npm test`) |
+| Test | 1247 (`npm test`) |
 | Tecnologia | React 19 / Vite / Three.js / Tailwind CSS |
 | Destinazione | Il Raspberry Pi CM5 di una cella HYDRA-UMC |
 | Su hardware reale | Eseguito su un banco di prova: la verifica di onestà qui sopra indica quali parti hanno girato su hardware reale |
@@ -53,7 +53,7 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 | Area | Stato | Cosa significa qui |
 |---|---|---|
 | Software | 🟡 | Funziona per il suo scopo principale; la verifica di onestà qui sopra elenca ciò che manca ancora |
-| Test | 🟢 | 1205 test automatici, eseguiti a ogni modifica |
+| Test | 🟢 | 1247 test automatici, eseguiti a ogni modifica |
 | Hardware reale | 🟡 | Eseguito su un banco di prova: la verifica di onestà qui sopra indica quali parti hanno girato su hardware reale |
 | Interfaccia e protocolli | 🟡 | Le rotte o i messaggi offerti sono documentati e provati con un client; non tutti i client li hanno ancora usati |
 | Integrazione | 🟡 | I suoi messaggi e le sue rotte sono verificati rispetto ai contratti condivisi dell'SDK; non ha ancora funzionato insieme all'apparecchiatura reale |
@@ -254,6 +254,7 @@ Lo stesso contratto `GET`/`POST /api/settings`, più un endpoint di discovery (`
 - **Opzioni del dispatcher dei lavori in Server Admin** (solo amministratori): l'interruttore e la mappa dei robot della consegna delle richieste di arresto (`jobDispatcher.stopRelay.enabled` e `robotMap`) e le due opzioni della ripianificazione (`allowUnconfirmed`, `stopAckTimeoutSeconds`), che il server scrive nel file di configurazione del dispatcher (serve `HYDRA_UMC_JOB_DISPATCHER_CONFIG`; si chiede al dispatcher di rileggere il file, altrimenti lo legge al prossimo avvio). Attivare la consegna, o lasciare che un lavoro passi a un altro robot senza arresto confermato, chiede prima una conferma.
 - **Pianificazione e operatività** (Ecosistema): la simulazione di un piano (`POST /plan/simulate` del pianificatore semantico; non esegue mai nulla, e una risposta che dice di averlo fatto non viene mostrata), le stime del dispatcher dei lavori (quando ogni lavoro non terminato dovrebbe iniziare e finire, con il suo intervallo), la vita utile residua di una serie di punteggi, un lettore dell'output di `train plan --json` dell'updater (letto da un file e solo mostrato: da qui non si installa nulla) e lo stato delle statistiche per finestra del data lake. Passano per il relay del server (solo quelle richieste esatte), e una funzione il cui servizio ha l'interruttore spento lo dice.
 - **Mesh da un unico pacchetto:** I modelli 3D non sono più nell'albero del repository (221 MiB, condivisi con HYDRA-UMC-SUITE). `meshes.pack.json` fissa lo SHA-256 di un pacchetto (45 MB, pubblicato in HYDRA-UMC-MESHES) e di ogni mesh; `npm run dev`, `npm run build` e i test lo scaricano alla prima esecuzione: serve una connessione a Internet una sola volta, poi il pacchetto resta in `~/.cache/hydra-umc/meshes` (o in `HYDRA_UMC_MESH_CACHE`) e viene riutilizzato. Senza rete, copia il pacchetto lì o indica il suo percorso in `HYDRA_UMC_MESH_PACKAGE`. `npm run meshes -- status | check | ensure | prepare` verifica o ripristina `public/models/`. La sorgente è `auto` (predefinita), `local` (non scarica mai) o `download` (verifica ogni mesh), scelta in `mesh_pack.config.json` o con `HYDRA_UMC_MESH_SOURCE`; un pacchetto che non corrisponde non installa nulla e sono accettati solo indirizzi `https`. Vedi [`docs/MESH_PACKAGE.md`](docs/MESH_PACKAGE.md). Per avere una sola libreria per STUDIO, l'app desktop e l'editor STL, punta `HYDRA_UMC_LIBRARY_DIR` a una cartella con la stessa struttura (categoria / modello / file): tutti e tre la leggono e il pacchetto non viene mai installato sopra; se non è impostata (predefinito), ciascuno conserva la propria cartella.
+- **Schede di impostazioni per la cura di un'installazione (Config):** Aggiornamenti (la versione installata di questo Studio, del server e di ogni programma accanto a esso, letta da `GET /api/hydra-info` e `GET /api/ecosystem/status`), Sicurezza (controlli, l'accesso in due passaggi e, per gli amministratori, le chiavi di firma dei token con una rotazione protetta, lette da `GET /api/admin/jwt-keys`), Installazione (un elenco della prima messa in servizio), Configurazione dell'accesso remoto (l'indirizzo con un codice QR, quali tipi di app possono trovare il server e un chiudi tutto con conferma), Preferenze (livello della Guida, densità e animazioni ridotte, conservati in questo browser), Notifiche (lo stato delle notifiche push, per gli amministratori) e Cronologia (le connessioni e, per gli amministratori, il registro di audit). Dove il server non ha una rotta per qualcosa (l'ultima versione pubblicata di un programma, installare, cambiare gli interruttori del push) la scheda lo dice e non cambia nulla.
 
 ## 🔒 Sicurezza e protezione
 
@@ -315,7 +316,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Test
 
-1205 test automatici si eseguono con `npm test`. Non richiedono hardware né nulla al di fuori di questa macchina.
+1247 test automatici si eseguono con `npm test`. Non richiedono hardware né nulla al di fuori di questa macchina.
 
 La CI esegue `HYDRA_UMC_CI=1 python tools/ci_validate.py`, che controlla il manifesto, i documenti, gli otto README e le immagini.
 
@@ -341,7 +342,7 @@ Esegue il proprio dev server di Vite (`vite` semplice, porta `5173`) con ricaric
 ### Test Automatizzati
 
 ```bash
-npm test          # vitest run - 1205 test reali su src/examples/
+npm test          # vitest run - 1247 test reali su src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

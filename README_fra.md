@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-1205%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1247%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.6-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Version | `0.8.1.6` |
 | Maturité | Fonctionnel |
-| Tests | 1205 (`npm test`) |
+| Tests | 1247 (`npm test`) |
 | Technologie | React 19 / Vite / Three.js / Tailwind CSS |
 | Cible | Le Raspberry Pi CM5 d'une cellule HYDRA-UMC |
 | Sur matériel réel | Exécuté sur un banc d'essai : la vérification d'honnêteté ci-dessus indique quelles parties ont tourné sur du matériel réel |
@@ -53,7 +53,7 @@ Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'
 | Domaine | État | Ce que cela veut dire ici |
 |---|---|---|
 | Logiciel | 🟡 | Fonctionne pour son usage principal ; la vérification d'honnêteté ci-dessus liste ce qui manque encore |
-| Tests | 🟢 | 1205 tests automatiques, exécutés à chaque modification |
+| Tests | 🟢 | 1247 tests automatiques, exécutés à chaque modification |
 | Matériel réel | 🟡 | Exécuté sur un banc d'essai : la vérification d'honnêteté ci-dessus indique quelles parties ont tourné sur du matériel réel |
 | Interface et protocoles | 🟡 | Les routes ou les messages proposés sont documentés et testés avec un client ; tous les clients ne les ont pas encore utilisés |
 | Intégration | 🟡 | Ses messages et ses routes sont vérifiés par rapport aux contrats partagés du SDK ; il n'a pas fonctionné avec l'équipement réel |
@@ -254,6 +254,7 @@ Le même contrat `GET`/`POST /api/settings`, plus un point de terminaison de dé
 - **Options du répartiteur de travaux dans Server Admin** (administrateurs seulement) : l'interrupteur et la table des robots de la remise des demandes d'arrêt (`jobDispatcher.stopRelay.enabled` et `robotMap`) et les deux options de la replanification (`allowUnconfirmed`, `stopAckTimeoutSeconds`), que le serveur écrit dans le fichier de configuration du répartiteur (il faut `HYDRA_UMC_JOB_DISPATCHER_CONFIG` ; on demande au répartiteur de relire le fichier, sinon il le lit à son prochain démarrage). Activer la remise, ou laisser un travail passer à un autre robot sans arrêt confirmé, demande d'abord une confirmation.
 - **Planification et exploitation** (Écosystème) : la simulation d'un plan (`POST /plan/simulate` du planificateur sémantique ; il n'exécute jamais rien, et une réponse qui prétend l'avoir fait n'est pas affichée), les estimations du répartiteur de travaux (quand chaque travail non terminé devrait commencer et finir, avec sa plage), la durée de vie restante d'une série de scores, un lecteur de la sortie de `train plan --json` de l'outil de mise à jour (lue depuis un fichier et seulement affichée : rien n'est installé d'ici) et l'état des statistiques par fenêtre du data lake. Elles passent par le relais du serveur (seulement ces requêtes exactes), et une fonction dont le service a l'interrupteur désactivé le dit.
 - **Maillages depuis un seul paquet :** Les modèles 3D ne sont plus dans l'arborescence du dépôt (221 MiB, partagés avec HYDRA-UMC-SUITE). `meshes.pack.json` fixe le SHA-256 d'un paquet (45 MB, publié dans HYDRA-UMC-MESHES) et de chaque maillage ; `npm run dev`, `npm run build` et les tests le téléchargent au premier lancement : une connexion Internet est nécessaire une fois, puis le paquet reste dans `~/.cache/hydra-umc/meshes` (ou dans `HYDRA_UMC_MESH_CACHE`) et est réutilisé. Sans réseau, copiez le paquet à cet endroit ou indiquez son chemin dans `HYDRA_UMC_MESH_PACKAGE`. `npm run meshes -- status | check | ensure | prepare` vérifie ou rétablit `public/models/`. La source est `auto` (par défaut), `local` (ne télécharge jamais) ou `download` (vérifie chaque maillage), choisie dans `mesh_pack.config.json` ou avec `HYDRA_UMC_MESH_SOURCE` ; un paquet qui ne correspond pas n'installe rien et seules les adresses `https` sont acceptées. Voir [`docs/MESH_PACKAGE.md`](docs/MESH_PACKAGE.md). Pour garder une seule bibliothèque pour STUDIO, l'application de bureau et l'éditeur STL, faites pointer `HYDRA_UMC_LIBRARY_DIR` vers un dossier de même structure (catégorie / modèle / fichiers) : les trois le lisent et le paquet ne s'installe jamais par-dessus ; sans valeur (par défaut), chacun garde son propre dossier.
+- **Onglets de réglages pour l'entretien d'une installation (Config) :** Mises à jour (la version installée de ce Studio, du serveur et de chaque programme à côté de lui, lue depuis `GET /api/hydra-info` et `GET /api/ecosystem/status`), Sécurité (vérifications, la connexion en deux étapes et, pour les administrateurs, les clés de signature des jetons avec une rotation protégée, lues depuis `GET /api/admin/jwt-keys`), Installation (une liste de première mise en service), Assistant d'accès à distance (l'adresse avec un QR code, quels types d'applis peuvent trouver le serveur et un tout fermer avec confirmation), Préférences (niveau de l'aide, densité et animations réduites, gardés dans ce navigateur), Notifications (l'état des notifications push, pour les administrateurs) et Historique (les connexions et, pour les administrateurs, le journal d'audit). Là où le serveur n'a pas de route pour quelque chose (la dernière version publiée d'un programme, installer, changer les interrupteurs du push), l'onglet le dit et ne change rien.
 
 ## 🔒 Sécurité et protection
 
@@ -315,7 +316,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Tests
 
-1205 tests automatiques s'exécutent avec `npm test`. Ils n'ont besoin ni de matériel ni de rien en dehors de cette machine.
+1247 tests automatiques s'exécutent avec `npm test`. Ils n'ont besoin ni de matériel ni de rien en dehors de cette machine.
 
 La CI exécute `HYDRA_UMC_CI=1 python tools/ci_validate.py`, qui vérifie le manifeste, les documents, les huit README et les images.
 
@@ -341,7 +342,7 @@ Exécute le propre serveur de développement de Vite (`vite` simple, port `5173`
 ### Tests Automatisés
 
 ```bash
-npm test          # vitest run - 1205 vrais tests sur src/examples/
+npm test          # vitest run - 1247 vrais tests sur src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

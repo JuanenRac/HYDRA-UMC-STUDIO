@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-1205%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1247%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.6-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | 版本 | `0.8.1.6` |
 | 成熟度 | 可用 |
-| 测试 | 1205 (`npm test`) |
+| 测试 | 1247 (`npm test`) |
 | 技术栈 | React 19 / Vite / Three.js / Tailwind CSS |
 | 目标 | HYDRA-UMC 工作单元的 Raspberry Pi CM5 |
 | 真实硬件 | 已在试验台上运行：上面的诚实性检查说明了哪些部分在真实硬件上运行过 |
@@ -53,7 +53,7 @@ GPL-3.0-or-later - see LICENSE
 | 领域 | 状态 | 在这里的含义 |
 |---|---|---|
 | 软件 | 🟡 | 主要用途可用；上面的诚实性检查列出了仍然缺少的内容 |
-| 测试 | 🟢 | 1205 项自动测试，每次变更都会运行 |
+| 测试 | 🟢 | 1247 项自动测试，每次变更都会运行 |
 | 真实硬件 | 🟡 | 已在试验台上运行：上面的诚实性检查说明了哪些部分在真实硬件上运行过 |
 | 接口与协议 | 🟡 | 提供的路由或消息已有文档，并用客户端测试过；尚未被所有客户端使用 |
 | 集成 | 🟡 | 其消息和路由已对照 SDK 的共享契约检查；尚未与真实设备一起运行 |
@@ -254,6 +254,7 @@ HYDRA-UMC STUDIO 本身是一个纯客户端——除了当前会话在内存中
 - **Server Admin 中的作业调度器选项**（仅管理员）：停止请求转交的开关和机器人映射表（`jobDispatcher.stopRelay.enabled` 与 `robotMap`），以及重新规划的两个选项（`allowUnconfirmed`、`stopAckTimeoutSeconds`），后者由服务器写入调度器的配置文件（需要 `HYDRA_UMC_JOB_DISPATCHER_CONFIG`；会请求调度器重新读取文件，否则在下次启动时读取）。开启转交，或允许作业在没有确认停止的情况下转给其他机器人，会先要求确认。
 - **规划与运行**（生态系统）：计划的试运行（语义规划器的 `POST /plan/simulate`；它从不执行任何东西，声称已执行的响应不会显示）、作业调度器的估算（每个未结束作业预计何时开始和结束，含范围）、一组评分的剩余使用寿命、更新器 `train plan --json` 输出的阅读器（从文件读取并仅作显示：不会从这里安装任何东西）以及数据湖窗口统计的状态。它们经由服务器的转发（只限这些确切的请求），服务开关处于关闭的功能会如实说明。
 - **网格来自单一软件包：** 3D 模型不再放在仓库目录树中（221 MiB，与 HYDRA-UMC-SUITE 共用）。`meshes.pack.json` 固定了一个软件包（45 MB，发布在 HYDRA-UMC-MESHES）及每个网格的 SHA-256；`npm run dev`、`npm run build` 和测试会在首次运行时获取它：只需联网一次，之后软件包保存在 `~/.cache/hydra-umc/meshes`（或 `HYDRA_UMC_MESH_CACHE`）并被重复使用。没有网络时，把软件包复制到该处，或在 `HYDRA_UMC_MESH_PACKAGE` 中给出其路径。`npm run meshes -- status | check | ensure | prepare` 用于检查或恢复 `public/models/`。来源可以是 `auto`（默认）、`local`（从不下载）或 `download`（检查每个网格），在 `mesh_pack.config.json` 中或用 `HYDRA_UMC_MESH_SOURCE` 选择；不匹配的软件包不会安装任何内容，且只接受 `https` 地址。参见 [`docs/MESH_PACKAGE.md`](docs/MESH_PACKAGE.md)。 若要让 STUDIO、桌面应用和 STL 编辑器共用一个库，请将 `HYDRA_UMC_LIBRARY_DIR` 指向一个结构相同的文件夹（类别 / 模型 / 文件）：三者都会读取它，软件包绝不会安装到其上；未设置（默认）时，各自使用自己的文件夹。
+- **用于维护安装的设置页（Config）：** 更新（此 Studio、服务器及其旁各程序的已安装版本，读取自 `GET /api/hydra-info` 和 `GET /api/ecosystem/status`）、安全（检查项、两步登录，以及管理员可见的带保护轮换的令牌签名密钥，读取自 `GET /api/admin/jwt-keys`）、安装（首次启动清单）、远程访问设置（带二维码的地址、允许哪些应用类型找到服务器，以及需确认的“全部关闭”）、偏好设置（帮助级别、界面密度和减少动画，保存在此浏览器）、通知（管理员可见的推送通知状态）和历史记录（连接，以及管理员可见的审计记录）。对于服务器没有接口的内容（程序的最新发布版本、安装、更改推送开关），该页会如实说明并且不做任何更改。
 
 ## 🔒 安全与防护
 
@@ -315,7 +316,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 测试
 
-运行 `npm test` 会执行 1205 个自动测试。 不需要硬件，也不需要这台机器以外的任何东西。
+运行 `npm test` 会执行 1247 个自动测试。 不需要硬件，也不需要这台机器以外的任何东西。
 
 CI 运行 `HYDRA_UMC_CI=1 python tools/ci_validate.py`，检查清单、文档、八个 README 和图片。
 

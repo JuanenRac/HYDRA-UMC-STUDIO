@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-1205%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1247%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.6-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | バージョン | `0.8.1.6` |
 | 成熟度 | 機能する |
-| テスト | 1205 (`npm test`) |
+| テスト | 1247 (`npm test`) |
 | 技術 | React 19 / Vite / Three.js / Tailwind CSS |
 | 対象 | HYDRA-UMC セルの Raspberry Pi CM5 |
 | 実機での確認 | ベンチ環境で動作：上の正直さの確認に、どの部分が実機で動いたかが書かれています |
@@ -53,7 +53,7 @@ GPL-3.0-or-later - see LICENSE
 | 領域 | 状態 | ここでの意味 |
 |---|---|---|
 | ソフトウェア | 🟡 | 主な目的では動作します。足りない点は上の正直さの確認に書かれています |
-| テスト | 🟢 | 自動テスト 1205 件。変更のたびに実行されます |
+| テスト | 🟢 | 自動テスト 1247 件。変更のたびに実行されます |
 | 実機 | 🟡 | ベンチ環境で動作：上の正直さの確認に、どの部分が実機で動いたかが書かれています |
 | インターフェースとプロトコル | 🟡 | 提供するルートやメッセージは文書化され、クライアントで試験済みです。すべてのクライアントがまだ使ったわけではありません |
 | 連携 | 🟡 | メッセージとルートは SDK の共通契約に照らして検証されていますが、実機と一緒に動かしたことはありません |
@@ -254,6 +254,7 @@ HYDRA-UMC STUDIO 自体は純粋なクライアントです——現在のセッ
 - **Server Admin のジョブディスパッチャー設定**（管理者のみ）：停止要求の配送のスイッチとロボット対応表（`jobDispatcher.stopRelay.enabled` と `robotMap`）、および再計画の 2 つのオプション（`allowUnconfirmed`、`stopAckTimeoutSeconds`）。後者はサーバーがディスパッチャーの設定ファイルに書き込みます（`HYDRA_UMC_JOB_DISPATCHER_CONFIG` が必要で、ディスパッチャーに再読み込みを依頼し、できなければ次回起動時に読み込みます）。配送をオンにするとき、または確認済みの停止なしにジョブを別のロボットへ移せるようにするときは、先に確認を求めます。
 - **計画と運用**（エコシステム）：計画のドライラン（セマンティックプランナーの `POST /plan/simulate`。何も実行せず、実行したと主張する応答は表示されません）、ジョブディスパッチャーの見積り（未完了の各ジョブの開始・終了の見込みと範囲）、スコア系列の残存耐用期間、アップデーターの `train plan --json` の出力を読む閲覧機能（ファイルから読み込んで表示するだけで、ここから何もインストールしません）、データレイクのウィンドウ統計の状態。サーバーのリレー（これらの正確なリクエストのみ）を通り、サービス側のスイッチがオフの機能はその旨を表示します。
 - **メッシュを 1 つのパッケージから：** 3D モデルはリポジトリのツリーに含まれなくなりました（221 MiB、HYDRA-UMC-SUITE と共有）。`meshes.pack.json` は 1 つのパッケージ（45 MB、HYDRA-UMC-MESHES で公開）と各メッシュの SHA-256 を固定しており、`npm run dev`、`npm run build` とテストは初回実行時にそれを取得します。インターネット接続が必要なのは一度だけで、その後パッケージは `~/.cache/hydra-umc/meshes`（または `HYDRA_UMC_MESH_CACHE`）に保存されて再利用されます。ネットワークがない場合は、パッケージをそこにコピーするか、`HYDRA_UMC_MESH_PACKAGE` にそのパスを指定してください。`npm run meshes -- status | check | ensure | prepare` で `public/models/` を確認または復元します。取得元は `auto`（既定）、`local`（ダウンロードしない）、`download`（全メッシュを検証）で、`mesh_pack.config.json` または `HYDRA_UMC_MESH_SOURCE` で選びます。一致しないパッケージは何もインストールせず、`https` アドレスのみ受け付けます。[`docs/MESH_PACKAGE.md`](docs/MESH_PACKAGE.md) を参照してください。 STUDIO、デスクトップアプリ、STLエディターで1つのライブラリを使うには、`HYDRA_UMC_LIBRARY_DIR` を同じ構成（カテゴリ / モデル / ファイル）のフォルダーに向けます。3つとも同じフォルダーを読み込み、パッケージがその上にインストールされることはありません。未設定（既定）の場合は、それぞれが自分のフォルダーを使います。
+- **インストールの手入れのための設定タブ（Config）：** アップデート（この Studio、サーバー、その隣の各プログラムのインストール済みバージョン。`GET /api/hydra-info` と `GET /api/ecosystem/status` から取得）、セキュリティ（確認事項、2段階ログイン、管理者向けに保護されたローテーション付きのトークン署名キー。`GET /api/admin/jwt-keys` から取得）、インストール（初回セットアップのチェックリスト）、リモートアクセスの設定（QRコード付きのアドレス、サーバーを見つけられるアプリの種類、確認付きの「すべて閉じる」）、環境設定（ヘルプのレベル、画面の密度、アニメーションの軽減。このブラウザに保存）、通知（管理者向けのプッシュ通知の状態）、履歴（接続と、管理者向けの監査記録）。サーバーにルートがないもの（プログラムの最新公開バージョン、インストール、プッシュのスイッチ変更）については、タブがその旨を表示し、何も変更しません。
 
 ## 🔒 セキュリティと安全
 
@@ -315,7 +316,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 テスト
 
-`npm test` で自動テスト 1205 件を実行します。 ハードウェアも、このマシンの外にあるものも必要ありません。
+`npm test` で自動テスト 1247 件を実行します。 ハードウェアも、このマシンの外にあるものも必要ありません。
 
 CI は `HYDRA_UMC_CI=1 python tools/ci_validate.py` を実行し、マニフェスト、文書、8 つの README、図を検査します。
 
