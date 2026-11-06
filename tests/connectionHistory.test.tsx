@@ -28,7 +28,7 @@ function serve(routes: Record<string, { status: number; body: unknown }>): void 
     const url = String(input);
     const hit = Object.entries(routes).find(([route]) => url.includes(route));
     const reply = hit ? hit[1] : { status: 404, body: {} };
-    return { ok: reply.status < 300, status: reply.status, json: async () => reply.body } as unknown as Response;
+    return { ok: reply.status < 300, status: reply.status, headers: new Headers(), text: async () => JSON.stringify(reply.body) } as unknown as Response;
   }));
 }
 
