@@ -4,6 +4,20 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **An Updates tab in the configuration window shows the installed versions, in eight languages:** the version of this Studio, the one of the server and the version each program next to the server reports (`GET /api/hydra-info`, `GET /api/ecosystem/status`). The server has no route that tells the newest published version or installs one, so the tab says so and changes nothing.
+
+- **A Security tab gathers the sign-in checks, the second factor and the token signing keys, with a guarded rotation:** two checks (two-step sign-in on, tokens signed with asymmetric keys), the existing two-step sign-in card and, for administrators, the public state of the signing keys (`GET /api/admin/jwt-keys`). Rotating the key (`POST /api/admin/jwt-keys/rotate`) needs a switch that is off every time the tab opens and a confirmation, and the answers of the server (shared secret in use, key file unusable) are told apart.
+
+- **An Installation tab shows a first-run checklist read from the server:** the server answers, a controller is added, a robot is set up and the account has its second factor, each marked done, to do or not known, with the next step and where it is done. It only checks and tells, because the server has no route that installs or repairs anything.
+
+- **A remote access setup tab walks through the address, the kinds of app and the check from the phone:** the address the apps type with its QR code (and a warning when the page was opened from the machine itself), the same per-app switches as the Remote Access tab, and a close-all that asks first.
+
+- **A Preferences tab keeps the level the Help opens at, the density and reduced animations in this browser:** each change is saved and applied at once, nothing is sent to the server, and the Help opens its step-by-step guides at the chosen level.
+
+- **A Notifications tab shows the state of the push notifications to administrators:** off, on without usable credentials, or ready; how many phones are registered and which events are announced (`GET /api/admin/push`). The server takes these switches from its own security file, so the tab has no switches.
+
+- **A History tab joins the connections and, for administrators, the audit record, and the Help has a guide for each new tab:** the existing connection history and audit record screens appear under one tab of the configuration window, and the step-by-step guides of the Help (by level, in eight languages) cover updates, security, installation, remote access setup, preferences, notifications and history.
+
 ## [0.8.1.6] - A fourth view of the path of a trajectory that turns around it, and a point that moves to a typed position: next to the views from above, the side and the front, the check shown before Play draws the path from a point of view... (and 1 more changes)
 
 - **A fourth view of the path of a trajectory that turns around it, and a point that moves to a typed position:** next to the views from above, the side and the front, the check shown before Play draws the path from a point of view that turns in steps (left, right, up, down; the starting angles and the step are in `src/config/trajectoryPreview.json`). In the form that edits a point, typing X, Y and Z in millimetres and pressing the button finds the joints that bring the tool closest, keeping its orientation, with the inverse kinematics of the model; a position the model cannot reach (the tool would miss it by more than the reach tolerance) leaves the point as it was and says by how much it misses, and a model with no kinematics of its own is told so. Texts in the eight languages.
