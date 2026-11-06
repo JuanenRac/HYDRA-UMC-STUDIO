@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Sending a robot command and the global STOP leave the global state provider, and the ATC and XY table screens save their file through the shared download, with no change in what the screens do:** the POST of a command, the command with its optimistic change and its rollback, and the reading of one robot after a 412 are in `src/hooks/useRobotCommandSender.ts`; the global STOP with its retries and its fallback robot by robot is in `src/hooks/useEmergencyStop.ts`. The provider keeps the shared configuration, the live state and the preferences.
+
 ## [0.8.1.5] - The npm dependencies are up to date, with no change in what the screens do: React 19.3, Three.js 0.186 with its drei and fiber bindings, motion 14, i18next 26.5 with react-i18next, lucide-react 1.64, tailwind-merge, the Vite... (and 1 more changes)
 
 - **The npm dependencies are up to date, with no change in what the screens do:** React 19.3, Three.js 0.186 with its drei and fiber bindings, motion 14, i18next 26.5 with react-i18next, lucide-react 1.64, tailwind-merge, the Vite React plugin 6.1 and the type packages move to their latest releases, and the one translation call whose typing changed with i18next is written so both forms of it type-check.

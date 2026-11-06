@@ -5,20 +5,15 @@
 // =============================================================================
 
 import { publishClaimsEvent } from './lib/claimsFeed';
-import React, { useMemo, useRef, useCallback } from 'react';
-import { apiUrl } from './lib/apiBase';
+import React, { useMemo, useRef } from 'react';
 import { saveFailureText } from './lib/serverErrors';
-import { applyRobotCommandMutation, rollbackRobotCommand } from './robotCommandTransition';
 import { type CommandResult } from './lib/commandResult';
 import { createCommandSequence } from './lib/commandSequence';
-import { authHeaders } from './lib/session';
 import { guardCommand } from './lib/motionGuard';
 import { settingsLocalOnly, settingsSaveAllowed } from './lib/settingsSave';
 import { getModeState, getSafetyState } from './lib/accessStore';
-import { fetchRobot } from './lib/accessApi';
-import { isUnknownCommand, markTableCommand, serverHasTableCommand } from './lib/tableMove';
+import { isUnknownCommand } from './lib/tableMove';
 import { createEditQueue, markEditCommands, planRobotEdits, serverHasEditCommands, type RobotEditCommand } from './lib/robotEdits';
-import { type StopAllReport, requestStopAllWithRetry, stopRobotByRobot } from './lib/stopAll';
 import { HydraStoreProviders } from './storeContexts';
 import { useAuthSession } from './hooks/useAuthSession';
 import { useCommandIssues } from './hooks/useCommandIssues';
@@ -28,8 +23,9 @@ import { useLiveStatus } from './hooks/useLiveStatus';
 import { useSettingsPreferences } from './hooks/useSettingsPreferences';
 import { useSettingsSocket } from './hooks/useSettingsSocket';
 import { useDeferredSettingsSave } from './hooks/useDeferredSettingsSave';
-import { rememberSettingsEtag, useSharedConfig } from './hooks/useSharedConfig';
-import { postRobotCommand as postRobotCommandRequest, tableThroughJogs as tableThroughJogsRequest, type PostRobotCommand } from './lib/robotCommandPost';
+import { useSharedConfig } from './hooks/useSharedConfig';
+import { useRobotCommandSender } from './hooks/useRobotCommandSender';
+import { useEmergencyStop } from './hooks/useEmergencyStop';
 import { type CameraState, type HydraController, type RobotState, defaultControllers } from './store';
 
 /**
@@ -66,14 +62,6 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // The safety limits come from the server: hooks/useSafetyLimitsSync.ts.
   useSafetyLimitsSync(authToken);
-
-  // Per-robot generation counter guarding sendRobotCommand()'s own
-  // rollback-on-failure - see that function's own comment and its
-  // HYDRA-UMC-IOS-CONTROL/ANDROID-CONTROL/DSI equivalents for the full
-  // reasoning (a held jog button/rapid clicks can have several commands
-  // for the same robot in flight at once; an early one failing after a
-  // later one already applied must not roll back over that newer state).
-  const commandGenerationRef = useRef<Record<number, number>>({});
 
   // Live sync: any client that writes the settings or a robot is broadcast back to every connected client
   // (hooks/useSettingsSocket.ts). Without a token the socket is not opened at all.
@@ -147,153 +135,15 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     for (const edit of sent) void editQueue.enqueue(id, edit);
   };
 
-  // One POST of a robot command, answered as a typed result (lib/robotCommandPost.ts).
-  const postRobotCommand: PostRobotCommand = (id, command, params) => postRobotCommandRequest({ attemptTokenRefresh, commandSequence }, id, command, params);
-  const tableThroughJogs = (id: number, params: Record<string, unknown>) => tableThroughJogsRequest(postRobotCommand, id, params);
-
-  // Reads one robot again (GET /api/robot/:id, which also gives the revision to use next) and puts it on screen.
-  // Called after a 412: the robot changed under this window, and what is shown may be behind.
-  const refreshRobotFromServer = useCallback(async (robotId: number): Promise<boolean> => {
-    const read = await fetchRobot(robotId);
-    if (!read) return false;
-    const owner = controllersRef.current.find((c) => c.robots.some((r) => r.id === robotId));
-    if (!owner) return false;
-    applyRobotDelta({ controllerId: owner.id, robotId, patch: read.robot });
-    return true;
-  }, [applyRobotDelta]);
-
-  const sendRobotCommand = async (
-    id: number,
-    command: string,
-    params?: Record<string, unknown>,
-    localMutate?: (robot: RobotState) => Partial<RobotState>,
-    affectedIds?: number[]
-  ): Promise<CommandResult> => {
-    const ids = affectedIds && affectedIds.length > 0 ? affectedIds : [id];
-    // The guard of every motion command (lib/motionGuard.ts): Sim mode, the size of a jog and of a table move. A STOP is
-    // never refused. A refused command is not sent and the interface says which rule stopped it.
-    const target = command === 'jog' || command === 'table' ? controllersRef.current.flatMap((c) => c.robots).find((r) => r.id === id) : undefined;
-    const verdict = guardCommand({
-      command, params, robotIds: ids, model: target?.model, limits: getSafetyState().limits, modes: getModeState(),
-      tablePosition: { x: target?.xyTable?.pos?.x, y: target?.xyTable?.pos?.y, rz: target?.pos?.trz },
-    });
-    if (!verdict.ok) {
-      reportCommandIssue(verdict.issue);
-      return { ok: false, status: 0, code: 'rejected', detail: null, serverCode: verdict.serverCode, warnings: [] };
-    }
-    // Snapshot (for rollback) and this call's own generation number for
-    // every affected robot - captured BEFORE the optimistic mutation
-    // below, so a failed send can restore exactly what was there. See this
-    // function's own interface-level comment for the full reasoning.
-    let snapshots: Record<number, RobotState> = {};
-    let myGeneration: Record<number, number> = {};
-
-    if (localMutate) {
-      setControllers(prev => {
-        const next = prev.map((c) => {
-          if (c.id !== activeControllerIdRef.current) return c;
-          const result = applyRobotCommandMutation(c.robots, ids, localMutate, commandGenerationRef.current);
-          snapshots = { ...snapshots, ...result.snapshots };
-          myGeneration = { ...myGeneration, ...result.myGeneration };
-          return { ...c, robots: result.robots };
-        });
-        // Same echo-guard flag as applyRobotDelta() above - an optimistic
-        // local mutation changes `controllers` just as much as an applied
-        // delta does, and would trigger the exact same needless full-tree
-        // POST (and its full-tree JSON.stringify) 500ms later without this.
-        skipNextSaveRef.current = true;
-        return next;
-      });
-    }
-
-    let result: CommandResult;
-    if (command === 'table' && !serverHasTableCommand()) {
-      result = await tableThroughJogs(id, params ?? {});
-    } else {
-      result = await postRobotCommand(id, command, params);
-      // A server that predates the table command: remember it and do the same with the jogs it understands.
-      if (command === 'table' && isUnknownCommand(result)) {
-        markTableCommand(false);
-        result = await tableThroughJogs(id, params ?? {});
-      }
-    }
-    if (!result.ok) {
-      // Roll back the optimistic mutation - but only for a robot whose
-      // generation counter still matches what THIS call incremented it to;
-      // a mismatch means a newer command for that same robot already
-      // started (and possibly already succeeded) since this one's
-      // snapshot was taken, and restoring this stale snapshot now would
-      // erase that newer state instead of this failed one's own.
-      if (localMutate) {
-        setControllers(prev => {
-          const next = prev.map((c) => {
-            if (c.id !== activeControllerIdRef.current) return c;
-            const robots = rollbackRobotCommand(c.robots, snapshots, myGeneration, commandGenerationRef.current);
-            return { ...c, robots };
-          });
-          // Same echo-guard flag as the optimistic mutate above - the
-          // rollback itself is just another `controllers` change that the
-          // save-effect shouldn't re-POST full-tree.
-          skipNextSaveRef.current = true;
-          return next;
-        });
-      }
-      // The robot changed since this window read it (412): read it again so the screen shows what it is now, then say so.
-      if (result.code === 'revision_changed') void refreshRobotFromServer(id);
-      // And say it: a command that did not reach the robot is never silent (a STOP above all).
-      reportCommandIssue({ code: result.code ?? 'rejected', command, robotIds: ids, detail: result.detail });
-    } else if (result.warnings.length > 0) {
-      // A jog the server did not apply (beyond the limit of the model, or without a valid axis) has its own sentence.
-      reportCommandIssue({ code: result.warningFields?.includes('jog') ? 'jog_server_limit' : 'warnings', command, robotIds: ids, detail: result.warnings.join('; ') });
-    }
-    return result;
-  };
-
-  // The per-robot stop of every robot (and its valves and pumps off), used only when the global route is rate
-  // limited (429) or missing (404, an older server). Same report shape as the global answer.
-  const stopEachRobot = (): Promise<StopAllReport> => stopRobotByRobot(
-    controllersRef.current.flatMap((c) => c.robots.map((robot) => ({ controllerId: c.id, robot }))),
-    postRobotCommand,
-  );
-
-  // The emergency stop is GLOBAL: one call stops every robot of every controller, whichever one is selected, with
-  // no confirmation (POST /api/stop-all; lib/stopAll.ts). It does not wait for any refresh. A network failure is
-  // retried once; an expired session is renewed once; a 429 or a 404 falls back to the per-robot stop; and when
-  // nothing answers the "stop not confirmed" issue stays on screen until a later stop gets an answer.
-  const emergencyStop = async (): Promise<void> => {
-    setStopAllInFlight((n) => n + 1);
-    try {
-      let attempt = await requestStopAllWithRetry();
-      if (attempt.kind === 'failed' && attempt.sessionExpired && (await attemptTokenRefresh())) {
-        attempt = await requestStopAllWithRetry();
-      }
-      const report = attempt.kind === 'report'
-        ? attempt.report
-        : attempt.kind === 'fallback'
-          ? await stopEachRobot()
-          : null;
-      if (!report) {
-        const everyId = [...new Set(controllersRef.current.flatMap((c) => c.robots.map((r) => r.id)))];
-        reportCommandIssue({
-          code: 'estop_failed',
-          command: 'stop',
-          robotIds: everyId,
-          detail: attempt.kind === 'failed' ? [attempt.code, attempt.detail].filter(Boolean).join(': ') || null : null,
-        });
-        return;
-      }
-      setCommandIssue((current) => (current?.code === 'estop_failed' ? null : current));
-      setStopAllReport(report);
-      // The socket's per-robot deltas usually arrive first; the settings are read again to be sure.
-      const refreshHeaders = authHeaders();
-      fetch(apiUrl('/api/settings'), { headers: refreshHeaders })
-        .then((r) => { rememberSettingsEtag(settingsEtagRef, r); return r.ok ? r.json() : null; })
-        .then((data) => { if (data) applyServerData(data); })
-        .catch(() => {});
-    } finally {
-      setStopAllInFlight((n) => n - 1);
-    }
-  };
+  // The POST of a robot command, the command with its optimistic change and rollback, and the reading of one robot again live in
+  // hooks/useRobotCommandSender.ts; the global STOP in hooks/useEmergencyStop.ts.
+  const { postRobotCommand, sendRobotCommand, refreshRobotFromServer } = useRobotCommandSender({
+    attemptTokenRefresh, commandSequence, controllersRef, activeControllerIdRef, setControllers, skipNextSaveRef, applyRobotDelta, reportCommandIssue,
+  });
+  const { emergencyStop } = useEmergencyStop({
+    controllersRef, settingsEtagRef, postRobotCommand, attemptTokenRefresh, applyServerData, reportCommandIssue, setCommandIssue,
+    setStopAllReport, setStopAllInFlight,
+  });
 
   // The joint values of a slider: shown at once and sent as a command (the newest of the ones sent while an earlier is on its way).
   const setRobotJoints = (id: number, joints: RobotState['joints']) => {

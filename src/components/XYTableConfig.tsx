@@ -11,6 +11,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Cylinder } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 import { useFleet } from '../storeContexts';
+import { downloadJson } from '../lib/sceneFiles';
 import { configFileName, jogTarget, xyTableResetLayout, xyTableWithSize } from '../lib/moduleConfigs';
 
 /**
@@ -122,16 +123,7 @@ export function XYTableConfig() {
   // which this mirrors.
   const saveConfig = () => {
     if (!selectedRobot || !xyTable) return;
-    const data = JSON.stringify(xyTable, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = configFileName('xytable_config', selectedRobot.name);
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadJson(configFileName('xytable_config', selectedRobot.name), xyTable);
   };
 
   if (!selectedRobot) return null;

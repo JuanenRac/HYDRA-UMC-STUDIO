@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, useRef } from 'react';
 import { type ATCGrid, type ToolType, type ATCConfig } from '../store';
 import { URTC_TOOLS } from './robotDetail/shared';
+import { downloadJson } from '../lib/sceneFiles';
 import { atcGridChange, atcPositionChange, atcPositionOf, atcRevolverSlotsChange, atcSlotCount, atcToolsWithTool, configFileName, defaultAtcConfig, parseAtcConfigText } from '../lib/moduleConfigs';
 import { RotateCcw, Settings, Grid3X3, CircleDashed, MapPin, ChevronDown, ChevronUp, Save, Upload, Server } from 'lucide-react';
 
@@ -128,18 +129,7 @@ export function ATCToolsConfig() {
     updateAtcConfig(atcPositionChange(atcConfig, slot, field, value));
   };
 
-  const saveConfig = () => {
-    const data = JSON.stringify(atcConfig, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = configFileName('atc_config', selectedRobot.name);
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+  const saveConfig = () => downloadJson(configFileName('atc_config', selectedRobot.name), atcConfig);
 
   const loadConfig = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
