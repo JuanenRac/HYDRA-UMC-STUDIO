@@ -15,6 +15,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import Rack3DView from './3d/Rack3DView';
 import { useFleet } from '../storeContexts';
+import { defaultRackSystem, toggledSlots } from '../lib/moduleConfigs';
 
 /**
  * Executes the Cnm logic. 
@@ -64,9 +65,7 @@ export function RackConfigView() {
 
   const toggleSlot = (rackId: 'rack1' | 'rack2', index: number) => {
     const rack = config[rackId];
-    const newSlots = [...rack.usableSlots];
-    newSlots[index] = !newSlots[index];
-    updateRack(rackId, { usableSlots: newSlots });
+    updateRack(rackId, { usableSlots: toggledSlots(rack.usableSlots, index) });
   };
 
   const renderRack = (rackId: 'rack1' | 'rack2', title: string) => {
@@ -75,29 +74,7 @@ export function RackConfigView() {
     const span = Math.max(spec.width + 20, spec.depth + 20, spec.capacity * 10 + 40) / 1000;
     
   const handleReset = () => {
-    updateRobot(selectedRobot.id, {
-      rackSystem: {
-        enabled: true,
-        rack1: {
-          type: 'Input',
-          capacity: 24,
-          usableSlots: Array(24).fill(true),
-          basePickupPos: { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, tx: 0, ty: 0 },
-          renderPos: { x: 300, y: 150 },
-          renderRot: 0,
-          renderScale: 1
-        },
-        rack2: {
-          type: 'Output',
-          capacity: 24,
-          usableSlots: Array(24).fill(true),
-          basePickupPos: { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, tx: 0, ty: 0 },
-          renderPos: { x: -300, y: 150 },
-          renderRot: 0,
-          renderScale: 1
-        }
-      }
-    });
+    updateRobot(selectedRobot.id, { rackSystem: defaultRackSystem() });
   };
 
   return (

@@ -11,6 +11,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Cylinder } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 import { useFleet } from '../storeContexts';
+import { configFileName, jogTarget, xyTableResetLayout, xyTableWithSize } from '../lib/moduleConfigs';
 
 /**
  * Executes the  x y table visualizer logic. 
@@ -86,7 +87,7 @@ export function XYTableConfig() {
     if (!selectedRobot) return;
     // The layout goes as the layout command; the position goes back to zero with the table command.
     updateRobot(selectedRobot.id, {
-      xyTable: { ...(xyTable ?? { pos: { x: 0, y: 0 } }), tableSize: { width: 300, length: 300 }, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
+      xyTable: xyTableResetLayout(xyTable)
     } as any);
     void sendRobotCommand(selectedRobot.id, 'table', { x: 0, y: 0, mode: 'absolute' }, (r) => ({
       pos: { ...r.pos, tx: 0, ty: 0 },
@@ -97,13 +98,8 @@ export function XYTableConfig() {
   const handleJog = (axis: 'x' | 'y', direction: number) => {
     if (!selectedRobot || !selectedRobot.hasXYTable || !xyTable) return;
     
-    let newPos = xyTable.pos[axis] + (direction * jogStep);
-    // Clamp to table size
-    if (axis === 'x') newPos = Math.max(0, Math.min(newPos, xyTable.tableSize.width));
-    if (axis === 'y') newPos = Math.max(0, Math.min(newPos, xyTable.tableSize.length));
-    
-    // One atomic table move to the position reached (the other axis stays where it is).
-    const target = { x: axis === 'x' ? newPos : xyTable.pos.x, y: axis === 'y' ? newPos : xyTable.pos.y };
+    // One atomic table move to the position reached, kept inside the table (the other axis stays where it is).
+    const target = jogTarget(xyTable.pos, xyTable.tableSize, axis, direction, jogStep);
     void sendRobotCommand(selectedRobot.id, 'table', { ...target, mode: 'absolute' }, (r) => ({
       pos: { ...r.pos, tx: target.x, ty: target.y },
       xyTable: r.xyTable ? { ...r.xyTable, pos: target } : r.xyTable,
@@ -113,7 +109,7 @@ export function XYTableConfig() {
   const handleSizeChange = (axis: 'width' | 'length', value: number) => {
     if (!selectedRobot || !selectedRobot.hasXYTable || !xyTable) return;
     updateRobot(selectedRobot.id, {
-      xyTable: { ...xyTable, tableSize: { ...xyTable.tableSize, [axis]: value } }
+      xyTable: xyTableWithSize(xyTable, axis, value)
     });
   };
 
@@ -133,7 +129,7 @@ export function XYTableConfig() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `xytable_config_${selectedRobot.name.replace(/\s+/g, '_')}.json`;
+    a.download = configFileName('xytable_config', selectedRobot.name);
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

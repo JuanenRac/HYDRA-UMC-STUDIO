@@ -7,6 +7,8 @@
 import { useTranslation } from 'react-i18next';
 import { useState, useRef } from 'react';
 import { type ATCGrid, type ToolType, type ATCConfig } from '../store';
+import { URTC_TOOLS } from './robotDetail/shared';
+import { atcGridChange, atcPositionChange, atcPositionOf, atcRevolverSlotsChange, atcSlotCount, atcToolsWithTool, configFileName, defaultAtcConfig, parseAtcConfigText } from '../lib/moduleConfigs';
 import { RotateCcw, Settings, Grid3X3, CircleDashed, MapPin, ChevronDown, ChevronUp, Save, Upload, Server } from 'lucide-react';
 
 import { clsx, type ClassValue } from 'clsx';
@@ -20,44 +22,6 @@ import { useFleet } from '../storeContexts';
 function cnm(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
-/** Stores the  u r t c_ t o o l s configuration or state data. */
-const URTC_TOOLS: ToolType[] = [
-  'None',
-  'Soldering Station (T12)',
-  'SMT Solder Paste Dispenser',
-  'Thermal Paste / Liquid Dispenser',
-  'Smart Electric Screwdriver',
-  'Vacuum / Pneumatic Gripper',
-  'Drill (BL4260)',
-  'Gimbal Gripper',
-  'NEMA Gripper',
-  'AOI (Automated Optical Inspection) System',
-  'Engraving Laser Diode (10W optical)',
-  '3D Printing Hotend',
-  '3D Scanner Probe',
-  'SMT Pick & Place Head',
-  'Heavy-Duty Electromagnet',
-  'Spot Welder Head',
-  'Conformal Coating Airbrush',
-  'Large-Format Vacuum Gripper',
-  'Functional Testing Head',
-  'UV Curing Head',
-  'Hot Air Rework Nozzle',
-  'Pneumatic Press-Fit Inserter',
-  'Wire Harnessing / Crimping Actuator',
-  'PCB Advanced Inspection',
-  'Solder Paste Jetting Valve',
-  'Ultrasonic Welder / Packaging Sealer'
-];
-
-/** Stores the Default atc config configuration or state data. */
-const defaultAtcConfig: ATCConfig = {
-  type: 'vertical_panel',
-  panelGrid: '2x2',
-  revolverSlots: 8,
-  tools: []
-};
 
 /**
  * Executes the  a t c tools config logic. 
@@ -91,7 +55,7 @@ export function ATCToolsConfig() {
   };
 
   const enableATC = () => {
-    updateRobot(selectedRobot.id, { atc: { ...defaultAtcConfig } });
+    updateRobot(selectedRobot.id, { atc: defaultAtcConfig() });
   };
 
   const disableATC = () => {
@@ -102,7 +66,7 @@ export function ATCToolsConfig() {
     
   const handleReset = () => {
     updateRobot(selectedRobot.id, {
-      atc: { ...defaultAtcConfig }
+      atc: defaultAtcConfig()
     });
   };
 
@@ -147,49 +111,21 @@ export function ATCToolsConfig() {
   }
 
   const handleGridChange = (grid: ATCGrid) => {
-    updateAtcConfig({ panelGrid: grid, tools: [] });
+    updateAtcConfig(atcGridChange(grid));
   };
 
   const handleRevolverSlotsChange = (slots: number) => {
-    updateAtcConfig({ revolverSlots: slots, tools: [] });
+    updateAtcConfig(atcRevolverSlotsChange(slots));
   };
 
-  const getSlotCount = () => {
-    if (atcConfig.type === 'vertical_panel' || atcConfig.type === 'horizontal_panel') {
-      const [r, c] = atcConfig.panelGrid.split('x').map(Number);
-      return r * c;
-    }
-    return atcConfig.revolverSlots;
-  };
-
-  const slotCount = getSlotCount();
+  const slotCount = atcSlotCount(atcConfig);
 
   const handleToolUpdate = (slot: number, tool: ToolType) => {
-    const existing = [...atcConfig.tools];
-    const idx = existing.findIndex(t => t.slot === slot);
-    if (idx >= 0) {
-      existing[idx].tool = tool;
-    } else {
-      existing.push({ slot, tool, pos: { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, tx: 0, ty: 0 } });
-    }
-    updateAtcConfig({ tools: existing });
+    updateAtcConfig({ tools: atcToolsWithTool(atcConfig.tools, slot, tool) });
   };
 
   const handlePosUpdate = (slot: number | 'revolver', field: string, value: number) => {
-    if (slot === 'revolver') {
-      const p = atcConfig.revolverPos || { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, tx: 0, ty: 0 };
-      updateAtcConfig({ revolverPos: { ...p, [field]: value } });
-    } else {
-      const existing = [...atcConfig.tools];
-      let idx = existing.findIndex(t => t.slot === slot);
-      if (idx === -1) {
-        existing.push({ slot, tool: 'None', pos: { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, tx: 0, ty: 0 } });
-        idx = existing.length - 1;
-      }
-      const p = existing[idx].pos || { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, tx: 0, ty: 0 };
-      existing[idx].pos = { ...p, [field]: value };
-      updateAtcConfig({ tools: existing });
-    }
+    updateAtcConfig(atcPositionChange(atcConfig, slot, field, value));
   };
 
   const saveConfig = () => {
@@ -198,7 +134,7 @@ export function ATCToolsConfig() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `atc_config_${selectedRobot.name.replace(/\s+/g, '_')}.json`;
+    a.download = configFileName('atc_config', selectedRobot.name);
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -211,10 +147,8 @@ export function ATCToolsConfig() {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const json = JSON.parse(event.target?.result as string);
-        if (json && json.type) {
-          updateAtcConfig(json);
-        }
+        const loaded = parseAtcConfigText(event.target?.result as string);
+        if (loaded) updateAtcConfig(loaded);
       } catch {
         console.error('Invalid ATC config file');
       }
@@ -224,8 +158,7 @@ export function ATCToolsConfig() {
   };
 
   const renderPosEditor = (slot: number | 'revolver') => {
-    let pos = slot === 'revolver' ? atcConfig.revolverPos : atcConfig.tools.find(t => t.slot === slot)?.pos;
-    if (!pos) pos = { j1: 0, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, tx: 0, ty: 0 };
+    const pos = atcPositionOf(atcConfig, slot);
 
     return (
       <div className="mt-3 p-3 bg-slate-900 border border-slate-800 rounded-lg">

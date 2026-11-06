@@ -25,6 +25,7 @@
   "/api/connections/clients",
   "/api/connections/events",
   "/api/connector-hub/gate/settings",
+  "/api/developer-node/status",
   "/api/ecosystem/health",
   "/api/ecosystem/service/{p}/{p}",
   "/api/ecosystem/status",

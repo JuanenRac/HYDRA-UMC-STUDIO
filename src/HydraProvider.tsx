@@ -14,7 +14,7 @@ import { createCommandSequence } from './lib/commandSequence';
 import { authHeaders } from './lib/session';
 import { guardCommand } from './lib/motionGuard';
 import { settingsLocalOnly, settingsSaveAllowed } from './lib/settingsSave';
-import { applyOverlay, loadOverlay, saveOverlay, usernameFromToken } from './lib/settingsScope';
+import { applyOverlay, loadOverlay } from './lib/settingsScope';
 import { browserStorage } from './lib/robotDetailHelpers';
 import { getModeState, getSafetyState } from './lib/accessStore';
 import { fetchRobot } from './lib/accessApi';
@@ -22,12 +22,13 @@ import { isUnknownCommand, markTableCommand, serverHasTableCommand } from './lib
 import { createEditQueue, markEditCommands, planRobotEdits, serverHasEditCommands, type RobotEditCommand } from './lib/robotEdits';
 import { type StopAllReport, requestStopAllWithRetry, stopRobotByRobot } from './lib/stopAll';
 import { parseRobotDelta, deltaTargetExists, patchControllers } from './lib/robotDelta';
-import { planSettingsUpdate } from './lib/settingsUpdate';
 import { HydraStoreProviders } from './storeContexts';
 import { useAuthSession } from './hooks/useAuthSession';
 import { useCommandIssues } from './hooks/useCommandIssues';
 import { useSafetyLimitsSync } from './hooks/useSafetyLimitsSync';
 import { useSceneFiles } from './hooks/useSceneFiles';
+import { useLiveStatus } from './hooks/useLiveStatus';
+import { useSettingsPreferences } from './hooks/useSettingsPreferences';
 import { useSettingsSocket } from './hooks/useSettingsSocket';
 import { useDeferredSettingsSave } from './hooks/useDeferredSettingsSave';
 import { defaultSystemSettings } from './lib/defaultSettings';
@@ -51,35 +52,12 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [activeControllerId, setActiveControllerId] = useState<string>('192.168.1.100');
   const [settings, setSettings] = useState<SystemSettings>(defaultSystemSettings);
   const [isLoaded, setIsLoaded] = useState(false);
-  // the real, live "have we actually heard from a real Server"
-  // signal - starts false (honest: nothing confirmed yet) and is set from
-  // the actual fetch/WebSocket lifecycle below, never from a fixture
-  // default and never written into `settings`/`controllers` (so it can
-  // never persist into settings.json the way controllers[].status used
-  // to). Dashboard.tsx's "System Online/Offline" badge reads this, not
-  // activeController.status.
-  const [serverReachable, setServerReachable] = useState(false);
-
-  // Real, live "did the last POST /api/settings actually persist" signal -
-  // caught live in production (STUDIO/SUITE/SERVER, camera streams left
-  // running after Vision Center's own stop button): fetch() only rejects
-  // on a real network failure, never on a non-2xx response, so a 401
-  // (expired session token) or 403 (POST /api/settings requires an admin
-  // role - a non-admin session's every save silently 401/403s forever)
-  // used to leave the local UI showing the new value while the server -
-  // and therefore anything server.ts derives from it, like which camera
-  // stream processes should be running - never heard about it at all, with
-  // zero feedback anywhere. Null once the most recent save actually
-  // succeeded (or none has been attempted yet); a real, human-readable
-  // message otherwise. See the debounced save effect, flushSettingsSave()
-  // and factoryReset() below - all three share this one signal.
-  const [settingsSaveError, setSettingsSaveError] = useState<string | null>(null);
-  // An operator edited the settings tree and, because the server accepts it only from an administrator, nothing was sent.
-  const [operatorEdited, setOperatorEdited] = useState(false);
-
-  // Set when the server answered the first read of the settings with a refusal (no session): what is on screen
-  // is then the built-in sample, not the system, and the interface says so.
-  const [settingsLoadError, setSettingsLoadError] = useState<'login_required' | 'server' | null>(null);
+  // The live status of the link with the server (reachable, last save, first read refused, CAN flash progress, log clear mark)
+  // lives in hooks/useLiveStatus.ts.
+  const {
+    serverReachable, setServerReachable, settingsSaveError, setSettingsSaveError, operatorEdited, setOperatorEdited,
+    settingsLoadError, setSettingsLoadError, canotaProgress, setCanotaProgress, logsClearedAt, setLogsClearedAt,
+  } = useLiveStatus();
 
   // The problem of the last command and the answer of the global STOP live in hooks/useCommandIssues.ts.
   const {
@@ -92,18 +70,6 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const isAdmin = role === 'admin';
   const localOnly = settingsLocalOnly(role, operatorEdited);
 
-  // Real, live per-page flash progress from a real POST /api/hardware/
-  // canota/flash cycle (server.ts's own comment on its `canota_progress`
-  // WS broadcast) - the HTTP response for that request only reports the
-  // final outcome, so Flasher.tsx watches this instead of the fetch's own
-  // response for live percent/phase. Cleared back to null whenever a
-  // `phase: 'done'`/`'error'` message arrives isn't done here - Flasher.tsx
-  // owns when to stop showing it, same as it already owns `phase`/`percent`
-  // state for the mock transport.
-  const [canotaProgress, setCanotaProgress] = useState<Record<string, unknown> | null>(null);
-  // See logsClearedAt's own doc comment on the context type above for why
-  // this lives here rather than as AdminLogs.tsx's own local state.
-  const [logsClearedAt, setLogsClearedAt] = useState<{ anchor: string | null } | null>(null);
 
   // Guards against a feedback loop: the server broadcasts every write to
   // every connected client, sender included (simpler than tracking "who
@@ -223,7 +189,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setSettingsSaveError(saveConflictText());
     }
     return outcome;
-  }), [applyServerData]);
+  }), [applyServerData, setSettingsSaveError]);
 
   /**
    * Applies a real targeted delta (server.ts's own broadcastRobotDelta(),
@@ -290,7 +256,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (!cancelled) { setServerReachable(false); setIsLoaded(true); }
     });
     return () => { cancelled = true; };
-  }, [applyServerData, applyRobotDelta, authToken, attemptTokenRefresh, logout]);
+  }, [applyServerData, applyRobotDelta, authToken, attemptTokenRefresh, logout, setServerReachable, setSettingsLoadError]);
 
   // Live sync: any client that writes the settings or a robot is broadcast back to every connected client
   // (hooks/useSettingsSocket.ts). Without a token the socket is not opened at all.
@@ -556,22 +522,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setSettingsSaveError(null);
   };
 
-  // An administrator changes any setting. Any other account changes only the local ones (theme, language, layout of the
-  // panels: lib/settingsScope.ts), which stay in this browser; a global one is refused here and the interface says so
-  // (the server refuses it as well).
-  const updateSettings = (updates: Partial<SystemSettings>) => {
-    const plan = planSettingsUpdate(settingsSaveAllowed(role), updates, settingsRef.current);
-    if (plan.mode === 'global') {
-      setSettings(prev => ({ ...prev, ...updates }));
-      return;
-    }
-    if (plan.refusedKeys.length > 0) reportCommandIssue({ code: 'settings_admin_only', command: 'settings', robotIds: [], detail: plan.refusedKeys.join(', ') });
-    if (Object.keys(plan.local).length === 0) return;
-    const username = usernameFromToken(authToken);
-    if (plan.changes) skipNextSaveRef.current = true;
-    if (username) saveOverlay(browserStorage(), username, { ...loadOverlay(browserStorage(), username), ...plan.local });
-    setSettings(prev => ({ ...prev, ...plan.local }));
-  };
+  // The change of a setting by the person (shared for an administrator, local for any other account): hooks/useSettingsPreferences.ts.
+  const { updateSettings } = useSettingsPreferences({ role, authToken, settingsRef, setSettings, skipNextSaveRef, reportCommandIssue });
 
   const addController = (controller: HydraController) => {
     setControllers(prev => [...prev, controller]);
