@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-1192%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1205%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.5-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | バージョン | `0.8.1.5` |
 | 成熟度 | 機能する |
-| テスト | 1192 (`npm test`) |
+| テスト | 1205 (`npm test`) |
 | 技術 | React 19 / Vite / Three.js / Tailwind CSS |
 | 対象 | HYDRA-UMC セルの Raspberry Pi CM5 |
 | 実機での確認 | ベンチ環境で動作：上の正直さの確認に、どの部分が実機で動いたかが書かれています |
@@ -53,7 +53,7 @@ GPL-3.0-or-later - see LICENSE
 | 領域 | 状態 | ここでの意味 |
 |---|---|---|
 | ソフトウェア | 🟡 | 主な目的では動作します。足りない点は上の正直さの確認に書かれています |
-| テスト | 🟢 | 自動テスト 1192 件。変更のたびに実行されます |
+| テスト | 🟢 | 自動テスト 1205 件。変更のたびに実行されます |
 | 実機 | 🟡 | ベンチ環境で動作：上の正直さの確認に、どの部分が実機で動いたかが書かれています |
 | インターフェースとプロトコル | 🟡 | 提供するルートやメッセージは文書化され、クライアントで試験済みです。すべてのクライアントがまだ使ったわけではありません |
 | 連携 | 🟡 | メッセージとルートは SDK の共通契約に照らして検証されていますが、実機と一緒に動かしたことはありません |
@@ -190,7 +190,7 @@ JuanenPnP、JuanenCNC、JuanenLaser は独立した STL コピーを使用し、
 
 ### 作業と軌道
 
-既定のサンプル軌道を読み込む、あるいは自分自身のポイントをリアルタイムでジョグ＆記録する、またはロボットごとに複雑な多点軌道（JSON）を読み込み／保存／編集／再生します。軌道はロボットモデル間で移植可能です——記録された各ポイントは、それをたまたま記録したロボットに対して固定されるのではなく、読み込み／描画／再生の時点でその特定のロボット自身の実際の運動学（`src/examples/robotKinematicsDispatch.ts`）を通じて解決されるため、同じ軌道ファイルが Parol6 と UR10e それぞれの実際に到達可能なジオメトリに沿って正しく駆動します。 スイッチ **再生前に軌道を確認する**（軌道タブにあり、既定ではオフ、設定はこのブラウザに保存）をオンにすると、START はまず経路を上・横・正面の3方向から表示し、範囲外の関節と関節を動かしすぎるステップを一覧にして、再生前に確認します。最大ステップと表示サイズは `src/config/trajectoryPreview.json` にあります。
+既定のサンプル軌道を読み込む、あるいは自分自身のポイントをリアルタイムでジョグ＆記録する、またはロボットごとに複雑な多点軌道（JSON）を読み込み／保存／編集／再生します。軌道はロボットモデル間で移植可能です——記録された各ポイントは、それをたまたま記録したロボットに対して固定されるのではなく、読み込み／描画／再生の時点でその特定のロボット自身の実際の運動学（`src/examples/robotKinematicsDispatch.ts`）を通じて解決されるため、同じ軌道ファイルが Parol6 と UR10e それぞれの実際に到達可能なジオメトリに沿って正しく駆動します。 スイッチ **再生前に軌道を確認する**（軌道タブにあり、既定ではオフ、設定はこのブラウザに保存）をオンにすると、START はまず経路を上・横・正面の3方向から表示し、範囲外の関節と関節を動かしすぎるステップを一覧にして、再生前に確認します。最大ステップと表示サイズは `src/config/trajectoryPreview.json` にあります。第4のビューが経路の周りを段階的に(左、右、上、下)回転し、点を編集するフォームでは、X、Y、Zをミリメートルで入力すると、モデルの逆運動学でその位置へ点が移動します。到達できない場合は、ツールがどれだけ外れるかが表示されます。
 
 ### CAN-OTA ファームウェアツール
 
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 テスト
 
-`npm test` で自動テスト 1192 件を実行します。 ハードウェアも、このマシンの外にあるものも必要ありません。
+`npm test` で自動テスト 1205 件を実行します。 ハードウェアも、このマシンの外にあるものも必要ありません。
 
 CI は `HYDRA_UMC_CI=1 python tools/ci_validate.py` を実行し、マニフェスト、文書、8 つの README、図を検査します。
 

@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-1192%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1205%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.5-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Versione | `0.8.1.5` |
 | Maturità | Funzionale |
-| Test | 1192 (`npm test`) |
+| Test | 1205 (`npm test`) |
 | Tecnologia | React 19 / Vite / Three.js / Tailwind CSS |
 | Destinazione | Il Raspberry Pi CM5 di una cella HYDRA-UMC |
 | Su hardware reale | Eseguito su un banco di prova: la verifica di onestà qui sopra indica quali parti hanno girato su hardware reale |
@@ -53,7 +53,7 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 | Area | Stato | Cosa significa qui |
 |---|---|---|
 | Software | 🟡 | Funziona per il suo scopo principale; la verifica di onestà qui sopra elenca ciò che manca ancora |
-| Test | 🟢 | 1192 test automatici, eseguiti a ogni modifica |
+| Test | 🟢 | 1205 test automatici, eseguiti a ogni modifica |
 | Hardware reale | 🟡 | Eseguito su un banco di prova: la verifica di onestà qui sopra indica quali parti hanno girato su hardware reale |
 | Interfaccia e protocolli | 🟡 | Le rotte o i messaggi offerti sono documentati e provati con un client; non tutti i client li hanno ancora usati |
 | Integrazione | 🟡 | I suoi messaggi e le sue rotte sono verificati rispetto ai contratti condivisi dell'SDK; non ha ancora funzionato insieme all'apparecchiatura reale |
@@ -190,7 +190,7 @@ Questi modelli originali JuanenPNP / HYDRA-UMC e i sorgenti SCAD sono sotto GPL-
 
 ### Lavori e Traiettorie
 
-Carica traiettorie di esempio predefinite, esegui jog e registra i tuoi punti dal vivo, oppure carica/salva/modifica/riproduci traiettorie complesse multi-punto (JSON) per robot. Le traiettorie sono portabili tra modelli di robot - ogni punto registrato viene risolto attraverso la cinematica reale propria di quello specifico robot (`src/examples/robotKinematicsDispatch.ts`) al momento del caricamento/disegno/riproduzione, non calcolato in modo fisso rispetto al robot con cui è stato registrato, così lo stesso file di traiettoria pilota correttamente sia un Parol6 che un UR10e lungo la propria geometria raggiungibile reale. Con l'interruttore **Controlla la traiettoria prima di Play** attivo (nella scheda delle traiettorie; spento per impostazione predefinita e salvato in questo browser), START mostra prima il percorso dall'alto, di lato e di fronte, elenca i giunti fuori dai limiti e i passi che ruotano troppo un giunto, e chiede conferma prima di avviare; il passo massimo e la dimensione delle viste sono in `src/config/trajectoryPreview.json`.
+Carica traiettorie di esempio predefinite, esegui jog e registra i tuoi punti dal vivo, oppure carica/salva/modifica/riproduci traiettorie complesse multi-punto (JSON) per robot. Le traiettorie sono portabili tra modelli di robot - ogni punto registrato viene risolto attraverso la cinematica reale propria di quello specifico robot (`src/examples/robotKinematicsDispatch.ts`) al momento del caricamento/disegno/riproduzione, non calcolato in modo fisso rispetto al robot con cui è stato registrato, così lo stesso file di traiettoria pilota correttamente sia un Parol6 che un UR10e lungo la propria geometria raggiungibile reale. Con l'interruttore **Controlla la traiettoria prima di Play** attivo (nella scheda delle traiettorie; spento per impostazione predefinita e salvato in questo browser), START mostra prima il percorso dall'alto, di lato e di fronte, elenca i giunti fuori dai limiti e i passi che ruotano troppo un giunto, e chiede conferma prima di avviare; il passo massimo e la dimensione delle viste sono in `src/config/trajectoryPreview.json`. Una quarta vista ruota attorno al percorso a passi (sinistra, destra, su, giù), e nel modulo che modifica un punto, digitare X, Y e Z in millimetri sposta il punto lì tramite la cinematica inversa del modello, oppure indica di quanto l'utensile lo mancherebbe.
 
 ### Strumenti Firmware CAN-OTA
 
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Test
 
-1192 test automatici si eseguono con `npm test`. Non richiedono hardware né nulla al di fuori di questa macchina.
+1205 test automatici si eseguono con `npm test`. Non richiedono hardware né nulla al di fuori di questa macchina.
 
 La CI esegue `HYDRA_UMC_CI=1 python tools/ci_validate.py`, che controlla il manifesto, i documenti, gli otto README e le immagini.
 
@@ -341,7 +341,7 @@ Esegue il proprio dev server di Vite (`vite` semplice, porta `5173`) con ricaric
 ### Test Automatizzati
 
 ```bash
-npm test          # vitest run - 1192 test reali su src/examples/
+npm test          # vitest run - 1205 test reali su src/examples/
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

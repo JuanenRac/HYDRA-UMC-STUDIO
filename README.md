@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-1192%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1205%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.5-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Version | `0.8.1.5` |
 | Maturity | Functional |
-| Tests | 1192 (`npm test`) |
+| Tests | 1205 (`npm test`) |
 | Stack | React 19 / Vite / Three.js / Tailwind CSS |
 | Target | The Raspberry Pi CM5 of a HYDRA-UMC cell |
 | On real hardware | Run on a bench setup: the honesty check above says which parts ran on real hardware |
@@ -53,7 +53,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟡 | Works for its main purpose; the honesty check above lists what is still missing |
-| Tests | 🟢 | 1192 automated tests, run on every change |
+| Tests | 🟢 | 1205 automated tests, run on every change |
 | Real hardware | 🟡 | Run on a bench setup: the honesty check above says which parts ran on real hardware |
 | Interface and protocols | 🟡 | The routes or messages it offers are documented and tested with a client; not every client has used them yet |
 | Integration | 🟡 | Its messages and routes are checked against the shared contracts of the SDK; it has not run together with the real equipment |
@@ -190,7 +190,7 @@ These original JuanenPNP / HYDRA-UMC assets and their SCAD sources use GPL-3.0; 
 
 ### Works & Trajectories
 
-Load canned example trajectories, jog-and-record your own points live, or load/save/edit/play back complex multi-point trajectories (JSON) per robot. Trajectories are portable between robot models - each recorded point is resolved through that specific robot's own real kinematics (`src/examples/robotKinematicsDispatch.ts`) at load/draw/play time, not baked against whichever robot happened to record it, so the same trajectory file drives a Parol6 and a UR10e correctly along their own real reachable geometry. With the switch **Check the trajectory before Play** on (in the trajectories tab; off by default and kept in this browser), START first shows the path from above, from the side and from the front and lists the joints outside their limits and the steps that swing a joint too far, and asks before it plays; the largest step and the size of the views are in `src/config/trajectoryPreview.json`.
+Load canned example trajectories, jog-and-record your own points live, or load/save/edit/play back complex multi-point trajectories (JSON) per robot. Trajectories are portable between robot models - each recorded point is resolved through that specific robot's own real kinematics (`src/examples/robotKinematicsDispatch.ts`) at load/draw/play time, not baked against whichever robot happened to record it, so the same trajectory file drives a Parol6 and a UR10e correctly along their own real reachable geometry. With the switch **Check the trajectory before Play** on (in the trajectories tab; off by default and kept in this browser), START first shows the path from above, from the side and from the front and lists the joints outside their limits and the steps that swing a joint too far, and asks before it plays; the largest step and the size of the views are in `src/config/trajectoryPreview.json`. A fourth view turns around the path in steps (left, right, up, down), and in the form that edits a point, typing X, Y and Z in millimetres moves the point there through the inverse kinematics of the model, or says by how much the tool would miss it.
 
 ### CAN-OTA Firmware Tools
 
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Testing
 
-1192 automated tests run with `npm test`. They need no hardware and nothing outside this machine.
+1205 automated tests run with `npm test`. They need no hardware and nothing outside this machine.
 
 The CI runs `HYDRA_UMC_CI=1 python tools/ci_validate.py`, which checks the manifest, the documents, the eight READMEs and the pictures.
 
@@ -341,7 +341,7 @@ Runs Vite's own dev server (plain `vite`, port `5173`) with live-reloading. `vit
 ### Automated Tests
 
 ```bash
-npm test          # vitest run - 1192 tests
+npm test          # vitest run - 1205 tests
 npm run typecheck # tsc -b --noEmit (src/) + tsc -p tsconfig.test.json --noEmit (tests/)
 ```
 

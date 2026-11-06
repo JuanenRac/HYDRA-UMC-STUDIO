@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-1192%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1205%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.5-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | Versão | `0.8.1.5` |
 | Maturidade | Funcional |
-| Testes | 1192 (`npm test`) |
+| Testes | 1205 (`npm test`) |
 | Tecnologia | React 19 / Vite / Three.js / Tailwind CSS |
 | Destino | O Raspberry Pi CM5 de uma célula HYDRA-UMC |
 | Em hardware real | Executado numa bancada de ensaio: a verificação de honestidade acima diz que partes correram em hardware real |
@@ -53,7 +53,7 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 | Área | Estado | O que significa aqui |
 |---|---|---|
 | Software | 🟡 | Funciona para o seu propósito principal; a verificação de honestidade acima lista o que ainda falta |
-| Testes | 🟢 | 1192 testes automáticos, executados a cada alteração |
+| Testes | 🟢 | 1205 testes automáticos, executados a cada alteração |
 | Hardware real | 🟡 | Executado numa bancada de ensaio: a verificação de honestidade acima diz que partes correram em hardware real |
 | Interface e protocolos | 🟡 | As rotas ou mensagens que oferece estão documentadas e testadas com um cliente; ainda nem todos os clientes as usaram |
 | Integração | 🟡 | As suas mensagens e rotas são verificadas contra os contratos partilhados do SDK; ainda não funcionou em conjunto com o equipamento real |
@@ -190,7 +190,7 @@ Estes recursos originais JuanenPNP / HYDRA-UMC e as suas fontes SCAD usam GPL-3.
 
 ### Trabalhos e trajetórias
 
-Carregue trajetórias de exemplo prontas, mova e grave os seus próprios pontos em direto, ou carregue/guarde/edite/reproduza trajetórias complexas de vários pontos (JSON) por robô. As trajetórias são portáteis entre modelos de robô - cada ponto gravado é resolvido através da cinemática real desse robô (`src/examples/robotKinematicsDispatch.ts`) ao carregar/desenhar/reproduzir, e não fixado ao robô que por acaso o gravou, pelo que o mesmo ficheiro de trajetória move corretamente um Parol6 e um UR10e ao longo da sua própria geometria alcançável real. Com o interruptor **Verificar a trajetória antes de Play** ligado (no separador das trajetórias; desligado por defeito e guardado neste navegador), START mostra primeiro o percurso de cima, de lado e de frente, lista as articulações fora dos limites e os passos que rodam demasiado uma articulação, e pergunta antes de reproduzir; o passo máximo e o tamanho das vistas estão em `src/config/trajectoryPreview.json`.
+Carregue trajetórias de exemplo prontas, mova e grave os seus próprios pontos em direto, ou carregue/guarde/edite/reproduza trajetórias complexas de vários pontos (JSON) por robô. As trajetórias são portáteis entre modelos de robô - cada ponto gravado é resolvido através da cinemática real desse robô (`src/examples/robotKinematicsDispatch.ts`) ao carregar/desenhar/reproduzir, e não fixado ao robô que por acaso o gravou, pelo que o mesmo ficheiro de trajetória move corretamente um Parol6 e um UR10e ao longo da sua própria geometria alcançável real. Com o interruptor **Verificar a trajetória antes de Play** ligado (no separador das trajetórias; desligado por defeito e guardado neste navegador), START mostra primeiro o percurso de cima, de lado e de frente, lista as articulações fora dos limites e os passos que rodam demasiado uma articulação, e pergunta antes de reproduzir; o passo máximo e o tamanho das vistas estão em `src/config/trajectoryPreview.json`. Uma quarta vista roda em torno do percurso por passos (esquerda, direita, cima, baixo), e no formulário que edita um ponto, escrever X, Y e Z em milímetros move o ponto para lá através da cinemática inversa do modelo, ou diz por quanto a ferramenta o falharia.
 
 ### Ferramentas de firmware CAN-OTA
 
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 Testes
 
-1192 testes automáticos correm com `npm test`. Não precisam de hardware nem de nada fora desta máquina.
+1205 testes automáticos correm com `npm test`. Não precisam de hardware nem de nada fora desta máquina.
 
 A CI executa `HYDRA_UMC_CI=1 python tools/ci_validate.py`, que verifica o manifesto, os documentos, os oito README e as imagens.
 

@@ -20,7 +20,7 @@ GPL-3.0-or-later - see LICENSE
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Tool">
   <img src="https://img.shields.io/badge/3D-Three.js-black.svg" alt="3D">
   <img src="https://img.shields.io/badge/Language-TypeScript-3178C6.svg" alt="Language">
-  <img src="https://img.shields.io/badge/Tests-1192%20passing-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1205%20passing-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Version-0.8.1.5-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-functional-0F6CBD.svg" alt="Maturity">
 </p>
@@ -37,7 +37,7 @@ GPL-3.0-or-later - see LICENSE
 |---|---|
 | 版本 | `0.8.1.5` |
 | 成熟度 | 可用 |
-| 测试 | 1192 (`npm test`) |
+| 测试 | 1205 (`npm test`) |
 | 技术栈 | React 19 / Vite / Three.js / Tailwind CSS |
 | 目标 | HYDRA-UMC 工作单元的 Raspberry Pi CM5 |
 | 真实硬件 | 已在试验台上运行：上面的诚实性检查说明了哪些部分在真实硬件上运行过 |
@@ -53,7 +53,7 @@ GPL-3.0-or-later - see LICENSE
 | 领域 | 状态 | 在这里的含义 |
 |---|---|---|
 | 软件 | 🟡 | 主要用途可用；上面的诚实性检查列出了仍然缺少的内容 |
-| 测试 | 🟢 | 1192 项自动测试，每次变更都会运行 |
+| 测试 | 🟢 | 1205 项自动测试，每次变更都会运行 |
 | 真实硬件 | 🟡 | 已在试验台上运行：上面的诚实性检查说明了哪些部分在真实硬件上运行过 |
 | 接口与协议 | 🟡 | 提供的路由或消息已有文档，并用客户端测试过；尚未被所有客户端使用 |
 | 集成 | 🟡 | 其消息和路由已对照 SDK 的共享契约检查；尚未与真实设备一起运行 |
@@ -190,7 +190,7 @@ JuanenPnP、JuanenCNC 和 JuanenLaser 使用独立的 STL 副本，LumenPnP 保�
 
 ### 工作与轨迹
 
-加载预置的示例轨迹，实时点动并记录你自己的点位，或按机器人加载/保存/编辑/回放复杂的多点轨迹（JSON）。轨迹在不同机器人型号之间是可移植的——每一个已记录的点位都会在加载/绘制/播放时通过该特定机器人自身真实的运动学（`src/examples/robotKinematicsDispatch.ts`）进行解析，而不是针对当初记录它的那个机器人被固化，因此同一个轨迹文件能够沿着 Parol6 和 UR10e 各自真实的可达几何正确驱动它们。 打开开关**播放前检查轨迹**（位于轨迹标签页；默认关闭，设置保存在此浏览器中）后，START 会先从上方、侧面和正面显示路径，列出超出限位的关节和使关节摆动过大的步骤，并在播放前征求确认；最大步长和视图大小在 `src/config/trajectoryPreview.json` 中。
+加载预置的示例轨迹，实时点动并记录你自己的点位，或按机器人加载/保存/编辑/回放复杂的多点轨迹（JSON）。轨迹在不同机器人型号之间是可移植的——每一个已记录的点位都会在加载/绘制/播放时通过该特定机器人自身真实的运动学（`src/examples/robotKinematicsDispatch.ts`）进行解析，而不是针对当初记录它的那个机器人被固化，因此同一个轨迹文件能够沿着 Parol6 和 UR10e 各自真实的可达几何正确驱动它们。 打开开关**播放前检查轨迹**（位于轨迹标签页；默认关闭，设置保存在此浏览器中）后，START 会先从上方、侧面和正面显示路径，列出超出限位的关节和使关节摆动过大的步骤，并在播放前征求确认；最大步长和视图大小在 `src/config/trajectoryPreview.json` 中。第四个视图会分步围绕路径旋转（向左、向右、向上、向下）；在编辑点的表单中，以毫米输入 X、Y、Z，即可通过模型的逆运动学把点移到该位置，若无法到达则会说明工具会偏差多少。
 
 ### CAN-OTA 固件工具
 
@@ -315,7 +315,7 @@ npm run typecheck && npm run lint  # types and lint
 
 ## 🧪 测试
 
-运行 `npm test` 会执行 1192 个自动测试。 不需要硬件，也不需要这台机器以外的任何东西。
+运行 `npm test` 会执行 1205 个自动测试。 不需要硬件，也不需要这台机器以外的任何东西。
 
 CI 运行 `HYDRA_UMC_CI=1 python tools/ci_validate.py`，检查清单、文档、八个 README 和图片。
 
