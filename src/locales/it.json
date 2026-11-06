@@ -353,7 +353,8 @@
     "ai_hailo_none": "Nessuno (non installato)",
     "language_pt": "Portoghese",
     "confirm_hardware_transport": "Passare CAN-OTA all'hardware reale? Flash e test parleranno con le schede vere invece che con la simulazione.",
-    "not_active_connection": "Non è la connessione attiva: questa app controlla solo quella che sta usando."
+    "not_active_connection": "Non è la connessione attiva: questa app controlla solo quella che sta usando.",
+    "updates": "Aggiornamenti"
   },
   "robot_detail": {
     "back": "Torna alla Dashboard",
@@ -1997,5 +1998,29 @@
     "orbit_right": "Ruota a destra",
     "orbit_up": "Ruota verso l'alto",
     "orbit_down": "Ruota verso il basso"
+  },
+  "panels": {
+    "error_unsupported": "Questo server non offre questa informazione (è precedente alla rotta).",
+    "error_forbidden": "Il tuo account non può leggere questo. Accedi come amministratore.",
+    "error_http": "Il server ha risposto con un errore. Riprova tra un momento.",
+    "error_network": "Il server non è raggiungibile. Controlla la connessione."
+  },
+  "updates": {
+    "title": "Versioni installate",
+    "intro": "La versione di questo STUDIO, quella del server e quella segnalata da ogni programma accanto al server.",
+    "studio_version": "Questo STUDIO",
+    "server_version": "Server",
+    "uptime": "Server attivo da",
+    "unknown": "sconosciuta",
+    "programs_title": "Programmi accanto al server",
+    "refresh": "Ricarica",
+    "col_program": "Programma",
+    "col_family": "Famiglia",
+    "col_installed": "Installata",
+    "col_latest": "Ultima",
+    "no_version": "non indicata",
+    "none_found": "Il server non ha trovato programmi accanto a sé.",
+    "count": "{{with}} programmi su {{total}} segnalano la loro versione.",
+    "no_source": "Questo server non ha alcuna rotta che indichi la versione più recente o ne installi una: questa scheda mostra solo l'installato e non cambia nulla. Gli aggiornamenti si fanno con l'updater di ogni programma."
   }
 }

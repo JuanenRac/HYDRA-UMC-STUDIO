@@ -353,7 +353,8 @@
     "ai_hailo_none": "Nenhum (não instalado)",
     "language_pt": "Português",
     "confirm_hardware_transport": "Mudar o CAN-OTA para o hardware real? A gravação e os testes passarão a falar com as placas reais em vez da simulação.",
-    "not_active_connection": "Não é a ligação ativa: esta aplicação só verifica a que está a usar."
+    "not_active_connection": "Não é a ligação ativa: esta aplicação só verifica a que está a usar.",
+    "updates": "Atualizações"
   },
   "robot_detail": {
     "back": "Voltar ao painel",
@@ -1997,5 +1998,29 @@
     "orbit_right": "Rodar para a direita",
     "orbit_up": "Rodar para cima",
     "orbit_down": "Rodar para baixo"
+  },
+  "panels": {
+    "error_unsupported": "Este servidor não oferece esta informação (é anterior à rota).",
+    "error_forbidden": "A sua conta não pode ler isto. Inicie sessão como administrador.",
+    "error_http": "O servidor respondeu com um erro. Tente novamente daqui a pouco.",
+    "error_network": "Não é possível chegar ao servidor. Verifique a ligação."
+  },
+  "updates": {
+    "title": "Versões instaladas",
+    "intro": "A versão deste STUDIO, a do servidor e a que cada programa instalado junto do servidor comunica.",
+    "studio_version": "Este STUDIO",
+    "server_version": "Servidor",
+    "uptime": "Servidor ligado há",
+    "unknown": "desconhecida",
+    "programs_title": "Programas junto do servidor",
+    "refresh": "Atualizar lista",
+    "col_program": "Programa",
+    "col_family": "Família",
+    "col_installed": "Instalada",
+    "col_latest": "Mais recente",
+    "no_version": "não comunicada",
+    "none_found": "O servidor não encontrou programas junto de si.",
+    "count": "{{with}} de {{total}} programas comunicam a sua versão.",
+    "no_source": "Este servidor não tem nenhuma rota que diga qual é a versão mais recente nem que instale uma, por isso este separador só mostra o que está instalado e não altera nada. As atualizações fazem-se com o atualizador de cada programa."
   }
 }

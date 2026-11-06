@@ -353,7 +353,8 @@
     "ai_hailo_none": "Aucun (non installé)",
     "language_pt": "Portugais",
     "confirm_hardware_transport": "Passer CAN-OTA sur le matériel réel ? Le flashage et les tests parleront alors aux vraies cartes au lieu de la simulation.",
-    "not_active_connection": "Pas la connexion active : cette application ne vérifie que celle qu'elle utilise."
+    "not_active_connection": "Pas la connexion active : cette application ne vérifie que celle qu'elle utilise.",
+    "updates": "Mises à jour"
   },
   "robot_detail": {
     "back": "Retour au Tableau de Bord",
@@ -1997,5 +1998,29 @@
     "orbit_right": "Tourner à droite",
     "orbit_up": "Tourner vers le haut",
     "orbit_down": "Tourner vers le bas"
+  },
+  "panels": {
+    "error_unsupported": "Ce serveur ne fournit pas cette information (il est antérieur à la route).",
+    "error_forbidden": "Votre compte n'a pas le droit de lire ceci. Connectez-vous en administrateur.",
+    "error_http": "Le serveur a répondu par une erreur. Réessayez dans un instant.",
+    "error_network": "Le serveur est injoignable. Vérifiez la connexion."
+  },
+  "updates": {
+    "title": "Versions installées",
+    "intro": "La version de ce STUDIO, celle du serveur et celle que chaque programme installé à côté du serveur indique.",
+    "studio_version": "Ce STUDIO",
+    "server_version": "Serveur",
+    "uptime": "Serveur actif depuis",
+    "unknown": "inconnue",
+    "programs_title": "Programmes à côté du serveur",
+    "refresh": "Actualiser",
+    "col_program": "Programme",
+    "col_family": "Famille",
+    "col_installed": "Installée",
+    "col_latest": "Dernière",
+    "no_version": "non indiquée",
+    "none_found": "Le serveur n'a trouvé aucun programme à côté de lui.",
+    "count": "{{with}} programmes sur {{total}} indiquent leur version.",
+    "no_source": "Ce serveur n'a aucune route qui indique la version la plus récente ou qui en installe une : cet onglet montre seulement ce qui est installé et ne change rien. Les mises à jour se font avec l'outil de mise à jour de chaque programme."
   }
 }

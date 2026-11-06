@@ -353,7 +353,8 @@
     "ai_hailo_none": "Ninguno (no instalado)",
     "language_pt": "Portugués",
     "confirm_hardware_transport": "¿Cambiar CAN-OTA al hardware real? Flashear y probar hablará con las placas reales en lugar de la simulación.",
-    "not_active_connection": "No es la conexión activa: esta aplicación solo comprueba la que está usando."
+    "not_active_connection": "No es la conexión activa: esta aplicación solo comprueba la que está usando.",
+    "updates": "Actualizaciones"
   },
   "robot_detail": {
     "back": "Volver al Panel",
@@ -1997,5 +1998,29 @@
     "orbit_right": "Girar a la derecha",
     "orbit_up": "Girar hacia arriba",
     "orbit_down": "Girar hacia abajo"
+  },
+  "panels": {
+    "error_unsupported": "Este servidor no ofrece esta información (es anterior a la ruta).",
+    "error_forbidden": "Tu cuenta no puede leer esto. Inicia sesión como administrador.",
+    "error_http": "El servidor respondió con un error. Inténtalo de nuevo en un momento.",
+    "error_network": "No se puede llegar al servidor. Revisa la conexión."
+  },
+  "updates": {
+    "title": "Versiones instaladas",
+    "intro": "La versión de este STUDIO, la del servidor y la que informa cada programa instalado junto al servidor.",
+    "studio_version": "Este STUDIO",
+    "server_version": "Servidor",
+    "uptime": "Servidor encendido desde hace",
+    "unknown": "desconocida",
+    "programs_title": "Programas junto al servidor",
+    "refresh": "Actualizar lista",
+    "col_program": "Programa",
+    "col_family": "Familia",
+    "col_installed": "Instalada",
+    "col_latest": "Última",
+    "no_version": "sin informar",
+    "none_found": "El servidor no encontró programas a su lado.",
+    "count": "{{with}} de {{total}} programas informan de su versión.",
+    "no_source": "Este servidor no tiene ninguna ruta que diga cuál es la versión más reciente ni que instale una, así que esta pestaña solo muestra lo instalado y no cambia nada. Las actualizaciones se hacen con el actualizador de cada programa."
   }
 }

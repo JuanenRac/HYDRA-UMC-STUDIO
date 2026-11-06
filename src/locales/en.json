@@ -353,7 +353,8 @@
     "ai_hailo_none": "None (not installed)",
     "language_pt": "Portuguese",
     "confirm_hardware_transport": "Switch CAN-OTA to the real hardware? Flashing and testing will then talk to the real boards instead of the simulation.",
-    "not_active_connection": "Not the active connection - this app only checks the one it's currently using."
+    "not_active_connection": "Not the active connection - this app only checks the one it's currently using.",
+    "updates": "Updates"
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -1997,5 +1998,29 @@
     "orbit_right": "Turn right",
     "orbit_up": "Turn up",
     "orbit_down": "Turn down"
+  },
+  "panels": {
+    "error_unsupported": "This server does not offer this information (it predates the route).",
+    "error_forbidden": "Your account is not allowed to read this. Sign in as an administrator.",
+    "error_http": "The server answered with an error. Try again in a moment.",
+    "error_network": "The server cannot be reached. Check the connection."
+  },
+  "updates": {
+    "title": "Installed versions",
+    "intro": "The version of this STUDIO, the one of the server and the version each program next to the server reports.",
+    "studio_version": "This STUDIO",
+    "server_version": "Server",
+    "uptime": "Server running for",
+    "unknown": "unknown",
+    "programs_title": "Programs next to the server",
+    "refresh": "Refresh",
+    "col_program": "Program",
+    "col_family": "Family",
+    "col_installed": "Installed",
+    "col_latest": "Newest",
+    "no_version": "not reported",
+    "none_found": "The server found no programs next to it.",
+    "count": "{{with}} of {{total}} programs report their version.",
+    "no_source": "This server has no route that tells which version is the newest or that installs one, so this tab only shows what is installed and changes nothing. Updates are made with the updater of each program."
   }
 }

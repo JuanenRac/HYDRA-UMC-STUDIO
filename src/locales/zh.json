@@ -353,7 +353,8 @@
     "ai_hailo_none": "无(未安装)",
     "language_pt": "葡萄牙语",
     "confirm_hardware_transport": "将 CAN-OTA 切换到真实硬件？刷写和测试将改为与真实电路板通信，而不是模拟。",
-    "not_active_connection": "不是当前活动连接：此应用仅检查它正在使用的连接。"
+    "not_active_connection": "不是当前活动连接：此应用仅检查它正在使用的连接。",
+    "updates": "更新"
   },
   "robot_detail": {
     "back": "返回仪表盘",
@@ -1997,5 +1998,29 @@
     "orbit_right": "向右旋转",
     "orbit_up": "向上旋转",
     "orbit_down": "向下旋转"
+  },
+  "panels": {
+    "error_unsupported": "此服务器不提供该信息（版本早于该接口）。",
+    "error_forbidden": "你的账户无权读取此内容，请以管理员身份登录。",
+    "error_http": "服务器返回了错误，请稍后重试。",
+    "error_network": "无法连接到服务器，请检查网络连接。"
+  },
+  "updates": {
+    "title": "已安装版本",
+    "intro": "此 STUDIO 的版本、服务器的版本，以及服务器旁各程序所报告的版本。",
+    "studio_version": "此 STUDIO",
+    "server_version": "服务器",
+    "uptime": "服务器已运行",
+    "unknown": "未知",
+    "programs_title": "服务器旁的程序",
+    "refresh": "刷新",
+    "col_program": "程序",
+    "col_family": "系列",
+    "col_installed": "已安装",
+    "col_latest": "最新",
+    "no_version": "未报告",
+    "none_found": "服务器旁未发现任何程序。",
+    "count": "{{total}} 个程序中有 {{with}} 个报告了版本。",
+    "no_source": "此服务器没有告知最新版本或进行安装的接口，因此本页只显示已安装内容，不会更改任何东西。更新请使用各程序自带的更新器。"
   }
 }

@@ -353,7 +353,8 @@
     "ai_hailo_none": "Keins (nicht installiert)",
     "language_pt": "Portugiesisch",
     "confirm_hardware_transport": "CAN-OTA auf die echte Hardware umstellen? Flashen und Testen sprechen dann mit den echten Platinen statt mit der Simulation.",
-    "not_active_connection": "Nicht die aktive Verbindung - diese App prüft nur die gerade verwendete."
+    "not_active_connection": "Nicht die aktive Verbindung - diese App prüft nur die gerade verwendete.",
+    "updates": "Aktualisierungen"
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",
@@ -1997,5 +1998,29 @@
     "orbit_right": "Nach rechts drehen",
     "orbit_up": "Nach oben drehen",
     "orbit_down": "Nach unten drehen"
+  },
+  "panels": {
+    "error_unsupported": "Dieser Server bietet diese Information nicht an (er ist älter als die Route).",
+    "error_forbidden": "Ihr Konto darf dies nicht lesen. Melden Sie sich als Administrator an.",
+    "error_http": "Der Server hat mit einem Fehler geantwortet. Versuchen Sie es gleich noch einmal.",
+    "error_network": "Der Server ist nicht erreichbar. Prüfen Sie die Verbindung."
+  },
+  "updates": {
+    "title": "Installierte Versionen",
+    "intro": "Die Version dieses STUDIO, die des Servers und die Version, die jedes Programm neben dem Server meldet.",
+    "studio_version": "Dieses STUDIO",
+    "server_version": "Server",
+    "uptime": "Server läuft seit",
+    "unknown": "unbekannt",
+    "programs_title": "Programme neben dem Server",
+    "refresh": "Neu laden",
+    "col_program": "Programm",
+    "col_family": "Familie",
+    "col_installed": "Installiert",
+    "col_latest": "Neueste",
+    "no_version": "nicht gemeldet",
+    "none_found": "Der Server hat keine Programme neben sich gefunden.",
+    "count": "{{with}} von {{total}} Programmen melden ihre Version.",
+    "no_source": "Dieser Server hat keine Route, die die neueste Version nennt oder eine installiert; dieser Reiter zeigt daher nur das Installierte und ändert nichts. Aktualisiert wird mit dem Updater des jeweiligen Programms."
   }
 }
