@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.1.7] - An Updates tab in the configuration window shows the installed versions, in eight languages: the version of this Studio, the one of the server and the version each program next to the server reports (GET /api/hydra-info, GET... (and 6 more changes)
+
 - **An Updates tab in the configuration window shows the installed versions, in eight languages:** the version of this Studio, the one of the server and the version each program next to the server reports (`GET /api/hydra-info`, `GET /api/ecosystem/status`). The server has no route that tells the newest published version or installs one, so the tab says so and changes nothing.
 
 - **A Security tab gathers the sign-in checks, the second factor and the token signing keys, with a guarded rotation:** two checks (two-step sign-in on, tokens signed with asymmetric keys), the existing two-step sign-in card and, for administrators, the public state of the signing keys (`GET /api/admin/jwt-keys`). Rotating the key (`POST /api/admin/jwt-keys/rotate`) needs a switch that is off every time the tab opens and a confirmation, and the answers of the server (shared secret in use, key file unusable) are told apart.
