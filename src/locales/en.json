@@ -359,7 +359,8 @@
     "installation": "Installation",
     "remote_setup_tab": "Remote access setup",
     "preferences": "Preferences",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "history": "History"
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -2129,5 +2130,12 @@
     "on": "on",
     "off": "off",
     "read_only": "This tab only shows the state. The server reads these switches from its own security file (push notifications are off until an administrator turns them on there) and has no route to change them or to mute one event, so there are no switches here."
+  },
+  "history_tab": {
+    "title": "What happened and when",
+    "intro": "Who connected to the server and, for an administrator, the record of the changes that matter.",
+    "part_connections": "Connections",
+    "part_audit": "Audit record",
+    "audit_admin_only": "The audit record is only shown to administrators."
   }
 }

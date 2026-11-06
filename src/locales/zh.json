@@ -359,7 +359,8 @@
     "installation": "安装",
     "remote_setup_tab": "远程访问设置",
     "preferences": "偏好设置",
-    "notifications": "通知"
+    "notifications": "通知",
+    "history": "历史记录"
   },
   "robot_detail": {
     "back": "返回仪表盘",
@@ -2129,5 +2130,12 @@
     "on": "开",
     "off": "关",
     "read_only": "本页只显示状态。服务器从自己的安全文件读取这些开关（管理员在那里开启之前推送一直关闭），且没有用于更改或静音某个事件的接口，因此这里没有开关。"
+  },
+  "history_tab": {
+    "title": "发生了什么、何时发生",
+    "intro": "谁连接过服务器，以及（管理员可见的）重要变更记录。",
+    "part_connections": "连接",
+    "part_audit": "审计记录",
+    "audit_admin_only": "审计记录仅向管理员显示。"
   }
 }

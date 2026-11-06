@@ -359,7 +359,8 @@
     "installation": "Installation",
     "remote_setup_tab": "Einrichtung des Fernzugriffs",
     "preferences": "Einstellungen",
-    "notifications": "Benachrichtigungen"
+    "notifications": "Benachrichtigungen",
+    "history": "Verlauf"
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",
@@ -2129,5 +2130,12 @@
     "on": "an",
     "off": "aus",
     "read_only": "Dieser Reiter zeigt nur den Zustand. Der Server liest diese Schalter aus seiner eigenen Sicherheitsdatei (Push ist aus, bis ein Administrator es dort einschaltet) und hat keine Route, sie zu ändern oder ein Ereignis stummzuschalten; deshalb gibt es hier keine Schalter."
+  },
+  "history_tab": {
+    "title": "Was wann passiert ist",
+    "intro": "Wer sich mit dem Server verbunden hat und, für Administratoren, das Protokoll der wichtigen Änderungen.",
+    "part_connections": "Verbindungen",
+    "part_audit": "Prüfprotokoll",
+    "audit_admin_only": "Das Prüfprotokoll wird nur Administratoren gezeigt."
   }
 }

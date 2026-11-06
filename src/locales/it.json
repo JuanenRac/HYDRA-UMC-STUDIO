@@ -359,7 +359,8 @@
     "installation": "Installazione",
     "remote_setup_tab": "Configurazione dell'accesso remoto",
     "preferences": "Preferenze",
-    "notifications": "Notifiche"
+    "notifications": "Notifiche",
+    "history": "Cronologia"
   },
   "robot_detail": {
     "back": "Torna alla Dashboard",
@@ -2129,5 +2130,12 @@
     "on": "attivo",
     "off": "disattivo",
     "read_only": "Questa scheda mostra solo lo stato. Il server legge questi interruttori dal proprio file di sicurezza (il push è spento finché un amministratore non lo attiva lì) e non ha rotte per modificarli o silenziare un evento, quindi qui non ci sono interruttori."
+  },
+  "history_tab": {
+    "title": "Cosa è successo e quando",
+    "intro": "Chi si è connesso al server e, per un amministratore, il registro delle modifiche che contano.",
+    "part_connections": "Connessioni",
+    "part_audit": "Registro di audit",
+    "audit_admin_only": "Il registro di audit è mostrato solo agli amministratori."
   }
 }

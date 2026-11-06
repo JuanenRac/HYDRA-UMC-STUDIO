@@ -359,7 +359,8 @@
     "installation": "Installation",
     "remote_setup_tab": "Assistant d'accès à distance",
     "preferences": "Préférences",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "history": "Historique"
   },
   "robot_detail": {
     "back": "Retour au Tableau de Bord",
@@ -2129,5 +2130,12 @@
     "on": "activé",
     "off": "désactivé",
     "read_only": "Cet onglet montre seulement l'état. Le serveur lit ces interrupteurs dans son propre fichier de sécurité (le push est désactivé tant qu'un administrateur ne l'active pas là) et n'a aucune route pour les modifier ou couper un événement : il n'y a donc pas d'interrupteurs ici."
+  },
+  "history_tab": {
+    "title": "Ce qui s'est passé et quand",
+    "intro": "Qui s'est connecté au serveur et, pour un administrateur, le journal des changements qui comptent.",
+    "part_connections": "Connexions",
+    "part_audit": "Journal d'audit",
+    "audit_admin_only": "Le journal d'audit n'est montré qu'aux administrateurs."
   }
 }

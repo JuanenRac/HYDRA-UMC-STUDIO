@@ -359,7 +359,8 @@
     "installation": "Instalação",
     "remote_setup_tab": "Assistente de acesso remoto",
     "preferences": "Preferências",
-    "notifications": "Notificações"
+    "notifications": "Notificações",
+    "history": "Histórico"
   },
   "robot_detail": {
     "back": "Voltar ao painel",
@@ -2129,5 +2130,12 @@
     "on": "ligado",
     "off": "desligado",
     "read_only": "Este separador só mostra o estado. O servidor lê estes interruptores do seu próprio ficheiro de segurança (o push está desligado até um administrador o ligar lá) e não tem rota para os alterar nem para silenciar um evento, por isso aqui não há interruptores."
+  },
+  "history_tab": {
+    "title": "O que aconteceu e quando",
+    "intro": "Quem se ligou ao servidor e, para um administrador, o registo das alterações que importam.",
+    "part_connections": "Ligações",
+    "part_audit": "Registo de auditoria",
+    "audit_admin_only": "O registo de auditoria só é mostrado aos administradores."
   }
 }

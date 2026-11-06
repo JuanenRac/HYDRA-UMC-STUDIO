@@ -359,7 +359,8 @@
     "installation": "Instalación",
     "remote_setup_tab": "Asistente de acceso remoto",
     "preferences": "Preferencias",
-    "notifications": "Notificaciones"
+    "notifications": "Notificaciones",
+    "history": "Historial"
   },
   "robot_detail": {
     "back": "Volver al Panel",
@@ -2129,5 +2130,12 @@
     "on": "activado",
     "off": "desactivado",
     "read_only": "Esta pestaña solo muestra el estado. El servidor lee estos interruptores de su propio fichero de seguridad (las notificaciones push están apagadas hasta que un administrador las active allí) y no tiene ruta para cambiarlos ni para silenciar un evento, así que aquí no hay interruptores."
+  },
+  "history_tab": {
+    "title": "Qué pasó y cuándo",
+    "intro": "Quién se conectó al servidor y, para un administrador, el registro de los cambios que importan.",
+    "part_connections": "Conexiones",
+    "part_audit": "Registro de auditoría",
+    "audit_admin_only": "El registro de auditoría solo se muestra a los administradores."
   }
 }
