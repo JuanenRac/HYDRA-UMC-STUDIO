@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Server Admin > Security has the switches for what the services hand to the server, all off by default, with a confirmation to turn one on, in eight languages:** the faults of the machines, the outcomes of reproduction scenarios, the status of the developer node, the verdicts of the anomaly detector (and their relay to the voice interface), the signed record of the voice commands and the check of signed trajectory proposals, plus the name of the file with the operators' public keys. They travel in the `ingest` block of `GET` and `PUT /api/admin/server-config`; only what changed is sent, with `confirm: true` exactly when a switch goes on or another keys file is chosen; a switch fixed by the environment of the server is locked and says so, and the panel tells when the feeds that read the broker apply on the next start. A server without the block shows nothing. Tests in `tests/ingestSwitches.test.tsx`.
+
+- **Server Admin > Security shows the status of the developer node:** the latest status each developer node sent to the server (`GET /api/developer-node/status`), drawn only as plain text, with a refresh and a check of the signed record that says whether its chain is intact or broken; while the switch of the server is off it says so instead of showing an empty list.
+
 ## [0.8.1.2] - Server Admin has a switch for the read-out protection level of a production flash, in eight languages: the Security tab shows production.rdpLevel of the server (off by default; level 2 is never offered), says whether the... (and 26 more changes)
 
 - **Server Admin has a switch for the read-out protection level of a production flash, in eight languages:** the Security tab shows `production.rdpLevel` of the server (off by default; level 2 is never offered), says whether the environment locks it, and asks for a confirmation before turning it on, because only a full erase of the chip undoes level 1. It only records the choice; no flashing tool reads it yet.
