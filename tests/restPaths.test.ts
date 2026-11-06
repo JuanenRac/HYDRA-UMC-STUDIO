@@ -42,13 +42,25 @@ describe('server routes called by the app', () => {
     expect(calledRoutes()).toEqual(recorded);
   });
 
-  const contract = join(ROOT, '..', 'HYDRA-UMC-SDK', 'contracts', 'openapi', 'v1', 'server.full.openapi.json');
+  // The shared contracts: the checkout next to this repository, or the folder the continuous integration fetches at a pinned tag.
+  const sdk = process.env.HYDRA_UMC_SDK_DIR || join(ROOT, '..', 'HYDRA-UMC-SDK');
+  const contract = join(sdk, 'contracts', 'openapi', 'v1', 'server.full.openapi.json');
   it.skipIf(!existsSync(contract))('exist in the server contract next to this repository', () => {
     const paths = Object.keys((JSON.parse(readFileSync(contract, 'utf8')) as { paths: Record<string, unknown> }).paths);
     const matches = (route: string, path: string): boolean =>
       new RegExp('^' + route.replace(/\{p\}/g, '[^/]+') + '$').test(path.replace(/\{[^}]+\}/g, 'x'));
     // the relay of the server to the local services (/api/ai/<service>/...) is one wildcard route that the inventory does not list path by path
     const unknown = calledRoutes().filter((r) => !r.startsWith('/api/ai/') && !paths.some((p) => matches(r, p)));
+    expect(unknown).toEqual([]);
+  });
+
+  // The route table generated from the contract (method, path, access, query, statuses): the app may only call routes that are in it.
+  const table = join(sdk, 'generated', 'hydra-routes.json');
+  it.skipIf(!existsSync(table))('exist in the generated route table next to this repository', () => {
+    const routes = (JSON.parse(readFileSync(table, 'utf8')) as { routes: { path: string }[] }).routes;
+    const matches = (route: string, path: string): boolean =>
+      new RegExp('^' + route.replace(/\{p\}/g, '[^/]+') + '$').test(path.replace(/\{[^}]+\}/g, 'x'));
+    const unknown = calledRoutes().filter((r) => !r.startsWith('/api/ai/') && !routes.some((p) => matches(r, p.path)));
     expect(unknown).toEqual([]);
   });
 });
