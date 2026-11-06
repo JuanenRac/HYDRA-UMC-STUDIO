@@ -3,7 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0-or-later - see LICENSE
 //
-// The state of the feedback domain of the store, moved out of the provider unchanged.
+// The state of the feedback domain of the store: the problem of the last command and the answer of the global STOP.
 // =============================================================================
 import { useCallback, useRef, useState } from 'react';
 import type { CommandIssue } from '../lib/commandResult';

@@ -3,7 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0-or-later - see LICENSE
 //
-// The change of a setting by the person at the screen, moved out of the provider unchanged: an administrator changes the shared settings,
+// The change of a setting by the person at the screen: an administrator changes the shared settings,
 // any other account only its own choices (theme, language, layout), which stay in this browser (lib/settingsScope.ts).
 // =============================================================================
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';

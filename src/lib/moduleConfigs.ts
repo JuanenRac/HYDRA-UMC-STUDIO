@@ -3,9 +3,9 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0-or-later - see LICENSE
 // =============================================================================
-// The decisions of the module screens (ATC tools, XY table, racks) that used to be written inside the components: how many slots a tool
-// changer has, the tool and position of a slot, what a jog of the table asks for, the layout a reset restores, which slot of a rack is
-// usable. Moved out unchanged so that they can be tested without a screen; the components only draw and call the store.
+// The decisions of the module screens (ATC tools, XY table, racks): how many slots a tool changer has, the tool and position of a
+// slot, what a jog of the table asks for, the layout a reset restores, which slot of a rack is usable. They are here so that they can
+// be tested without a screen; the components only draw and call the store.
 import type { ATCConfig, ATCGrid, RackConfig, ToolType } from '../store';
 
 export type JointPosition = { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number; tx: number; ty: number };

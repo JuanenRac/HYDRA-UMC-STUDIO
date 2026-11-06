@@ -5,8 +5,8 @@
 //
 // A change of the settings, the controllers or the active controller is saved 500 ms later. The timer lives in a ref and
 // not in the effect's cleanup: a change that arrives from the server re-runs the effect, and cancelling the pending save
-// there used to drop an edit the operator made a moment earlier. The payload is built when the timer fires, from the
-// latest state. Moved out of the provider unchanged.
+// there would drop an edit the operator made a moment earlier. The payload is built when the timer fires, from the
+// latest state.
 // =============================================================================
 import { useEffect, useRef, type MutableRefObject } from 'react';
 import { saveFailureText } from '../lib/serverErrors';

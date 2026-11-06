@@ -60,9 +60,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     setPowerAction(action);
     try {
       const res = await fetch(apiUrl(action === 'shutdown' ? '/api/system/shutdown' : '/api/system/reboot'), { method: 'POST' });
-      // A refusal (403: this is not the device's own kiosk, or the page was opened by the LAN address) must
-      // recover the buttons and say why - they used to stay on "Shutting down..." for ever. A successful call
-      // means the device is going down: staying disabled until the page loses its connection is the honest state.
+      // A refusal (403: this is not the device's own kiosk, or the page was opened by the LAN address) recovers the
+      // buttons and says why. A successful call means the device is going down: staying disabled until the page loses
+      // its connection is the honest state.
       if (!res.ok) {
         setPowerAction(null);
         reportCommandIssue({ code: 'power_failed', command: action, robotIds: [], detail: String(res.status) });

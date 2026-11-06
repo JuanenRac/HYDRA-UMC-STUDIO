@@ -4,8 +4,7 @@
 // GPL-3.0-or-later - see LICENSE
 //
 // Recording a point, the Cartesian and base jogs, the pose resets, the XY table slider and the valves and pumps: the
-// handlers that used to sit inside RobotDetail.tsx. They are the same code, taking what they need as arguments so they
-// can be tested on their own. Every real move goes through the atomic `sendRobotCommand` channel (the server persists
+// handlers of RobotDetail.tsx, taking what they need as arguments so they can be tested on their own. Every real move goes through the atomic `sendRobotCommand` channel (the server persists
 // it and broadcasts it to every client); the optimistic local change is rolled back by the store if the request fails.
 // =============================================================================
 import { jointsToCartesianForModel, jointLimitsFor, resolveTargetJoints } from '../examples/robotKinematicsDispatch';

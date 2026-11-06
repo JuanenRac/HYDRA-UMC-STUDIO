@@ -673,9 +673,8 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
               <RefreshCw size={16} /> {!isAndroidApp && t('robot_detail.reset_pose')}
             </button>
 
-            {/* RESET 3D Button - RotateCcw instead of the old Video icon
-                (a camera/record glyph, which read as unrelated to what
-                this button actually does: remount the 3D viewport). */}
+            {/* RESET 3D Button - a rotate icon, because a camera/record glyph would read as unrelated to what this button
+                does: remount the 3D viewport. */}
             <button
               onClick={handleReset3D}
               className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-teal-600 hover:bg-teal-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-teal-500 shadow-[0_0_15px_rgba(13,148,136,0.3)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}

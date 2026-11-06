@@ -107,8 +107,8 @@ export function CamerasView() {
   };
 
   // Switching a camera on saves the intent (the server then starts its stream process), and the camera counts as
-  // connected only once the server reports that stream running. It used to be declared connected after a fixed
-  // pause whatever happened, which showed a live feed that was not there.
+  // connected only once the server reports that stream running, never after a fixed pause, which would show a live feed
+  // that is not there.
   const retryConnection = (id: number) => {
     const cam = cameras.find(c => c.id === id);
     if (!cam || cam.connected) return;

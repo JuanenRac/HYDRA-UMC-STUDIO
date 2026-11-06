@@ -3,10 +3,10 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 //
-// The gamepad is read once per screen frame (60 per second) and a held stick used to send a command on each one -
-// up to three per frame for a diagonal - without waiting for the previous answer, so after the stick was let go the
-// queue of requests still arriving kept the robot moving. A held input is now sent at a fixed rate, and not at all
-// while too many earlier commands are still unanswered.
+// The gamepad is read once per screen frame (60 per second); sending a command on each one - up to three per frame for a
+// diagonal - without waiting for the previous answer would leave a queue of requests that keeps the robot moving after the
+// stick is let go. A held input is therefore sent at a fixed rate, and not at all while too many earlier commands are still
+// unanswered.
 // =============================================================================
 
 export interface RateLimiter {

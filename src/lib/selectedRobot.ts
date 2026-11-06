@@ -4,7 +4,7 @@
 // GPL-3.0 - see LICENSE
 //
 // One value, shared by the dashboard (the robot opened in the list) and the gamepad (the robot its sticks move).
-// The gamepad used to be fixed on robot 1 whatever was on screen, so an operator looking at A3 moved A1.
+// The gamepad moves the robot on screen, so an operator looking at A3 never moves A1.
 // =============================================================================
 
 import { useSyncExternalStore } from 'react';

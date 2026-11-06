@@ -5,9 +5,8 @@
 // =============================================================================
 // The shared configuration of the installation as the server holds it: the settings tree, the controllers with their robots and the
 // active controller; the first read of GET /api/settings, the full-tree message and the targeted delta of the live socket, and the
-// save of the whole tree with the revision (ETag) read last. It used to be written inside the global provider; it is moved here
-// unchanged, with the refs that guard the echo of the server, so the provider keeps only what is live (commands, STOP) and the
-// preferences of the person. Nothing here is a new behaviour.
+// save of the whole tree with the revision (ETag) read last, with the refs that guard the echo of the server. The provider keeps
+// only what is live (commands, STOP) and the preferences of the person.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MutableRefObject } from 'react';
 import { apiUrl } from '../lib/apiBase';

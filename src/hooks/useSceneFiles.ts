@@ -3,8 +3,8 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0-or-later - see LICENSE
 //
-// The files an operator saves and loads from the robot screen (recorded points of a robot, the whole scene), moved out
-// of the provider unchanged. What they need from the provider is passed in.
+// The files an operator saves and loads from the robot screen (recorded points of a robot, the whole scene). What they
+// need from the provider is passed in.
 // =============================================================================
 import type React from 'react';
 import type { CommandIssue } from '../lib/commandResult';

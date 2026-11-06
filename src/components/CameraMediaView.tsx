@@ -177,11 +177,8 @@ export function CameraMediaView() {
             <img src={viewUrl(selected)} alt={selected.filename} className="max-w-full max-h-full object-contain" />
           )}
           {selected && selected.kind === 'recordings' && (
-            // Real play/pause/stop + a real seek bar - see
-            // MjpegRecordingPlayer.tsx's own header comment for why a
-            // plain <img> (the old approach here) could never offer this:
-            // a saved recording is raw multipart/x-mixed-replace bytes,
-            // not a real video container any <video> element could parse.
+            // Play/pause/stop and a seek bar: a plain <img> cannot offer them (see MjpegRecordingPlayer.tsx), because a saved
+            // recording is raw multipart/x-mixed-replace bytes, not a video container any <video> element could parse.
             <MjpegRecordingPlayer key={selected.filename} url={viewUrl(selected)} durationMs={selected.durationMs} frameCount={selected.frameCount} />
           )}
           {selected && (

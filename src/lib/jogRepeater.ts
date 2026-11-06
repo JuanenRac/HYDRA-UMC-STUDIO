@@ -5,7 +5,7 @@
 //
 // A jog button that is held repeats its step. If the browser never delivers the "button released" event (the window
 // lost focus with the pointer still, the tab went to the background, a system dialog took the pointer) the repeat
-// used to run forever. This repeater has a deadman: it stops by itself after `maxHoldMs` however the button ends,
+// would run forever. This repeater has a deadman: it stops by itself after `maxHoldMs` however the button ends,
 // and the caller can stop it from any other signal (pointer cancel, blur, the page being hidden).
 // =============================================================================
 

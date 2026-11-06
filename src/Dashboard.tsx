@@ -112,7 +112,7 @@ export default function Dashboard() {
   const { settings, flushSettingsSave } = useSettingsStore();
   const { controllers, activeControllerId, setActiveControllerId, robots } = useFleet();
   const [activeTab, setActiveTab] = useState<string>('overview');
-  // Shared with the gamepad, which moves the robot selected here (it used to be fixed on robot 1).
+  // Shared with the gamepad, which moves the robot selected here.
   const selectedRobotId = useSelectedRobotId();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);

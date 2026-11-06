@@ -12,8 +12,8 @@ import { getSelectedRobotId, setSelectedRobotId } from '../lib/selectedRobot';
 import { useCommandFeedback, useFleet, useSettingsStore } from '../storeContexts';
 
 // A held button or stick becomes at most this many commands per second per action, and none at all while this many
-// earlier commands are still unanswered: at 60 frames per second it used to send on every frame, and the requests
-// still queued after the stick was released kept the robot moving.
+// earlier commands are still unanswered: sending on every frame (60 per second) would leave requests queued after the
+// stick was released, and they would keep the robot moving.
 const HELD_INPUT_MIN_INTERVAL_MS = 90;
 const MAX_UNANSWERED_COMMANDS = 4;
 

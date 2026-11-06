@@ -101,11 +101,8 @@ export function jointsToCartesianForModel(model: RobotModel | undefined, pt: Kin
 
 // Parol6/AR4/the real UR/xArm/Lite6/Gen3Lite/Gen2/PiPER rigs have real,
 // narrower per-joint limits (from their own URDF/config) than the generic
-// +/-180 range every other model uses. Moved here (was originally local
-// to RobotDetail.tsx) so GamepadController.tsx's own per-joint jog can
-// clamp identically without either duplicating this ternary chain or
-// re-importing all 12 *_JOINT_LIMITS_DEG constants a second time - same
-// "single source of truth" reasoning as jointsToCartesianForModel above. The ranges are in src/data/kinematicData.json, the one
+// +/-180 range every other model uses. RobotDetail.tsx and GamepadController.tsx's own per-joint jog clamp with this one
+// function (a single source of truth, like jointsToCartesianForModel above). The ranges are in src/data/kinematicData.json, the one
 // file HYDRA-UMC-SUITE reads as well (tests/kinematicData.test.ts checks it against the constants of each model).
 export function jointLimitsFor(model: RobotModel, j: 'j1' | 'j2' | 'j3' | 'j4' | 'j5' | 'j6'): [number, number] {
   return (kinematicData.models as unknown as Record<string, { limits: Record<string, [number, number]> }>)[model]?.limits[j] ?? [-180, 180];
@@ -117,12 +114,8 @@ export function jointLimitsFor(model: RobotModel, j: 'j1' | 'j2' | 'j3' | 'j4' |
 // Cartesian target (x,y,z,a,b,c, itself a robot-agnostic workspace point
 // regardless of which formula produced it) against that robot's own real
 // kinematics instead, so a jog/recorded/played trajectory moves it
-// sensibly. Moved here (was originally local to RobotDetail.tsx) so
-// GamepadController.tsx's own Cartesian XYZ jog can reuse the exact same
-// per-model inverse-kinematics dispatch instead of either duplicating
-// this 23-branch chain a second time or re-importing all 23
-// `*CartesianToJoints` functions again - same "single source of truth"
-// reasoning as jointsToCartesianForModel/jointLimitsFor above.
+// sensibly. RobotDetail.tsx and GamepadController.tsx's own Cartesian XYZ jog share this one per-model inverse-kinematics
+// dispatch (a single source of truth, like jointsToCartesianForModel/jointLimitsFor above).
 export function resolveTargetJoints(
   model: RobotModel | undefined,
   x: number, y: number, z: number, a: number, b: number, c: number,

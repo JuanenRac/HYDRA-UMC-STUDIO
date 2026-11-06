@@ -211,12 +211,8 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const factoryReset = async () => {
-    // POST /api/settings requires auth like every other write - without this
-    // header it would 401/no-op silently since the response used to never
-    // be checked (same root cause described in authToken's own comment
-    // above for why the login screen exists) - reloading unconditionally
-    // afterward would then present the UNCHANGED settings as if the reset
-    // had actually happened. Checked now, same as every other save path.
+    // POST /api/settings requires auth like every other write, so the answer is checked: reloading unconditionally
+    // afterward would present the UNCHANGED settings as if the reset had actually happened.
     // A deliberate replacement: a stale revision is refreshed and the reset sent again whatever the server holds.
     const outcome = await persistTree('{}', true);
     if (outcome.kind !== 'saved') {
