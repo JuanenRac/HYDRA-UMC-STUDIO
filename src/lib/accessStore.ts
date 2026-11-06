@@ -8,6 +8,7 @@
 // robot. Panels subscribe with useSyncExternalStore.
 // =============================================================================
 import { useSyncExternalStore } from 'react';
+import { createStore } from 'hydra-umc-studio-kit';
 import { FALLBACK_STATE, type SafetyLimitsState } from './safetyLimits';
 import { INITIAL_MODE_STATE, loadModes, saveModes, withDefaultMode, withMode, type ModeState, type RobotMode } from './liveSim';
 
@@ -17,22 +18,6 @@ function browserStorage(): Storage | null {
   } catch {
     return null;
   }
-}
-
-function createStore<T>(initial: T) {
-  let value = initial;
-  const listeners = new Set<() => void>();
-  return {
-    get: () => value,
-    set: (next: T) => {
-      value = next;
-      listeners.forEach((l) => l());
-    },
-    subscribe: (listener: () => void) => {
-      listeners.add(listener);
-      return () => { listeners.delete(listener); };
-    },
-  };
 }
 
 // ----- limits of the server ---------------------------------------------------------------------------------------------
