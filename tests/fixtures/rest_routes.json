@@ -10,6 +10,7 @@
   "/api/ai/datalake/windows",
   "/api/ai/job-dispatcher/dispatch/eta",
   "/api/ai/semantic-planner/plan/simulate",
+  "/api/ai/semantic-planner/plan/trajectory-check",
   "/api/audit",
   "/api/camera/discover-rtsp-path",
   "/api/camera/discover-usb-devices",
