@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The sign-in session, the API base address, the connection history answers, the assistant preferences and the access state are built on the shared web kit, with no change in what the screens do:** the kit is pinned as a built archive by its https address and its integrity hash (`npm ci --ignore-scripts` is enough, no SSH key and no build step), and the client files keep their names, their exports and their tests unchanged. Calls through the connection history still use the client's own fetch, without the kit's retries or time limit.
+
 ## [0.8.1.4] - The shared configuration leaves the global state provider, and the gamepad, heated bed and vacuum table screens keep their decisions in the tested place, with no change in what the screens do: the settings tree, the... (and 2 more changes)
 
 - **The shared configuration leaves the global state provider, and the gamepad, heated bed and vacuum table screens keep their decisions in the tested place, with no change in what the screens do:** the settings tree, the controllers and the active controller, the first read of `GET /api/settings`, the full-tree message and the targeted delta of the live socket, and the save of the whole tree with its ETag move to `hooks/useSharedConfig.ts` together with the refs that guard the echo of the server (the provider goes from 586 to about 400 lines and keeps the commands, the global STOP and the wiring); the menu of gamepad actions in its order, the live inputs of a pad, the layouts a heated bed or a vacuum table reset restores and the switch of a module go to `lib/moduleConfigs.ts` (`tests/moduleConfigsPads.test.ts`).
