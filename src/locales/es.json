@@ -355,7 +355,8 @@
     "confirm_hardware_transport": "¿Cambiar CAN-OTA al hardware real? Flashear y probar hablará con las placas reales en lugar de la simulación.",
     "not_active_connection": "No es la conexión activa: esta aplicación solo comprueba la que está usando.",
     "updates": "Actualizaciones",
-    "security_tab": "Seguridad"
+    "security_tab": "Seguridad",
+    "installation": "Instalación"
   },
   "robot_detail": {
     "back": "Volver al Panel",
@@ -2050,5 +2051,25 @@
     "error_asymmetric_off": "No hay nada que rotar: el servidor firma con un secreto compartido (HS256), no con claves.",
     "error_file": "El fichero de claves del servidor no se puede leer o escribir. No se ha rotado nada.",
     "admin_only": "Las claves de firma solo se muestran a los administradores."
+  },
+  "installation": {
+    "title": "Lista de primera puesta en marcha",
+    "intro": "Lo que está hecho y lo que toca después en esta instalación, leído del propio servidor.",
+    "host": "Máquina",
+    "version": "Versión del servidor",
+    "uptime": "Encendido desde hace",
+    "progress": "{{done}} de {{total}} pasos hechos",
+    "step_server": "El servidor responde",
+    "step_server_hint": "Si no responde, comprueba que el servidor está en marcha y que la dirección es correcta.",
+    "step_controller": "Hay un controlador añadido",
+    "step_controller_hint": "Config > Controladores > Añadir Nodo, con el nombre y la dirección IP de la placa.",
+    "step_robot": "Hay un robot configurado",
+    "step_robot_hint": "Elige un robot del controlador en la barra lateral y escoge su modelo y su herramienta.",
+    "step_second_factor": "El inicio de sesión en dos pasos está activado en tu cuenta",
+    "step_second_factor_hint": "Config > Seguridad. Es opcional y está apagado hasta que lo actives.",
+    "next": "Siguiente paso: {{step}}.",
+    "all_done": "Todos los pasos están hechos.",
+    "cannot_tell": "Algunos pasos no se han podido comprobar.",
+    "no_installer": "Este servidor no tiene ninguna ruta que instale, repare o reinstale nada, así que esta lista solo comprueba y avisa; no cambia nada en la máquina."
   }
 }

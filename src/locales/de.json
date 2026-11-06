@@ -355,7 +355,8 @@
     "confirm_hardware_transport": "CAN-OTA auf die echte Hardware umstellen? Flashen und Testen sprechen dann mit den echten Platinen statt mit der Simulation.",
     "not_active_connection": "Nicht die aktive Verbindung - diese App prüft nur die gerade verwendete.",
     "updates": "Aktualisierungen",
-    "security_tab": "Sicherheit"
+    "security_tab": "Sicherheit",
+    "installation": "Installation"
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",
@@ -2050,5 +2051,25 @@
     "error_asymmetric_off": "Nichts zu rotieren: Der Server signiert mit einem gemeinsamen Geheimnis (HS256), nicht mit Schlüsseln.",
     "error_file": "Die Schlüsseldatei auf dem Server kann nicht gelesen oder geschrieben werden. Es wurde nichts rotiert.",
     "admin_only": "Die Signierschlüssel werden nur Administratoren gezeigt."
+  },
+  "installation": {
+    "title": "Checkliste für die Erstinbetriebnahme",
+    "intro": "Was in dieser Installation erledigt ist und was als Nächstes kommt, vom Server selbst gelesen.",
+    "host": "Rechner",
+    "version": "Serverversion",
+    "uptime": "Läuft seit",
+    "progress": "{{done}} von {{total}} Schritten erledigt",
+    "step_server": "Der Server antwortet",
+    "step_server_hint": "Antwortet er nicht, prüfen Sie, ob der Server läuft und die Adresse stimmt.",
+    "step_controller": "Ein Controller ist angelegt",
+    "step_controller_hint": "Config > Controller > Knoten hinzufügen, mit Name und IP-Adresse der Platine.",
+    "step_robot": "Ein Roboter ist eingerichtet",
+    "step_robot_hint": "Einen Roboter des Controllers in der Seitenleiste wählen und Modell und Werkzeug festlegen.",
+    "step_second_factor": "Die Anmeldung in zwei Schritten ist für Ihr Konto aktiv",
+    "step_second_factor_hint": "Config > Sicherheit. Optional und aus, bis Sie es einschalten.",
+    "next": "Nächster Schritt: {{step}}.",
+    "all_done": "Alle Schritte sind erledigt.",
+    "cannot_tell": "Einige Schritte ließen sich nicht prüfen.",
+    "no_installer": "Dieser Server hat keine Route, die etwas installiert, repariert oder neu installiert; diese Liste prüft und informiert daher nur und ändert nichts am Rechner."
   }
 }

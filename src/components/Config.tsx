@@ -29,6 +29,7 @@ import { PathsTab } from './config/PathsTab';
 import { CanOtaTab } from './config/CanOtaTab';
 import { AiHailoTab } from './config/AiHailoTab';
 import { UpdatesTab } from './config/UpdatesTab';
+import { InstallationTab } from './config/InstallationTab';
 import { SecurityTab } from './config/SecurityTab';
 
 const GamepadConfig = React.lazy(() => import('./GamepadConfig').then(m => ({ default: m.GamepadConfig })));
@@ -42,7 +43,7 @@ function PanelLoadingFallback() {
   );
 }
 
-type ConfigTab = 'identity' | 'controllers' | 'ui' | 'robots' | 'cameras' | 'models' | 'integrations' | 'remoteaccess' | 'users' | 'paths' | 'canota' | 'aihailo' | 'gamepad' | 'updates' | 'security';
+type ConfigTab = 'identity' | 'controllers' | 'ui' | 'robots' | 'cameras' | 'models' | 'integrations' | 'remoteaccess' | 'users' | 'paths' | 'canota' | 'aihailo' | 'gamepad' | 'updates' | 'security' | 'installation';
 
 export function Config({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
@@ -74,6 +75,7 @@ export function Config({ onClose }: { onClose: () => void }) {
     { id: 'gamepad', label: t('config.gamepad') },
     { id: 'updates', label: t('config.updates') },
     { id: 'security', label: t('config.security_tab') },
+    { id: 'installation', label: t('config.installation') },
   ];
 
   return (
@@ -122,6 +124,8 @@ export function Config({ onClose }: { onClose: () => void }) {
             {configTab === 'updates' && <UpdatesTab />}
 
             {configTab === 'security' && <SecurityTab />}
+
+            {configTab === 'installation' && <InstallationTab />}
 
             {configTab === 'gamepad' && (
               <div className="animate-in zoom-in-95 fade-in duration-500">

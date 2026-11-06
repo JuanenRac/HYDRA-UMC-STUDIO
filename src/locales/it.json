@@ -355,7 +355,8 @@
     "confirm_hardware_transport": "Passare CAN-OTA all'hardware reale? Flash e test parleranno con le schede vere invece che con la simulazione.",
     "not_active_connection": "Non è la connessione attiva: questa app controlla solo quella che sta usando.",
     "updates": "Aggiornamenti",
-    "security_tab": "Sicurezza"
+    "security_tab": "Sicurezza",
+    "installation": "Installazione"
   },
   "robot_detail": {
     "back": "Torna alla Dashboard",
@@ -2050,5 +2051,25 @@
     "error_asymmetric_off": "Niente da ruotare: il server firma con un segreto condiviso (HS256), non con chiavi.",
     "error_file": "Il file delle chiavi sul server non può essere letto o scritto. Non è stato ruotato nulla.",
     "admin_only": "Le chiavi di firma sono mostrate solo agli amministratori."
+  },
+  "installation": {
+    "title": "Elenco della prima messa in servizio",
+    "intro": "Cosa è fatto e cosa viene dopo in questa installazione, letto dal server stesso.",
+    "host": "Macchina",
+    "version": "Versione del server",
+    "uptime": "Attivo da",
+    "progress": "{{done}} passi su {{total}} completati",
+    "step_server": "Il server risponde",
+    "step_server_hint": "Se non risponde, controlla che il server sia in funzione e che l'indirizzo sia giusto.",
+    "step_controller": "È stato aggiunto un controller",
+    "step_controller_hint": "Config > Controller > Aggiungi Nodo, con nome e indirizzo IP della scheda.",
+    "step_robot": "È stato configurato un robot",
+    "step_robot_hint": "Scegli un robot del controller nella barra laterale e imposta modello e utensile.",
+    "step_second_factor": "L'accesso in due passaggi è attivo per il tuo account",
+    "step_second_factor_hint": "Config > Sicurezza. Facoltativo e spento finché non lo attivi.",
+    "next": "Prossimo passo: {{step}}.",
+    "all_done": "Tutti i passi sono completati.",
+    "cannot_tell": "Alcuni passi non è stato possibile verificarli.",
+    "no_installer": "Questo server non ha alcuna rotta che installi, ripari o reinstalli qualcosa: questo elenco controlla e avvisa soltanto, non cambia nulla sulla macchina."
   }
 }

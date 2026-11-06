@@ -355,7 +355,8 @@
     "confirm_hardware_transport": "Mudar o CAN-OTA para o hardware real? A gravação e os testes passarão a falar com as placas reais em vez da simulação.",
     "not_active_connection": "Não é a ligação ativa: esta aplicação só verifica a que está a usar.",
     "updates": "Atualizações",
-    "security_tab": "Segurança"
+    "security_tab": "Segurança",
+    "installation": "Instalação"
   },
   "robot_detail": {
     "back": "Voltar ao painel",
@@ -2050,5 +2051,25 @@
     "error_asymmetric_off": "Nada para rodar: o servidor assina com um segredo partilhado (HS256), não com chaves.",
     "error_file": "O ficheiro de chaves do servidor não pode ser lido nem escrito. Nada foi rodado.",
     "admin_only": "As chaves de assinatura só são mostradas aos administradores."
+  },
+  "installation": {
+    "title": "Lista da primeira colocação em serviço",
+    "intro": "O que está feito e o que se segue nesta instalação, lido do próprio servidor.",
+    "host": "Máquina",
+    "version": "Versão do servidor",
+    "uptime": "Ligado há",
+    "progress": "{{done}} de {{total}} passos feitos",
+    "step_server": "O servidor responde",
+    "step_server_hint": "Se não responder, verifique se o servidor está a funcionar e se o endereço está certo.",
+    "step_controller": "Há um controlador adicionado",
+    "step_controller_hint": "Config > Controladores > Adicionar nó, com o nome e o endereço IP da placa.",
+    "step_robot": "Há um robô configurado",
+    "step_robot_hint": "Escolha um robô do controlador na barra lateral e defina o modelo e a ferramenta.",
+    "step_second_factor": "O início de sessão em dois passos está ativo na sua conta",
+    "step_second_factor_hint": "Config > Segurança. É opcional e fica desligado até o ativar.",
+    "next": "Próximo passo: {{step}}.",
+    "all_done": "Todos os passos estão feitos.",
+    "cannot_tell": "Alguns passos não puderam ser verificados.",
+    "no_installer": "Este servidor não tem nenhuma rota que instale, repare ou reinstale seja o que for, por isso esta lista só verifica e avisa; não altera nada na máquina."
   }
 }

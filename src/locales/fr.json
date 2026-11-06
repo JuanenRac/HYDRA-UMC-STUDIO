@@ -355,7 +355,8 @@
     "confirm_hardware_transport": "Passer CAN-OTA sur le matériel réel ? Le flashage et les tests parleront alors aux vraies cartes au lieu de la simulation.",
     "not_active_connection": "Pas la connexion active : cette application ne vérifie que celle qu'elle utilise.",
     "updates": "Mises à jour",
-    "security_tab": "Sécurité"
+    "security_tab": "Sécurité",
+    "installation": "Installation"
   },
   "robot_detail": {
     "back": "Retour au Tableau de Bord",
@@ -2050,5 +2051,25 @@
     "error_asymmetric_off": "Rien à renouveler : le serveur signe avec un secret partagé (HS256), pas avec des clés.",
     "error_file": "Le fichier de clés du serveur ne peut être ni lu ni écrit. Rien n'a été renouvelé.",
     "admin_only": "Les clés de signature ne sont montrées qu'aux administrateurs."
+  },
+  "installation": {
+    "title": "Liste de première mise en service",
+    "intro": "Ce qui est fait et ce qui vient ensuite dans cette installation, lu depuis le serveur lui-même.",
+    "host": "Machine",
+    "version": "Version du serveur",
+    "uptime": "Actif depuis",
+    "progress": "{{done}} étapes sur {{total}} faites",
+    "step_server": "Le serveur répond",
+    "step_server_hint": "S'il ne répond pas, vérifiez que le serveur tourne et que l'adresse est correcte.",
+    "step_controller": "Un contrôleur est ajouté",
+    "step_controller_hint": "Config > Contrôleurs > Ajouter un Nœud, avec le nom et l'adresse IP de la carte.",
+    "step_robot": "Un robot est configuré",
+    "step_robot_hint": "Choisissez un robot du contrôleur dans la barre latérale et son modèle et son outil.",
+    "step_second_factor": "La connexion en deux étapes est activée pour votre compte",
+    "step_second_factor_hint": "Config > Sécurité. Facultatif, désactivé tant que vous ne l'activez pas.",
+    "next": "Étape suivante : {{step}}.",
+    "all_done": "Toutes les étapes sont faites.",
+    "cannot_tell": "Certaines étapes n'ont pas pu être vérifiées.",
+    "no_installer": "Ce serveur n'a aucune route qui installe, répare ou réinstalle quoi que ce soit : cette liste vérifie et informe seulement, elle ne change rien sur la machine."
   }
 }

@@ -355,7 +355,8 @@
     "confirm_hardware_transport": "将 CAN-OTA 切换到真实硬件？刷写和测试将改为与真实电路板通信，而不是模拟。",
     "not_active_connection": "不是当前活动连接：此应用仅检查它正在使用的连接。",
     "updates": "更新",
-    "security_tab": "安全"
+    "security_tab": "安全",
+    "installation": "安装"
   },
   "robot_detail": {
     "back": "返回仪表盘",
@@ -2050,5 +2051,25 @@
     "error_asymmetric_off": "无需轮换：服务器使用共享密钥（HS256）而非密钥对签名。",
     "error_file": "无法读取或写入服务器上的密钥文件，未进行任何轮换。",
     "admin_only": "签名密钥仅向管理员显示。"
+  },
+  "installation": {
+    "title": "首次启动清单",
+    "intro": "此安装中已完成和接下来要做的事，均从服务器本身读取。",
+    "host": "主机",
+    "version": "服务器版本",
+    "uptime": "已运行",
+    "progress": "已完成 {{done}} / {{total}} 步",
+    "step_server": "服务器有响应",
+    "step_server_hint": "若无响应，请检查服务器是否在运行以及地址是否正确。",
+    "step_controller": "已添加控制器",
+    "step_controller_hint": "配置 > 控制器 > 添加节点，填入主板的名称和 IP 地址。",
+    "step_robot": "已设置机器人",
+    "step_robot_hint": "在侧边栏选择控制器的一个机器人，并选定其型号和工具。",
+    "step_second_factor": "你的账户已开启两步登录",
+    "step_second_factor_hint": "配置 > 安全。可选项，开启前保持关闭。",
+    "next": "下一步：{{step}}。",
+    "all_done": "所有步骤均已完成。",
+    "cannot_tell": "部分步骤无法检查。",
+    "no_installer": "此服务器没有用于安装、修复或重装的接口，因此此清单只做检查和提示，不会更改机器上的任何内容。"
   }
 }

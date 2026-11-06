@@ -355,7 +355,8 @@
     "confirm_hardware_transport": "Switch CAN-OTA to the real hardware? Flashing and testing will then talk to the real boards instead of the simulation.",
     "not_active_connection": "Not the active connection - this app only checks the one it's currently using.",
     "updates": "Updates",
-    "security_tab": "Security"
+    "security_tab": "Security",
+    "installation": "Installation"
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -2050,5 +2051,25 @@
     "error_asymmetric_off": "Nothing to rotate: the server signs with a shared secret (HS256), not with keys.",
     "error_file": "The key file on the server cannot be read or written. Nothing was rotated.",
     "admin_only": "The signing keys are only shown to administrators."
+  },
+  "installation": {
+    "title": "First-run checklist",
+    "intro": "What is done and what is next in this installation, read from the server itself.",
+    "host": "Machine",
+    "version": "Server version",
+    "uptime": "Running for",
+    "progress": "{{done}} of {{total}} steps done",
+    "step_server": "The server answers",
+    "step_server_hint": "If it does not, check that the server is running and that the address is right.",
+    "step_controller": "A controller is added",
+    "step_controller_hint": "Config > Controllers > Add Node, with the name and IP address of the board.",
+    "step_robot": "A robot is set up",
+    "step_robot_hint": "Pick a robot slot of the controller in the sidebar and choose its model and tool.",
+    "step_second_factor": "Two-step sign-in is on for your account",
+    "step_second_factor_hint": "Config > Security. It is optional and off until you turn it on.",
+    "next": "Next step: {{step}}.",
+    "all_done": "All the steps are done.",
+    "cannot_tell": "Some steps could not be checked.",
+    "no_installer": "This server has no route that installs, repairs or reinstalls anything, so this list only checks and tells; it changes nothing on the machine."
   }
 }
