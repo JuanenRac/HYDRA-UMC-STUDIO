@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.1.6] - A fourth view of the path of a trajectory that turns around it, and a point that moves to a typed position: next to the views from above, the side and the front, the check shown before Play draws the path from a point of view... (and 1 more changes)
+
 - **A fourth view of the path of a trajectory that turns around it, and a point that moves to a typed position:** next to the views from above, the side and the front, the check shown before Play draws the path from a point of view that turns in steps (left, right, up, down; the starting angles and the step are in `src/config/trajectoryPreview.json`). In the form that edits a point, typing X, Y and Z in millimetres and pressing the button finds the joints that bring the tool closest, keeping its orientation, with the inverse kinematics of the model; a position the model cannot reach (the tool would miss it by more than the reach tolerance) leaves the point as it was and says by how much it misses, and a model with no kinematics of its own is told so. Texts in the eight languages.
 
 - **Sending a robot command and the global STOP leave the global state provider, and the ATC and XY table screens save their file through the shared download, with no change in what the screens do:** the POST of a command, the command with its optimistic change and its rollback, and the reading of one robot after a 412 are in `src/hooks/useRobotCommandSender.ts`; the global STOP with its retries and its fallback robot by robot is in `src/hooks/useEmergencyStop.ts`. The provider keeps the shared configuration, the live state and the preferences.
