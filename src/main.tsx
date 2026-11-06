@@ -8,6 +8,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './i18n'
+import { applyStudioPrefs, getStudioPrefs } from './lib/studioPrefs'
 import App from './App.tsx'
 
 // Real fix for a real production crash confirmed on the CM5's own kiosk
@@ -37,6 +38,9 @@ window.addEventListener('vite:preloadError', () => {
 // deploy) still gets one real auto-reload attempt too, instead of being
 // silently swallowed by a flag left over from today.
 window.setTimeout(() => sessionStorage.removeItem(PRELOAD_ERROR_KEY), 10_000);
+
+// The personal preferences of this browser (density, reduced motion) are on the page before the first paint.
+applyStudioPrefs(getStudioPrefs());
 
 /** Stores the Root configuration or state data. */
 let root = (window as any)._reactRoot;

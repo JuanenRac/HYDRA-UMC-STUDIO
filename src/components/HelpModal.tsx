@@ -13,6 +13,7 @@ import { TOPICS, type Level } from '../assistant/knowledge';
 import { localeOf, normalize } from '../assistant/engine';
 import { setPrefs, usePrefs } from '../assistant/prefs';
 import { speechAvailable } from '../assistant/speech';
+import { getStudioPrefs } from '../lib/studioPrefs';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -43,7 +44,7 @@ export function HelpModal({ onClose, initialTab, initialTopic, onGo }: { onClose
   const { t, i18n } = useTranslation();
   const prefs = usePrefs();
   const [tab, setTab] = useState<TabKey>(initialTopic ? 'guides' : TABS.some(item => item.key === initialTab) ? initialTab as TabKey : 'start');
-  const [level, setLevel] = useState<Level | 'all'>('all');
+  const [level, setLevel] = useState<Level | 'all'>(() => getStudioPrefs().helpLevel);
   const [search, setSearch] = useState('');
   const [openGuide, setOpenGuide] = useState<string | null>(initialTopic ?? null);
   const index = Math.max(0, LOCALES.indexOf(localeOf(i18n.language)));

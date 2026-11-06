@@ -357,7 +357,8 @@
     "updates": "更新",
     "security_tab": "安全",
     "installation": "安装",
-    "remote_setup_tab": "远程访问设置"
+    "remote_setup_tab": "远程访问设置",
+    "preferences": "偏好设置"
   },
   "robot_detail": {
     "back": "返回仪表盘",
@@ -2093,5 +2094,22 @@
     "close_all_confirm": "所有类型的应用都将无法再找到此服务器，已连接的应用可能需要重新登录。是否继续？",
     "step3": "3. 在手机上检查",
     "step3_hint": "让手机连接同一网络，打开应用让它搜索，或手动输入地址。如果找不到服务器，请检查上方对应的应用类型是否已开启，以及网络中是否有东西阻止了连接。"
+  },
+  "prefs": {
+    "title": "个人偏好",
+    "intro": "帮助的打开方式，以及界面的外观和动效。仅保存在此浏览器并立即生效；不会发送到服务器，也不会改变机器人的任何动作。",
+    "help_level": "帮助默认打开的级别",
+    "help_level_hint": "分步指南按级别显示。请选择优先显示的级别；在帮助中仍可更改。",
+    "level_all": "所有级别",
+    "level_basic": "基础",
+    "level_advanced": "进阶",
+    "level_technical": "技术",
+    "density": "界面密度",
+    "density_comfortable": "舒适（正常文字大小）",
+    "density_compact": "紧凑（文字更小，屏幕显示更多）",
+    "reduce_motion": "减少动画",
+    "reduce_motion_hint": "过渡和动态效果将被取消。机器人的 3D 视图不受影响。",
+    "saved": "已保存在此浏览器",
+    "reset": "恢复默认值"
   }
 }

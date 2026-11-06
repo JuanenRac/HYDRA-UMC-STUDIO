@@ -357,7 +357,8 @@
     "updates": "Aktualisierungen",
     "security_tab": "Sicherheit",
     "installation": "Installation",
-    "remote_setup_tab": "Einrichtung des Fernzugriffs"
+    "remote_setup_tab": "Einrichtung des Fernzugriffs",
+    "preferences": "Einstellungen"
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",
@@ -2093,5 +2094,22 @@
     "close_all_confirm": "Keine App-Art findet diesen Server mehr. Bereits verbundene Apps müssen sich eventuell neu anmelden. Fortfahren?",
     "step3": "3. Vom Handy aus prüfen",
     "step3_hint": "Das Handy ins selbe Netz bringen, die App öffnen und suchen lassen oder die Adresse eintippen. Findet sie den Server nicht, prüfen Sie, ob ihre App-Art oben eingeschaltet ist und ob im Netz nichts die Verbindung blockiert."
+  },
+  "prefs": {
+    "title": "Persönliche Einstellungen",
+    "intro": "Wie die Hilfe sich öffnet und wie die Oberfläche aussieht und sich bewegt. Sie werden nur in diesem Browser gespeichert und sofort angewendet; nichts wird an den Server gesendet und nichts ändert, was ein Roboter tut.",
+    "help_level": "Stufe, mit der die Hilfe öffnet",
+    "help_level_hint": "Die Schritt-für-Schritt-Anleitungen werden nach Stufen gezeigt. Wählen Sie, welche zuerst erscheint; in der Hilfe können Sie sie weiterhin ändern.",
+    "level_all": "Alle Stufen",
+    "level_basic": "Grundlagen",
+    "level_advanced": "Fortgeschritten",
+    "level_technical": "Technisch",
+    "density": "Dichte der Oberfläche",
+    "density_comfortable": "Bequem (normale Textgröße)",
+    "density_compact": "Kompakt (kleinerer Text, mehr auf dem Bildschirm)",
+    "reduce_motion": "Animationen reduzieren",
+    "reduce_motion_hint": "Übergänge und Bewegungseffekte entfallen. Die 3D-Ansicht des Roboters ist nicht betroffen.",
+    "saved": "In diesem Browser gespeichert",
+    "reset": "Standardwerte wiederherstellen"
   }
 }

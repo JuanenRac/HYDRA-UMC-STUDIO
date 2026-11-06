@@ -357,7 +357,8 @@
     "updates": "Aggiornamenti",
     "security_tab": "Sicurezza",
     "installation": "Installazione",
-    "remote_setup_tab": "Configurazione dell'accesso remoto"
+    "remote_setup_tab": "Configurazione dell'accesso remoto",
+    "preferences": "Preferenze"
   },
   "robot_detail": {
     "back": "Torna alla Dashboard",
@@ -2093,5 +2094,22 @@
     "close_all_confirm": "Nessun tipo di app troverà più questo server. Le app già connesse potrebbero doversi autenticare di nuovo. Continuare?",
     "step3": "3. Verifica dal telefono",
     "step3_hint": "Metti il telefono sulla stessa rete, apri l'app e lasciala cercare oppure digita l'indirizzo. Se non trova il server, controlla che il suo tipo di app sia attivo qui sopra e che nulla blocchi la connessione in rete."
+  },
+  "prefs": {
+    "title": "Preferenze personali",
+    "intro": "Come si apre la Guida e come appare e si muove l'interfaccia. Sono salvate solo in questo browser e applicate subito; nulla viene inviato al server e nulla cambia ciò che fa un robot.",
+    "help_level": "Livello di apertura della Guida",
+    "help_level_hint": "Le guide passo passo sono mostrate per livello. Scegli quale vedere per prima; nella Guida puoi comunque cambiarlo.",
+    "level_all": "Tutti i livelli",
+    "level_basic": "Base",
+    "level_advanced": "Avanzato",
+    "level_technical": "Tecnico",
+    "density": "Densità dell'interfaccia",
+    "density_comfortable": "Comoda (dimensione del testo normale)",
+    "density_compact": "Compatta (testo più piccolo, più cose a schermo)",
+    "reduce_motion": "Riduci le animazioni",
+    "reduce_motion_hint": "Transizioni ed effetti in movimento vengono azzerati. La vista 3D del robot non è interessata.",
+    "saved": "Salvato in questo browser",
+    "reset": "Ripristina i valori predefiniti"
   }
 }

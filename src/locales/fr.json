@@ -357,7 +357,8 @@
     "updates": "Mises à jour",
     "security_tab": "Sécurité",
     "installation": "Installation",
-    "remote_setup_tab": "Assistant d'accès à distance"
+    "remote_setup_tab": "Assistant d'accès à distance",
+    "preferences": "Préférences"
   },
   "robot_detail": {
     "back": "Retour au Tableau de Bord",
@@ -2093,5 +2094,22 @@
     "close_all_confirm": "Aucun type d'appli ne trouvera plus ce serveur. Les applis déjà connectées devront peut-être se reconnecter. Continuer ?",
     "step3": "3. Vérifier depuis le téléphone",
     "step3_hint": "Mettez le téléphone sur le même réseau, ouvrez l'appli et laissez-la chercher ou saisissez l'adresse. Si elle ne trouve pas le serveur, vérifiez que son type d'appli est activé ci-dessus et que rien ne bloque la connexion sur le réseau."
+  },
+  "prefs": {
+    "title": "Préférences personnelles",
+    "intro": "Comment l'aide s'ouvre et comment l'interface s'affiche et bouge. Elles sont enregistrées dans ce navigateur seulement et appliquées aussitôt ; rien n'est envoyé au serveur et rien ne change ce que fait un robot.",
+    "help_level": "Niveau d'ouverture de l'aide",
+    "help_level_hint": "Les guides pas à pas sont présentés par niveau. Choisissez celui à voir en premier ; vous pouvez toujours le changer dans l'aide.",
+    "level_all": "Tous les niveaux",
+    "level_basic": "Basique",
+    "level_advanced": "Avancé",
+    "level_technical": "Technique",
+    "density": "Densité de l'interface",
+    "density_comfortable": "Confortable (taille de texte normale)",
+    "density_compact": "Compacte (texte plus petit, plus de contenu à l'écran)",
+    "reduce_motion": "Réduire les animations",
+    "reduce_motion_hint": "Les transitions et les effets animés sont supprimés. La vue 3D du robot n'est pas concernée.",
+    "saved": "Enregistré dans ce navigateur",
+    "reset": "Rétablir les valeurs par défaut"
   }
 }

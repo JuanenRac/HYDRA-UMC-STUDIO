@@ -357,7 +357,8 @@
     "updates": "Atualizações",
     "security_tab": "Segurança",
     "installation": "Instalação",
-    "remote_setup_tab": "Assistente de acesso remoto"
+    "remote_setup_tab": "Assistente de acesso remoto",
+    "preferences": "Preferências"
   },
   "robot_detail": {
     "back": "Voltar ao painel",
@@ -2093,5 +2094,22 @@
     "close_all_confirm": "Nenhum tipo de app voltará a encontrar este servidor. As apps já ligadas podem ter de iniciar sessão de novo. Continuar?",
     "step3": "3. Verifique a partir do telemóvel",
     "step3_hint": "Ponha o telemóvel na mesma rede, abra a app e deixe-a procurar ou escreva o endereço. Se não encontrar o servidor, verifique se o seu tipo de app está ligado acima e se nada bloqueia a ligação na rede."
+  },
+  "prefs": {
+    "title": "Preferências pessoais",
+    "intro": "Como a Ajuda se abre e como a interface se apresenta e se move. Ficam guardadas só neste navegador e aplicam-se de imediato; nada é enviado ao servidor e nada altera o que um robô faz.",
+    "help_level": "Nível com que a Ajuda abre",
+    "help_level_hint": "Os guias passo a passo são mostrados por nível. Escolha o que quer ver primeiro; dentro da Ajuda pode sempre mudá-lo.",
+    "level_all": "Todos os níveis",
+    "level_basic": "Básico",
+    "level_advanced": "Avançado",
+    "level_technical": "Técnico",
+    "density": "Densidade da interface",
+    "density_comfortable": "Confortável (tamanho de texto normal)",
+    "density_compact": "Compacta (texto mais pequeno, mais coisas no ecrã)",
+    "reduce_motion": "Reduzir as animações",
+    "reduce_motion_hint": "As transições e os efeitos em movimento ficam reduzidos a nada. A vista 3D do robô não é afetada.",
+    "saved": "Guardado neste navegador",
+    "reset": "Repor os valores por omissão"
   }
 }

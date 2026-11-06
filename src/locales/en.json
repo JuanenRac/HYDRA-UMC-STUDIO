@@ -357,7 +357,8 @@
     "updates": "Updates",
     "security_tab": "Security",
     "installation": "Installation",
-    "remote_setup_tab": "Remote access setup"
+    "remote_setup_tab": "Remote access setup",
+    "preferences": "Preferences"
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -2093,5 +2094,22 @@
     "close_all_confirm": "Every kind of app will stop finding this server. Apps that are already connected may need to sign in again. Continue?",
     "step3": "3. Check from the phone",
     "step3_hint": "Put the phone on the same network, open the app and let it search or type the address. If it does not find the server, check that its kind of app is turned on above and that nothing blocks the connection on the network."
+  },
+  "prefs": {
+    "title": "Personal preferences",
+    "intro": "How the Help opens and how the interface looks and moves. They are saved in this browser only and applied at once; nothing is sent to the server and nothing changes what a robot does.",
+    "help_level": "Level the Help opens at",
+    "help_level_hint": "The step-by-step guides are shown by level. Pick the one you want to see first; you can still change it inside the Help.",
+    "level_all": "All levels",
+    "level_basic": "Basic",
+    "level_advanced": "Advanced",
+    "level_technical": "Technical",
+    "density": "Density of the interface",
+    "density_comfortable": "Comfortable (normal text size)",
+    "density_compact": "Compact (smaller text, more on screen)",
+    "reduce_motion": "Reduce animations",
+    "reduce_motion_hint": "Transitions and moving effects are cut to nothing. The 3D view of the robot is not affected.",
+    "saved": "Saved in this browser",
+    "reset": "Restore defaults"
   }
 }
