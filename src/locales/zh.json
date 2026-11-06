@@ -354,7 +354,8 @@
     "language_pt": "葡萄牙语",
     "confirm_hardware_transport": "将 CAN-OTA 切换到真实硬件？刷写和测试将改为与真实电路板通信，而不是模拟。",
     "not_active_connection": "不是当前活动连接：此应用仅检查它正在使用的连接。",
-    "updates": "更新"
+    "updates": "更新",
+    "security_tab": "安全"
   },
   "robot_detail": {
     "back": "返回仪表盘",
@@ -2022,5 +2023,32 @@
     "none_found": "服务器旁未发现任何程序。",
     "count": "{{total}} 个程序中有 {{with}} 个报告了版本。",
     "no_source": "此服务器没有告知最新版本或进行安装的接口，因此本页只显示已安装内容，不会更改任何东西。更新请使用各程序自带的更新器。"
+  },
+  "security": {
+    "title": "登录安全",
+    "intro": "简短的检查清单、你账户的第二重验证，以及（管理员可见的）登录令牌签名密钥。在你自己开启之前不会有任何改变。",
+    "checks_title": "安全检查",
+    "check_second_factor": "你的账户已开启两步登录",
+    "check_asymmetric_keys": "令牌使用非对称密钥（EdDSA）签名",
+    "state_ok": "是",
+    "state_warn": "否",
+    "state_unknown": "未知",
+    "keys_title": "令牌签名密钥",
+    "keys_intro": "只显示每个密钥的公开状态（名称和日期）。已退役的密钥仍会被接受一段时间，以免打断已打开的会话。",
+    "algorithm": "算法",
+    "active_key": "当前密钥",
+    "col_key": "密钥",
+    "col_created": "创建时间",
+    "col_state": "状态",
+    "key_active": "使用中",
+    "key_retired": "已退役，接受至 {{date}}",
+    "key_retired_plain": "已退役",
+    "allow_rotation": "允许在此页轮换密钥（每次打开此页都会关闭）",
+    "rotate": "轮换密钥",
+    "rotate_confirm": "从现在起，所有新的登录令牌都将由新密钥签名。旧密钥在重叠期内仍被接受。是否继续？",
+    "rotated": "密钥已轮换。新密钥：{{kid}}。",
+    "error_asymmetric_off": "无需轮换：服务器使用共享密钥（HS256）而非密钥对签名。",
+    "error_file": "无法读取或写入服务器上的密钥文件，未进行任何轮换。",
+    "admin_only": "签名密钥仅向管理员显示。"
   }
 }

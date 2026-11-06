@@ -354,7 +354,8 @@
     "language_pt": "Portuguese",
     "confirm_hardware_transport": "Switch CAN-OTA to the real hardware? Flashing and testing will then talk to the real boards instead of the simulation.",
     "not_active_connection": "Not the active connection - this app only checks the one it's currently using.",
-    "updates": "Updates"
+    "updates": "Updates",
+    "security_tab": "Security"
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -2022,5 +2023,32 @@
     "none_found": "The server found no programs next to it.",
     "count": "{{with}} of {{total}} programs report their version.",
     "no_source": "This server has no route that tells which version is the newest or that installs one, so this tab only shows what is installed and changes nothing. Updates are made with the updater of each program."
+  },
+  "security": {
+    "title": "Sign-in security",
+    "intro": "A short list of checks, the second factor of your account and, for an administrator, the signing keys of the sign-in tokens. Nothing changes until you turn it on yourself.",
+    "checks_title": "Security checks",
+    "check_second_factor": "Two-step sign-in is on for your account",
+    "check_asymmetric_keys": "Tokens are signed with asymmetric keys (EdDSA)",
+    "state_ok": "yes",
+    "state_warn": "no",
+    "state_unknown": "not known",
+    "keys_title": "Token signing keys",
+    "keys_intro": "Only the public state of each key is shown (its name and dates). A retired key stays accepted for a while so that open sessions are not cut.",
+    "algorithm": "Algorithm",
+    "active_key": "active key",
+    "col_key": "Key",
+    "col_created": "Created",
+    "col_state": "State",
+    "key_active": "active",
+    "key_retired": "retired, accepted until {{date}}",
+    "key_retired_plain": "retired",
+    "allow_rotation": "Allow rotating the key from this tab (off every time this tab is opened)",
+    "rotate": "Rotate the key",
+    "rotate_confirm": "A new key will sign every new sign-in token from now on. The previous key stays accepted for the overlap time. Continue?",
+    "rotated": "The key was rotated. New key: {{kid}}.",
+    "error_asymmetric_off": "Nothing to rotate: the server signs with a shared secret (HS256), not with keys.",
+    "error_file": "The key file on the server cannot be read or written. Nothing was rotated.",
+    "admin_only": "The signing keys are only shown to administrators."
   }
 }

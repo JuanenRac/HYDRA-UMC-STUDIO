@@ -354,7 +354,8 @@
     "language_pt": "Português",
     "confirm_hardware_transport": "Mudar o CAN-OTA para o hardware real? A gravação e os testes passarão a falar com as placas reais em vez da simulação.",
     "not_active_connection": "Não é a ligação ativa: esta aplicação só verifica a que está a usar.",
-    "updates": "Atualizações"
+    "updates": "Atualizações",
+    "security_tab": "Segurança"
   },
   "robot_detail": {
     "back": "Voltar ao painel",
@@ -2022,5 +2023,32 @@
     "none_found": "O servidor não encontrou programas junto de si.",
     "count": "{{with}} de {{total}} programas comunicam a sua versão.",
     "no_source": "Este servidor não tem nenhuma rota que diga qual é a versão mais recente nem que instale uma, por isso este separador só mostra o que está instalado e não altera nada. As atualizações fazem-se com o atualizador de cada programa."
+  },
+  "security": {
+    "title": "Segurança do início de sessão",
+    "intro": "Uma lista curta de verificações, o segundo fator da sua conta e, para um administrador, as chaves de assinatura dos tokens de início de sessão. Nada muda até o ativar.",
+    "checks_title": "Verificações de segurança",
+    "check_second_factor": "O início de sessão em dois passos está ativo na sua conta",
+    "check_asymmetric_keys": "Os tokens são assinados com chaves assimétricas (EdDSA)",
+    "state_ok": "sim",
+    "state_warn": "não",
+    "state_unknown": "não se sabe",
+    "keys_title": "Chaves de assinatura dos tokens",
+    "keys_intro": "Só é mostrado o estado público de cada chave (nome e datas). Uma chave retirada continua aceite durante algum tempo para não cortar as sessões abertas.",
+    "algorithm": "Algoritmo",
+    "active_key": "chave ativa",
+    "col_key": "Chave",
+    "col_created": "Criada",
+    "col_state": "Estado",
+    "key_active": "ativa",
+    "key_retired": "retirada, aceite até {{date}}",
+    "key_retired_plain": "retirada",
+    "allow_rotation": "Permitir rodar a chave neste separador (desligado de cada vez que o separador é aberto)",
+    "rotate": "Rodar a chave",
+    "rotate_confirm": "Uma nova chave vai assinar todos os novos tokens de início de sessão a partir de agora. A chave anterior continua aceite durante o tempo de sobreposição. Continuar?",
+    "rotated": "A chave foi rodada. Nova chave: {{kid}}.",
+    "error_asymmetric_off": "Nada para rodar: o servidor assina com um segredo partilhado (HS256), não com chaves.",
+    "error_file": "O ficheiro de chaves do servidor não pode ser lido nem escrito. Nada foi rodado.",
+    "admin_only": "As chaves de assinatura só são mostradas aos administradores."
   }
 }

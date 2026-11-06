@@ -354,7 +354,8 @@
     "language_pt": "Portugués",
     "confirm_hardware_transport": "¿Cambiar CAN-OTA al hardware real? Flashear y probar hablará con las placas reales en lugar de la simulación.",
     "not_active_connection": "No es la conexión activa: esta aplicación solo comprueba la que está usando.",
-    "updates": "Actualizaciones"
+    "updates": "Actualizaciones",
+    "security_tab": "Seguridad"
   },
   "robot_detail": {
     "back": "Volver al Panel",
@@ -2022,5 +2023,32 @@
     "none_found": "El servidor no encontró programas a su lado.",
     "count": "{{with}} de {{total}} programas informan de su versión.",
     "no_source": "Este servidor no tiene ninguna ruta que diga cuál es la versión más reciente ni que instale una, así que esta pestaña solo muestra lo instalado y no cambia nada. Las actualizaciones se hacen con el actualizador de cada programa."
+  },
+  "security": {
+    "title": "Seguridad del inicio de sesión",
+    "intro": "Una lista corta de comprobaciones, el segundo factor de tu cuenta y, para un administrador, las claves con las que se firman los tokens de inicio de sesión. Nada cambia hasta que lo actives tú.",
+    "checks_title": "Comprobaciones de seguridad",
+    "check_second_factor": "El inicio de sesión en dos pasos está activado en tu cuenta",
+    "check_asymmetric_keys": "Los tokens se firman con claves asimétricas (EdDSA)",
+    "state_ok": "sí",
+    "state_warn": "no",
+    "state_unknown": "no se sabe",
+    "keys_title": "Claves de firma de los tokens",
+    "keys_intro": "Solo se muestra el estado público de cada clave (su nombre y sus fechas). Una clave retirada se sigue aceptando un tiempo para no cortar las sesiones abiertas.",
+    "algorithm": "Algoritmo",
+    "active_key": "clave activa",
+    "col_key": "Clave",
+    "col_created": "Creada",
+    "col_state": "Estado",
+    "key_active": "activa",
+    "key_retired": "retirada, aceptada hasta {{date}}",
+    "key_retired_plain": "retirada",
+    "allow_rotation": "Permitir rotar la clave desde esta pestaña (se apaga cada vez que se abre la pestaña)",
+    "rotate": "Rotar la clave",
+    "rotate_confirm": "Una clave nueva firmará todos los tokens de inicio de sesión nuevos a partir de ahora. La clave anterior se seguirá aceptando durante el tiempo de solapamiento. ¿Continuar?",
+    "rotated": "La clave se ha rotado. Clave nueva: {{kid}}.",
+    "error_asymmetric_off": "No hay nada que rotar: el servidor firma con un secreto compartido (HS256), no con claves.",
+    "error_file": "El fichero de claves del servidor no se puede leer o escribir. No se ha rotado nada.",
+    "admin_only": "Las claves de firma solo se muestran a los administradores."
   }
 }

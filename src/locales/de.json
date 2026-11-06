@@ -354,7 +354,8 @@
     "language_pt": "Portugiesisch",
     "confirm_hardware_transport": "CAN-OTA auf die echte Hardware umstellen? Flashen und Testen sprechen dann mit den echten Platinen statt mit der Simulation.",
     "not_active_connection": "Nicht die aktive Verbindung - diese App prüft nur die gerade verwendete.",
-    "updates": "Aktualisierungen"
+    "updates": "Aktualisierungen",
+    "security_tab": "Sicherheit"
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",
@@ -2022,5 +2023,32 @@
     "none_found": "Der Server hat keine Programme neben sich gefunden.",
     "count": "{{with}} von {{total}} Programmen melden ihre Version.",
     "no_source": "Dieser Server hat keine Route, die die neueste Version nennt oder eine installiert; dieser Reiter zeigt daher nur das Installierte und ändert nichts. Aktualisiert wird mit dem Updater des jeweiligen Programms."
+  },
+  "security": {
+    "title": "Sicherheit der Anmeldung",
+    "intro": "Eine kurze Liste von Prüfungen, der zweite Faktor Ihres Kontos und, für Administratoren, die Signierschlüssel der Anmelde-Token. Nichts ändert sich, bis Sie es selbst einschalten.",
+    "checks_title": "Sicherheitsprüfungen",
+    "check_second_factor": "Die Anmeldung in zwei Schritten ist für Ihr Konto aktiv",
+    "check_asymmetric_keys": "Token werden mit asymmetrischen Schlüsseln (EdDSA) signiert",
+    "state_ok": "ja",
+    "state_warn": "nein",
+    "state_unknown": "unbekannt",
+    "keys_title": "Signierschlüssel der Token",
+    "keys_intro": "Es wird nur der öffentliche Zustand jedes Schlüssels gezeigt (Name und Daten). Ein zurückgezogener Schlüssel wird noch eine Weile akzeptiert, damit offene Sitzungen nicht abbrechen.",
+    "algorithm": "Algorithmus",
+    "active_key": "aktiver Schlüssel",
+    "col_key": "Schlüssel",
+    "col_created": "Erstellt",
+    "col_state": "Zustand",
+    "key_active": "aktiv",
+    "key_retired": "zurückgezogen, akzeptiert bis {{date}}",
+    "key_retired_plain": "zurückgezogen",
+    "allow_rotation": "Rotation des Schlüssels in diesem Reiter erlauben (bei jedem Öffnen des Reiters aus)",
+    "rotate": "Schlüssel rotieren",
+    "rotate_confirm": "Ein neuer Schlüssel signiert ab jetzt alle neuen Anmelde-Token. Der bisherige Schlüssel bleibt während der Überlappungszeit gültig. Fortfahren?",
+    "rotated": "Der Schlüssel wurde rotiert. Neuer Schlüssel: {{kid}}.",
+    "error_asymmetric_off": "Nichts zu rotieren: Der Server signiert mit einem gemeinsamen Geheimnis (HS256), nicht mit Schlüsseln.",
+    "error_file": "Die Schlüsseldatei auf dem Server kann nicht gelesen oder geschrieben werden. Es wurde nichts rotiert.",
+    "admin_only": "Die Signierschlüssel werden nur Administratoren gezeigt."
   }
 }

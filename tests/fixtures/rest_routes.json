@@ -1,5 +1,6 @@
 [
   "/api/admin/clients",
+  "/api/admin/jwt-keys",
   "/api/admin/jwt-keys/rotate",
   "/api/admin/logs",
   "/api/admin/restart",

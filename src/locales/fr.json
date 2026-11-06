@@ -354,7 +354,8 @@
     "language_pt": "Portugais",
     "confirm_hardware_transport": "Passer CAN-OTA sur le matériel réel ? Le flashage et les tests parleront alors aux vraies cartes au lieu de la simulation.",
     "not_active_connection": "Pas la connexion active : cette application ne vérifie que celle qu'elle utilise.",
-    "updates": "Mises à jour"
+    "updates": "Mises à jour",
+    "security_tab": "Sécurité"
   },
   "robot_detail": {
     "back": "Retour au Tableau de Bord",
@@ -2022,5 +2023,32 @@
     "none_found": "Le serveur n'a trouvé aucun programme à côté de lui.",
     "count": "{{with}} programmes sur {{total}} indiquent leur version.",
     "no_source": "Ce serveur n'a aucune route qui indique la version la plus récente ou qui en installe une : cet onglet montre seulement ce qui est installé et ne change rien. Les mises à jour se font avec l'outil de mise à jour de chaque programme."
+  },
+  "security": {
+    "title": "Sécurité de la connexion",
+    "intro": "Une courte liste de vérifications, le second facteur de votre compte et, pour un administrateur, les clés de signature des jetons de connexion. Rien ne change tant que vous ne l'activez pas vous-même.",
+    "checks_title": "Vérifications de sécurité",
+    "check_second_factor": "La connexion en deux étapes est activée pour votre compte",
+    "check_asymmetric_keys": "Les jetons sont signés avec des clés asymétriques (EdDSA)",
+    "state_ok": "oui",
+    "state_warn": "non",
+    "state_unknown": "inconnu",
+    "keys_title": "Clés de signature des jetons",
+    "keys_intro": "Seul l'état public de chaque clé est affiché (son nom et ses dates). Une clé retirée reste acceptée un temps pour ne pas couper les sessions ouvertes.",
+    "algorithm": "Algorithme",
+    "active_key": "clé active",
+    "col_key": "Clé",
+    "col_created": "Créée",
+    "col_state": "État",
+    "key_active": "active",
+    "key_retired": "retirée, acceptée jusqu'au {{date}}",
+    "key_retired_plain": "retirée",
+    "allow_rotation": "Autoriser la rotation de la clé depuis cet onglet (désactivé à chaque ouverture de l'onglet)",
+    "rotate": "Faire tourner la clé",
+    "rotate_confirm": "Une nouvelle clé signera désormais tous les nouveaux jetons de connexion. L'ancienne clé reste acceptée pendant le temps de chevauchement. Continuer ?",
+    "rotated": "La clé a été renouvelée. Nouvelle clé : {{kid}}.",
+    "error_asymmetric_off": "Rien à renouveler : le serveur signe avec un secret partagé (HS256), pas avec des clés.",
+    "error_file": "Le fichier de clés du serveur ne peut être ni lu ni écrit. Rien n'a été renouvelé.",
+    "admin_only": "Les clés de signature ne sont montrées qu'aux administrateurs."
   }
 }

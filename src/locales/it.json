@@ -354,7 +354,8 @@
     "language_pt": "Portoghese",
     "confirm_hardware_transport": "Passare CAN-OTA all'hardware reale? Flash e test parleranno con le schede vere invece che con la simulazione.",
     "not_active_connection": "Non è la connessione attiva: questa app controlla solo quella che sta usando.",
-    "updates": "Aggiornamenti"
+    "updates": "Aggiornamenti",
+    "security_tab": "Sicurezza"
   },
   "robot_detail": {
     "back": "Torna alla Dashboard",
@@ -2022,5 +2023,32 @@
     "none_found": "Il server non ha trovato programmi accanto a sé.",
     "count": "{{with}} programmi su {{total}} segnalano la loro versione.",
     "no_source": "Questo server non ha alcuna rotta che indichi la versione più recente o ne installi una: questa scheda mostra solo l'installato e non cambia nulla. Gli aggiornamenti si fanno con l'updater di ogni programma."
+  },
+  "security": {
+    "title": "Sicurezza dell'accesso",
+    "intro": "Un breve elenco di controlli, il secondo fattore del tuo account e, per un amministratore, le chiavi di firma dei token di accesso. Nulla cambia finché non lo attivi tu.",
+    "checks_title": "Controlli di sicurezza",
+    "check_second_factor": "L'accesso in due passaggi è attivo per il tuo account",
+    "check_asymmetric_keys": "I token sono firmati con chiavi asimmetriche (EdDSA)",
+    "state_ok": "sì",
+    "state_warn": "no",
+    "state_unknown": "non noto",
+    "keys_title": "Chiavi di firma dei token",
+    "keys_intro": "Viene mostrato solo lo stato pubblico di ogni chiave (nome e date). Una chiave ritirata resta accettata per un po' così le sessioni aperte non si interrompono.",
+    "algorithm": "Algoritmo",
+    "active_key": "chiave attiva",
+    "col_key": "Chiave",
+    "col_created": "Creata",
+    "col_state": "Stato",
+    "key_active": "attiva",
+    "key_retired": "ritirata, accettata fino al {{date}}",
+    "key_retired_plain": "ritirata",
+    "allow_rotation": "Consenti la rotazione della chiave da questa scheda (spento a ogni apertura della scheda)",
+    "rotate": "Ruota la chiave",
+    "rotate_confirm": "Da ora una nuova chiave firmerà tutti i nuovi token di accesso. La chiave precedente resta accettata per il tempo di sovrapposizione. Continuare?",
+    "rotated": "La chiave è stata ruotata. Nuova chiave: {{kid}}.",
+    "error_asymmetric_off": "Niente da ruotare: il server firma con un segreto condiviso (HS256), non con chiavi.",
+    "error_file": "Il file delle chiavi sul server non può essere letto o scritto. Non è stato ruotato nulla.",
+    "admin_only": "Le chiavi di firma sono mostrate solo agli amministratori."
   }
 }
