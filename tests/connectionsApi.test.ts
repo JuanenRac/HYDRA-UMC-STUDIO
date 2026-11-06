@@ -18,7 +18,7 @@ const event = { schema_version: '1.0', id: 7, at_utc: '2026-01-02T00:00:00.000Z'
 afterEach(() => vi.unstubAllGlobals());
 
 function answer(status: number, body: unknown): void {
-  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: status < 300, status, json: async () => body }) as unknown as Response));
+  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: status < 300, status, headers: new Headers(), text: async () => JSON.stringify(body) }) as unknown as Response));
 }
 
 describe('reading the answers', () => {
@@ -100,5 +100,14 @@ describe('the calls', () => {
     expect(await connectionsApi.clients()).toMatchObject({ ok: false, failure: 'http', status: 500 });
     vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('offline'); }));
     expect(await connectionsApi.clients()).toEqual({ ok: false, failure: 'network' });
+  });
+
+  it('reads a body that is not JSON as an empty list and sends a single request with no repeat', async () => {
+    const plain = vi.fn(async () => ({ ok: true, status: 200, headers: new Headers(), text: async () => '<html>' }) as unknown as Response);
+    vi.stubGlobal('fetch', plain);
+    expect(await connectionsApi.clients()).toEqual({ ok: true, value: [] });
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 503, headers: new Headers(), text: async () => '' }) as unknown as Response));
+    expect(await connectionsApi.events()).toMatchObject({ ok: false, failure: 'http', status: 503 });
+    expect((fetch as unknown as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(1);
   });
 });

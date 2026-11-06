@@ -14,6 +14,8 @@ import {
   CONNECTION_ACTIONS,
   ago,
   clientHeader as kitClientHeader,
+  createConnectionsApi,
+  createHttpClient,
   isFailure,
   parseClient,
   parseClients,
@@ -35,19 +37,13 @@ export function clientHeader(version: string): Record<string, string> {
   return kitClientHeader('studio', version);
 }
 
-async function load<T>(route: string, parse: (data: unknown) => T): Promise<ConnectionsResult<T>> {
-  try {
-    const res = await authFetch(apiUrl(route));
-    if (res.status === 404) return { ok: false, failure: 'unsupported' };
-    if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
-    if (!res.ok) return { ok: false, failure: 'http', status: res.status };
-    return { ok: true, value: parse(await res.json().catch(() => ({}))) };
-  } catch {
-    return { ok: false, failure: 'network' };
-  }
-}
+// The calls go through the shared HTTP client with no retries and no timeout, so the behaviour is the one of a single plain request; the session adds the
+// Authorization header and the base address of the server is decided at the moment of the call.
+const connectionsKitApi = createConnectionsApi(
+  createHttpClient({ retries: 0, timeoutMs: 0, fetch: (input, init) => authFetch(apiUrl(input), init) }),
+);
 
 export const connectionsApi = {
-  clients: () => load('/api/connections/clients', parseClients),
-  events: (limit = 50) => load(`/api/connections/events?limit=${Math.min(Math.max(Math.trunc(limit), 1), 500)}`, parseEvents),
+  clients: () => connectionsKitApi.clients(),
+  events: (limit = 50) => connectionsKitApi.events(limit),
 };

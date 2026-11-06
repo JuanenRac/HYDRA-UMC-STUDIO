@@ -4,8 +4,8 @@
 // GPL-3.0-or-later - see LICENSE
 //
 // The inverse kinematics of several models are approximations that never say "unreachable": they
-// return the closest pose the arm can take, and the trajectory used to be sent anyway, so the robot
-// followed a different path than the one drawn. Each point is now measured (the distance between the
+// return the closest pose the arm can take, so a trajectory sent as drawn would make the robot
+// follow a different path than the one drawn. Each point is measured (the distance between the
 // pose asked for and the pose its joints really give) and, when any point is further than the
 // tolerance, the operator is asked to confirm before the trajectory is sent. The tolerance is the
 // operator's to set; it is kept in this browser.

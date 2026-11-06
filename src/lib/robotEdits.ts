@@ -4,8 +4,8 @@
 // GPL-3.0-or-later - see LICENSE
 //
 // The recorded points, the repeat flag, the model, the role, the robots it is combined with, the joint values of the
-// sliders and the layout of the XY table used to travel only inside the whole settings tree, which the server takes
-// from an administrator alone and where the last writer wins. The server now has a command for each of them
+// sliders and the layout of the XY table would travel only inside the whole settings tree if they were not sent as commands, and the server takes that tree
+// from an administrator alone and the last writer wins. The server has a command for each of them
 // (points, loop, model, role, combine, joints, xyTableConfig). This file decides, from what a panel changed, which
 // commands say the same thing, and keeps them in order: one in flight per robot and command, and only the newest
 // of the ones that arrive meanwhile (each carries the whole value, so the newest says it all). No React in here.

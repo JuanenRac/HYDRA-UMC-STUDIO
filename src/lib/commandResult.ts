@@ -3,8 +3,8 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0 - see LICENSE
 //
-// POST /api/robot/:id/command used to be fire-and-forget: a failure only rolled the optimistic change back, so a
-// STOP that never reached the server looked exactly like one that did. Every answer is now turned into a typed
+// POST /api/robot/:id/command is not fire-and-forget: a failure that only rolled the optimistic change back would make a
+// STOP that never reached the server look exactly like one that did. Every answer is turned into a typed
 // result, and a failure into a code the interface can say out loud in the user's language.
 // =============================================================================
 

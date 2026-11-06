@@ -64,7 +64,7 @@ export function slotBaseId(robotIndex0: number): number {
 
 /**
  * The frames of one slot's window of identifiers, as offsets from the slot base (mirrors tools/can_ids.py of HYDRA-UMC): each offset
- * has one emitter, so no identifier is sent by two boards. The relay answers on +0x16 and +0x18 (they used to share the
+ * has one emitter, so no identifier is sent by two boards. The relay answers on +0x16 and +0x18 (not on the
  * identifiers of the requests, +0x10 and +0x13), the host asks for the next acknowledgement with +0x17, and the signed image header
  * and the downgrade token travel on +0x19 to +0x1C.
  */

@@ -42,8 +42,7 @@ const ALL_TIERS: CanOtaTier[] = ['kinematicBrain', 'controllerBoard', 'urtcHead'
 /**
  * `tiers` restricts which of the 4 CAN-OTA tiers this instance offers - the
  * "URTC" nav button passes ['urtcHead','urtcExpansion'] only (that's the
- * only hardware it actually reaches; kinematicBrain/controllerBoard used to
- * be lumped in here by mistake), the "HYDRA-UMC" nav button passes
+ * only hardware it actually reaches), the "HYDRA-UMC" nav button passes
  * ['kinematicBrain','controllerBoard'] instead - see Dashboard.tsx. Defaults
  * to all 4 for any other caller.
  */

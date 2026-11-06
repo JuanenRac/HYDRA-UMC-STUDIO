@@ -10,7 +10,7 @@ import { type ATCGrid, type ToolType, type ATCConfig } from '../store';
 import { URTC_TOOLS } from './robotDetail/shared';
 import { downloadJson } from '../lib/sceneFiles';
 import { atcGridChange, atcPositionChange, atcPositionOf, atcRevolverSlotsChange, atcSlotCount, atcToolsWithTool, configFileName, defaultAtcConfig, parseAtcConfigText } from '../lib/moduleConfigs';
-import { RotateCcw, Settings, Grid3X3, CircleDashed, MapPin, ChevronDown, ChevronUp, Save, Upload, Server } from 'lucide-react';
+import { Settings, Grid3X3, CircleDashed, MapPin, ChevronDown, ChevronUp, Save, Upload, Server } from 'lucide-react';
 
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -64,25 +64,13 @@ export function ATCToolsConfig() {
   };
 
   if (!atcConfig) {
-    
-  const handleReset = () => {
-    updateRobot(selectedRobot.id, {
-      atc: defaultAtcConfig()
-    });
-  };
-
-  return (
+    return (
       <div className="h-full flex flex-col space-y-4">
         <div className="flex items-center justify-between shrink-0">
           <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
             <Settings className="text-sky-400" size={20} /> {t('modules.atc_title', 'ATC Tools Configuration')}
           </h2>
           <div className="flex items-center gap-2">
-        {selectedRobot.atc && (
-          <button onClick={handleReset} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 text-sm flex items-center gap-2 transition-colors">
-            <RotateCcw size={16} /> {t('modules.reset', 'Reset')}
-          </button>
-        )}
         <select 
             className="bg-slate-900 border border-slate-700 rounded px-3 py-2 min-h-[40px] text-sm font-medium text-slate-200 focus:outline-none focus:border-sky-500"
             value={selectedRobotId}
