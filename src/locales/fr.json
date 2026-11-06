@@ -358,7 +358,8 @@
     "security_tab": "Sécurité",
     "installation": "Installation",
     "remote_setup_tab": "Assistant d'accès à distance",
-    "preferences": "Préférences"
+    "preferences": "Préférences",
+    "notifications": "Notifications"
   },
   "robot_detail": {
     "back": "Retour au Tableau de Bord",
@@ -2111,5 +2112,22 @@
     "reduce_motion_hint": "Les transitions et les effets animés sont supprimés. La vue 3D du robot n'est pas concernée.",
     "saved": "Enregistré dans ce navigateur",
     "reset": "Rétablir les valeurs par défaut"
+  },
+  "notify": {
+    "title": "Notifications push",
+    "intro": "Les alertes que le serveur envoie aux téléphones enregistrés auprès de lui : si elles sont activées, si elles peuvent être envoyées et quels événements sont annoncés.",
+    "admin_only": "Seuls les administrateurs peuvent voir l'état des notifications.",
+    "verdict_off": "Les notifications push sont désactivées sur ce serveur.",
+    "verdict_needs_credentials": "Les notifications push sont activées, mais le serveur ne peut pas les envoyer : ses identifiants manquent ou sont inutilisables.",
+    "verdict_ready": "Les notifications push sont activées et prêtes à être envoyées.",
+    "problem": "Raison : {{problem}}",
+    "devices": "{{count}} téléphone(s) enregistré(s).",
+    "sandbox": "Il utilise l'hôte de test du service push d'Apple.",
+    "event_jobFinished": "Une tâche est terminée",
+    "event_globalStop": "Un arrêt global a été déclenché",
+    "event_operatorHeartbeatLost": "Le signal d'un opérateur a été perdu",
+    "on": "activé",
+    "off": "désactivé",
+    "read_only": "Cet onglet montre seulement l'état. Le serveur lit ces interrupteurs dans son propre fichier de sécurité (le push est désactivé tant qu'un administrateur ne l'active pas là) et n'a aucune route pour les modifier ou couper un événement : il n'y a donc pas d'interrupteurs ici."
   }
 }

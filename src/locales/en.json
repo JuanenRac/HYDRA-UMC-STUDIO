@@ -358,7 +358,8 @@
     "security_tab": "Security",
     "installation": "Installation",
     "remote_setup_tab": "Remote access setup",
-    "preferences": "Preferences"
+    "preferences": "Preferences",
+    "notifications": "Notifications"
   },
   "robot_detail": {
     "back": "Back to Dashboard",
@@ -2111,5 +2112,22 @@
     "reduce_motion_hint": "Transitions and moving effects are cut to nothing. The 3D view of the robot is not affected.",
     "saved": "Saved in this browser",
     "reset": "Restore defaults"
+  },
+  "notify": {
+    "title": "Push notifications",
+    "intro": "The warnings the server sends to the phones that registered with it: whether they are on, whether they can be sent and which events are announced.",
+    "admin_only": "Only administrators can see the state of the notifications.",
+    "verdict_off": "Push notifications are off on this server.",
+    "verdict_needs_credentials": "Push notifications are on, but the server cannot send them: its credentials are missing or not usable.",
+    "verdict_ready": "Push notifications are on and ready to be sent.",
+    "problem": "Reason: {{problem}}",
+    "devices": "{{count}} phone(s) registered.",
+    "sandbox": "It uses the test host of the Apple push service.",
+    "event_jobFinished": "A job finished",
+    "event_globalStop": "A global stop was issued",
+    "event_operatorHeartbeatLost": "The signal of an operator was lost",
+    "on": "on",
+    "off": "off",
+    "read_only": "This tab only shows the state. The server reads these switches from its own security file (push notifications are off until an administrator turns them on there) and has no route to change them or to mute one event, so there are no switches here."
   }
 }

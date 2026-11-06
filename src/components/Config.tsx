@@ -29,6 +29,7 @@ import { PathsTab } from './config/PathsTab';
 import { CanOtaTab } from './config/CanOtaTab';
 import { AiHailoTab } from './config/AiHailoTab';
 import { UpdatesTab } from './config/UpdatesTab';
+import { NotificationsTab } from './config/NotificationsTab';
 import { PreferencesTab } from './config/PreferencesTab';
 import { RemoteAccessSetupTab } from './config/RemoteAccessSetupTab';
 import { InstallationTab } from './config/InstallationTab';
@@ -45,7 +46,7 @@ function PanelLoadingFallback() {
   );
 }
 
-type ConfigTab = 'identity' | 'controllers' | 'ui' | 'robots' | 'cameras' | 'models' | 'integrations' | 'remoteaccess' | 'users' | 'paths' | 'canota' | 'aihailo' | 'gamepad' | 'updates' | 'security' | 'installation' | 'remotesetup' | 'preferences';
+type ConfigTab = 'identity' | 'controllers' | 'ui' | 'robots' | 'cameras' | 'models' | 'integrations' | 'remoteaccess' | 'users' | 'paths' | 'canota' | 'aihailo' | 'gamepad' | 'updates' | 'security' | 'installation' | 'remotesetup' | 'preferences' | 'notifications';
 
 export function Config({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
@@ -80,6 +81,7 @@ export function Config({ onClose }: { onClose: () => void }) {
     { id: 'installation', label: t('config.installation') },
     { id: 'remotesetup', label: t('config.remote_setup_tab') },
     { id: 'preferences', label: t('config.preferences') },
+    { id: 'notifications', label: t('config.notifications') },
   ];
 
   return (
@@ -134,6 +136,8 @@ export function Config({ onClose }: { onClose: () => void }) {
             {configTab === 'remotesetup' && <RemoteAccessSetupTab />}
 
             {configTab === 'preferences' && <PreferencesTab />}
+
+            {configTab === 'notifications' && <NotificationsTab />}
 
             {configTab === 'gamepad' && (
               <div className="animate-in zoom-in-95 fade-in duration-500">

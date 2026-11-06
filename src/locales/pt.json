@@ -358,7 +358,8 @@
     "security_tab": "Segurança",
     "installation": "Instalação",
     "remote_setup_tab": "Assistente de acesso remoto",
-    "preferences": "Preferências"
+    "preferences": "Preferências",
+    "notifications": "Notificações"
   },
   "robot_detail": {
     "back": "Voltar ao painel",
@@ -2111,5 +2112,22 @@
     "reduce_motion_hint": "As transições e os efeitos em movimento ficam reduzidos a nada. A vista 3D do robô não é afetada.",
     "saved": "Guardado neste navegador",
     "reset": "Repor os valores por omissão"
+  },
+  "notify": {
+    "title": "Notificações push",
+    "intro": "Os avisos que o servidor envia aos telemóveis registados nele: se estão ativos, se podem ser enviados e que eventos são anunciados.",
+    "admin_only": "Só os administradores podem ver o estado das notificações.",
+    "verdict_off": "As notificações push estão desligadas neste servidor.",
+    "verdict_needs_credentials": "As notificações push estão ligadas, mas o servidor não as consegue enviar: as credenciais faltam ou não servem.",
+    "verdict_ready": "As notificações push estão ligadas e prontas a ser enviadas.",
+    "problem": "Motivo: {{problem}}",
+    "devices": "{{count}} telemóvel(is) registado(s).",
+    "sandbox": "Usa o servidor de testes do serviço push da Apple.",
+    "event_jobFinished": "Um trabalho terminou",
+    "event_globalStop": "Foi acionada uma paragem global",
+    "event_operatorHeartbeatLost": "Perdeu-se o sinal de um operador",
+    "on": "ligado",
+    "off": "desligado",
+    "read_only": "Este separador só mostra o estado. O servidor lê estes interruptores do seu próprio ficheiro de segurança (o push está desligado até um administrador o ligar lá) e não tem rota para os alterar nem para silenciar um evento, por isso aqui não há interruptores."
   }
 }

@@ -358,7 +358,8 @@
     "security_tab": "Seguridad",
     "installation": "Instalación",
     "remote_setup_tab": "Asistente de acceso remoto",
-    "preferences": "Preferencias"
+    "preferences": "Preferencias",
+    "notifications": "Notificaciones"
   },
   "robot_detail": {
     "back": "Volver al Panel",
@@ -2111,5 +2112,22 @@
     "reduce_motion_hint": "Las transiciones y los efectos en movimiento se reducen a nada. La vista 3D del robot no se ve afectada.",
     "saved": "Guardado en este navegador",
     "reset": "Restaurar valores por defecto"
+  },
+  "notify": {
+    "title": "Notificaciones push",
+    "intro": "Los avisos que el servidor envía a los móviles que se han registrado en él: si están activados, si se pueden enviar y qué eventos se anuncian.",
+    "admin_only": "Solo los administradores pueden ver el estado de las notificaciones.",
+    "verdict_off": "Las notificaciones push están desactivadas en este servidor.",
+    "verdict_needs_credentials": "Las notificaciones push están activadas, pero el servidor no puede enviarlas: sus credenciales faltan o no sirven.",
+    "verdict_ready": "Las notificaciones push están activadas y listas para enviarse.",
+    "problem": "Motivo: {{problem}}",
+    "devices": "{{count}} móvil(es) registrado(s).",
+    "sandbox": "Usa el servidor de pruebas del servicio push de Apple.",
+    "event_jobFinished": "Un trabajo terminó",
+    "event_globalStop": "Se activó una parada global",
+    "event_operatorHeartbeatLost": "Se perdió la señal de un operador",
+    "on": "activado",
+    "off": "desactivado",
+    "read_only": "Esta pestaña solo muestra el estado. El servidor lee estos interruptores de su propio fichero de seguridad (las notificaciones push están apagadas hasta que un administrador las active allí) y no tiene ruta para cambiarlos ni para silenciar un evento, así que aquí no hay interruptores."
   }
 }

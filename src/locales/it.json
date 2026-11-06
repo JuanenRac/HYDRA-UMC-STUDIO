@@ -358,7 +358,8 @@
     "security_tab": "Sicurezza",
     "installation": "Installazione",
     "remote_setup_tab": "Configurazione dell'accesso remoto",
-    "preferences": "Preferenze"
+    "preferences": "Preferenze",
+    "notifications": "Notifiche"
   },
   "robot_detail": {
     "back": "Torna alla Dashboard",
@@ -2111,5 +2112,22 @@
     "reduce_motion_hint": "Transizioni ed effetti in movimento vengono azzerati. La vista 3D del robot non è interessata.",
     "saved": "Salvato in questo browser",
     "reset": "Ripristina i valori predefiniti"
+  },
+  "notify": {
+    "title": "Notifiche push",
+    "intro": "Gli avvisi che il server invia ai telefoni registrati presso di lui: se sono attivi, se possono essere inviati e quali eventi vengono annunciati.",
+    "admin_only": "Solo gli amministratori possono vedere lo stato delle notifiche.",
+    "verdict_off": "Le notifiche push sono disattivate su questo server.",
+    "verdict_needs_credentials": "Le notifiche push sono attive, ma il server non può inviarle: le credenziali mancano o non sono utilizzabili.",
+    "verdict_ready": "Le notifiche push sono attive e pronte per essere inviate.",
+    "problem": "Motivo: {{problem}}",
+    "devices": "{{count}} telefono/i registrato/i.",
+    "sandbox": "Usa l'host di prova del servizio push di Apple.",
+    "event_jobFinished": "Un lavoro è terminato",
+    "event_globalStop": "È stato emesso uno stop globale",
+    "event_operatorHeartbeatLost": "Si è perso il segnale di un operatore",
+    "on": "attivo",
+    "off": "disattivo",
+    "read_only": "Questa scheda mostra solo lo stato. Il server legge questi interruttori dal proprio file di sicurezza (il push è spento finché un amministratore non lo attiva lì) e non ha rotte per modificarli o silenziare un evento, quindi qui non ci sono interruttori."
   }
 }

@@ -358,7 +358,8 @@
     "security_tab": "Sicherheit",
     "installation": "Installation",
     "remote_setup_tab": "Einrichtung des Fernzugriffs",
-    "preferences": "Einstellungen"
+    "preferences": "Einstellungen",
+    "notifications": "Benachrichtigungen"
   },
   "robot_detail": {
     "back": "Zurück zum Dashboard",
@@ -2111,5 +2112,22 @@
     "reduce_motion_hint": "Übergänge und Bewegungseffekte entfallen. Die 3D-Ansicht des Roboters ist nicht betroffen.",
     "saved": "In diesem Browser gespeichert",
     "reset": "Standardwerte wiederherstellen"
+  },
+  "notify": {
+    "title": "Push-Benachrichtigungen",
+    "intro": "Die Hinweise, die der Server an die bei ihm registrierten Handys sendet: ob sie aktiv sind, ob sie gesendet werden können und welche Ereignisse gemeldet werden.",
+    "admin_only": "Nur Administratoren können den Zustand der Benachrichtigungen sehen.",
+    "verdict_off": "Push-Benachrichtigungen sind auf diesem Server aus.",
+    "verdict_needs_credentials": "Push-Benachrichtigungen sind an, aber der Server kann sie nicht senden: Die Zugangsdaten fehlen oder sind unbrauchbar.",
+    "verdict_ready": "Push-Benachrichtigungen sind an und versandbereit.",
+    "problem": "Grund: {{problem}}",
+    "devices": "{{count}} Handy(s) registriert.",
+    "sandbox": "Es nutzt den Testhost des Apple-Push-Dienstes.",
+    "event_jobFinished": "Ein Auftrag ist fertig",
+    "event_globalStop": "Ein globaler Stopp wurde ausgelöst",
+    "event_operatorHeartbeatLost": "Das Lebenszeichen eines Bedieners ging verloren",
+    "on": "an",
+    "off": "aus",
+    "read_only": "Dieser Reiter zeigt nur den Zustand. Der Server liest diese Schalter aus seiner eigenen Sicherheitsdatei (Push ist aus, bis ein Administrator es dort einschaltet) und hat keine Route, sie zu ändern oder ein Ereignis stummzuschalten; deshalb gibt es hier keine Schalter."
   }
 }
