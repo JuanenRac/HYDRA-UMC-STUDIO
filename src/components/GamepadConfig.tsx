@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { Gamepad2 } from 'lucide-react';
 import { BluetoothPairing } from './BluetoothPairing';
 import { useSettingsStore } from '../storeContexts';
+import { GAMEPAD_BUTTONS, activeGamepadInputs, gamepadActionSpecs, withMapping } from '../lib/moduleConfigs';
 
 /**
  * Executes the  gamepad config logic.
@@ -56,15 +57,7 @@ export function GamepadConfig() {
 
       setConnectedGamepad(gp ? { id: gp.id, buttons: gp.buttons.length, axes: gp.axes.length, mapping: gp.mapping || t('gamepad_config.mapping_raw', 'raw (non-standard)') } : null);
 
-      const active = new Set<string>();
-      if (gp) {
-        gp.buttons.forEach((b, i) => { if (b.pressed) active.add(`B${i}`); });
-        gp.axes.forEach((val, i) => {
-          if (val < -DEADZONE) active.add(`AXIS_${i}_NEG`);
-          if (val > DEADZONE) active.add(`AXIS_${i}_POS`);
-        });
-      }
-      setActiveInputs(active);
+      setActiveInputs(gp ? activeGamepadInputs(gp.buttons, gp.axes, DEADZONE) : new Set<string>());
 
       detectRequestRef.current = requestAnimationFrame(poll);
     };
@@ -80,92 +73,12 @@ export function GamepadConfig() {
   };
 
   const updateMapping = (btn: string, action: string) => {
-    updateSettings({
-      gamepadMapping: {
-        ...mapping,
-        [btn]: action
-      }
-    });
+    updateSettings({ gamepadMapping: withMapping(mapping, btn, action) });
   };
 
-  const ACTIONS = [
-    { value: '', label: t('gamepad_config.actions.none', 'None') },
-    // Robot Selection
-    ...Array.from({length: 8}, (_, i) => ({ value: `select_robot_${i+1}`, label: t('gamepad_config.actions.select_robot', 'Select Robot {{n}}', { n: i + 1 }) })),
-    // Cartesian XYZ - same tool-point jog as the floating Joystick3D
-    // overlay in the 3D viewport (RobotDetail.tsx), just reachable from a
-    // gamepad button instead of a click. Listed before Joints: this is
-    // the primary, model-agnostic way to move the tool point; J1-J6 stays
-    // available right below for direct per-joint control.
-    ...['X', 'Y', 'Z'].flatMap(axis => [
-      { value: `${axis}+`, label: t('gamepad_config.actions.cartesian_plus', '{{axis}} +', { axis }) },
-      { value: `${axis}-`, label: t('gamepad_config.actions.cartesian_minus', '{{axis}} -', { axis }) }
-    ]),
-    // The 4 diagonal XY moves - the exact same real moves Joystick3D's own
-    // corner D-pad buttons make (ArrowUpLeft/UpRight/DownLeft/DownRight,
-    // one real jog with both dx and dy non-zero at once), requested
-    // directly to match that floating overlay's own layout.
-    { value: 'XY++', label: t('gamepad_config.actions.diag_pp', 'X+ Y+') },
-    { value: 'XY+-', label: t('gamepad_config.actions.diag_pm', 'X+ Y-') },
-    { value: 'XY-+', label: t('gamepad_config.actions.diag_mp', 'X- Y+') },
-    { value: 'XY--', label: t('gamepad_config.actions.diag_mm', 'X- Y-') },
-    // Base rotation - the exact same real move as the 2 dedicated J1
-    // buttons that already sit right next to Joystick3D in that same
-    // floating overlay (RobotDetail.tsx's own JoystickOverlay). Listed
-    // here, not only under Joints below, so this group matches that
-    // widget's own real layout: tool-point jog (XYZ + diagonals) plus
-    // base rotation together, requested directly. J1+/J1- under Joints
-    // still work identically - same action.
-    { value: 'ROT+', label: t('gamepad_config.actions.rotation_plus', 'Rotate +') },
-    { value: 'ROT-', label: t('gamepad_config.actions.rotation_minus', 'Rotate -') },
-    // Joints
-    ...['J1', 'J2', 'J3', 'J4', 'J5', 'J6'].flatMap(j => [
-      { value: `${j}+`, label: t('gamepad_config.actions.joint_plus', '{{j}} +', { j }) },
-      { value: `${j}-`, label: t('gamepad_config.actions.joint_minus', '{{j}} -', { j }) }
-    ]),
-    // Table
-    ...['TX', 'TY'].flatMap(a => [
-      { value: `${a}+`, label: t('gamepad_config.actions.table_plus', 'Table {{a}} +', { a }) },
-      { value: `${a}-`, label: t('gamepad_config.actions.table_minus', 'Table {{a}} -', { a }) }
-    ]),
-    // Controls
-    { value: 'E-STOP', label: t('gamepad_config.actions.estop', 'E-STOP') },
-    { value: 'E-STOP ALL', label: t('gamepad_config.actions.estop_all', 'E-STOP ALL') },
-    { value: 'START', label: t('gamepad_config.actions.start', 'START') },
-    { value: 'START ALL', label: t('gamepad_config.actions.start_all', 'START ALL') },
-    { value: 'STOP', label: t('gamepad_config.actions.stop', 'STOP') },
-    { value: 'STOP ALL', label: t('gamepad_config.actions.stop_all', 'STOP ALL') },
-    { value: 'ADD POINT', label: t('gamepad_config.actions.add_point', 'ADD POINT') },
-    { value: 'SPEED+', label: t('gamepad_config.actions.speed_plus', 'Speed +') },
-    { value: 'SPEED-', label: t('gamepad_config.actions.speed_minus', 'Speed -') },
-  ];
+  const ACTIONS = gamepadActionSpecs().map(spec => ({ value: spec.value, label: t(spec.key, spec.fallback, spec.params) }));
 
-  const BUTTONS = [
-    { id: 'B0', name: t('gamepad_config.buttons.B0', 'A / Cross') },
-    { id: 'B1', name: t('gamepad_config.buttons.B1', 'B / Circle') },
-    { id: 'B2', name: t('gamepad_config.buttons.B2', 'X / Square') },
-    { id: 'B3', name: t('gamepad_config.buttons.B3', 'Y / Triangle') },
-    { id: 'B4', name: t('gamepad_config.buttons.B4', 'LB / L1') },
-    { id: 'B5', name: t('gamepad_config.buttons.B5', 'RB / R1') },
-    { id: 'B6', name: t('gamepad_config.buttons.B6', 'LT / L2') },
-    { id: 'B7', name: t('gamepad_config.buttons.B7', 'RT / R2') },
-    { id: 'B8', name: t('gamepad_config.buttons.B8', 'Select / Share') },
-    { id: 'B9', name: t('gamepad_config.buttons.B9', 'Start / Options') },
-    { id: 'B10', name: t('gamepad_config.buttons.B10', 'L3 (Stick Click)') },
-    { id: 'B11', name: t('gamepad_config.buttons.B11', 'R3 (Stick Click)') },
-    { id: 'B12', name: t('gamepad_config.buttons.B12', 'D-Pad Up') },
-    { id: 'B13', name: t('gamepad_config.buttons.B13', 'D-Pad Down') },
-    { id: 'B14', name: t('gamepad_config.buttons.B14', 'D-Pad Left') },
-    { id: 'B15', name: t('gamepad_config.buttons.B15', 'D-Pad Right') },
-    { id: 'AXIS_0_NEG', name: t('gamepad_config.buttons.AXIS_0_NEG', 'Left Stick Left') },
-    { id: 'AXIS_0_POS', name: t('gamepad_config.buttons.AXIS_0_POS', 'Left Stick Right') },
-    { id: 'AXIS_1_NEG', name: t('gamepad_config.buttons.AXIS_1_NEG', 'Left Stick Up') },
-    { id: 'AXIS_1_POS', name: t('gamepad_config.buttons.AXIS_1_POS', 'Left Stick Down') },
-    { id: 'AXIS_2_NEG', name: t('gamepad_config.buttons.AXIS_2_NEG', 'Right Stick Left') },
-    { id: 'AXIS_2_POS', name: t('gamepad_config.buttons.AXIS_2_POS', 'Right Stick Right') },
-    { id: 'AXIS_3_NEG', name: t('gamepad_config.buttons.AXIS_3_NEG', 'Right Stick Up') },
-    { id: 'AXIS_3_POS', name: t('gamepad_config.buttons.AXIS_3_POS', 'Right Stick Down') },
-  ];
+  const BUTTONS = GAMEPAD_BUTTONS.map(button => ({ id: button.id, name: t(`gamepad_config.buttons.${button.id}`, button.fallback) }));
 
   return (
     <div className="space-y-6">

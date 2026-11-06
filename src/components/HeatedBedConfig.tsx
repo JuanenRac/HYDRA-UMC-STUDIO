@@ -16,6 +16,7 @@ import { OrbitControls } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 import SharedModule3DView from './3d/SharedModule3DView';
 import { useFleet } from '../storeContexts';
+import { defaultHeatedBed, withModuleEnabled, withModuleField } from '../lib/moduleConfigs';
 
 
 
@@ -42,7 +43,7 @@ export function HeatedBedConfig() {
 
   const handleToggle = () => {
     updateRobot(selectedRobot.id, {
-      heatedBed: { ...moduleData, enabled: !isEnabled }
+      heatedBed: withModuleEnabled(moduleData, !isEnabled)
     } as any);
   };
 
@@ -54,14 +55,14 @@ export function HeatedBedConfig() {
 
   const handleCustomChange = (field: string, value: any) => {
     updateRobot(selectedRobot.id, {
-      heatedBed: { ...moduleData, [field]: value }
+      heatedBed: withModuleField(moduleData, field, value)
     } as any);
   };
 
   
   const handleReset = () => {
     updateRobot(selectedRobot.id, {
-      heatedBed: { enabled: true, modelId: '200x200x5', size: { width: 200, length: 200 }, targetTemp: 60, currentTemp1: 25, currentTemp2: 25, ssrActive: false, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
+      heatedBed: defaultHeatedBed()
     } as any);
   };
   

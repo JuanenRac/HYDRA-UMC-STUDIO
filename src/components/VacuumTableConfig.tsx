@@ -13,6 +13,7 @@ import { OrbitControls } from '@react-three/drei';
 import { Shared3DEnvironment } from './3d/Shared3DEnvironment';
 import SharedModule3DView from './3d/SharedModule3DView';
 import { useFleet } from '../storeContexts';
+import { defaultVacuumTable, withModuleEnabled, withModuleField } from '../lib/moduleConfigs';
 
 
 
@@ -36,7 +37,7 @@ export function VacuumTableConfig() {
 
   const handleToggle = () => {
     updateRobot(selectedRobot.id, {
-      vacuumTable: { ...(moduleData?.customSize === true ? moduleData : selectVacuumTable(moduleData, model.id)), enabled: !isEnabled }
+      vacuumTable: withModuleEnabled(moduleData?.customSize === true ? moduleData : selectVacuumTable(moduleData, model.id), !isEnabled)
     } as any);
   };
 
@@ -46,14 +47,14 @@ export function VacuumTableConfig() {
 
   const handleCustomChange = (field: string, value: any) => {
     updateRobot(selectedRobot.id, {
-      vacuumTable: { ...moduleData, [field]: value }
+      vacuumTable: withModuleField(moduleData, field, value)
     } as any);
   };
 
   
   const handleReset = () => {
     updateRobot(selectedRobot.id, {
-      vacuumTable: { enabled: true, customSize: false, modelId: VACUUM_TABLE_MODELS[0].id, size: { width: 160, length: 120 }, pumpActive: false, valveActive: false, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 }
+      vacuumTable: defaultVacuumTable(VACUUM_TABLE_MODELS[0].id)
     } as any);
   };
   

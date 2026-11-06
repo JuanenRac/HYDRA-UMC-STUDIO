@@ -5,23 +5,20 @@
 // =============================================================================
 
 import { publishClaimsEvent } from './lib/claimsFeed';
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useMemo, useRef, useCallback } from 'react';
 import { apiUrl } from './lib/apiBase';
-import { saveConflictText, saveFailureText } from './lib/serverErrors';
+import { saveFailureText } from './lib/serverErrors';
 import { applyRobotCommandMutation, rollbackRobotCommand } from './robotCommandTransition';
 import { type CommandResult } from './lib/commandResult';
 import { createCommandSequence } from './lib/commandSequence';
 import { authHeaders } from './lib/session';
 import { guardCommand } from './lib/motionGuard';
 import { settingsLocalOnly, settingsSaveAllowed } from './lib/settingsSave';
-import { applyOverlay, loadOverlay } from './lib/settingsScope';
-import { browserStorage } from './lib/robotDetailHelpers';
 import { getModeState, getSafetyState } from './lib/accessStore';
 import { fetchRobot } from './lib/accessApi';
 import { isUnknownCommand, markTableCommand, serverHasTableCommand } from './lib/tableMove';
 import { createEditQueue, markEditCommands, planRobotEdits, serverHasEditCommands, type RobotEditCommand } from './lib/robotEdits';
 import { type StopAllReport, requestStopAllWithRetry, stopRobotByRobot } from './lib/stopAll';
-import { parseRobotDelta, deltaTargetExists, patchControllers } from './lib/robotDelta';
 import { HydraStoreProviders } from './storeContexts';
 import { useAuthSession } from './hooks/useAuthSession';
 import { useCommandIssues } from './hooks/useCommandIssues';
@@ -31,27 +28,15 @@ import { useLiveStatus } from './hooks/useLiveStatus';
 import { useSettingsPreferences } from './hooks/useSettingsPreferences';
 import { useSettingsSocket } from './hooks/useSettingsSocket';
 import { useDeferredSettingsSave } from './hooks/useDeferredSettingsSave';
-import { defaultSystemSettings } from './lib/defaultSettings';
-import { controllersFromServer, currentHost, hostIntegrations, pickActiveControllerId, seedControllers } from './lib/serverState';
+import { rememberSettingsEtag, useSharedConfig } from './hooks/useSharedConfig';
 import { postRobotCommand as postRobotCommandRequest, tableThroughJogs as tableThroughJogsRequest, type PostRobotCommand } from './lib/robotCommandPost';
-import { saveSettingsTree, type FetchLike } from './lib/settingsConcurrency';
-import { type CameraState, type HydraController, type RobotState, type SystemSettings, defaultControllers } from './store';
+import { type CameraState, type HydraController, type RobotState, defaultControllers } from './store';
 
 /**
  * Renders the  hydra provider component.
  * Responsible for displaying the UI elements and handling user interactions related to this feature.
  */
-/** The ETag of an answer of GET /api/settings, kept to send it back as If-Match when the tree is saved. */
-function rememberSettingsEtag(ref: { current: string | null }, response: Response): void {
-  const etag = response.headers.get('ETag');
-  if (etag) ref.current = etag;
-}
-
 export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [controllers, setControllers] = useState<HydraController[]>(defaultControllers);
-  const [activeControllerId, setActiveControllerId] = useState<string>('192.168.1.100');
-  const [settings, setSettings] = useState<SystemSettings>(defaultSystemSettings);
-  const [isLoaded, setIsLoaded] = useState(false);
   // The live status of the link with the server (reachable, last save, first read refused, CAN flash progress, log clear mark)
   // lives in hooks/useLiveStatus.ts.
   const {
@@ -71,62 +56,13 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const localOnly = settingsLocalOnly(role, operatorEdited);
 
 
-  // Guards against a feedback loop: the server broadcasts every write to
-  // every connected client, sender included (simpler than tracking "who
-  // sent this", and harmless for any OTHER client) - but without this
-  // guard, THIS tab would treat its own echoed-back write as a fresh
-  // external change, call setSettings/setControllers with a fresh object
-  // reference even though the content is identical, which re-triggers the
-  // save-effect below, POSTs again, gets broadcast again, forever. Storing
-  // the last applied/sent payload's own JSON and skipping when the
-  // incoming (or outgoing) payload matches it exactly breaks the loop at
-  // the source - no state update means no re-render means no re-save.
-  const lastPayloadJsonRef = useRef<string | null>(null);
-  // The revision (ETag) of the tree as the last GET /api/settings or the last save answered it: PUT /api/settings sends it as If-Match.
-  const settingsEtagRef = useRef<string | null>(null);
-
-  // Cheaper sibling of lastPayloadJsonRef for the 3 hot paths that fire far
-  // more often than a full-tree message ever did: applyRobotDelta() (every
-  // incoming server delta) and sendRobotCommand()'s own optimistic mutate +
-  // failure rollback (every jog/valve/pump/speed/play/pause/stop click, up
-  // to 3x per single jog tick - see RobotDetail.tsx's own handleXYZJog).
-  // Those 3 call sites used to each JSON.stringify the ENTIRE
-  // {settings, controllers, ...} tree (recordedPoints included - multiple
-  // MB, see the delta-sync design) just to pre-fill
-  // lastPayloadJsonRef so the save-effect below wouldn't re-POST their own
-  // change right back - i.e. every single delta/command was paying the
-  // exact full-tree serialization cost Fase 0/3 existed to eliminate,
-  // synchronously on the main thread, which is what actually produced the
-  // "3D view at turtle speed" symptom (a multi-MB JSON.stringify blocking
-  // the render/animation frame on every jog step or every incoming delta -
-  // confirmed by direct read of this file, not a guess). A boolean the
-  // save-effect below consumes on its very next run does the same job -
-  // "this specific state change already came from a delta/command, no need
-  // to persist it again" - without ever touching the multi-MB tree. The
-  // content-based lastPayloadJsonRef above is untouched and still used
-  // exactly as before for actual full-tree messages (applyServerData,
-  // the save-effect's own POST) - those are inherently rare (once per real
-  // external change or once per debounce window), so their cost was never
-  // the problem.
-  const skipNextSaveRef = useRef(false);
-
-  // Mirrors of controllers/activeControllerId, kept in sync via the 2
-  // useEffects below - read by applyRobotDelta() (does this delta's robot
-  // exist locally?) and by sendRobotCommand()'s own optimistic
-  // mutate/rollback (which controller is active?), WITHOUT waiting on a
-  // setState callback's own timing (a functional setState updater doesn't
-  // run synchronously with the call that scheduled it, so checking "did
-  // this delta's robot exist" only makes sense against a ref that's
-  // already current, not against React state or a value captured inside
-  // the updater after the fact). No settingsRef counterpart any more -
-  // its only reader used to be the 3 full-tree JSON.stringify calls
-  // skipNextSaveRef replaced (see that ref's own header comment).
-  const controllersRef = useRef(controllers);
-  useEffect(() => { controllersRef.current = controllers; }, [controllers]);
-  const activeControllerIdRef = useRef(activeControllerId);
-  useEffect(() => { activeControllerIdRef.current = activeControllerId; }, [activeControllerId]);
-  const settingsRef = useRef(settings);
-  useEffect(() => { settingsRef.current = settings; }, [settings]);
+  // The shared configuration (settings tree, controllers, active controller; the first read, the live messages and the save of the whole
+  // tree with its ETag) lives in hooks/useSharedConfig.ts.
+  const {
+    controllers, setControllers, activeControllerId, setActiveControllerId, settings, setSettings, isLoaded,
+    lastPayloadJsonRef, settingsEtagRef, skipNextSaveRef, controllersRef, activeControllerIdRef, settingsRef,
+    applyServerData, persistTree, applyRobotDelta,
+  } = useSharedConfig({ authToken, accountRef, setServerReachable, setSettingsLoadError, setSettingsSaveError, attemptTokenRefresh, logout });
 
   // The safety limits come from the server: hooks/useSafetyLimitsSync.ts.
   useSafetyLimitsSync(authToken);
@@ -138,125 +74,6 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // for the same robot in flight at once; an early one failing after a
   // later one already applied must not roll back over that newer state).
   const commandGenerationRef = useRef<Record<number, number>>({});
-
-  const applyServerData = useCallback((data: any) => {
-      if (data && Object.keys(data).length > 0) {
-        const dataJson = JSON.stringify(data);
-        if (dataJson === lastPayloadJsonRef.current) return;
-        lastPayloadJsonRef.current = dataJson;
-      }
-      const host = currentHost();
-
-      if (data && Object.keys(data).length > 0) {
-        // Assign data.settings directly rather than merging it onto prev: the server always sends the FULL tree, and a
-        // merge would change the key order and defeat the echo guard above (the debounced save would see a false
-        // mismatch and POST a no-op change back, forever).
-        // An account that cannot change the global settings keeps its local choices (theme, language, layout) over what the server sends.
-        const overlay = !accountRef.current.mayEditGlobal && accountRef.current.username ? loadOverlay(browserStorage(), accountRef.current.username) : {};
-        if (data.settings && Object.keys(overlay).length > 0) {
-          const merged = applyOverlay(data.settings, overlay);
-          if (merged !== data.settings) skipNextSaveRef.current = true;
-          setSettings(merged);
-        } else if (data.settings) setSettings(data.settings);
-        else setSettings(prev => ({ ...prev, ...data })); // fallback for a pre-nested-envelope settings.json - genuinely incomplete on its own, so a merge onto known-good defaults is correct here, not the bug described above
-        const finalControllers = controllersFromServer(data, host);
-        setControllers(finalControllers);
-        setActiveControllerId(pickActiveControllerId(data.activeControllerId, finalControllers, host));
-      } else {
-        setSettings(prev => ({ ...prev, integrations: hostIntegrations(host) }));
-        setControllers(seedControllers(host));
-        setActiveControllerId(host);
-      }
-      setIsLoaded(true);
-  }, []);
-
-  // Saves the whole tree with PUT /api/settings and the ETag read last (see lib/settingsConcurrency.ts). When the server's tree is
-  // not the one this window received last, the server's version is shown instead and the person is told to apply the change again.
-  const persistTree = useCallback((payloadJson: string, force: boolean) => saveSettingsTree({
-    fetchFn: fetch as unknown as FetchLike,
-    url: apiUrl('/api/settings'),
-    headers: authHeaders({ 'Content-Type': 'application/json' }),
-    body: payloadJson,
-    etag: settingsEtagRef.current,
-    lastSyncedJson: lastPayloadJsonRef.current,
-    force,
-  }).then((outcome) => {
-    if (outcome.kind === 'saved' || outcome.kind === 'conflict') {
-      if (outcome.etag) settingsEtagRef.current = outcome.etag;
-    }
-    if (outcome.kind === 'conflict') {
-      applyServerData(outcome.server);
-      setSettingsSaveError(saveConflictText());
-    }
-    return outcome;
-  }), [applyServerData, setSettingsSaveError]);
-
-  /**
-   * Applies a real targeted delta (server.ts's own broadcastRobotDelta(),
-   * `{type:"delta", schema:2, controllerId, robotId, patch, cameraId?,
-   * cameraPatch?}`) - the schema-2 counterpart of applyServerData() above,
-   * which stays exactly as-is for the full-tree "settings" message and for
-   * a schema-1 "delta" from a client the server hasn't heard declare
-   * schema 2 (see server.ts's own per-connection `schema` and
-   * the delta-sync design).
-   *
-   * Validates against controllersRef (never React state directly - see
-   * that ref's own comment) before touching anything: if the targeted
-   * robot doesn't exist locally yet, the delta is discarded and a full
-   * GET /api/settings reload is forced instead of ever creating a "ghost"
-   * robot from a partial patch (section 5b's mitigation (b), non-optional).
-   */
-  const applyRobotDelta = useCallback((msg: any) => {
-    const delta = parseRobotDelta(msg);
-    if (!delta) return;
-    if (!deltaTargetExists(controllersRef.current, delta)) {
-      const headers: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
-      fetch(apiUrl('/api/settings'), { headers }).then(r => { rememberSettingsEtag(settingsEtagRef, r); return r.json(); }).then(data => applyServerData(data)).catch(() => {});
-      return;
-    }
-    setControllers(prev => {
-      const next = patchControllers(prev, delta);
-      // Marks the save-effect's very next run as "already in sync, skip" -
-      // without this, applying a delta (which necessarily changes the
-      // `controllers` reference) would look to that effect like a fresh
-      // local edit, and it would POST the FULL tree right back 500ms
-      // later, exactly the round-trip Fase 0/3 exist to eliminate. See
-      // skipNextSaveRef's own header comment for why this is a flag now
-      // rather than a full JSON.stringify of `next` the way it used to be.
-      skipNextSaveRef.current = true;
-      return next;
-    });
-  }, [authToken, applyServerData]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    // GET /api/settings needs a session like every other route: without a token the server answers 401 and the
-    // dashboard shows the login screen (see settingsLoadError below).
-    const headers: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
-
-    fetch(apiUrl('/api/settings'), { headers }).then(async (r) => {
-      rememberSettingsEtag(settingsEtagRef, r);
-      // The server answered. If it refused (401: the settings need a session; 403...) its body is an error
-      // object, not settings - applying it would mix {error: ...} into the settings and show the sample
-      // robots as if they were the system. Say it needs a session instead.
-      if (!r.ok) {
-        if (!cancelled) {
-          setServerReachable(true);
-          setSettingsLoadError(r.status === 401 || r.status === 403 ? 'login_required' : 'server');
-          setIsLoaded(true);
-        }
-        return;
-      }
-      const data = await r.json();
-      // This fetch succeeding IS the real evidence a live server answered; set before applyServerData so even a fresh
-      // install with no saved controllers shows System Online.
-      if (!cancelled) { setServerReachable(true); setSettingsLoadError(null); applyServerData(data); }
-    }).catch(() => {
-      if (!cancelled) { setServerReachable(false); setIsLoaded(true); }
-    });
-    return () => { cancelled = true; };
-  }, [applyServerData, applyRobotDelta, authToken, attemptTokenRefresh, logout, setServerReachable, setSettingsLoadError]);
 
   // Live sync: any client that writes the settings or a robot is broadcast back to every connected client
   // (hooks/useSettingsSocket.ts). Without a token the socket is not opened at all.
