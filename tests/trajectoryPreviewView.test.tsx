@@ -18,9 +18,9 @@ afterEach(cleanup);
 const point = (j1: number, x: number) => ({ j1, j2: 0, j3: 0, j4: 0, j5: 0, j6: 0, x, y: 0, z: 100 });
 
 describe('TrajectoryPreview', () => {
-  it('draws the three views and says that nothing is wrong', () => {
+  it('draws the four views and says that nothing is wrong', () => {
     render(<TrajectoryPreview report={analyzeTrajectory([point(0, 0), point(10, 50)], undefined)} />);
-    expect(screen.getAllByRole('img')).toHaveLength(3);
+    expect(screen.getAllByRole('img')).toHaveLength(4);
     expect(screen.getByTestId('trajectory-preview-clean')).toBeTruthy();
     expect(screen.queryByTestId('trajectory-preview-issues')).toBeNull();
     expect(screen.getByTestId('trajectory-preview-summary').textContent).toContain('2');

@@ -11,6 +11,7 @@ import type { TFunction } from 'i18next';
 import type { RobotState } from '../../store';
 import { jointsToCartesianForModel } from '../../examples/robotKinematicsDispatch';
 import { cn } from './shared';
+import { PointPositionFields } from './PointPositionFields';
 import { currentPlaybackStep, playbackProgressPercent } from '../../lib/playbackStep';
 import { pointKeyFor } from '../../lib/robotDetailHelpers';
 
@@ -103,6 +104,7 @@ export function PointsPanel(props: PointsPanelProps) {
                       </div>
                     ))}
                   </div>
+                  <PointPositionFields model={robot.model} point={editingPointData} onMoved={(moved) => setEditingPointData({ ...editingPointData, ...moved })} t={t} />
                   {(pt.tx !== undefined || editingPointData.tx !== undefined) && (
                     <div className="grid grid-cols-6 gap-2">
                       <div className="flex flex-col gap-1 col-span-2">

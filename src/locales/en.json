@@ -456,7 +456,15 @@
     "reach_scale_fits": "Scaled to {{percent}}% about the base of the robot, every point is within reach.",
     "reach_scale_partial": "Scaled to {{percent}}% about the base of the robot, {{remaining}} point(s) would still be out of reach.",
     "reach_scale_button": "Scale to the reach of the model",
-    "reach_reject_button": "Reject"
+    "reach_reject_button": "Reject",
+    "edit_x": "X (mm)",
+    "edit_y": "Y (mm)",
+    "edit_z": "Z (mm)",
+    "edit_apply": "Move the point here",
+    "edit_done": "Position solved: the tool misses it by {{miss}} mm. Press Save to keep it.",
+    "edit_unreachable": "That position is out of reach of this model: the closest the tool gets is {{miss}} mm away and the limit is {{tolerance}} mm.",
+    "edit_invalid": "Type three numbers in millimetres.",
+    "edit_no_model": "This model has no kinematics here, so a position cannot be turned into joints."
   },
   "cameras": {
     "title": "Octal Vision Matrix",
@@ -1983,6 +1991,11 @@
     "view_side": "From the side",
     "view_front": "From the front",
     "switch_label": "Check the trajectory before Play",
-    "switch_hint": "Before Play, shows the path from three sides and lists the joints outside their limits and the steps that swing a joint too far. Off by default; kept in this browser."
+    "switch_hint": "Before Play, shows the path from three sides and lists the joints outside their limits and the steps that swing a joint too far. Off by default; kept in this browser.",
+    "view_orbit": "Orbit view ({{yaw}}, {{pitch}} degrees)",
+    "orbit_left": "Turn left",
+    "orbit_right": "Turn right",
+    "orbit_up": "Turn up",
+    "orbit_down": "Turn down"
   }
 }

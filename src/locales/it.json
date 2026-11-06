@@ -456,7 +456,15 @@
     "reach_scale_fits": "Scalata al {{percent}}% rispetto alla base del robot, tutti i punti sono raggiungibili.",
     "reach_scale_partial": "Scalata al {{percent}}% rispetto alla base del robot, {{remaining}} punto/i resterebbero fuori portata.",
     "reach_scale_button": "Scala alla portata del modello",
-    "reach_reject_button": "Rifiuta"
+    "reach_reject_button": "Rifiuta",
+    "edit_x": "X (mm)",
+    "edit_y": "Y (mm)",
+    "edit_z": "Z (mm)",
+    "edit_apply": "Sposta il punto qui",
+    "edit_done": "Posizione risolta: l'utensile la manca di {{miss}} mm. Premi Salva per mantenerla.",
+    "edit_unreachable": "Questa posizione è fuori portata per questo modello: l'utensile si avvicina al massimo a {{miss}} mm e il limite è {{tolerance}} mm.",
+    "edit_invalid": "Digita tre numeri in millimetri.",
+    "edit_no_model": "Questo modello non ha cinematica qui, quindi una posizione non può essere convertita in giunti."
   },
   "cameras": {
     "title": "Matrice di Visione Ottale",
@@ -1983,6 +1991,11 @@
     "view_side": "Di lato",
     "view_front": "Di fronte",
     "switch_label": "Controlla la traiettoria prima di Play",
-    "switch_hint": "Prima di Play, mostra il percorso da tre lati ed elenca i giunti fuori dai limiti e i passi che ruotano troppo un giunto. Spento per impostazione predefinita; salvato in questo browser."
+    "switch_hint": "Prima di Play, mostra il percorso da tre lati ed elenca i giunti fuori dai limiti e i passi che ruotano troppo un giunto. Spento per impostazione predefinita; salvato in questo browser.",
+    "view_orbit": "Vista orbitale ({{yaw}}, {{pitch}} gradi)",
+    "orbit_left": "Ruota a sinistra",
+    "orbit_right": "Ruota a destra",
+    "orbit_up": "Ruota verso l'alto",
+    "orbit_down": "Ruota verso il basso"
   }
 }

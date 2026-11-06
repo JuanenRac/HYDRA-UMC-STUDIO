@@ -456,7 +456,15 @@
     "reach_scale_fits": "以机器人底座为中心缩放到 {{percent}}% 后，所有点都在可达范围内。",
     "reach_scale_partial": "以机器人底座为中心缩放到 {{percent}}% 后，仍有 {{remaining}} 个点超出范围。",
     "reach_scale_button": "缩放到该型号的工作范围",
-    "reach_reject_button": "拒绝"
+    "reach_reject_button": "拒绝",
+    "edit_x": "X (mm)",
+    "edit_y": "Y (mm)",
+    "edit_z": "Z (mm)",
+    "edit_apply": "将该点移到这里",
+    "edit_done": "已求解位置：工具偏差 {{miss}} mm。按“保存”以保留。",
+    "edit_unreachable": "该位置超出此型号的可达范围：工具最近只能到达 {{miss}} mm 处，限值为 {{tolerance}} mm。",
+    "edit_invalid": "请输入三个以毫米为单位的数字。",
+    "edit_no_model": "此型号在这里没有运动学，因此无法把位置转换为关节角。"
   },
   "cameras": {
     "title": "八路视觉矩阵",
@@ -1983,6 +1991,11 @@
     "view_side": "侧视",
     "view_front": "正视",
     "switch_label": "播放前检查轨迹",
-    "switch_hint": "播放前从三个方向显示路径，并列出超出限位的关节和使关节摆动过大的步骤。默认关闭；设置保存在此浏览器中。"
+    "switch_hint": "播放前从三个方向显示路径，并列出超出限位的关节和使关节摆动过大的步骤。默认关闭；设置保存在此浏览器中。",
+    "view_orbit": "环绕视图（{{yaw}}、{{pitch}} 度）",
+    "orbit_left": "向左旋转",
+    "orbit_right": "向右旋转",
+    "orbit_up": "向上旋转",
+    "orbit_down": "向下旋转"
   }
 }

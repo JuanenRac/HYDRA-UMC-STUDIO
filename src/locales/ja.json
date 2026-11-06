@@ -456,7 +456,15 @@
     "reach_scale_fits": "ロボットのベースを中心に {{percent}}% に縮小すると、すべての点が到達範囲に入ります。",
     "reach_scale_partial": "ロボットのベースを中心に {{percent}}% に縮小しても、{{remaining}} 個の点は到達範囲外のままです。",
     "reach_scale_button": "モデルの到達範囲に合わせて縮小",
-    "reach_reject_button": "拒否"
+    "reach_reject_button": "拒否",
+    "edit_x": "X (mm)",
+    "edit_y": "Y (mm)",
+    "edit_z": "Z (mm)",
+    "edit_apply": "ここに点を移動",
+    "edit_done": "位置を解きました。ツールとの差は {{miss}} mm です。保持するには保存を押してください。",
+    "edit_unreachable": "この位置はこのモデルの到達範囲外です。ツールが最も近づけるのは {{miss}} mm で、上限は {{tolerance}} mm です。",
+    "edit_invalid": "ミリメートルで3つの数値を入力してください。",
+    "edit_no_model": "このモデルにはここで使える運動学がないため、位置を関節角に変換できません。"
   },
   "cameras": {
     "title": "8 系統ビジョンマトリクス",
@@ -1983,6 +1991,11 @@
     "view_side": "横から",
     "view_front": "正面から",
     "switch_label": "再生前に軌道を確認する",
-    "switch_hint": "再生の前に、経路を3方向から表示し、範囲外の関節と関節を動かしすぎるステップを一覧にします。既定ではオフで、設定はこのブラウザに保存されます。"
+    "switch_hint": "再生の前に、経路を3方向から表示し、範囲外の関節と関節を動かしすぎるステップを一覧にします。既定ではオフで、設定はこのブラウザに保存されます。",
+    "view_orbit": "周回ビュー（{{yaw}}、{{pitch}} 度）",
+    "orbit_left": "左へ回す",
+    "orbit_right": "右へ回す",
+    "orbit_up": "上へ回す",
+    "orbit_down": "下へ回す"
   }
 }

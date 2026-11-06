@@ -456,7 +456,15 @@
     "reach_scale_fits": "Auf {{percent}} % bezogen auf die Roboterbasis skaliert, liegen alle Punkte in Reichweite.",
     "reach_scale_partial": "Auf {{percent}} % bezogen auf die Roboterbasis skaliert, wären {{remaining}} Punkt(e) weiterhin außer Reichweite.",
     "reach_scale_button": "Auf die Reichweite des Modells skalieren",
-    "reach_reject_button": "Ablehnen"
+    "reach_reject_button": "Ablehnen",
+    "edit_x": "X (mm)",
+    "edit_y": "Y (mm)",
+    "edit_z": "Z (mm)",
+    "edit_apply": "Punkt hierher verschieben",
+    "edit_done": "Position berechnet: Das Werkzeug verfehlt sie um {{miss}} mm. Zum Behalten auf Speichern drücken.",
+    "edit_unreachable": "Diese Position liegt außerhalb der Reichweite dieses Modells: Das Werkzeug kommt höchstens bis auf {{miss}} mm heran, die Grenze liegt bei {{tolerance}} mm.",
+    "edit_invalid": "Gib drei Zahlen in Millimetern ein.",
+    "edit_no_model": "Dieses Modell hat hier keine Kinematik, daher lässt sich eine Position nicht in Gelenkwinkel umrechnen."
   },
   "cameras": {
     "title": "Oktal Vision Matrix",
@@ -1983,6 +1991,11 @@
     "view_side": "Von der Seite",
     "view_front": "Von vorn",
     "switch_label": "Bahn vor dem Start prüfen",
-    "switch_hint": "Zeigt vor dem Start den Weg von drei Seiten und listet Gelenke außerhalb ihrer Grenzen sowie Schritte, die ein Gelenk zu weit drehen. Standardmäßig aus; wird in diesem Browser gespeichert."
+    "switch_hint": "Zeigt vor dem Start den Weg von drei Seiten und listet Gelenke außerhalb ihrer Grenzen sowie Schritte, die ein Gelenk zu weit drehen. Standardmäßig aus; wird in diesem Browser gespeichert.",
+    "view_orbit": "Orbitansicht ({{yaw}}, {{pitch}} Grad)",
+    "orbit_left": "Nach links drehen",
+    "orbit_right": "Nach rechts drehen",
+    "orbit_up": "Nach oben drehen",
+    "orbit_down": "Nach unten drehen"
   }
 }

@@ -456,7 +456,15 @@
     "reach_scale_fits": "Escalada al {{percent}} % respecto a la base del robot, todos los puntos quedan al alcance.",
     "reach_scale_partial": "Escalada al {{percent}} % respecto a la base del robot, {{remaining}} punto(s) seguirían fuera de alcance.",
     "reach_scale_button": "Escalar al alcance del modelo",
-    "reach_reject_button": "Rechazar"
+    "reach_reject_button": "Rechazar",
+    "edit_x": "X (mm)",
+    "edit_y": "Y (mm)",
+    "edit_z": "Z (mm)",
+    "edit_apply": "Mover el punto aquí",
+    "edit_done": "Posición resuelta: la herramienta queda a {{miss}} mm. Pulsa Guardar para conservarla.",
+    "edit_unreachable": "Esa posición está fuera del alcance de este modelo: lo más cerca que llega la herramienta es a {{miss}} mm y el límite es {{tolerance}} mm.",
+    "edit_invalid": "Escribe tres números en milímetros.",
+    "edit_no_model": "Este modelo no tiene cinemática aquí, así que una posición no se puede convertir en articulaciones."
   },
   "cameras": {
     "title": "Matriz de Visión Octal",
@@ -1983,6 +1991,11 @@
     "view_side": "De lado",
     "view_front": "De frente",
     "switch_label": "Revisar la trayectoria antes de Play",
-    "switch_hint": "Antes de Play, muestra el recorrido desde tres lados y lista las articulaciones fuera de sus límites y los pasos que giran una articulación demasiado. Apagado por defecto; se guarda en este navegador."
+    "switch_hint": "Antes de Play, muestra el recorrido desde tres lados y lista las articulaciones fuera de sus límites y los pasos que giran una articulación demasiado. Apagado por defecto; se guarda en este navegador.",
+    "view_orbit": "Vista orbital ({{yaw}}, {{pitch}} grados)",
+    "orbit_left": "Girar a la izquierda",
+    "orbit_right": "Girar a la derecha",
+    "orbit_up": "Girar hacia arriba",
+    "orbit_down": "Girar hacia abajo"
   }
 }

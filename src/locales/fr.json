@@ -456,7 +456,15 @@
     "reach_scale_fits": "Mise à l'échelle à {{percent}} % autour de la base du robot, tous les points sont à portée.",
     "reach_scale_partial": "Mise à l'échelle à {{percent}} % autour de la base du robot, {{remaining}} point(s) resteraient hors de portée.",
     "reach_scale_button": "Adapter à la portée du modèle",
-    "reach_reject_button": "Refuser"
+    "reach_reject_button": "Refuser",
+    "edit_x": "X (mm)",
+    "edit_y": "Y (mm)",
+    "edit_z": "Z (mm)",
+    "edit_apply": "Déplacer le point ici",
+    "edit_done": "Position résolue : l'outil la manque de {{miss}} mm. Appuyez sur Enregistrer pour la conserver.",
+    "edit_unreachable": "Cette position est hors de portée de ce modèle : l'outil s'en approche au mieux à {{miss}} mm et la limite est de {{tolerance}} mm.",
+    "edit_invalid": "Saisissez trois nombres en millimètres.",
+    "edit_no_model": "Ce modèle n'a pas de cinématique ici : une position ne peut pas être convertie en articulations."
   },
   "cameras": {
     "title": "Matrice de Vision Octale",
@@ -1983,6 +1991,11 @@
     "view_side": "Vue de côté",
     "view_front": "Vue de face",
     "switch_label": "Vérifier la trajectoire avant Play",
-    "switch_hint": "Avant Play, montre le parcours sous trois angles et liste les articulations hors de leurs limites et les pas qui font trop tourner une articulation. Désactivé par défaut ; conservé dans ce navigateur."
+    "switch_hint": "Avant Play, montre le parcours sous trois angles et liste les articulations hors de leurs limites et les pas qui font trop tourner une articulation. Désactivé par défaut ; conservé dans ce navigateur.",
+    "view_orbit": "Vue orbitale ({{yaw}}, {{pitch}} degrés)",
+    "orbit_left": "Tourner à gauche",
+    "orbit_right": "Tourner à droite",
+    "orbit_up": "Tourner vers le haut",
+    "orbit_down": "Tourner vers le bas"
   }
 }
