@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.1.8] - The reading of the connection list and sign-in history goes through the shared HTTP client of the kit: the calls keep their behaviour (one plain request, no repeat, no time limit; an answer that is not JSON reads as an empty... (and 2 more changes)
+
 - **The reading of the connection list and sign-in history goes through the shared HTTP client of the kit:** the calls keep their behaviour (one plain request, no repeat, no time limit; an answer that is not JSON reads as an empty list; a missing route, a refusal, a server error and an unreachable server are still told apart), and the tests now also cover an answer that is not JSON and the single attempt on a server error.
 
 - **The tool changer screen no longer carries a reset button that could never be shown, and has its own tests:** the button sat in the branch that only runs when the robot has no changer, so it never appeared; the screen is covered by tests for enabling a changer with the default layout and for opening a robot that already has one. Comments that told how something used to work now say what the code does.
