@@ -109,8 +109,6 @@ export type ResetResult =
   | { ok: false; failure: 'off' | 'forbidden' | 'invalid' | 'mismatch' | 'unavailable' | 'rejected' | 'network' | 'http'; status?: number }
   | { ok: false; failure: 'refused'; reason: ResetRefusal; status: 409 };
 
-const object = (value: unknown): Record<string, unknown> => (value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {});
-
 /** Reset the arm state of one tool changer (POST /api/tool-arms/reset, administrators; the SERVER answers 404 while its switch is off). */
 async function reset(arm: ToolArm, typed: string): Promise<ResetResult> {
   try {
