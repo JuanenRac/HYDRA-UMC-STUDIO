@@ -2170,5 +2170,42 @@
     "part_connections": "连接",
     "part_audit": "审计记录",
     "audit_admin_only": "审计记录仅向管理员显示。"
+  },
+  "toolArms": {
+    "title": "工具布防状态",
+    "refresh": "刷新",
+    "desc": "根据安全区服务最近收到的信息，显示每个 URTC 工具的功率级是否可以动作。只读：这里不会布防、撤防或停止任何工具。",
+    "unavailable": "无法获得布防状态：安全区服务未连接到服务器，或启动时没有带工具列表。",
+    "forbidden": "此账户无权读取布防状态。",
+    "load_error": "无法读取布防状态。",
+    "summary": "已布防 {{armed}} 个，报告过期 {{stale}} 个（超过 {{ttl}} 秒的报告视为过期）",
+    "empty": "还没有工具上报。",
+    "tool": "工具 {{id}}",
+    "level_armed": "已布防",
+    "level_warning": "已布防，报告过期",
+    "level_unknown": "未知，报告过期",
+    "level_disarmed": "已撤防",
+    "age": "{{value}}{{unit}}前上报",
+    "unit_s": "秒",
+    "unit_min": "分钟",
+    "unit_h": "小时",
+    "by": "来自 {{by}}",
+    "stale_note": "过期的报告绝不会显示为安全：报告过期的已布防工具显示为警告，已撤防的显示为未知。"
+  },
+  "detectionHef": {
+    "title": "已加载模型的报告（DETECTION-HEF）",
+    "desc": "允许检测服务接收其已加载模型的报告。默认关闭。服务器写入设置文件，服务在运行时重新读取。",
+    "label": "接收已加载模型的报告",
+    "hint": "关闭时，服务会拒绝这些报告，并忘记已有的报告。",
+    "locked": "此值由服务器配置固定，无法在此更改。",
+    "saved": "已保存。服务会在几秒内采用更改。",
+    "save": "保存",
+    "save_error": "更改被拒绝：{{reason}}",
+    "unsupported": "此服务器没有该设置。",
+    "forbidden": "只有管理员可以更改此设置。",
+    "load_error": "无法读取该设置。",
+    "confirm_title": "接收已加载模型的报告？",
+    "confirm_message": "检测服务将接收说明已加载哪些模型的报告。仅当您信任发送这些报告的机器时才打开。",
+    "confirm_button": "接收"
   }
 }

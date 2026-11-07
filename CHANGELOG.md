@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A read-only panel of the arm state of the URTC tools in the safety limits screen, in eight languages:** for each robot and tool whether its power stage may act, who reported it and how old the report is, read through the server; a report older than the time limit is never shown as safe (an armed tool with an old report is a warning, a disarmed one is unknown), the dangerous rows come first, and a server without the safety zones service says the state is not available instead of showing an empty list. Nothing on the screen arms, disarms or stops a tool.
+
+- **A switch for the loaded-model reports of the detection service in the server administration, in eight languages:** off by default, it asks for a confirmation on screen before turning on (the request carries the confirmation only then), is locked when the server's environment fixes it, and stays out of the way on a server that predates it.
+
 ## [0.8.1.8] - The reading of the connection list and sign-in history goes through the shared HTTP client of the kit: the calls keep their behaviour (one plain request, no repeat, no time limit; an answer that is not JSON reads as an empty... (and 2 more changes)
 
 - **The reading of the connection list and sign-in history goes through the shared HTTP client of the kit:** the calls keep their behaviour (one plain request, no repeat, no time limit; an answer that is not JSON reads as an empty list; a missing route, a refusal, a server error and an unreachable server are still told apart), and the tests now also cover an answer that is not JSON and the single attempt on a server error.

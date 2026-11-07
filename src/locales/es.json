@@ -2170,5 +2170,42 @@
     "part_connections": "Conexiones",
     "part_audit": "Registro de auditoría",
     "audit_admin_only": "El registro de auditoría solo se muestra a los administradores."
+  },
+  "toolArms": {
+    "title": "Estado de armado de las herramientas",
+    "refresh": "Actualizar",
+    "desc": "Si la etapa de potencia de cada herramienta URTC puede actuar, según lo último que oyó el servicio de zonas de seguridad. Solo lectura: nada de aquí arma, desarma ni detiene una herramienta.",
+    "unavailable": "El estado de armado no está disponible: el servicio de zonas de seguridad no está conectado al servidor o no se arrancó con su lista de herramientas.",
+    "forbidden": "Esta cuenta no puede leer el estado de armado.",
+    "load_error": "No se pudo leer el estado de armado.",
+    "summary": "{{armed}} armadas, {{stale}} con informe antiguo (un informe de más de {{ttl}} s es antiguo)",
+    "empty": "Todavía ninguna herramienta ha informado.",
+    "tool": "Herramienta {{id}}",
+    "level_armed": "Armada",
+    "level_warning": "Armada, informe antiguo",
+    "level_unknown": "Desconocido, informe antiguo",
+    "level_disarmed": "Desarmada",
+    "age": "informó hace {{value}} {{unit}}",
+    "unit_s": "s",
+    "unit_min": "min",
+    "unit_h": "h",
+    "by": "por {{by}}",
+    "stale_note": "Un informe antiguo nunca se muestra como seguro: una herramienta armada con informe antiguo es un aviso y una desarmada es desconocida."
+  },
+  "detectionHef": {
+    "title": "Informes de modelos cargados (DETECTION-HEF)",
+    "desc": "Permite que el servicio de detección acepte los informes de los modelos que tiene cargados. Apagado por defecto. El servidor escribe el fichero de ajustes que el servicio relee mientras funciona.",
+    "label": "Aceptar los informes de modelos cargados",
+    "hint": "Mientras está apagado, el servicio rechaza esos informes y olvida los que tenía.",
+    "locked": "Este valor lo fija la configuración del servidor y no se puede cambiar aquí.",
+    "saved": "Guardado. El servicio toma el cambio en unos segundos.",
+    "save": "Guardar",
+    "save_error": "Se rechazó el cambio: {{reason}}",
+    "unsupported": "Este servidor no tiene este ajuste.",
+    "forbidden": "Solo un administrador puede cambiar este ajuste.",
+    "load_error": "No se pudo leer el ajuste.",
+    "confirm_title": "¿Aceptar los informes de modelos cargados?",
+    "confirm_message": "El servicio de detección aceptará los informes que dicen qué modelos están cargados. Actívalo solo si confías en las máquinas que los envían.",
+    "confirm_button": "Aceptar"
   }
 }

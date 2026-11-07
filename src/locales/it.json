@@ -2170,5 +2170,42 @@
     "part_connections": "Connessioni",
     "part_audit": "Registro di audit",
     "audit_admin_only": "Il registro di audit è mostrato solo agli amministratori."
+  },
+  "toolArms": {
+    "title": "Stato di armamento degli utensili",
+    "refresh": "Aggiorna",
+    "desc": "Indica se lo stadio di potenza di ogni utensile URTC può agire, secondo l'ultima cosa che il servizio delle zone di sicurezza ha sentito. Sola lettura: qui nulla arma, disarma o ferma un utensile.",
+    "unavailable": "Lo stato di armamento non è disponibile: il servizio delle zone di sicurezza non è collegato al server o non è stato avviato con il suo elenco di utensili.",
+    "forbidden": "Questo account non può leggere lo stato di armamento.",
+    "load_error": "Non è stato possibile leggere lo stato di armamento.",
+    "summary": "{{armed}} armati, {{stale}} con rapporto vecchio (un rapporto di più di {{ttl}} s è vecchio)",
+    "empty": "Nessun utensile ha ancora inviato un rapporto.",
+    "tool": "Utensile {{id}}",
+    "level_armed": "Armato",
+    "level_warning": "Armato, rapporto vecchio",
+    "level_unknown": "Sconosciuto, rapporto vecchio",
+    "level_disarmed": "Disarmato",
+    "age": "rapporto {{value}} {{unit}} fa",
+    "unit_s": "s",
+    "unit_min": "min",
+    "unit_h": "h",
+    "by": "da {{by}}",
+    "stale_note": "Un rapporto vecchio non viene mai mostrato come sicuro: un utensile armato con rapporto vecchio è un avviso e uno disarmato è sconosciuto."
+  },
+  "detectionHef": {
+    "title": "Rapporti dei modelli caricati (DETECTION-HEF)",
+    "desc": "Permette al servizio di rilevamento di accettare i rapporti dei modelli che ha caricato. Spento per impostazione predefinita. Il server scrive il file di impostazioni che il servizio rilegge mentre funziona.",
+    "label": "Accetta i rapporti dei modelli caricati",
+    "hint": "Finché è spento, il servizio rifiuta quei rapporti e dimentica quelli che aveva.",
+    "locked": "Questo valore è fissato dalla configurazione del server e non si può cambiare qui.",
+    "saved": "Salvato. Il servizio recepisce la modifica in pochi secondi.",
+    "save": "Salva",
+    "save_error": "La modifica è stata rifiutata: {{reason}}",
+    "unsupported": "Questo server non ha questa impostazione.",
+    "forbidden": "Solo un amministratore può cambiare questa impostazione.",
+    "load_error": "Non è stato possibile leggere l'impostazione.",
+    "confirm_title": "Accettare i rapporti dei modelli caricati?",
+    "confirm_message": "Il servizio di rilevamento accetterà i rapporti che dicono quali modelli sono caricati. Attivalo solo se ti fidi delle macchine che li inviano.",
+    "confirm_button": "Accetta"
   }
 }

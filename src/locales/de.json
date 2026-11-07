@@ -2170,5 +2170,42 @@
     "part_connections": "Verbindungen",
     "part_audit": "Prüfprotokoll",
     "audit_admin_only": "Das Prüfprotokoll wird nur Administratoren gezeigt."
+  },
+  "toolArms": {
+    "title": "Scharfschaltung der Werkzeuge",
+    "refresh": "Aktualisieren",
+    "desc": "Ob die Leistungsstufe jedes URTC-Werkzeugs wirken darf, so wie der Dienst für Sicherheitszonen es zuletzt gehört hat. Nur lesend: Hier wird nichts scharf- oder abgeschaltet und kein Werkzeug angehalten.",
+    "unavailable": "Der Scharfschaltstatus ist nicht verfügbar: Der Dienst für Sicherheitszonen ist nicht mit dem Server verbunden oder wurde ohne Werkzeugliste gestartet.",
+    "forbidden": "Dieses Konto darf den Scharfschaltstatus nicht lesen.",
+    "load_error": "Der Scharfschaltstatus konnte nicht gelesen werden.",
+    "summary": "{{armed}} scharf, {{stale}} mit alter Meldung (eine Meldung, die älter als {{ttl}} s ist, gilt als alt)",
+    "empty": "Noch kein Werkzeug hat sich gemeldet.",
+    "tool": "Werkzeug {{id}}",
+    "level_armed": "Scharf",
+    "level_warning": "Scharf, Meldung alt",
+    "level_unknown": "Unbekannt, Meldung alt",
+    "level_disarmed": "Entschärft",
+    "age": "gemeldet vor {{value}} {{unit}}",
+    "unit_s": "s",
+    "unit_min": "min",
+    "unit_h": "h",
+    "by": "von {{by}}",
+    "stale_note": "Eine alte Meldung wird nie als sicher angezeigt: Ein scharfes Werkzeug mit alter Meldung ist eine Warnung, ein entschärftes ist unbekannt."
+  },
+  "detectionHef": {
+    "title": "Meldungen geladener Modelle (DETECTION-HEF)",
+    "desc": "Lässt den Erkennungsdienst die Meldungen der von ihm geladenen Modelle annehmen. Standardmäßig aus. Der Server schreibt die Einstellungsdatei, die der Dienst im Betrieb neu liest.",
+    "label": "Meldungen geladener Modelle annehmen",
+    "hint": "Solange es aus ist, weist der Dienst diese Meldungen ab und vergisst die vorhandenen.",
+    "locked": "Dieser Wert ist durch die Konfiguration des Servers festgelegt und kann hier nicht geändert werden.",
+    "saved": "Gespeichert. Der Dienst übernimmt die Änderung innerhalb weniger Sekunden.",
+    "save": "Speichern",
+    "save_error": "Die Änderung wurde abgelehnt: {{reason}}",
+    "unsupported": "Dieser Server hat diese Einstellung nicht.",
+    "forbidden": "Nur ein Administrator kann diese Einstellung ändern.",
+    "load_error": "Die Einstellung konnte nicht gelesen werden.",
+    "confirm_title": "Meldungen geladener Modelle annehmen?",
+    "confirm_message": "Der Erkennungsdienst nimmt die Meldungen an, die sagen, welche Modelle geladen sind. Schalten Sie das nur ein, wenn Sie den Maschinen vertrauen, die sie senden.",
+    "confirm_button": "Annehmen"
   }
 }

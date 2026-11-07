@@ -31,6 +31,7 @@ import { OpsProposalsPanel } from './OpsProposalsPanel';
 import { HilBridgePanel } from './HilBridgePanel';
 import { ServiceIdentityPanel } from './ServiceIdentityPanel';
 import { IngestSwitchesPanel } from './IngestSwitchesPanel';
+import { DetectionHefPanel } from './DetectionHefPanel';
 import { DeveloperNodeStatusPanel } from './DeveloperNodeStatusPanel';
 import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
@@ -870,6 +871,7 @@ export function AdminServer() {
           <ServiceIdentityPanel />
           <IngestSwitchesPanel onChanged={() => setIngestVersion(v => v + 1)} />
           <DeveloperNodeStatusPanel refreshKey={ingestVersion} />
+          <DetectionHefPanel />
 
           {security.rul && (
             <div className="space-y-2">

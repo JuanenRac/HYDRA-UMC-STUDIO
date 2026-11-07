@@ -2170,5 +2170,42 @@
     "part_connections": "Connections",
     "part_audit": "Audit record",
     "audit_admin_only": "The audit record is only shown to administrators."
+  },
+  "toolArms": {
+    "title": "Tool arm state",
+    "refresh": "Refresh",
+    "desc": "Whether the power stage of each URTC tool may act, as the safety zones service last heard it. Read only: nothing here arms, disarms or stops a tool.",
+    "unavailable": "The tool arm state is not available: the safety zones service is not connected to the server or was not started with its tool list.",
+    "forbidden": "This account may not read the tool arm state.",
+    "load_error": "The tool arm state could not be read.",
+    "summary": "{{armed}} armed, {{stale}} with an old report (a report older than {{ttl}} s is stale)",
+    "empty": "No tool has reported yet.",
+    "tool": "Tool {{id}}",
+    "level_armed": "Armed",
+    "level_warning": "Armed, report is old",
+    "level_unknown": "Unknown, report is old",
+    "level_disarmed": "Disarmed",
+    "age": "reported {{value}} {{unit}} ago",
+    "unit_s": "s",
+    "unit_min": "min",
+    "unit_h": "h",
+    "by": "by {{by}}",
+    "stale_note": "An old report is never shown as safe: an armed tool with an old report is a warning and a disarmed one is unknown."
+  },
+  "detectionHef": {
+    "title": "Reports of loaded models (DETECTION-HEF)",
+    "desc": "Lets the detection service accept the reports of the models it has loaded. Off by default. The server writes the settings file that the service re-reads while it runs.",
+    "label": "Accept the reports of loaded models",
+    "hint": "While it is off, the service refuses those reports and forgets the ones it had.",
+    "locked": "This value is fixed by the configuration of the server and cannot be changed here.",
+    "saved": "Saved. The service picks the change up within a few seconds.",
+    "save": "Save",
+    "save_error": "The change was refused: {{reason}}",
+    "unsupported": "This server does not have this setting.",
+    "forbidden": "Only an administrator can change this setting.",
+    "load_error": "The setting could not be read.",
+    "confirm_title": "Accept the reports of loaded models?",
+    "confirm_message": "The detection service will accept the reports that tell which models are loaded. Turn this on only if you trust the machines that send them.",
+    "confirm_button": "Accept"
   }
 }

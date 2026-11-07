@@ -16,6 +16,7 @@ import { setSafetyState, useSafetyState } from '../lib/accessStore';
 import { fetchSafetyLimits, putSafetyLimits } from '../lib/accessApi';
 import { buildPatch, formFromLimits, modelKey, type FormProblem, type SafetyForm } from '../lib/safetyLimits';
 import { useFleet, useSession } from '../storeContexts';
+import { ToolArmsPanel } from './ToolArmsPanel';
 
 const input = 'w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-sky-500';
 
@@ -163,6 +164,10 @@ export function AdminSafety() {
           <datalist id="safety-known-models">{knownModels.map((m) => <option key={m} value={m} />)}</datalist>
           <button type="button" onClick={addModel} className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider border border-slate-600 text-slate-300 hover:bg-slate-800"><Plus size={12} />{t('safety.add_model')}</button>
         </div>
+      </section>
+
+      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <ToolArmsPanel />
       </section>
 
       <div className="flex items-center gap-3 flex-wrap">

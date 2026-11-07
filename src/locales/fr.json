@@ -2170,5 +2170,42 @@
     "part_connections": "Connexions",
     "part_audit": "Journal d'audit",
     "audit_admin_only": "Le journal d'audit n'est montré qu'aux administrateurs."
+  },
+  "toolArms": {
+    "title": "État d'armement des outils",
+    "refresh": "Actualiser",
+    "desc": "Indique si l'étage de puissance de chaque outil URTC peut agir, d'après ce que le service des zones de sécurité a entendu en dernier. Lecture seule : rien ici n'arme, ne désarme ni n'arrête un outil.",
+    "unavailable": "L'état d'armement n'est pas disponible : le service des zones de sécurité n'est pas relié au serveur ou n'a pas été lancé avec sa liste d'outils.",
+    "forbidden": "Ce compte ne peut pas lire l'état d'armement.",
+    "load_error": "L'état d'armement n'a pas pu être lu.",
+    "summary": "{{armed}} armés, {{stale}} avec un rapport ancien (un rapport de plus de {{ttl}} s est ancien)",
+    "empty": "Aucun outil n'a encore fait de rapport.",
+    "tool": "Outil {{id}}",
+    "level_armed": "Armé",
+    "level_warning": "Armé, rapport ancien",
+    "level_unknown": "Inconnu, rapport ancien",
+    "level_disarmed": "Désarmé",
+    "age": "rapport il y a {{value}} {{unit}}",
+    "unit_s": "s",
+    "unit_min": "min",
+    "unit_h": "h",
+    "by": "par {{by}}",
+    "stale_note": "Un rapport ancien n'est jamais présenté comme sûr : un outil armé dont le rapport est ancien est un avertissement et un outil désarmé est inconnu."
+  },
+  "detectionHef": {
+    "title": "Rapports des modèles chargés (DETECTION-HEF)",
+    "desc": "Permet au service de détection d'accepter les rapports des modèles qu'il a chargés. Désactivé par défaut. Le serveur écrit le fichier de réglages que le service relit pendant qu'il tourne.",
+    "label": "Accepter les rapports des modèles chargés",
+    "hint": "Tant que c'est désactivé, le service refuse ces rapports et oublie ceux qu'il avait.",
+    "locked": "Cette valeur est fixée par la configuration du serveur et ne peut pas être changée ici.",
+    "saved": "Enregistré. Le service prend le changement en compte en quelques secondes.",
+    "save": "Enregistrer",
+    "save_error": "Le changement a été refusé : {{reason}}",
+    "unsupported": "Ce serveur n'a pas ce réglage.",
+    "forbidden": "Seul un administrateur peut changer ce réglage.",
+    "load_error": "Le réglage n'a pas pu être lu.",
+    "confirm_title": "Accepter les rapports des modèles chargés ?",
+    "confirm_message": "Le service de détection acceptera les rapports qui disent quels modèles sont chargés. N'activez cela que si vous faites confiance aux machines qui les envoient.",
+    "confirm_button": "Accepter"
   }
 }
