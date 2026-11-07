@@ -2227,5 +2227,31 @@
     "confirm_title": "Accepter les rapports des modèles chargés ?",
     "confirm_message": "Le service de détection acceptera les rapports qui disent quels modèles sont chargés. N'activez cela que si vous faites confiance aux machines qui les envoient.",
     "confirm_button": "Accepter"
+  },
+  "liveActivity": {
+    "title": "Live Activity sur l'écran verrouillé",
+    "desc": "La carte d'un robot qu'un iPhone affiche sur son écran verrouillé pendant qu'un travail tourne, mise à jour par le service push d'Apple. Désactivée par défaut.",
+    "label": "Afficher la Live Activity des robots sur l'écran verrouillé",
+    "push_off": "Les notifications push sont désactivées, la carte n'est donc pas envoyée même si ceci est activé. Activez-les dans les réglages push.",
+    "level_title": "Ce que montre la carte",
+    "level_status": "Seulement l'état",
+    "level_status_hint": "En marche, au repos, arrêté, erreur ou terminé. Rien d'autre. C'est la valeur par défaut.",
+    "level_progress": "L'état et la progression",
+    "level_progress_hint": "L'état, le pourcentage et l'étape du travail.",
+    "level_full": "Tout le panneau",
+    "level_full_hint": "L'état, la progression et le panneau du robot : son nom, son modèle, son outil et la position de ses articulations.",
+    "lock_screen_note": "Un écran verrouillé peut être lu par quiconque tient le téléphone. Le serveur applique ce niveau avant que quoi que ce soit ne sorte : un téléphone ne peut pas en demander plus.",
+    "locked": "Cette valeur est fixée par la configuration du serveur et ne peut pas être changée ici.",
+    "saved": "Enregistré. Les cartes suivantes utilisent le nouveau niveau.",
+    "save": "Enregistrer",
+    "save_error": "Le changement a été refusé : {{reason}}",
+    "unsupported": "Ce serveur n'a pas la Live Activity.",
+    "forbidden": "Seul un administrateur peut changer ce réglage.",
+    "load_error": "Le réglage n'a pas pu être lu.",
+    "confirm_title": "Afficher les robots sur l'écran verrouillé ?",
+    "confirm_message_status": "Quiconque tient un iPhone avec une Live Activity verra l'état du robot sur son écran verrouillé.",
+    "confirm_message_progress": "Quiconque tient un iPhone avec une Live Activity verra l'état et la progression du travail sur son écran verrouillé.",
+    "confirm_message_full": "Quiconque tient un iPhone avec une Live Activity verra tout le panneau du robot sur son écran verrouillé : son nom, son modèle, son outil et la position de ses articulations.",
+    "confirm_button": "Afficher"
   }
 }

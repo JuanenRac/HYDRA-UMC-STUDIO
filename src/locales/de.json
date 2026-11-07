@@ -2227,5 +2227,31 @@
     "confirm_title": "Meldungen geladener Modelle annehmen?",
     "confirm_message": "Der Erkennungsdienst nimmt die Meldungen an, die sagen, welche Modelle geladen sind. Schalten Sie das nur ein, wenn Sie den Maschinen vertrauen, die sie senden.",
     "confirm_button": "Annehmen"
+  },
+  "liveActivity": {
+    "title": "Live Activity auf dem Sperrbildschirm",
+    "desc": "Die Karte eines Roboters, die ein iPhone während eines Auftrags auf dem Sperrbildschirm zeigt, aktualisiert über den Push-Dienst von Apple. Standardmäßig aus.",
+    "label": "Live Activity der Roboter auf dem Sperrbildschirm anzeigen",
+    "push_off": "Push-Benachrichtigungen sind aus, daher wird die Karte nicht gesendet, auch wenn dies eingeschaltet ist. Schalten Sie sie in den Push-Einstellungen ein.",
+    "level_title": "Was die Karte zeigt",
+    "level_status": "Nur den Zustand",
+    "level_status_hint": "Läuft, Leerlauf, angehalten, Fehler oder beendet. Sonst nichts. Das ist die Voreinstellung.",
+    "level_progress": "Zustand und Fortschritt",
+    "level_progress_hint": "Der Zustand, der Prozentsatz und der Schritt des Auftrags.",
+    "level_full": "Das ganze Bedienfeld",
+    "level_full_hint": "Der Zustand, der Fortschritt und das Bedienfeld des Roboters: Name, Modell, Werkzeug und die Stellung seiner Gelenke.",
+    "lock_screen_note": "Ein Sperrbildschirm kann von jedem gelesen werden, der das Telefon hält. Der Server wendet diese Stufe an, bevor etwas hinausgeht: Ein Telefon kann nicht mehr verlangen.",
+    "locked": "Dieser Wert ist durch die Konfiguration des Servers festgelegt und kann hier nicht geändert werden.",
+    "saved": "Gespeichert. Die folgenden Karten verwenden die neue Stufe.",
+    "save": "Speichern",
+    "save_error": "Die Änderung wurde abgelehnt: {{reason}}",
+    "unsupported": "Dieser Server hat die Live Activity nicht.",
+    "forbidden": "Nur ein Administrator kann diese Einstellung ändern.",
+    "load_error": "Die Einstellung konnte nicht gelesen werden.",
+    "confirm_title": "Roboter auf dem Sperrbildschirm anzeigen?",
+    "confirm_message_status": "Jeder, der ein iPhone mit einer Live Activity hält, sieht den Zustand des Roboters auf dem Sperrbildschirm.",
+    "confirm_message_progress": "Jeder, der ein iPhone mit einer Live Activity hält, sieht den Zustand und den Fortschritt des Auftrags auf dem Sperrbildschirm.",
+    "confirm_message_full": "Jeder, der ein iPhone mit einer Live Activity hält, sieht das ganze Bedienfeld des Roboters auf dem Sperrbildschirm: Name, Modell, Werkzeug und die Stellung seiner Gelenke.",
+    "confirm_button": "Anzeigen"
   }
 }

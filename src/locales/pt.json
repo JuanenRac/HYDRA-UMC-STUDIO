@@ -2227,5 +2227,31 @@
     "confirm_title": "Aceitar os relatórios dos modelos carregados?",
     "confirm_message": "O serviço de deteção vai aceitar os relatórios que dizem quais os modelos carregados. Ative isto apenas se confiar nas máquinas que os enviam.",
     "confirm_button": "Aceitar"
+  },
+  "liveActivity": {
+    "title": "Live Activity no ecrã de bloqueio",
+    "desc": "O cartão de um robô que um iPhone mostra no ecrã de bloqueio enquanto um trabalho decorre, atualizado pelo serviço push da Apple. Desligado por predefinição.",
+    "label": "Mostrar a Live Activity dos robôs no ecrã de bloqueio",
+    "push_off": "As notificações push estão desligadas, por isso o cartão não é enviado mesmo que isto esteja ligado. Ligue-as nas definições de push.",
+    "level_title": "O que o cartão mostra",
+    "level_status": "Apenas o estado",
+    "level_status_hint": "Em funcionamento, em repouso, parado, com erro ou terminado. Mais nada. É o valor predefinido.",
+    "level_progress": "O estado e o progresso",
+    "level_progress_hint": "O estado, a percentagem e o passo do trabalho.",
+    "level_full": "Todo o painel",
+    "level_full_hint": "O estado, o progresso e o painel do robô: o nome, o modelo, a ferramenta e a posição das articulações.",
+    "lock_screen_note": "Um ecrã de bloqueio pode ser lido por qualquer pessoa que tenha o telemóvel. O servidor aplica este nível antes de sair seja o que for: um telemóvel não pode pedir mais.",
+    "locked": "Este valor é fixado pela configuração do servidor e não pode ser alterado aqui.",
+    "saved": "Guardado. Os cartões seguintes usam o novo nível.",
+    "save": "Guardar",
+    "save_error": "A alteração foi recusada: {{reason}}",
+    "unsupported": "Este servidor não tem a Live Activity.",
+    "forbidden": "Só um administrador pode alterar esta definição.",
+    "load_error": "Não foi possível ler a definição.",
+    "confirm_title": "Mostrar os robôs no ecrã de bloqueio?",
+    "confirm_message_status": "Qualquer pessoa com um iPhone com uma Live Activity verá o estado do robô no ecrã de bloqueio.",
+    "confirm_message_progress": "Qualquer pessoa com um iPhone com uma Live Activity verá o estado e o progresso do trabalho no ecrã de bloqueio.",
+    "confirm_message_full": "Qualquer pessoa com um iPhone com uma Live Activity verá todo o painel do robô no ecrã de bloqueio: o nome, o modelo, a ferramenta e a posição das articulações.",
+    "confirm_button": "Mostrar"
   }
 }

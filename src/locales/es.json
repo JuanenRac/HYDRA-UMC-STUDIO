@@ -2227,5 +2227,31 @@
     "confirm_title": "¿Aceptar los informes de modelos cargados?",
     "confirm_message": "El servicio de detección aceptará los informes que dicen qué modelos están cargados. Actívalo solo si confías en las máquinas que los envían.",
     "confirm_button": "Aceptar"
+  },
+  "liveActivity": {
+    "title": "Live Activity en la pantalla de bloqueo",
+    "desc": "La tarjeta de un robot que un iPhone muestra en su pantalla de bloqueo mientras corre un trabajo, actualizada por el servicio push de Apple. Apagada por defecto.",
+    "label": "Mostrar la Live Activity de los robots en la pantalla de bloqueo",
+    "push_off": "Las notificaciones push están apagadas, así que la tarjeta no se envía aunque esto esté activado. Actívalas en los ajustes de push.",
+    "level_title": "Qué muestra la tarjeta",
+    "level_status": "Solo el estado",
+    "level_status_hint": "En marcha, en reposo, parado, error o terminado. Nada más. Es el valor por defecto.",
+    "level_progress": "El estado y el progreso",
+    "level_progress_hint": "El estado, el porcentaje y el paso del trabajo.",
+    "level_full": "Todo el panel",
+    "level_full_hint": "El estado, el progreso y el panel del robot: su nombre, modelo, herramienta y la posición de sus articulaciones.",
+    "lock_screen_note": "Una pantalla de bloqueo la puede leer cualquiera que tenga el teléfono. El servidor aplica este nivel antes de que salga nada: un teléfono no puede pedir más.",
+    "locked": "Este valor lo fija la configuración del servidor y no se puede cambiar aquí.",
+    "saved": "Guardado. Las tarjetas siguientes usan el nuevo nivel.",
+    "save": "Guardar",
+    "save_error": "Se rechazó el cambio: {{reason}}",
+    "unsupported": "Este servidor no tiene la Live Activity.",
+    "forbidden": "Solo un administrador puede cambiar este ajuste.",
+    "load_error": "No se pudo leer el ajuste.",
+    "confirm_title": "¿Mostrar los robots en la pantalla de bloqueo?",
+    "confirm_message_status": "Cualquiera que tenga un iPhone con una Live Activity verá el estado del robot en su pantalla de bloqueo.",
+    "confirm_message_progress": "Cualquiera que tenga un iPhone con una Live Activity verá el estado y el progreso del trabajo en su pantalla de bloqueo.",
+    "confirm_message_full": "Cualquiera que tenga un iPhone con una Live Activity verá todo el panel del robot en su pantalla de bloqueo: su nombre, modelo, herramienta y la posición de sus articulaciones.",
+    "confirm_button": "Mostrarla"
   }
 }

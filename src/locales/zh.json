@@ -2227,5 +2227,31 @@
     "confirm_title": "接收已加载模型的报告？",
     "confirm_message": "检测服务将接收说明已加载哪些模型的报告。仅当您信任发送这些报告的机器时才打开。",
     "confirm_button": "接收"
+  },
+  "liveActivity": {
+    "title": "锁屏上的实时活动",
+    "desc": "iPhone 在作业运行期间于锁屏上显示的机器人卡片，由 Apple 推送服务更新。默认关闭。",
+    "label": "在锁屏上显示机器人的实时活动",
+    "push_off": "推送通知已关闭，因此即使打开此项也不会发送卡片。请在推送设置中打开。",
+    "level_title": "卡片显示的内容",
+    "level_status": "仅状态",
+    "level_status_hint": "运行中、空闲、已停止、错误或已完成。仅此而已。这是默认值。",
+    "level_progress": "状态和进度",
+    "level_progress_hint": "状态、作业的百分比和步骤。",
+    "level_full": "整个面板",
+    "level_full_hint": "状态、进度以及机器人面板：名称、型号、工具和各关节的位置。",
+    "lock_screen_note": "任何拿着手机的人都能读到锁屏内容。服务器在任何内容发出之前就按此级别处理：手机无法要求更多。",
+    "locked": "此值由服务器配置固定，无法在此更改。",
+    "saved": "已保存。之后的卡片将使用新级别。",
+    "save": "保存",
+    "save_error": "更改被拒绝：{{reason}}",
+    "unsupported": "此服务器没有实时活动功能。",
+    "forbidden": "只有管理员可以更改此设置。",
+    "load_error": "无法读取该设置。",
+    "confirm_title": "在锁屏上显示机器人？",
+    "confirm_message_status": "任何拿着带有实时活动的 iPhone 的人都能在锁屏上看到机器人的状态。",
+    "confirm_message_progress": "任何拿着带有实时活动的 iPhone 的人都能在锁屏上看到作业的状态和进度。",
+    "confirm_message_full": "任何拿着带有实时活动的 iPhone 的人都能在锁屏上看到机器人的整个面板：名称、型号、工具和各关节的位置。",
+    "confirm_button": "显示"
   }
 }

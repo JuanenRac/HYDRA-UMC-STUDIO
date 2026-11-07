@@ -2227,5 +2227,31 @@
     "confirm_title": "Accettare i rapporti dei modelli caricati?",
     "confirm_message": "Il servizio di rilevamento accetterà i rapporti che dicono quali modelli sono caricati. Attivalo solo se ti fidi delle macchine che li inviano.",
     "confirm_button": "Accetta"
+  },
+  "liveActivity": {
+    "title": "Live Activity sulla schermata di blocco",
+    "desc": "La scheda di un robot che un iPhone mostra sulla schermata di blocco mentre un lavoro è in corso, aggiornata dal servizio push di Apple. Spenta per impostazione predefinita.",
+    "label": "Mostra la Live Activity dei robot sulla schermata di blocco",
+    "push_off": "Le notifiche push sono spente, quindi la scheda non viene inviata anche se questa opzione è attiva. Accendile nelle impostazioni push.",
+    "level_title": "Cosa mostra la scheda",
+    "level_status": "Solo lo stato",
+    "level_status_hint": "In funzione, inattivo, fermo, errore o terminato. Nient'altro. È il valore predefinito.",
+    "level_progress": "Lo stato e l'avanzamento",
+    "level_progress_hint": "Lo stato, la percentuale e il passo del lavoro.",
+    "level_full": "Tutto il pannello",
+    "level_full_hint": "Lo stato, l'avanzamento e il pannello del robot: nome, modello, utensile e posizione dei suoi giunti.",
+    "lock_screen_note": "Una schermata di blocco può essere letta da chiunque abbia il telefono in mano. Il server applica questo livello prima che esca qualcosa: un telefono non può chiedere di più.",
+    "locked": "Questo valore è fissato dalla configurazione del server e non si può cambiare qui.",
+    "saved": "Salvato. Le schede successive usano il nuovo livello.",
+    "save": "Salva",
+    "save_error": "La modifica è stata rifiutata: {{reason}}",
+    "unsupported": "Questo server non ha la Live Activity.",
+    "forbidden": "Solo un amministratore può cambiare questa impostazione.",
+    "load_error": "Non è stato possibile leggere l'impostazione.",
+    "confirm_title": "Mostrare i robot sulla schermata di blocco?",
+    "confirm_message_status": "Chiunque abbia un iPhone con una Live Activity vedrà lo stato del robot sulla sua schermata di blocco.",
+    "confirm_message_progress": "Chiunque abbia un iPhone con una Live Activity vedrà lo stato e l'avanzamento del lavoro sulla sua schermata di blocco.",
+    "confirm_message_full": "Chiunque abbia un iPhone con una Live Activity vedrà tutto il pannello del robot sulla sua schermata di blocco: nome, modello, utensile e posizione dei giunti.",
+    "confirm_button": "Mostra"
   }
 }

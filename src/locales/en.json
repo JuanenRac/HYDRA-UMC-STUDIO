@@ -2227,5 +2227,31 @@
     "confirm_title": "Accept the reports of loaded models?",
     "confirm_message": "The detection service will accept the reports that tell which models are loaded. Turn this on only if you trust the machines that send them.",
     "confirm_button": "Accept"
+  },
+  "liveActivity": {
+    "title": "Live Activity on the lock screen",
+    "desc": "The card of a robot that an iPhone shows on its lock screen while a job runs, updated by the Apple push service. Off by default.",
+    "label": "Show the Live Activity of the robots on the lock screen",
+    "push_off": "Push notifications are off, so the card is not sent even if this is on. Turn them on in the push settings.",
+    "level_title": "What the card shows",
+    "level_status": "Only the state",
+    "level_status_hint": "Running, idle, stopped, error or finished. Nothing else. This is the default.",
+    "level_progress": "The state and the progress",
+    "level_progress_hint": "The state, the percentage and the step of the job.",
+    "level_full": "The whole panel",
+    "level_full_hint": "The state, the progress and the panel of the robot: its name, model, tool and the position of its joints.",
+    "lock_screen_note": "A lock screen can be read by anyone who holds the phone. The server applies this level before anything leaves it: a phone cannot ask for more.",
+    "locked": "This value is fixed by the configuration of the server and cannot be changed here.",
+    "saved": "Saved. The cards that follow use the new level.",
+    "save": "Save",
+    "save_error": "The change was refused: {{reason}}",
+    "unsupported": "This server does not have the Live Activity.",
+    "forbidden": "Only an administrator can change this setting.",
+    "load_error": "The setting could not be read.",
+    "confirm_title": "Show the robots on the lock screen?",
+    "confirm_message_status": "Anyone who holds an iPhone with a Live Activity will see the state of the robot on its lock screen.",
+    "confirm_message_progress": "Anyone who holds an iPhone with a Live Activity will see the state and the progress of the job on its lock screen.",
+    "confirm_message_full": "Anyone who holds an iPhone with a Live Activity will see the whole panel of the robot on its lock screen: its name, model, tool and the position of its joints.",
+    "confirm_button": "Show it"
   }
 }
