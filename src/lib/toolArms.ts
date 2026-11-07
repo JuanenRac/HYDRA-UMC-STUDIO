@@ -93,4 +93,43 @@ async function read(): Promise<ToolArmsResult> {
   }
 }
 
-export const toolArmsApi = { read };
+/** A row may offer the reset only when it is a fresh report of a disarmed tool: an old report is never taken as safe, and an armed tool is never reset from here. */
+export const canOfferReset = (arm: ToolArm): boolean => !arm.armed && !arm.stale;
+
+/** The body of the reset: the robot, the tool and the robot id as the person typed it (the SERVER compares them exactly). */
+export const resetBody = (arm: ToolArm, typed: string): { robot: string; toolId: number; confirm: string } => ({ robot: arm.robot, toolId: arm.toolId, confirm: typed });
+
+/** The typed text is what the person has to write before the button works: the robot id, exactly. */
+export const resetConfirmed = (arm: ToolArm, typed: string): boolean => typed === arm.robot;
+
+export type ResetRefusal = 'armed' | 'moving' | 'report_stale' | 'tool_not_reported' | 'motion_unknown' | 'no_report';
+export const RESET_REFUSALS: readonly ResetRefusal[] = ['armed', 'moving', 'report_stale', 'tool_not_reported', 'motion_unknown', 'no_report'];
+export type ResetResult =
+  | { ok: true }
+  | { ok: false; failure: 'off' | 'forbidden' | 'invalid' | 'mismatch' | 'unavailable' | 'rejected' | 'network' | 'http'; status?: number }
+  | { ok: false; failure: 'refused'; reason: ResetRefusal; status: 409 };
+
+const object = (value: unknown): Record<string, unknown> => (value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {});
+
+/** Reset the arm state of one tool changer (POST /api/tool-arms/reset, administrators; the SERVER answers 404 while its switch is off). */
+async function reset(arm: ToolArm, typed: string): Promise<ResetResult> {
+  try {
+    const res = await authFetch(apiUrl('/api/tool-arms/reset'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(resetBody(arm, typed)) });
+    if (res.status === 200) return { ok: true };
+    const data = object(await res.json().catch(() => ({})));
+    if (res.status === 404) return { ok: false, failure: 'off' };
+    if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
+    if (res.status === 400) return { ok: false, failure: data.code === 'CONFIRMATION_MISMATCH' ? 'mismatch' : 'invalid', status: 400 };
+    if (res.status === 409) {
+      const reason = RESET_REFUSALS.find(item => item === data.reason) ?? 'no_report';
+      return { ok: false, failure: 'refused', reason, status: 409 };
+    }
+    if (res.status === 502) return { ok: false, failure: 'rejected', status: 502 };
+    if (res.status === 503) return { ok: false, failure: 'unavailable', status: 503 };
+    return { ok: false, failure: 'http', status: res.status };
+  } catch {
+    return { ok: false, failure: 'network' };
+  }
+}
+
+export const toolArmsApi = { read, reset };

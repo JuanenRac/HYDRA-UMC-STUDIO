@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '../src/i18n';
 import { ToolArmsPanel } from '../src/components/ToolArmsPanel';
-import { formatAge, parseToolArms, sortToolArms, toolArmLevel, toolArmsApi, type ToolArm } from '../src/lib/toolArms';
+import { RESET_REFUSALS, canOfferReset, formatAge, parseToolArms, resetBody, resetConfirmed, sortToolArms, toolArmLevel, toolArmsApi, type ToolArm } from '../src/lib/toolArms';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import en from '../src/locales/en.json';
@@ -180,13 +180,126 @@ describe('ToolArmsPanel', () => {
   });
 });
 
+describe('the reset of the arm state', () => {
+  it('is offered only for a fresh report of a disarmed tool', () => {
+    expect(canOfferReset(arm())).toBe(true);
+    expect(canOfferReset(arm({ armed: true }))).toBe(false);
+    expect(canOfferReset(arm({ stale: true }))).toBe(false);
+    expect(canOfferReset(arm({ armed: true, stale: true }))).toBe(false);
+  });
+
+  it('works only with the robot id typed exactly, and sends it as typed', () => {
+    const a = arm({ robot: 'arm-3' });
+    expect(resetConfirmed(a, 'arm-3')).toBe(true);
+    for (const typed of ['', 'ARM-3', 'arm-3 ', ' arm-3', 'arm']) expect(resetConfirmed(a, typed), typed).toBe(false);
+    expect(resetBody(a, 'arm-3')).toEqual({ robot: 'arm-3', toolId: 1, confirm: 'arm-3' });
+    expect(resetBody(a, 'ARM-3').confirm).toBe('ARM-3');
+  });
+
+  it('tells every answer of the server apart', async () => {
+    const a = arm();
+    serve(200, { success: true });
+    expect(await toolArmsApi.reset(a, a.robot)).toEqual({ ok: true });
+    serve(404, {});
+    expect(await toolArmsApi.reset(a, a.robot)).toEqual({ ok: false, failure: 'off' });
+    for (const status of [401, 403]) { serve(status, {}); expect(await toolArmsApi.reset(a, a.robot)).toMatchObject({ ok: false, failure: 'forbidden', status }); }
+    serve(400, { code: 'CONFIRMATION_MISMATCH' });
+    expect(await toolArmsApi.reset(a, a.robot)).toMatchObject({ failure: 'mismatch' });
+    serve(400, {});
+    expect(await toolArmsApi.reset(a, a.robot)).toMatchObject({ failure: 'invalid' });
+    for (const reason of RESET_REFUSALS) { serve(409, { reason }); expect(await toolArmsApi.reset(a, a.robot)).toEqual({ ok: false, failure: 'refused', reason, status: 409 }); }
+    serve(409, { reason: 'something new' });
+    expect(await toolArmsApi.reset(a, a.robot)).toMatchObject({ failure: 'refused', reason: 'no_report' });
+    serve(502, {});
+    expect(await toolArmsApi.reset(a, a.robot)).toMatchObject({ failure: 'rejected' });
+    serve(503, {});
+    expect(await toolArmsApi.reset(a, a.robot)).toMatchObject({ failure: 'unavailable' });
+    serve(500, {});
+    expect(await toolArmsApi.reset(a, a.robot)).toMatchObject({ failure: 'http', status: 500 });
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('offline'); }));
+    expect(await toolArmsApi.reset(a, a.robot)).toEqual({ ok: false, failure: 'network' });
+  });
+
+  it('posts the robot, the tool and the typed id to the reset route', async () => {
+    const calls: { url: string; init?: RequestInit }[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+      calls.push({ url: String(url), init });
+      return { ok: true, status: 200, json: async () => (init?.method === 'POST' ? { success: true } : report([arm()])) } as unknown as Response;
+    }));
+    await toolArmsApi.reset(arm({ robot: 'arm-3', toolId: 4 }), 'arm-3');
+    expect(calls[0].url).toContain('/api/tool-arms/reset');
+    expect(calls[0].init?.method).toBe('POST');
+    expect(JSON.parse(String(calls[0].init?.body))).toEqual({ robot: 'arm-3', toolId: 4, confirm: 'arm-3' });
+  });
+
+  it('shows no reset button unless the screen is allowed to reset, and never on an armed or old row', async () => {
+    const rows = () => report([arm({ robot: 'a', toolId: 1 }), arm({ robot: 'b', toolId: 2, armed: true }), arm({ robot: 'c', toolId: 3, stale: true })]);
+    serve(200, rows());
+    const { unmount } = render(<ToolArmsPanel />);
+    await waitFor(() => expect(screen.getByTestId('tool-arms-list')).toBeTruthy());
+    expect(screen.queryByTestId('tool-arm-reset-a-1')).toBeNull();
+    unmount();
+    serve(200, rows());
+    render(<ToolArmsPanel canReset />);
+    await waitFor(() => expect(screen.getByTestId('tool-arm-reset-a-1')).toBeTruthy());
+    expect(screen.queryByTestId('tool-arm-reset-b-2')).toBeNull();
+    expect(screen.queryByTestId('tool-arm-reset-c-3')).toBeNull();
+  });
+
+  it('asks for the robot id, keeps the button off until it is typed exactly, then resets and reads the list again', async () => {
+    const calls: { method: string; body?: unknown }[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (_url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      calls.push({ method, body: init?.body ? JSON.parse(String(init.body)) : undefined });
+      return { ok: true, status: 200, json: async () => (method === 'POST' ? { success: true } : report([arm({ robot: 'arm-3', toolId: 4 })])) } as unknown as Response;
+    }));
+    render(<ToolArmsPanel canReset />);
+    await waitFor(() => expect(screen.getByTestId('tool-arm-reset-arm-3-4')).toBeTruthy());
+    fireEvent.click(screen.getByTestId('tool-arm-reset-arm-3-4'));
+    const confirm = screen.getByTestId('tool-arms-reset-confirm') as HTMLButtonElement;
+    expect(confirm.disabled).toBe(true);
+    fireEvent.change(screen.getByTestId('tool-arms-reset-typed'), { target: { value: 'ARM-3' } });
+    expect(confirm.disabled).toBe(true);
+    fireEvent.click(confirm);
+    expect(calls.filter(c => c.method === 'POST')).toHaveLength(0);
+    fireEvent.change(screen.getByTestId('tool-arms-reset-typed'), { target: { value: 'arm-3' } });
+    expect(confirm.disabled).toBe(false);
+    fireEvent.click(confirm);
+    await waitFor(() => expect(screen.getByTestId('tool-arms-reset-message').textContent).toContain('was reset'));
+    expect(calls.filter(c => c.method === 'POST').map(c => c.body)).toEqual([{ robot: 'arm-3', toolId: 4, confirm: 'arm-3' }]);
+    expect(calls.filter(c => c.method === 'GET').length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByTestId('tool-arms-reset-form')).toBeNull();
+  });
+
+  it('cancelling sends nothing, and a refusal of the server is told in words', async () => {
+    const calls: string[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (_url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      calls.push(method);
+      return method === 'POST'
+        ? ({ ok: false, status: 409, json: async () => ({ reason: 'moving' }) } as unknown as Response)
+        : ({ ok: true, status: 200, json: async () => report([arm({ robot: 'arm-3', toolId: 4 })]) } as unknown as Response);
+    }));
+    render(<ToolArmsPanel canReset />);
+    await waitFor(() => expect(screen.getByTestId('tool-arm-reset-arm-3-4')).toBeTruthy());
+    fireEvent.click(screen.getByTestId('tool-arm-reset-arm-3-4'));
+    fireEvent.click(screen.getByTestId('tool-arms-reset-cancel'));
+    expect(screen.queryByTestId('tool-arms-reset-form')).toBeNull();
+    expect(calls).not.toContain('POST');
+    fireEvent.click(screen.getByTestId('tool-arm-reset-arm-3-4'));
+    fireEvent.change(screen.getByTestId('tool-arms-reset-typed'), { target: { value: 'arm-3' } });
+    fireEvent.click(screen.getByTestId('tool-arms-reset-confirm'));
+    await waitFor(() => expect(screen.getByTestId('tool-arms-reset-message').textContent).toContain('The robot is moving'));
+  });
+});
+
 const LOCALES: Record<string, Record<string, unknown>> = { en, es, de, fr, it: itLocale, ja, zh, pt };
 const block = (locale: Record<string, unknown>) => locale.toolArms as Record<string, string>;
 
 describe('the eight languages', () => {
   it('has every text in every language with the same placeholders', () => {
     const keys = Object.keys(block(en)).sort();
-    expect(keys.length).toBeGreaterThanOrEqual(19);
+    expect(keys.length).toBeGreaterThanOrEqual(39);
     for (const [name, locale] of Object.entries(LOCALES)) {
       const b = block(locale);
       expect(Object.keys(b).sort(), name).toEqual(keys);

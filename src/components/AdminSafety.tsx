@@ -167,7 +167,7 @@ export function AdminSafety() {
       </section>
 
       <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-        <ToolArmsPanel />
+        <ToolArmsPanel canReset={isAdmin} />
       </section>
 
       <div className="flex items-center gap-3 flex-wrap">

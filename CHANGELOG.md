@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A reset of the arm state of a tool changer in the arm state panel, for administrators, in eight languages:** a disarmed tool with a fresh report offers a Reset that asks for the robot id to be typed exactly before the button works, sends it to the server (off by default there; it answers that it is switched off) and reads the list again afterwards; a refusal of the server (the robot is moving or armed, a report is old, the state could not be read) is told in words, nothing is reset on a guess, and the reset moves nothing mechanical.
+
 - **A read-only panel of the arm state of the URTC tools in the safety limits screen, in eight languages:** for each robot and tool whether its power stage may act, who reported it and how old the report is, read through the server; a report older than the time limit is never shown as safe (an armed tool with an old report is a warning, a disarmed one is unknown), the dangerous rows come first, and a server without the safety zones service says the state is not available instead of showing an empty list. Nothing on the screen arms, disarms or stops a tool.
 
 - **A switch for the loaded-model reports of the detection service in the server administration, in eight languages:** off by default, it asks for a confirmation on screen before turning on (the request carries the confirmation only then), is locked when the server's environment fixes it, and stays out of the way on a server that predates it.

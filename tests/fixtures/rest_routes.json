@@ -63,6 +63,7 @@
   "/api/telemetry/downsample-plan",
   "/api/telemetry/query",
   "/api/tool-arms",
+  "/api/tool-arms/reset",
   "/api/totp/begin",
   "/api/totp/confirm",
   "/api/totp/disable",
