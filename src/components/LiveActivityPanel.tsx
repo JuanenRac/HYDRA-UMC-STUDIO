@@ -82,7 +82,7 @@ export function LiveActivityPanel() {
             <legend className="text-[10px] font-bold text-slate-300">{t('liveActivity.level_title')}</legend>
             {allowedLevels(state).map(item => (
               <label key={item} className="flex items-start gap-2 text-xs text-slate-200">
-                <input type="radio" name="live-activity-level" data-testid={`live-activity-level-${item}`} checked={level === item} onChange={() => { setLevel(item); setMessage(''); }} />
+                <input type="radio" name="live-activity-level" data-testid={`live-activity-level-${item}`} checked={level === item} disabled={saving || state.level.source === 'env'} onChange={() => { setLevel(item); setMessage(''); }} />
                 <span><span className="font-bold">{t(`liveActivity.level_${item}`)}</span><br /><span className="text-[10px] text-slate-500">{t(`liveActivity.level_${item}_hint`)}</span></span>
               </label>
             ))}
