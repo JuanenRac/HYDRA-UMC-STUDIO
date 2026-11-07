@@ -13,6 +13,7 @@ import '../src/i18n';
 import { ToolArmsPanel } from '../src/components/ToolArmsPanel';
 import { formatAge, parseToolArms, sortToolArms, toolArmLevel, toolArmsApi, type ToolArm } from '../src/lib/toolArms';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import en from '../src/locales/en.json';
 import es from '../src/locales/es.json';
 import de from '../src/locales/de.json';
@@ -48,7 +49,7 @@ describe('the reading', () => {
   });
 
   it('reads the empty example of the SDK fixtures', () => {
-    const routes = (JSON.parse(readFileSync(new URL('./fixtures/server-answers.json', import.meta.url), 'utf8')) as { routes: Record<string, Record<string, Record<string, Record<string, unknown>>>> }).routes;
+    const routes = (JSON.parse(readFileSync(join(process.cwd(), 'tests', 'fixtures', 'server-answers.json'), 'utf8')) as { routes: Record<string, Record<string, Record<string, Record<string, unknown>>>> }).routes;
     const minimal = routes['GET /api/tool-arms']['200'].minimal;
     expect(parseToolArms({ ...minimal, schema_version: '1.0', ttlSeconds: 5 })).toEqual({ ttlSeconds: 5, arms: [], armedCount: 0, staleCount: 0 });
   });

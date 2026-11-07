@@ -53,7 +53,7 @@ export function ToolArmsPanel() {
         </button>
       </div>
       <div className="text-[10px] text-slate-500">{t('toolArms.desc')}</div>
-      {problem && <p role="status" data-testid="tool-arms-problem" className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">{problem}</p>}
+      {problem && <p aria-live="polite" data-testid="tool-arms-problem" className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">{problem}</p>}
       {report && (
         <>
           <div className="text-[10px] text-slate-400" data-testid="tool-arms-summary">{t('toolArms.summary', { armed: report.armedCount, stale: report.staleCount, ttl: report.ttlSeconds })}</div>
