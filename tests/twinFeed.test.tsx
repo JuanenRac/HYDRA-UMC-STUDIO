@@ -89,7 +89,9 @@ class FakeSocket {
   onclose: ((ev: { code: number }) => void) | null = null;
   onerror: (() => void) | null = null;
   closed = false;
-  constructor(public url: string, public protocols: string[]) { FakeSocket.all.push(this); }
+  url: string;
+  protocols: string[];
+  constructor(url: string, protocols: string[]) { this.url = url; this.protocols = protocols; FakeSocket.all.push(this); }
   close() { this.closed = true; }
 }
 
