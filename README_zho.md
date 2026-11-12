@@ -75,6 +75,8 @@ GPL-3.0-or-later - see LICENSE
 
 **HYDRA-UMC-STUDIO** 是单元的 Web 控制面板：用真实运动学以 3D 绘制每个机器人，点动并录制轨迹，操作附件和机器面板，通过 CAN-OTA 链刷写并测试固件，并管理服务器，支持八种语言。它不保存自己的状态，也不做任何安全决定：角色、限制、预约和停止都由 HYDRA-UMC-SERVER 决定。
 
+> **平台：** 本 README 中的 CM5 指的是目前正在运行的试验台；HYDRA-UMC 的目标平台是 NVIDIA Jetson Orin NX 16 GB，这是尚未制造或测试的设计。
+
 ## 🏛️ 架构
 
 <p align="center">

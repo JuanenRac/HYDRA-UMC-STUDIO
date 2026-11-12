@@ -75,6 +75,8 @@ Construído com **React 19**, **Vite**, **Three.js** (através de `@react-three/
 
 O **HYDRA-UMC-STUDIO** é o painel web de controlo da célula: desenha cada robô em 3D com a sua cinemática real, move e grava trajetórias, opera os painéis de acessórios e máquinas, grava e testa firmware pela cadeia CAN-OTA e administra o servidor, em oito idiomas. Não guarda estado próprio e não decide nada de segurança: papéis, limites, reservas e a paragem são decididos pelo HYDRA-UMC-SERVER.
 
+> **Plataforma:** onde este README diz CM5, refere-se ao banco piloto que funciona hoje; a plataforma objetivo do HYDRA-UMC é uma NVIDIA Jetson Orin NX de 16 GB, um desenho que não foi construído nem testado.
+
 ## 🏛️ Arquitetura
 
 <p align="center">

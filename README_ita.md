@@ -75,6 +75,8 @@ Costruito con **React 19**, **Vite**, **Three.js** (via `@react-three/fiber`/`@r
 
 **HYDRA-UMC-STUDIO** è il pannello web di controllo della cella: disegna ogni robot in 3D con la sua cinematica reale, muove e registra traiettorie, gestisce i pannelli di accessori e macchine, flasha e collauda il firmware lungo la catena CAN-OTA e amministra il server, in otto lingue. Non conserva stato proprio e non decide nulla sulla sicurezza: ruoli, limiti, prenotazioni e arresto li decide HYDRA-UMC-SERVER.
 
+> **Piattaforma:** dove questo README dice CM5, intende il banco pilota che funziona oggi; la piattaforma di destinazione di HYDRA-UMC è un NVIDIA Jetson Orin NX da 16 GB, un progetto non costruito né provato.
+
 ## 🏛️ Architettura
 
 <p align="center">
