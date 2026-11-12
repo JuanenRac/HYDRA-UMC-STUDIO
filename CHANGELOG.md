@@ -1,8 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.8.1.9] - The Flasher sends the board and the oldest bootloader the manifest names: the entry of an image in the manifest of the release may state `target` (the board the image is for) and `min_bootloader` (the oldest bootloader that may take it); the Flasher reads them
 
 - **The Flasher sends the board and the oldest bootloader the manifest names:** the entry of an image in the manifest of the release may state `target` (the board the image is for) and `min_bootloader` (the oldest bootloader that may take it); the Flasher reads them (the binary entry wins over the component, a value the relay would refuse is dropped) and sends them with the flash request, so that the flashing service refuses a foreign board or an older bootloader before it sends a byte. A manifest that states neither sends nothing, as before. Tests cover the reading, the request and the release listing.
 

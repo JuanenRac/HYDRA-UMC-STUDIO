@@ -35,7 +35,7 @@ GPL-3.0-or-later - see LICENSE
 
 | | |
 |---|---|
-| バージョン | `0.8.1.8` |
+| バージョン | `0.8.1.9` |
 | 成熟度 | 機能する |
 | テスト | 1448 (`npm test`) |
 | 技術 | React 19 / Vite / Three.js / Tailwind CSS |

@@ -35,7 +35,7 @@ GPL-3.0-or-later - see LICENSE
 
 | | |
 |---|---|
-| Versione | `0.8.1.8` |
+| Versione | `0.8.1.9` |
 | Maturità | Funzionale |
 | Test | 1448 (`npm test`) |
 | Tecnologia | React 19 / Vite / Three.js / Tailwind CSS |
