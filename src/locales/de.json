@@ -2257,5 +2257,22 @@
     "confirm_message_progress": "Jeder, der ein iPhone mit einer Live Activity hält, sieht den Zustand und den Fortschritt des Auftrags auf dem Sperrbildschirm.",
     "confirm_message_full": "Jeder, der ein iPhone mit einer Live Activity hält, sieht das ganze Bedienfeld des Roboters auf dem Sperrbildschirm: Name, Modell, Werkzeug und die Stellung seiner Gelenke.",
     "confirm_button": "Anzeigen"
+  },
+  "twinLive": {
+    "title": "Live-Zustand des Zwillings",
+    "desc": "Zeigt den Zustand, den der digitale Zwilling über diesen Server sendet (die Gelenke des Roboters und die Fahrzeuge, denen er folgt). Standardmäßig aus und nur eine Wahl dieses Browsers; dieses Fenster liest nur, nichts davon erreicht den Zwilling.",
+    "label": "Live-Zustand des Zwillings beobachten",
+    "off": "Keine Beobachtung.",
+    "connecting": "Verbindung zum Zwilling über den Server wird aufgebaut...",
+    "live": "Verbunden: Der Server leitet weiter, was der Zwilling sendet.",
+    "denied": "Die Sitzung wurde abgelehnt: Melden Sie sich erneut an, um den Zwilling zu beobachten.",
+    "not_available": "Der Server kann den Zwilling jetzt nicht weiterleiten: Er ist nicht eingerichtet, oder zu viele Panels schauen zu.",
+    "unavailable": "Der Zwilling ist nicht erreichbar; neuer Versuch in Kürze.",
+    "closed": "Die Verbindung wurde geschlossen; neuer Versuch in Kürze.",
+    "state_real": "Zustand des echten Roboters: {{joints}} Gelenke.",
+    "state_simulated": "Zustand einer Simulation: {{joints}} Gelenke.",
+    "no_state": "Noch kein Zustand empfangen.",
+    "status": "Der Zwilling meldet: {{code}}",
+    "vehicles": "Fahrzeuge: {{count}} ({{stale}} mit altem Bericht)"
   }
 }

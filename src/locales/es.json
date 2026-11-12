@@ -2257,5 +2257,22 @@
     "confirm_message_progress": "Cualquiera que tenga un iPhone con una Live Activity verá el estado y el progreso del trabajo en su pantalla de bloqueo.",
     "confirm_message_full": "Cualquiera que tenga un iPhone con una Live Activity verá todo el panel del robot en su pantalla de bloqueo: su nombre, modelo, herramienta y la posición de sus articulaciones.",
     "confirm_button": "Mostrarla"
+  },
+  "twinLive": {
+    "title": "Estado en vivo del gemelo",
+    "desc": "Mira el estado que empuja el gemelo digital (las articulaciones del robot y los vehículos que sigue) a través de este servidor. Está apagado por defecto y es solo una elección de este navegador; esta ventana solo lee y nada de lo que envía llega al gemelo.",
+    "label": "Ver el estado en vivo del gemelo",
+    "off": "No se está viendo.",
+    "connecting": "Conectando con el gemelo a través del servidor...",
+    "live": "Conectado: el servidor reenvía lo que empuja el gemelo.",
+    "denied": "Se rechazó la sesión: vuelve a iniciar sesión para ver el gemelo.",
+    "not_available": "El servidor no puede reenviar el gemelo ahora: no está configurado o hay demasiados paneles mirando.",
+    "unavailable": "No se puede llegar al gemelo; se reintenta en breve.",
+    "closed": "La conexión se cerró; se reintenta en breve.",
+    "state_real": "Estado del robot real: {{joints}} articulaciones.",
+    "state_simulated": "Estado de una simulación: {{joints}} articulaciones.",
+    "no_state": "Aún no se ha recibido ningún estado.",
+    "status": "El gemelo informa: {{code}}",
+    "vehicles": "Vehículos: {{count}} ({{stale}} con un informe antiguo)"
   }
 }

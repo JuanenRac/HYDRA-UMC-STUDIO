@@ -2257,5 +2257,22 @@
     "confirm_message_progress": "Chiunque abbia un iPhone con una Live Activity vedrà lo stato e l'avanzamento del lavoro sulla sua schermata di blocco.",
     "confirm_message_full": "Chiunque abbia un iPhone con una Live Activity vedrà tutto il pannello del robot sulla sua schermata di blocco: nome, modello, utensile e posizione dei giunti.",
     "confirm_button": "Mostra"
+  },
+  "twinLive": {
+    "title": "Stato in diretta del gemello",
+    "desc": "Segue lo stato che il gemello digitale invia (i giunti del robot e i veicoli che segue) tramite questo server. È spento per impostazione predefinita e solo una scelta di questo browser; questa finestra legge soltanto e nulla di ciò che invia raggiunge il gemello.",
+    "label": "Segui lo stato in diretta del gemello",
+    "off": "Nessun monitoraggio.",
+    "connecting": "Connessione al gemello tramite il server...",
+    "live": "Connesso: il server inoltra ciò che il gemello invia.",
+    "denied": "La sessione è stata rifiutata: accedi di nuovo per seguire il gemello.",
+    "not_available": "Il server non può inoltrare il gemello ora: non è configurato o troppi pannelli lo stanno seguendo.",
+    "unavailable": "Il gemello non è raggiungibile; nuovo tentativo a breve.",
+    "closed": "La connessione si è chiusa; nuovo tentativo a breve.",
+    "state_real": "Stato del robot reale: {{joints}} giunti.",
+    "state_simulated": "Stato di una simulazione: {{joints}} giunti.",
+    "no_state": "Nessuno stato ricevuto finora.",
+    "status": "Il gemello segnala: {{code}}",
+    "vehicles": "Veicoli: {{count}} ({{stale}} con un rapporto vecchio)"
   }
 }

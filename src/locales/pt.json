@@ -2257,5 +2257,22 @@
     "confirm_message_progress": "Qualquer pessoa com um iPhone com uma Live Activity verá o estado e o progresso do trabalho no ecrã de bloqueio.",
     "confirm_message_full": "Qualquer pessoa com um iPhone com uma Live Activity verá todo o painel do robô no ecrã de bloqueio: o nome, o modelo, a ferramenta e a posição das articulações.",
     "confirm_button": "Mostrar"
+  },
+  "twinLive": {
+    "title": "Estado em direto do gémeo",
+    "desc": "Acompanha o estado que o gémeo digital envia (as articulações do robô e os veículos que segue) através deste servidor. Está desligado por predefinição e é apenas uma escolha deste navegador; esta janela só lê e nada do que envia chega ao gémeo.",
+    "label": "Acompanhar o estado em direto do gémeo",
+    "off": "Sem acompanhamento.",
+    "connecting": "A ligar ao gémeo através do servidor...",
+    "live": "Ligado: o servidor reencaminha o que o gémeo envia.",
+    "denied": "A sessão foi recusada: inicie sessão novamente para acompanhar o gémeo.",
+    "not_available": "O servidor não pode reencaminhar o gémeo agora: não está configurado ou há painéis a mais a acompanhar.",
+    "unavailable": "Não é possível chegar ao gémeo; nova tentativa em breve.",
+    "closed": "A ligação foi fechada; nova tentativa em breve.",
+    "state_real": "Estado do robô real: {{joints}} articulações.",
+    "state_simulated": "Estado de uma simulação: {{joints}} articulações.",
+    "no_state": "Ainda não foi recebido nenhum estado.",
+    "status": "O gémeo comunica: {{code}}",
+    "vehicles": "Veículos: {{count}} ({{stale}} com um relatório antigo)"
   }
 }

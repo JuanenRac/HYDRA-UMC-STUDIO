@@ -2257,5 +2257,22 @@
     "confirm_message_progress": "Quiconque tient un iPhone avec une Live Activity verra l'état et la progression du travail sur son écran verrouillé.",
     "confirm_message_full": "Quiconque tient un iPhone avec une Live Activity verra tout le panneau du robot sur son écran verrouillé : son nom, son modèle, son outil et la position de ses articulations.",
     "confirm_button": "Afficher"
+  },
+  "twinLive": {
+    "title": "État en direct du jumeau",
+    "desc": "Suit l'état que le jumeau numérique envoie (les articulations du robot et les véhicules qu'il suit) par ce serveur. Désactivé par défaut et simple choix de ce navigateur ; cette fenêtre ne fait que lire et rien de ce qu'elle envoie n'atteint le jumeau.",
+    "label": "Suivre l'état en direct du jumeau",
+    "off": "Pas de suivi.",
+    "connecting": "Connexion au jumeau par le serveur...",
+    "live": "Connecté : le serveur transmet ce que le jumeau envoie.",
+    "denied": "La session a été refusée : reconnectez-vous pour suivre le jumeau.",
+    "not_available": "Le serveur ne peut pas transmettre le jumeau maintenant : il n'est pas configuré, ou trop de panneaux le suivent.",
+    "unavailable": "Le jumeau est injoignable ; nouvel essai sous peu.",
+    "closed": "La connexion s'est fermée ; nouvel essai sous peu.",
+    "state_real": "État du robot réel : {{joints}} articulations.",
+    "state_simulated": "État d'une simulation : {{joints}} articulations.",
+    "no_state": "Aucun état reçu pour l'instant.",
+    "status": "Le jumeau signale : {{code}}",
+    "vehicles": "Véhicules : {{count}} ({{stale}} avec un ancien rapport)"
   }
 }

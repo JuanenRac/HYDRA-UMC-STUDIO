@@ -29,6 +29,7 @@ import { ConnectorHubGatePanel } from './ConnectorHubGatePanel';
 import { PlannerIdentityPanel } from './PlannerIdentityPanel';
 import { OpsProposalsPanel } from './OpsProposalsPanel';
 import { HilBridgePanel } from './HilBridgePanel';
+import { TwinLivePanel } from './TwinLivePanel';
 import { ServiceIdentityPanel } from './ServiceIdentityPanel';
 import { IngestSwitchesPanel } from './IngestSwitchesPanel';
 import { DetectionHefPanel } from './DetectionHefPanel';
@@ -869,6 +870,7 @@ export function AdminServer() {
           <OpsProposalsPanel />
 
           <HilBridgePanel />
+          <TwinLivePanel />
           <ServiceIdentityPanel />
           <IngestSwitchesPanel onChanged={() => setIngestVersion(v => v + 1)} />
           <DeveloperNodeStatusPanel refreshKey={ingestVersion} />
