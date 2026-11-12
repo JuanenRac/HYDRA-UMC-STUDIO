@@ -17,7 +17,7 @@ import en from '../src/locales/en.json';
 import es from '../src/locales/es.json';
 import de from '../src/locales/de.json';
 import fr from '../src/locales/fr.json';
-import it from '../src/locales/it.json';
+import italian from '../src/locales/it.json';
 import ja from '../src/locales/ja.json';
 import pt from '../src/locales/pt.json';
 import zh from '../src/locales/zh.json';
@@ -119,7 +119,7 @@ describe('the badge', () => {
 describe('the eight languages', () => {
   it('every language has every key, and the tooltip keeps both placeholders', () => {
     const keys = ['state_stopped', 'state_ready', 'state_unknown', 'badge_tooltip', 'physical_latched', 'physical_ready', 'physical_unknown', 'software_stopped', 'software_ready'];
-    for (const [name, locale] of Object.entries({ en, es, de, fr, it, ja, pt, zh })) {
+    for (const [name, locale] of Object.entries({ en, es, de, fr, it: italian, ja, pt, zh })) {
       const block = (locale as unknown as { stop_all: Record<string, string> }).stop_all;
       for (const key of keys) expect(typeof block[key] === 'string' && block[key].length > 0, `${name}: ${key}`).toBe(true);
       expect(block.badge_tooltip, name).toContain('{{physical}}');
