@@ -65,7 +65,7 @@ GPL-3.0-or-later - see LICENSE
 
 ## 🎯 概述
 
-**HYDRA-UMC STUDIO** 是 [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)——多机器人微工厂主板（Raspberry Pi CM5 主机 + 双核 STM32H745 实时协处理器，通过单一 FDCAN 总线协调最多 8 个分布式机器人手臂）——的浏览器端控制仪表盘。HYDRA-UMC 自身的仓库涵盖硬件与固件，而本仓库则是面向人的一侧：一个单页 React 应用程序，以真实的 3D 方式可视化每一个机器人、点动并记录其运动、管理机器人单元周边的机器与配件，并对整条 CAN-OTA 固件链进行刷写/测试——所有这些都在一个浏览器标签页中完成，除 Node.js 外无需任何原生安装。
+**HYDRA-UMC STUDIO** 是 [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)——多机器人微工厂主板（NVIDIA Jetson Orin NX 主机 + 双核 STM32H757(CM5 保留为试验台) 实时协处理器，通过单一 FDCAN 总线协调最多 8 个分布式机器人手臂）——的浏览器端控制仪表盘。HYDRA-UMC 自身的仓库涵盖硬件与固件，而本仓库则是面向人的一侧：一个单页 React 应用程序，以真实的 3D 方式可视化每一个机器人、点动并记录其运动、管理机器人单元周边的机器与配件，并对整条 CAN-OTA 固件链进行刷写/测试——所有这些都在一个浏览器标签页中完成，除 Node.js 外无需任何原生安装。
 
 **诚实说明，与本生态系统其余文档所采用的惯例一致：** HYDRA-UMC 自身的真实硬件尚不存在于经过测试的芯片形态（其引导程序编译干净，但尚未在真实板卡上运行过——参见该仓库自身的 `docs/architecture.md`）。因此，本仪表盘的 CAN-OTA Flasher/Tester 工具是针对一套完整的内置仿真运行的，该仿真遵循每一层已记录的真实寻址方案，而不是假装在与并不存在的硬件通信。3D 机器人可视化、运动学、轨迹记录以及每一个配件控制面板都是完全真实且独立于此的——目前仅 CAN-OTA 传输本身是被仿真的。
 
@@ -148,7 +148,7 @@ GPL-3.0-or-later - see LICENSE
 
 ### 运动大脑阶段
 
-一个专用的控制面板，用于 HYDRA-UMC 主板自身的本地运动子系统——STM32H745 直接驱动的各轴，与 STACK A 上的分布式机器人手臂相独立：
+一个专用的控制面板，用于 HYDRA-UMC 主板自身的本地运动子系统——STM32H757 直接驱动的各轴，与 STACK A 上的分布式机器人手臂相独立：
 
 - 📐 **XY 龙门架** X、Y1、Y2（双 Y 龙门架）和 Z 轴的点动控制
 - 🔥 **热床** 控制（SSR 切换，230VAC）
@@ -197,9 +197,9 @@ JuanenPnP、JuanenCNC 和 JuanenLaser 使用独立的 STL 副本，LumenPnP 保�
 从一个仪表盘对整条 HYDRA-UMC + URTC CAN-OTA 链进行刷写和自检，提供两个专用入口：
 
 - **URTC → Flasher / Tester** —— 面向 URTC 工具头板及其自身的扩展板（与独立的 [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)/[URTC Tester](https://github.com/JuanenRac/URTC-TESTER) 桌面工具自身的协议覆盖范围一致）
-- **HYDRA-UMC → Flasher / Tester** —— 面向机器人控制器板与运动大脑两个层级，全程从 CM5 → SPI → STM32H745 → FDCAN1 → 机器人控制器板 → CAN → URTC 工具头进行中继，无需 JTAG/SWD 探针，也无需 USB-CAN 适配器（完整的寻址/中继设计参见 [HYDRA-UMC 自身的 `docs/architecture.md`](https://github.com/JuanenRac/HYDRA-UMC/blob/main/docs/architecture.md)）
+- **HYDRA-UMC → Flasher / Tester** —— 面向机器人控制器板与运动大脑两个层级，全程从 CM5 → SPI → STM32H757 → FDCAN1 → 机器人控制器板 → CAN → URTC 工具头进行中继，无需 JTAG/SWD 探针，也无需 USB-CAN 适配器（完整的寻址/中继设计参见 [HYDRA-UMC 自身的 `docs/architecture.md`](https://github.com/JuanenRac/HYDRA-UMC/blob/main/docs/architecture.md)）
 
-两者都可以直接从 GitHub 下载真实的固件版本（基于 `firmware_manifest.json`，经 CRC32 校验），面向 `URTC` 或 `HYDRA-UMC` 仓库均可。如上所述，在真实的 STM32H745 固件存在于真实硬件上并可供通信之前，传输本身运行于一套完整的内置仿真。
+两者都可以直接从 GitHub 下载真实的固件版本（基于 `firmware_manifest.json`，经 CRC32 校验），面向 `URTC` 或 `HYDRA-UMC` 仓库均可。如上所述，在真实的 STM32H757 固件存在于真实硬件上并可供通信之前，传输本身运行于一套完整的内置仿真。
 
 ### 手柄支持
 
@@ -481,7 +481,7 @@ HYDRA-UMC-STUDIO/
 **生态系统中的其他项目**
 
 *核心硬件与平台*
-- **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** —— 机器人手臂主板设计——CM5 主机 + 双核 STM32H745,目标是通过 CAN-OTA/SPI-OTA 协调最多 8 条工具臂(固件处于早期阶段,尚无已组装的电路板)。
+- **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** —— 机器人手臂主板设计——NVIDIA Jetson Orin NX 主机 + 双核 STM32H757(CM5 保留为试验台),目标是通过 CAN-OTA/SPI-OTA 协调最多 8 条工具臂(固件处于早期阶段,尚无已组装的电路板)。
 - **[HYDRA-UMC-OS](https://github.com/JuanenRac/HYDRA-UMC-OS)** —— 面向 CM5 的可复现 Raspberry Pi OS 产品层——只读代理、经过验证的配置/配置文件、WiFi 首次配网。
 - **[HYDRA-UMC-SDK](https://github.com/JuanenRac/HYDRA-UMC-SDK)** —— 每个桥接都据此校验自身指令的共享 JSON-Schema 契约与软件作业门限边界(并非经认证的安全功能)。
 - **[HYDRA-UMC-CONNECTOR-HUB](https://github.com/JuanenRac/HYDRA-UMC-CONNECTOR-HUB)** — 面向外部机器连接器的声明式适配器清单注册与校验工具；把 SDK 自身的契约理念扩展到外部机器，而不取代工业网关类项目。

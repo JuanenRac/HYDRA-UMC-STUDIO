@@ -65,7 +65,7 @@ Cada línea es una parte de este repositorio y la luz dice hasta dónde llega ho
 
 ## 🎯 Resumen
 
-**HYDRA-UMC STUDIO** es el panel de control basado en navegador para [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) - la placa madre de la micro-fábrica multi-robot (host Raspberry Pi CM5 + coprocesador de tiempo real STM32H745 de doble núcleo) que orquesta hasta 8 brazos robóticos distribuidos sobre un único bus FDCAN. Mientras que el propio repositorio de HYDRA-UMC cubre el hardware y el firmware, este repositorio es la parte orientada al humano: una aplicación React de una sola página que visualiza cada robot en 3D real, jogea y graba su movimiento, gestiona las máquinas y accesorios que acompañan a una célula robótica, y flashea/prueba toda la cadena de firmware CAN-OTA - todo desde una sola pestaña del navegador, sin necesidad de instalación nativa más allá de Node.js.
+**HYDRA-UMC STUDIO** es el panel de control basado en navegador para [HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC) - la placa madre de la micro-fábrica multi-robot (host NVIDIA Jetson Orin NX + coprocesador de tiempo real STM32H757 de doble núcleo; la CM5 queda como banco piloto) que orquesta hasta 8 brazos robóticos distribuidos sobre un único bus FDCAN. Mientras que el propio repositorio de HYDRA-UMC cubre el hardware y el firmware, este repositorio es la parte orientada al humano: una aplicación React de una sola página que visualiza cada robot en 3D real, jogea y graba su movimiento, gestiona las máquinas y accesorios que acompañan a una célula robótica, y flashea/prueba toda la cadena de firmware CAN-OTA - todo desde una sola pestaña del navegador, sin necesidad de instalación nativa más allá de Node.js.
 
 **Nota de honestidad, siguiendo la misma convención de documentación que el resto de este ecosistema:** el propio hardware real de HYDRA-UMC todavía no existe como silicio probado (sus bootloaders compilan limpio pero no se han ejecutado en placas reales - ver el propio `docs/architecture.md` de ese repositorio). Por eso este panel ejecuta sus herramientas de Flasher/Tester CAN-OTA contra una simulación completa incorporada que sigue el esquema de direccionamiento real y documentado de cada nivel, en vez de fingir hablar con un hardware que no existe. La visualización 3D de los robots, la cinemática, la grabación de trayectorias, y cada panel de control de accesorios son completamente reales e independientes de eso - solo el transporte CAN-OTA en sí está simulado por ahora.
 
@@ -148,7 +148,7 @@ Los controles de jog por robot incluyen una perilla giratoria + deslizador tanto
 
 ### Etapa Kinematic Brain
 
-Un panel de control dedicado al propio subsistema de movimiento local de la placa madre HYDRA-UMC - los ejes accionados directamente por el STM32H745, separados de los brazos robóticos distribuidos en STACK A:
+Un panel de control dedicado al propio subsistema de movimiento local de la placa madre HYDRA-UMC - los ejes accionados directamente por el STM32H757, separados de los brazos robóticos distribuidos en STACK A:
 
 - 📐 Control de jog del **pórtico XY** para los ejes X, Y1, Y2 (pórtico Y dual), y Z
 - 🔥 Control de **cama caliente** (conmutada por SSR, 230VAC)
@@ -197,9 +197,9 @@ Carga trayectorias de ejemplo predefinidas, jogea y graba tus propios puntos en 
 Flashea y auto-prueba el firmware a través de toda la cadena CAN-OTA de HYDRA-UMC + URTC desde un solo panel, con dos puntos de entrada dedicados:
 
 - **URTC → Flasher / Tester** - para la placa URTC Tool Head y sus propias placas de expansión (coincide con la cobertura de protocolo propia de las herramientas de escritorio independientes [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)/[URTC Tester](https://github.com/JuanenRac/URTC-TESTER))
-- **HYDRA-UMC → Flasher / Tester** - para los niveles Robot Controller Board y Kinematic Brain, relevado todo el camino desde CM5 → SPI → STM32H745 → FDCAN1 → Robot Controller Board → CAN → URTC Tool Head, sin necesitar sonda JTAG/SWD ni adaptador USB-CAN (ver el propio [`docs/architecture.md` de HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC/blob/main/docs/architecture.md) para el diseño completo de direccionamiento/relevo)
+- **HYDRA-UMC → Flasher / Tester** - para los niveles Robot Controller Board y Kinematic Brain, relevado todo el camino desde CM5 → SPI → STM32H757 → FDCAN1 → Robot Controller Board → CAN → URTC Tool Head, sin necesitar sonda JTAG/SWD ni adaptador USB-CAN (ver el propio [`docs/architecture.md` de HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC/blob/main/docs/architecture.md) para el diseño completo de direccionamiento/relevo)
 
-Ambos pueden descargar releases de firmware reales directamente desde GitHub (basado en `firmware_manifest.json`, verificado por CRC32) tanto para el repositorio `URTC` como para `HYDRA-UMC`. Como se indica arriba, el propio transporte se ejecuta contra una simulación completa incorporada hasta que exista firmware STM32H745 real en hardware real con el que hablar.
+Ambos pueden descargar releases de firmware reales directamente desde GitHub (basado en `firmware_manifest.json`, verificado por CRC32) tanto para el repositorio `URTC` como para `HYDRA-UMC`. Como se indica arriba, el propio transporte se ejecuta contra una simulación completa incorporada hasta que exista firmware STM32H757 real en hardware real con el que hablar.
 
 ### Soporte de Mando
 
@@ -482,7 +482,7 @@ Este proyecto es parte del ecosistema de robótica HYDRA-UMC del mismo autor (Ju
 **También Forma Parte del Ecosistema**
 
 *Hardware y Plataforma Base*
-- **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** — el diseño de la placa madre del brazo robótico: host CM5 + coprocesador STM32H745 de doble núcleo, pensado para coordinar hasta 8 brazos herramienta por CAN-OTA/SPI-OTA (firmware en fase temprana; todavía no hay ninguna placa poblada).
+- **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** — el diseño de la placa madre del brazo robótico: host NVIDIA Jetson Orin NX + STM32H757 de doble núcleo (la CM5 queda como banco piloto), pensado para coordinar hasta 8 brazos herramienta por CAN-OTA/SPI-OTA (firmware en fase temprana; todavía no hay ninguna placa poblada).
 - **[HYDRA-UMC-OS](https://github.com/JuanenRac/HYDRA-UMC-OS)** — capa de producto reproducible sobre Raspberry Pi OS para el CM5: agente de solo lectura, config/perfiles validados, aprovisionamiento WiFi de primer contacto.
 - **[HYDRA-UMC-SDK](https://github.com/JuanenRac/HYDRA-UMC-SDK)** — el contrato JSON-Schema compartido y la barrera de software de puerta de trabajos contra la que cada bridge valida sus comandos (no es una función de seguridad certificada).
 - **[HYDRA-UMC-CONNECTOR-HUB](https://github.com/JuanenRac/HYDRA-UMC-CONNECTOR-HUB)** — registro declarativo y validador de manifiestos de adaptador para conectores de máquinas externas; extiende la propia idea de contrato del SDK a máquinas externas sin sustituir a los proyectos de pasarela industrial.

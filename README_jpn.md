@@ -65,7 +65,7 @@ GPL-3.0-or-later - see LICENSE
 
 ## 🎯 概要
 
-**HYDRA-UMC STUDIO** は、[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)——最大 8 台の分散ロボットアームを単一の FDCAN バス上で統括する、マルチロボット・マイクロファクトリーのマザーボード（Raspberry Pi CM5 ホスト + デュアルコア STM32H745 リアルタイムコプロセッサ）——のブラウザベース制御ダッシュボードです。HYDRA-UMC 自身のリポジトリがハードウェアとファームウェアを扱うのに対し、本リポジトリは人が触れる側を担います：あらゆるロボットを実際の 3D で可視化し、その動作をジョグ・記録し、ロボットセルに付随する機械やアクセサリを管理し、CAN-OTA ファームウェアチェーン全体を書き込み・テストする、単一ページの React アプリケーションです——これらすべてが、Node.js 以外にネイティブなインストールを一切必要とせず、1 つのブラウザタブの中で完結します。
+**HYDRA-UMC STUDIO** は、[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)——最大 8 台の分散ロボットアームを単一の FDCAN バス上で統括する、マルチロボット・マイクロファクトリーのマザーボード（NVIDIA Jetson Orin NX ホスト + デュアルコア STM32H757(CM5 はパイロット試験台として残る) リアルタイムコプロセッサ）——のブラウザベース制御ダッシュボードです。HYDRA-UMC 自身のリポジトリがハードウェアとファームウェアを扱うのに対し、本リポジトリは人が触れる側を担います：あらゆるロボットを実際の 3D で可視化し、その動作をジョグ・記録し、ロボットセルに付随する機械やアクセサリを管理し、CAN-OTA ファームウェアチェーン全体を書き込み・テストする、単一ページの React アプリケーションです——これらすべてが、Node.js 以外にネイティブなインストールを一切必要とせず、1 つのブラウザタブの中で完結します。
 
 **本エコシステムの他のドキュメントと同じ慣例に従った正直な注記：** HYDRA-UMC 自身の実際のハードウェアは、まだテスト済みのシリコンとしては存在していません（そのブートローダーはクリーンにコンパイルされますが、実機ボード上ではまだ実行されていません——同リポジトリ自身の `docs/architecture.md` を参照）。そのため、本ダッシュボードの CAN-OTA Flasher/Tester ツールは、存在しないハードウェアと通信しているふりをするのではなく、各階層について文書化された実際のアドレッシング方式に従う、完全な内蔵シミュレーションに対して動作します。3D ロボット可視化、運動学、軌道記録、そしてすべてのアクセサリ制御パネルは、それとは独立して完全に実物です——今のところシミュレーションされているのは CAN-OTA トランスポート自体のみです。
 
@@ -148,7 +148,7 @@ GPL-3.0-or-later - see LICENSE
 
 ### Kinematic Brain ステージ
 
-HYDRA-UMC マザーボード自身のローカル運動サブシステム——STACK A 上の分散ロボットアームとは別の、STM32H745 が直接駆動する軸——専用の制御パネルです：
+HYDRA-UMC マザーボード自身のローカル運動サブシステム——STACK A 上の分散ロボットアームとは別の、STM32H757 が直接駆動する軸——専用の制御パネルです：
 
 - 📐 **XY ガントリー** X、Y1、Y2（デュアル Y ガントリー）、Z 軸のジョグ制御
 - 🔥 **ヒートベッド** 制御（SSR 切替、230VAC）
@@ -197,9 +197,9 @@ JuanenPnP、JuanenCNC、JuanenLaser は独立した STL コピーを使用し、
 HYDRA-UMC + URTC の CAN-OTA チェーン全体を、1 つのダッシュボードから 2 つの専用エントリポイントで書き込み・自己診断します：
 
 - **URTC → Flasher / Tester** —— URTC ツールヘッドボードおよびその自身の拡張ボード向け（独立した [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)/[URTC Tester](https://github.com/JuanenRac/URTC-TESTER) デスクトップツール自身のプロトコルカバレッジと一致）
-- **HYDRA-UMC → Flasher / Tester** —— ロボットコントローラーボードと Kinematic Brain の両階層向け。CM5 → SPI → STM32H745 → FDCAN1 → ロボットコントローラーボード → CAN → URTC ツールヘッドまで全経路が中継され、JTAG/SWD プローブも USB-CAN アダプターも不要です（完全なアドレッシング／中継設計は [HYDRA-UMC 自身の `docs/architecture.md`](https://github.com/JuanenRac/HYDRA-UMC/blob/main/docs/architecture.md) を参照）
+- **HYDRA-UMC → Flasher / Tester** —— ロボットコントローラーボードと Kinematic Brain の両階層向け。CM5 → SPI → STM32H757 → FDCAN1 → ロボットコントローラーボード → CAN → URTC ツールヘッドまで全経路が中継され、JTAG/SWD プローブも USB-CAN アダプターも不要です（完全なアドレッシング／中継設計は [HYDRA-UMC 自身の `docs/architecture.md`](https://github.com/JuanenRac/HYDRA-UMC/blob/main/docs/architecture.md) を参照）
 
-いずれも `URTC` または `HYDRA-UMC` リポジトリ向けの実際のファームウェアリリースを、GitHub から直接ダウンロードできます（`firmware_manifest.json` に基づき、CRC32 で検証済み）。上記のとおり、実際の STM32H745 ファームウェアが実機ハードウェア上に存在して通信できるようになるまで、トランスポート自体は完全な内蔵シミュレーションに対して動作します。
+いずれも `URTC` または `HYDRA-UMC` リポジトリ向けの実際のファームウェアリリースを、GitHub から直接ダウンロードできます（`firmware_manifest.json` に基づき、CRC32 で検証済み）。上記のとおり、実際の STM32H757 ファームウェアが実機ハードウェア上に存在して通信できるようになるまで、トランスポート自体は完全な内蔵シミュレーションに対して動作します。
 
 ### ゲームパッド対応
 
@@ -481,7 +481,7 @@ HYDRA-UMC-STUDIO/
 **エコシステムの他のプロジェクト**
 
 *コアハードウェア&プラットフォーム*
-- **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** — ロボットアームのマザーボードの設計——CM5 ホスト + デュアルコア STM32H745、CAN-OTA/SPI-OTA 経由で最大 8 本のツールアームを統括することを目指す(ファームウェアは初期段階で、実装済みの基板はまだない)。
+- **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** — ロボットアームのマザーボードの設計——NVIDIA Jetson Orin NX ホスト + デュアルコア STM32H757(CM5 はパイロット試験台として残る)、CAN-OTA/SPI-OTA 経由で最大 8 本のツールアームを統括することを目指す(ファームウェアは初期段階で、実装済みの基板はまだない)。
 - **[HYDRA-UMC-OS](https://github.com/JuanenRac/HYDRA-UMC-OS)** — CM5 向けの再現可能な Raspberry Pi OS プロダクト層——読み取り専用エージェント、検証済み設定/プロファイル、WiFi 初回接続プロビジョニング。
 - **[HYDRA-UMC-SDK](https://github.com/JuanenRac/HYDRA-UMC-SDK)** — すべてのブリッジが自身のコマンドを検証する共有 JSON-Schema 契約とソフトウェアのジョブゲート境界(認証済みの安全機能ではない)。
 - **[HYDRA-UMC-CONNECTOR-HUB](https://github.com/JuanenRac/HYDRA-UMC-CONNECTOR-HUB)** — 外部マシン用コネクタのための宣言的アダプターマニフェストのレジストリとバリデーター。SDK 自身の契約という発想を外部マシンにまで拡張し、産業用ゲートウェイ系のプロジェクトを置き換えることはありません。
