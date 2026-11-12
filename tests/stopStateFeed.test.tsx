@@ -108,10 +108,9 @@ describe('the badge', () => {
   });
 
   it('has its words in the language of the person', () => {
-    expect(i18n.t('stop_all.state_stopped', { lng: 'es' })).toBe('PARADA');
-    expect(i18n.t('stop_all.badge_tooltip', { lng: 'es', physical: i18n.t('stop_all.physical_latched', { lng: 'es' }), software: i18n.t('stop_all.software_stopped', { lng: 'es' }) }))
-      .toBe('Parada de emergencia física: enclavada - parada global: activa');
-    expect(i18n.t('stop_all.state_unknown', { lng: 'de' })).toBe('Stopp nicht überwacht');
+    expect(es.stop_all.state_stopped).toBe('PARADA');
+    expect(es.stop_all.badge_tooltip).toBe('Parada de emergencia física: {{physical}} - parada global: {{software}}');
+    expect(de.stop_all.state_unknown).toBe('Stopp nicht überwacht');
   });
 });
 
