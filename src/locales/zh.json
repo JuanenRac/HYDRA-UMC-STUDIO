@@ -770,7 +770,11 @@
       "hardware_target_unreachable": "该目标尚无法通过真实硬件访问",
       "flash_hardware_failed": "硬件烧录失败：{{reason}}",
       "flash_simulated": "模拟刷写完成 - 未发送任何固件,已保存的板卡版本不变",
-      "robot_playing": "该机器人正在执行轨迹——刷写其控制器之前请先停止。"
+      "robot_playing": "该机器人正在执行轨迹——刷写其控制器之前请先停止。",
+      "preflight_no_hardware_id": "此镜像没有硬件 ID（本地文件）：请从发布版中选择，以便板子核对它是否适用。",
+      "preflight_no_version": "此镜像没有版本号：请从发布版中选择，以便板子与已安装版本比较。",
+      "preflight_downgrade_blocked": "此镜像比已安装版本更旧：如确需降级，请勾选降级选项。",
+      "preflight_fram_erase_unsupported": "真实总线不支持擦除 F-RAM：请取消勾选（只有模拟会执行）。"
     },
     "progress": {
       "connecting": "连接中…",

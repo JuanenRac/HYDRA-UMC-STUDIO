@@ -770,7 +770,11 @@
       "hardware_target_unreachable": "This target is not reachable over real hardware yet",
       "flash_hardware_failed": "Hardware flash failed: {{reason}}",
       "flash_simulated": "Simulated flash finished - no firmware was sent and the saved board version is unchanged",
-      "robot_playing": "This robot is running a trajectory - stop it before flashing its controller."
+      "robot_playing": "This robot is running a trajectory - stop it before flashing its controller.",
+      "preflight_no_hardware_id": "This image has no hardware id (a local file): pick it from the release so the board can check it is for it.",
+      "preflight_no_version": "This image has no version: pick it from the release so the board can check it against the installed one.",
+      "preflight_downgrade_blocked": "This image is older than the installed version: tick the downgrade choice if that is what you want.",
+      "preflight_fram_erase_unsupported": "Erasing the F-RAM is not available over the real bus: untick it (the simulation alone honours it)."
     },
     "progress": {
       "connecting": "Connecting...",

@@ -366,6 +366,21 @@ export function isOlderVersion(a: { major: number; minor: number; patch: number 
   return a.patch < b.patch;
 }
 
+/** Why a flash over the real bus must not start, or null when it may. The hardware path sends the version and the hardware id of the image and the
+ * installed version is compared first: an image without a hardware id (a local file) or without a version is refused instead of being sent as 0, an
+ * older image needs the explicit downgrade choice, and the F-RAM erase is refused because the bridge has no command for it (the simulation alone honours it). */
+export type FlashRefusal = 'no_hardware_id' | 'no_version' | 'downgrade_blocked' | 'fram_erase_unsupported';
+export function flashPreflight(input: { hardwareId?: string; versionTag?: string; installedVersion?: string; allowDowngrade: boolean; eraseFram: boolean }): FlashRefusal | null {
+  const id = input.hardwareId ? Number(input.hardwareId) : 0;
+  if (!Number.isFinite(id) || id <= 0) return 'no_hardware_id';
+  const image = parseVersion(input.versionTag);
+  if (!image) return 'no_version';
+  if (input.eraseFram) return 'fram_erase_unsupported';
+  const installed = parseVersion(input.installedVersion);
+  if (installed && isOlderVersion(image, installed) && !input.allowDowngrade) return 'downgrade_blocked';
+  return null;
+}
+
 /** A signature as 128 lowercase hexadecimal digits, or null when the text is not one (a `.sig` file may end in a newline). */
 export function normalizeSignature(text: string | undefined | null): string | null {
   const clean = (text ?? '').trim().toLowerCase();

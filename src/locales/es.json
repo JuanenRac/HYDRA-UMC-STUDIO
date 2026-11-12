@@ -770,7 +770,11 @@
       "hardware_target_unreachable": "Este objetivo todavía no es alcanzable por hardware real",
       "flash_hardware_failed": "Fallo al flashear por hardware: {{reason}}",
       "flash_simulated": "Flasheo simulado terminado - no se envió firmware y la versión guardada de la placa no cambia",
-      "robot_playing": "Este robot está ejecutando una trayectoria: páralo antes de flashear su controladora."
+      "robot_playing": "Este robot está ejecutando una trayectoria: páralo antes de flashear su controladora.",
+      "preflight_no_hardware_id": "Esta imagen no tiene identificador de hardware (un fichero local): elígela desde la release para que la placa pueda comprobar que es suya.",
+      "preflight_no_version": "Esta imagen no tiene versión: elígela desde la release para que la placa la compare con la instalada.",
+      "preflight_downgrade_blocked": "Esta imagen es más antigua que la versión instalada: marca la opción de bajar de versión si es lo que quieres.",
+      "preflight_fram_erase_unsupported": "Borrar la F-RAM no está disponible por el bus real: desmárcalo (solo la simulación lo respeta)."
     },
     "progress": {
       "connecting": "Conectando...",

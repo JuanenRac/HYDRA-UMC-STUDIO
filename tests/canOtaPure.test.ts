@@ -8,7 +8,7 @@
 // =============================================================================
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  chipNameFor, crc32, downloadGithubFirmware, fetchGithubFirmwareReleases, hardwareQueryVersion, hardwareStartFlash,
+  chipNameFor, crc32, flashPreflight, downloadGithubFirmware, fetchGithubFirmwareReleases, hardwareQueryVersion, hardwareStartFlash,
   hasAdvancedExpansion, hopCount, hopDescription, resolveHardwareTarget, slotBaseId, slotLabel, tierBaseId,
   SPI_TARGET_SELF, SPI_TARGET_STACKA,
 } from '../src/lib/canOta';
@@ -240,5 +240,28 @@ describe('downloadGithubFirmware', () => {
     await expect(downloadGithubFirmware(asset())).rejects.toThrow(/Download failed: 404/);
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, arrayBuffer: async () => bytes.buffer.slice(0) })));
     await expect(downloadGithubFirmware(asset({ crc32: '0x00000001' }))).rejects.toThrow(/CRC32 mismatch/);
+  });
+});
+
+describe('flashPreflight', () => {
+  const ok = { hardwareId: '0x48374334', versionTag: '0.3.1', installedVersion: '0.2.9', allowDowngrade: false, eraseFram: false };
+  it('lets an image with a hardware id and a newer version go', () => {
+    expect(flashPreflight(ok)).toBeNull();
+    expect(flashPreflight({ ...ok, installedVersion: undefined })).toBeNull();
+    expect(flashPreflight({ ...ok, installedVersion: '0.3.1' })).toBeNull();
+  });
+  it('refuses an image without a hardware id instead of sending 0', () => {
+    for (const hardwareId of [undefined, '', '0', '0x0', 'zz']) expect(flashPreflight({ ...ok, hardwareId })).toBe('no_hardware_id');
+  });
+  it('refuses an image without a readable version', () => {
+    for (const versionTag of [undefined, '', 'latest', 'v']) expect(flashPreflight({ ...ok, versionTag })).toBe('no_version');
+  });
+  it('blocks an older image unless the downgrade is chosen', () => {
+    expect(flashPreflight({ ...ok, versionTag: '0.2.8' })).toBe('downgrade_blocked');
+    expect(flashPreflight({ ...ok, versionTag: '0.1.9', installedVersion: '0.2.0' })).toBe('downgrade_blocked');
+    expect(flashPreflight({ ...ok, versionTag: '0.2.8', allowDowngrade: true })).toBeNull();
+  });
+  it('refuses the F-RAM erase that the real bridge cannot do', () => {
+    expect(flashPreflight({ ...ok, eraseFram: true })).toBe('fram_erase_unsupported');
   });
 });

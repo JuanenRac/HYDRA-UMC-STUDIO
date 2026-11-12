@@ -770,7 +770,11 @@
       "hardware_target_unreachable": "Questo target non è ancora raggiungibile via hardware reale",
       "flash_hardware_failed": "Flash hardware fallito: {{reason}}",
       "flash_simulated": "Flashing simulato terminato - nessun firmware inviato, la versione salvata della scheda non cambia",
-      "robot_playing": "Questo robot sta eseguendo una traiettoria: fermalo prima di flashare il suo controller."
+      "robot_playing": "Questo robot sta eseguendo una traiettoria: fermalo prima di flashare il suo controller.",
+      "preflight_no_hardware_id": "Questa immagine non ha un identificativo hardware (un file locale): sceglila dalla release così la scheda può verificare che sia per lei.",
+      "preflight_no_version": "Questa immagine non ha una versione: sceglila dalla release così la scheda la confronta con quella installata.",
+      "preflight_downgrade_blocked": "Questa immagine è più vecchia della versione installata: spunta l'opzione di downgrade se è ciò che vuoi.",
+      "preflight_fram_erase_unsupported": "La cancellazione della F-RAM non è disponibile sul bus reale: deseleziona l'opzione (solo la simulazione la rispetta)."
     },
     "progress": {
       "connecting": "Connessione...",

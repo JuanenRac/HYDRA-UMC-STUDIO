@@ -27,7 +27,7 @@ import {
   chipNameFor, crc32, downloadGithubFirmware, fetchGithubFirmwareReleases, GITHUB_FIRMWARE_REPO,
   flashSigningOptions, hardwareQueryVersion, hardwareStartFlash, normalizeSignature, hasAdvancedExpansion, hopDescription, mockFlash, mockQueryVersion,
   resolveHardwareTarget, slotLabel,
-  type CanOtaTarget, type CanOtaTier, type FlashPhase, type GithubFirmwareAsset,
+  flashPreflight, type CanOtaTarget, type CanOtaTier, type FlashPhase, type GithubFirmwareAsset,
 } from '../lib/canOta';
 import { useFleet, useServerStatus, useSession, useSettingsStore } from '../storeContexts';
 
@@ -222,6 +222,11 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
       const resolved = resolveHardwareTarget(target);
       if (!resolved) {
         pushLog(t('flasher.log.hardware_target_unreachable'), 'error');
+        return;
+      }
+      const refusal = flashPreflight({ hardwareId: file.hardwareId, versionTag: file.versionTag, installedVersion: boardState?.firmwareVersion, allowDowngrade, eraseFram });
+      if (refusal) {
+        pushLog(t(`flasher.log.preflight_${refusal}`), 'error');
         return;
       }
       setFlashing(true);

@@ -770,7 +770,11 @@
       "hardware_target_unreachable": "Dieses Ziel ist über echte Hardware noch nicht erreichbar",
       "flash_hardware_failed": "Hardware-Flash fehlgeschlagen: {{reason}}",
       "flash_simulated": "Simuliertes Flashen beendet - es wurde keine Firmware gesendet, die gespeicherte Platinenversion bleibt unverändert",
-      "robot_playing": "Dieser Roboter fährt gerade eine Trajektorie - stoppen Sie ihn, bevor Sie seinen Controller flashen."
+      "robot_playing": "Dieser Roboter fährt gerade eine Trajektorie - stoppen Sie ihn, bevor Sie seinen Controller flashen.",
+      "preflight_no_hardware_id": "Dieses Image hat keine Hardware-ID (eine lokale Datei): Wählen Sie es aus dem Release, damit die Platine prüfen kann, dass es für sie ist.",
+      "preflight_no_version": "Dieses Image hat keine Version: Wählen Sie es aus dem Release, damit die Platine es mit der installierten vergleichen kann.",
+      "preflight_downgrade_blocked": "Dieses Image ist älter als die installierte Version: Haken Sie die Downgrade-Option an, wenn Sie das wollen.",
+      "preflight_fram_erase_unsupported": "Das Löschen des F-RAM ist über den echten Bus nicht möglich: Haken entfernen (nur die Simulation beachtet es)."
     },
     "progress": {
       "connecting": "Verbinde...",

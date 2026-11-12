@@ -770,7 +770,11 @@
       "hardware_target_unreachable": "Este destino ainda não é acessível por hardware real",
       "flash_hardware_failed": "O flash por hardware falhou: {{reason}}",
       "flash_simulated": "Flash simulado terminado - não foi enviado firmware e a versão guardada da placa não mudou",
-      "robot_playing": "Este robô está a executar uma trajetória: pare-o antes de gravar o seu controlador."
+      "robot_playing": "Este robô está a executar uma trajetória: pare-o antes de gravar o seu controlador.",
+      "preflight_no_hardware_id": "Esta imagem não tem identificador de hardware (um ficheiro local): escolha-a a partir da versão publicada para que a placa possa verificar que é para si.",
+      "preflight_no_version": "Esta imagem não tem versão: escolha-a a partir da versão publicada para que a placa a compare com a instalada.",
+      "preflight_downgrade_blocked": "Esta imagem é mais antiga do que a versão instalada: marque a opção de retrocesso se for isso que pretende.",
+      "preflight_fram_erase_unsupported": "Apagar a F-RAM não está disponível no barramento real: desmarque-o (só a simulação o respeita)."
     },
     "progress": {
       "connecting": "A ligar...",
