@@ -3,7 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0-or-later - see LICENSE
 // =============================================================================
-// The live state the twin pushes, read through the SERVER (`/api/twin/ws`): a browser cannot send the header the twin's own socket asks for, so the
+// The live state the twin pushes, read through the SERVER (the twin route of the relay): a browser cannot send the header the twin's own socket asks for, so the
 // SERVER opens that socket with the signed-in person's token and passes on what it pushes. Watching is OFF by default and is a choice of this
 // browser (it is never sent anywhere). This file holds the pure part: the preference, the way a frame is read, the state built from the frames and
 // what a close code means.

@@ -4,7 +4,7 @@
 // GPL-3.0-or-later - see LICENSE
 //
 // The live state of the twin, read through the SERVER. Watching is OFF by default and a choice of this browser: with the box ticked the window opens
-// `/api/twin/ws` (the session token as a subprotocol), shows whether the state is of the real robot or of a simulation, how many joints it holds and
+// the twin route of the relay (the session token as a subprotocol), shows whether the state is of the real robot or of a simulation, how many joints it holds and
 // why there is none when the twin says so. It only reads: nothing this window sends reaches the twin, and the box can be cleared at any time.
 // =============================================================================
 import { useEffect, useRef, useState } from 'react';
