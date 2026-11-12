@@ -6,7 +6,8 @@
 // The values the state of the application starts from before any server has answered: the example robots, cameras and controllers and the idle
 // stage of a Kinematic Brain. Moved out of store.ts unchanged; store.ts re-exports every name, so no import elsewhere changes.
 
-import type { CameraState, HydraController, KinematicBrainStage, RobotState } from '../store';
+import type { CameraState, HydraController, KinematicBrainStage, RobotRole, RobotState, ToolType } from '../store';
+import type { RobotModel } from './robotModels';
 
 /** Default/idle values for a freshly-added controller's own Kinematic Brain stage. */
 export const createDefaultKinematicBrainStage = (): KinematicBrainStage => ({
