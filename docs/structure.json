@@ -4,6 +4,7 @@
   "svg": "en",
   "exempt": [
     "CODE_OF_CONDUCT.md",
+    "dev-proxy.config.json",
     "CONTRIBUTING.md",
     "SECURITY.md",
     "SUPPORT.md",

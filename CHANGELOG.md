@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **The folders the dev server forwards to the server are a list in `dev-proxy.config.json`:** `/api` and `/ws` are always forwarded and the raw data folders (the Works of the robots, `/WORKS` by default) are the `paths` of the file, so a Works path outside WORKS/ is forwarded by adding its prefix instead of editing `vite.config.ts`; `target` (and `HYDRA_STUDIO_PROXY_TARGET`) says where the server is. A prefix that is not safe to forward (the root, a pattern, a blank, a dot segment, a path the dev server itself answers) is left out and named in a warning, and a file that cannot be read falls back to the defaults. Development only; the production build is unchanged. 8 tests.
+
 - **The inverse kinematics gives the joints inside their travel:** a solver may return a joint as the same angle a whole turn away (-333 for 27, 351 for -9); the dispatcher now brings such a joint back inside the travel of its model, so the pose is the same and the value is no longer outside the range (11 models returned values outside it). Tests cover the angles taken from inside the range of every model.
 
 - **Enabling the XY table writes its layout at once:** a robot that gets a table now has the 300 mm layout from the first click, so the size fields and the jog answer without pressing Reset first.

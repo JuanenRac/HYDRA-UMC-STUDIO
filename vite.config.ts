@@ -9,6 +9,15 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { injectCsp, resolveCsp } from './scripts/csp.ts'
 import { libraryDirPlugin } from './scripts/libraryDirPlugin.ts'
+import { resolveDevProxy } from './scripts/devProxy.ts'
+import { existsSync, readFileSync } from 'node:fs'
+
+// The folders the dev server forwards to the server besides /api and /ws: dev-proxy.config.json (see scripts/devProxy.ts).
+const devProxy = resolveDevProxy(
+  existsSync('dev-proxy.config.json') ? readFileSync('dev-proxy.config.json', 'utf8') : undefined,
+  process.env,
+)
+for (const warning of devProxy.warnings) console.warn(`[dev proxy] ${warning}`)
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -40,17 +49,10 @@ export default defineConfig({
     // CORS involved, nothing to configure per-developer. This is the dev-time
     // half of that strategy; the prod-time half is VITE_API_BASE_URL
     // (.env.example), used once there's no dev server left to proxy anything.
-    proxy: {
-      '/api': { target: 'http://localhost:3000', changeOrigin: true },
-      '/ws': { target: 'http://localhost:3000', ws: true, changeOrigin: true },
-      // Raw data files (saved trajectories) served by the backend at the
-      // dataPath root, not under /api - see server.ts's own
-      // app.use(express.static(dataPath)). WORKS/ is the default
-      // worksPaths convention (RobotDetail.tsx); a custom worksPaths value
-      // outside WORKS/ isn't covered by this fixed proxy rule in dev, but
-      // works fine in production via VITE_API_BASE_URL.
-      '/WORKS': { target: 'http://localhost:3000', changeOrigin: true },
-    },
+    // The raw data files (saved trajectories) are served by the backend at the dataPath root, not under /api
+    // (server.ts: express.static(dataPath)); WORKS/ is the default worksPaths convention. A Works path outside
+    // WORKS/ is forwarded by adding its prefix to dev-proxy.config.json; in production VITE_API_BASE_URL does it.
+    proxy: devProxy.rules,
   },
   build: {
     rollupOptions: {
