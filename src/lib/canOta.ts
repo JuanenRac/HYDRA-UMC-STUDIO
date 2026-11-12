@@ -351,6 +351,31 @@ export interface GithubFirmwareAsset {
   hardwareId?: string;
   /** The Ed25519 signature of the image (128 hexadecimal digits) when the manifest states one; the bootloaders of the HYDRA-UMC boards accept an image only with it. */
   signature?: string;
+  /** The board the manifest says the image is built for (for example g474 or h745-cm7), when it names one. */
+  target?: string;
+  /** The oldest bootloader (major.minor.patch) the manifest says may take the image, when it names one. */
+  minBootloader?: string;
+}
+
+/**
+ * The `target` and `min_bootloader` an image's manifest entry states, read from the component or from its binary
+ * (the binary wins). A value that does not have the shape the flashing relay accepts is dropped here, so that a
+ * malformed manifest never turns into a refused request.
+ */
+export function manifestFlashRequirements(
+  comp: { target?: unknown; min_bootloader?: unknown } | undefined,
+  bin: { target?: unknown; min_bootloader?: unknown } | undefined,
+): { target?: string; minBootloader?: string } {
+  const pick = (a: unknown, b: unknown, re: RegExp): string | undefined => {
+    for (const v of [a, b]) if (typeof v === 'string' && re.test(v)) return v;
+    return undefined;
+  };
+  const out: { target?: string; minBootloader?: string } = {};
+  const target = pick(bin?.target, comp?.target, /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/);
+  const minBootloader = pick(bin?.min_bootloader, comp?.min_bootloader, /^\d{1,5}\.\d{1,5}\.\d{1,5}$/);
+  if (target) out.target = target;
+  if (minBootloader) out.minBootloader = minBootloader;
+  return out;
 }
 
 /** `major.minor[.patch]` of a version text (a leading v and anything after the third number are ignored), or null. */
@@ -388,13 +413,20 @@ export function normalizeSignature(text: string | undefined | null): string | nu
 }
 
 /** What an image needs besides its bytes to be accepted: the patch of its version, its signature and, when it is older than the installed one, that installed version. */
-export function flashSigningOptions(imageVersion: string | undefined, installedVersion: string | undefined, signature: string | undefined | null): { versionPatch: number; signature: string | null; downgradeFrom: string | null } {
+export function flashSigningOptions(
+  imageVersion: string | undefined,
+  installedVersion: string | undefined,
+  signature: string | undefined | null,
+  requirements: { target?: string; minBootloader?: string } = {},
+): { versionPatch: number; signature: string | null; downgradeFrom: string | null; target?: string; minBootloader?: string } {
   const image = parseVersion(imageVersion);
   const installed = parseVersion(installedVersion);
   return {
     versionPatch: image?.patch ?? 0,
     signature: normalizeSignature(signature),
     downgradeFrom: image && installed && isOlderVersion(image, installed) ? `${installed.major}.${installed.minor}.${installed.patch}` : null,
+    ...(requirements.target ? { target: requirements.target } : {}),
+    ...(requirements.minBootloader ? { minBootloader: requirements.minBootloader } : {}),
   };
 }
 
@@ -473,6 +505,7 @@ async function fetchReleaseAssetFirmware(
       chip: comp.chip,
       hardwareId: comp.hardware_id,
       signature,
+      ...manifestFlashRequirements(comp, bin),
     });
   }
   return assets;
@@ -481,7 +514,8 @@ async function fetchReleaseAssetFirmware(
 interface FirmwareManifest {
   components: Record<string, {
     display_name: string; chip: string; version_string: string; hardware_id?: string;
-    files: { bin: { filename: string; size_bytes: number; crc32: string; sha256?: string; signature?: string } };
+    target?: string; min_bootloader?: string;
+    files: { bin: { filename: string; size_bytes: number; crc32: string; sha256?: string; signature?: string; target?: string; min_bootloader?: string } };
   }>;
 }
 
@@ -537,6 +571,7 @@ export async function fetchGithubFirmwareReleases(
       chip: comp.chip,
       hardwareId: comp.hardware_id,
       signature: normalizeSignature(comp.files.bin.signature) ?? undefined,
+      ...manifestFlashRequirements(comp, comp.files.bin),
     });
   }
   return assets;
@@ -635,7 +670,7 @@ export async function hardwareStartFlash(
   versionMinor: number,
   authToken: string | null,
   hardwareId = 0,
-  signing: { versionPatch?: number; signature?: string | null; downgradeFrom?: string | null } = {},
+  signing: { versionPatch?: number; signature?: string | null; downgradeFrom?: string | null; target?: string; minBootloader?: string } = {},
 ): Promise<HardwareFlashResult> {
   const resolved = resolveHardwareTarget(target);
   if (!resolved) {
@@ -653,6 +688,9 @@ export async function hardwareStartFlash(
   const signature = normalizeSignature(signing.signature);
   if (signature) qs.set('signature', signature);
   if (signing.downgradeFrom && parseVersion(signing.downgradeFrom)) qs.set('downgrade_from', signing.downgradeFrom);
+  // What the manifest says about the image: the relay passes them on and the bridge refuses a foreign board or an old bootloader.
+  if (signing.target) qs.set('target', signing.target);
+  if (signing.minBootloader) qs.set('min_bootloader', signing.minBootloader);
   try {
     const res = await fetch(apiUrl(`/api/hardware/canota/flash?${qs.toString()}`), {
       method: 'POST',

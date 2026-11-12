@@ -57,7 +57,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   const [tier, setTier] = useState<CanOtaTier>(tiers[0]);
   useEffect(() => { if (!tiers.includes(tier)) setTier(tiers[0]); }, [tiers]); // eslint-disable-line
   const [robotId, setRobotId] = useState<number>(robots[0]?.id ?? 0);
-  const [file, setFile] = useState<{ name: string; size: number; bytes: Uint8Array; crc: number; hardwareId?: string; versionTag?: string; signature?: string } | null>(null);
+  const [file, setFile] = useState<{ name: string; size: number; bytes: Uint8Array; crc: number; hardwareId?: string; versionTag?: string; signature?: string; target?: string; minBootloader?: string } | null>(null);
   const [allowDowngrade, setAllowDowngrade] = useState(false);
   const [eraseFram, setEraseFram] = useState(false);
   const [querying, setQuerying] = useState(false);
@@ -181,7 +181,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
           if (sig.ok) signature = normalizeSignature(await sig.text()) ?? undefined;
         } catch { /* an image without a signature file: the board decides */ }
       }
-      setFile({ name: asset.name, size: bytes.length, bytes, crc: crc32(bytes), hardwareId: asset.hardwareId, versionTag: asset.releaseTag, signature });
+      setFile({ name: asset.name, size: bytes.length, bytes, crc: crc32(bytes), hardwareId: asset.hardwareId, versionTag: asset.releaseTag, signature, target: asset.target, minBootloader: asset.minBootloader });
       pushLog(t('flasher.log.file_loaded', { name: asset.name, size: bytes.length }), 'ok');
     } catch (err) {
       pushLog(t('flasher.log.github_error', { error: String(err) }), 'error');
@@ -238,7 +238,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
       try {
         const result = await hardwareStartFlash(
           target, file.bytes, Number(versionMajorStr) || 0, Number(versionMinorStr) || 0, authToken, hardwareIdNumber,
-          flashSigningOptions(file.versionTag, boardState?.firmwareVersion, file.signature),
+          flashSigningOptions(file.versionTag, boardState?.firmwareVersion, file.signature, { target: file.target, minBootloader: file.minBootloader }),
         );
         if (result.success) {
           setPhase('done');

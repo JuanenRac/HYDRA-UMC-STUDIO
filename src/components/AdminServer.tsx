@@ -35,7 +35,7 @@ import { IngestSwitchesPanel } from './IngestSwitchesPanel';
 import { DetectionHefPanel } from './DetectionHefPanel';
 import { LiveActivityPanel } from './LiveActivityPanel';
 import { DeveloperNodeStatusPanel } from './DeveloperNodeStatusPanel';
-import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
+import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
 
 interface HydraInfo {
@@ -115,6 +115,7 @@ export function AdminServer() {
   const [healthOpen, setHealthOpen] = useState(false);
   const [pendingHealth, setPendingHealth] = useState(false);
   const [ecosystemHealthOn, setEcosystemHealthOn] = useState(false);
+  const [twinRelayOn, setTwinRelayOn] = useState(false);
   const [bridgeGatewayOn, setBridgeGatewayOn] = useState(false);
   const [trustedNetworksOn, setTrustedNetworksOn] = useState(false);
   const [rulOn, setRulOn] = useState(false);
@@ -156,6 +157,7 @@ export function AdminServer() {
       if (state.auth) { setAuthAlgorithm(state.auth.jwtAlgorithm.value); setAuthAcceptHs256(state.auth.acceptHs256.value); }
       if (state.health) setHealthOpen(state.health.open.value);
       if (state.ecosystemHealth) setEcosystemHealthOn(state.ecosystemHealth.enabled.value);
+      if (state.twinRelay) setTwinRelayOn(state.twinRelay.enabled.value);
       if (state.bridgeGateway) setBridgeGatewayOn(state.bridgeGateway.enabled.value);
       if (state.trustedNetworks) setTrustedNetworksOn(state.trustedNetworks.enabled.value);
       if (state.rul) setRulOn(state.rul.enabled.value);
@@ -817,6 +819,27 @@ export function AdminServer() {
               <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_ecosystem_health_help')}</div>
               <button onClick={() => void saveSecurity(ecosystemHealthPatch(ecosystemHealthOn))} disabled={saving || isLocked(security.ecosystemHealth.enabled.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
                 <Save size={14} /> {t('ecosystem.admin_security_ecosystem_health_save')}
+              </button>
+            </div>
+          )}
+
+          {security.twinRelay && (
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_twin_relay_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="twin-relay-enabled"
+                  checked={twinRelayOn}
+                  disabled={saving || isLocked(security.twinRelay.enabled.source)}
+                  onChange={e => setTwinRelayOn(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_twin_relay_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.twinRelay.enabled.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_twin_relay_help')}</div>
+              <button onClick={() => void saveSecurity(twinRelayPatch(twinRelayOn))} disabled={saving || isLocked(security.twinRelay.enabled.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                <Save size={14} /> {t('ecosystem.admin_security_twin_relay_save')}
               </button>
             </div>
           )}

@@ -75,6 +75,10 @@ export interface SecurityState {
   ecosystemHealth: {
     enabled: { value: boolean; source: SecuritySource };
   } | null;
+  /** Absent when the server predates the relay of the live state of the twin. */
+  twinRelay: {
+    enabled: { value: boolean; source: SecuritySource };
+  } | null;
   /** Absent when the server predates the gateway to the machine bridges. */
   bridgeGateway: {
     enabled: { value: boolean; source: SecuritySource };
@@ -195,6 +199,13 @@ function parseHealth(raw: any): SecurityState['health'] {
 }
 
 function parseEcosystemHealth(raw: any): SecurityState['ecosystemHealth'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const enabled = raw.enabled;
+  if (!enabled || typeof enabled.value !== 'boolean' || !isSource(enabled.source)) return null;
+  return { enabled: { value: enabled.value, source: enabled.source } };
+}
+
+function parseTwinRelay(raw: any): SecurityState['twinRelay'] {
   if (!raw || typeof raw !== 'object') return null;
   const enabled = raw.enabled;
   if (!enabled || typeof enabled.value !== 'boolean' || !isSource(enabled.source)) return null;
@@ -486,6 +497,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     connections: parseConnections(raw.connections),
     health: parseHealth(raw.health),
     ecosystemHealth: parseEcosystemHealth(raw.ecosystemHealth),
+    twinRelay: parseTwinRelay(raw.twinRelay),
     bridgeGateway: parseBridgeGateway(raw.bridgeGateway),
     trustedNetworks: parseTrustedNetworks(raw.trustedNetworks),
     rul: parseRul(raw.rul),
@@ -627,6 +639,13 @@ export function healthPatch(open: boolean): HealthPatchBody {
 /** Opening the health route to clients that are not signed in widens what the network can read: ask first. Closing it never asks. */
 export function healthChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
   return !current && next;
+}
+
+export type TwinRelayPatchBody = { twinRelay: { enabled: boolean } };
+
+/** The request body for the option that lets the panels follow the live state of the twin through the server (off by default). */
+export function twinRelayPatch(enabled: boolean): TwinRelayPatchBody {
+  return { twinRelay: { enabled } };
 }
 
 export type EcosystemHealthPatchBody = { ecosystemHealth: { enabled: boolean } };
