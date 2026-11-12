@@ -91,7 +91,7 @@ describe('what the server sent becomes the state of the window', () => {
 });
 
 describe('the frames of the socket', () => {
-  const handlers = () => ({ applyRobotDelta: vi.fn(), applyServerData: vi.fn(), publishClaims: vi.fn(), setCanotaProgress: vi.fn() } satisfies SocketHandlers);
+  const handlers = () => ({ applyRobotDelta: vi.fn(), applyServerData: vi.fn(), publishClaims: vi.fn(), publishStopState: vi.fn(), setCanotaProgress: vi.fn() } satisfies SocketHandlers);
 
   beforeEach(() => { vi.spyOn(console, 'log').mockImplementation(() => undefined); vi.spyOn(console, 'warn').mockImplementation(() => undefined); });
 
@@ -144,7 +144,7 @@ describe('the socket hook', () => {
   }
 
   const options = (over: Partial<Parameters<typeof useSettingsSocket>[0]> = {}) => ({
-    authToken: 'tok', applyRobotDelta: vi.fn(), applyServerData: vi.fn(), publishClaims: vi.fn(), setCanotaProgress: vi.fn(),
+    authToken: 'tok', applyRobotDelta: vi.fn(), applyServerData: vi.fn(), publishClaims: vi.fn(), publishStopState: vi.fn(), setCanotaProgress: vi.fn(),
     setServerReachable: vi.fn(), attemptTokenRefresh: vi.fn(async () => false), logout: vi.fn(), ...over,
   });
 

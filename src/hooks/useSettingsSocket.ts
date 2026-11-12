@@ -19,12 +19,12 @@ export interface SettingsSocketOptions extends SocketHandlers {
 }
 
 export function useSettingsSocket(o: SettingsSocketOptions): void {
-  const { authToken, applyRobotDelta, applyServerData, publishClaims, setCanotaProgress, setServerReachable, attemptTokenRefresh, logout } = o;
+  const { authToken, applyRobotDelta, applyServerData, publishClaims, publishStopState, setCanotaProgress, setServerReachable, attemptTokenRefresh, logout } = o;
   useEffect(() => {
     let cancelled = false;
     let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    const handlers: SocketHandlers = { applyRobotDelta, applyServerData, publishClaims, setCanotaProgress };
+    const handlers: SocketHandlers = { applyRobotDelta, applyServerData, publishClaims, publishStopState, setCanotaProgress };
 
     const openWs = () => {
       if (cancelled || !authToken) return;
@@ -67,5 +67,5 @@ export function useSettingsSocket(o: SettingsSocketOptions): void {
       if (reconnectTimer) clearTimeout(reconnectTimer);
       ws?.close();
     };
-  }, [applyServerData, applyRobotDelta, publishClaims, setCanotaProgress, setServerReachable, authToken, attemptTokenRefresh, logout]);
+  }, [applyServerData, applyRobotDelta, publishClaims, publishStopState, setCanotaProgress, setServerReachable, authToken, attemptTokenRefresh, logout]);
 }
