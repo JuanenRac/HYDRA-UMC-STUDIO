@@ -76,9 +76,9 @@ describe('XYTableConfig', () => {
   });
 
   it('adds a table to a robot without one, and resets the layout while sending the table home', () => {
-    const first = mount(<XYTableConfig />, { hasXYTable: false });
+    const first = mount(<XYTableConfig />, { hasXYTable: false, xyTable: undefined });
     fireEvent.click(first.updateRobot.mock.calls.length === 0 ? screen.getAllByRole('button').find((b) => /add|enable/i.test(b.textContent ?? ''))! : document.body);
-    expect(first.updateRobot).toHaveBeenCalledWith(first.robot.id, { hasXYTable: true });
+    expect(first.updateRobot).toHaveBeenCalledWith(first.robot.id, { hasXYTable: true, xyTable: { pos: { x: 0, y: 0 }, tableSize: { width: 300, length: 300 }, worldPos: { x: 0, y: 0 }, worldRot: 0, renderScale: 1 } });
     cleanup();
     const { updateRobot, sendRobotCommand, robot } = mount(<XYTableConfig />, { hasXYTable: true, xyTable: table });
     fireEvent.click(screen.getByRole('button', { name: /reset/i }));

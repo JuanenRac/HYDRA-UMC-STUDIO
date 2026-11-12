@@ -108,8 +108,7 @@ export function useAuthSession() {
     }
   }, []);
 
-  // Real bug reported live from the footer's own new Sign Out button
-  // (Dashboard.tsx): clearing just authToken did nothing VISIBLE when the
+  // Sign Out from the footer (Dashboard.tsx): clearing just authToken did nothing visible when the
   // session had actually gone through AuthGate's "Continue read-only"
   // path - that flag is separate local state inside AuthGate.tsx, which
   // this function has no reference to and can't reset directly, and

@@ -745,8 +745,7 @@ export async function hardwareStartFlash(
       // but a newer TypeScript/DOM lib version made Uint8Array generic
       // (Uint8Array<ArrayBufferLike>, whose `.buffer` may be a
       // SharedArrayBuffer) in a way BodyInit/BlobPart's own typed-array
-      // overloads no longer structurally match - a real type-only
-      // regression, not a runtime behavior change. `.slice()` returns a
+      // overloads do not structurally match (a type-only issue). `.slice()` returns a
       // fresh copy backed by a genuine (never shared) ArrayBuffer, which
       // both BlobPart and BodyInit accept unambiguously.
       body: new Blob([firmware.slice()]),

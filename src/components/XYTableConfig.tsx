@@ -116,7 +116,8 @@ export function XYTableConfig() {
 
   const handleAddTable = () => {
     if (!selectedRobot) return;
-    updateRobot(selectedRobot.id, { hasXYTable: true });
+    // Enabling the table also writes the layout the table needs, so the size fields and the jog work at once and no Reset is needed first.
+    updateRobot(selectedRobot.id, xyTable ? { hasXYTable: true } : { hasXYTable: true, xyTable: xyTableResetLayout(undefined) } as any);
   };
 
   // Export the current table config to a downloadable JSON file, the same as the identically-labeled "Save Config" button of ATCToolsConfig.tsx,

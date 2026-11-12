@@ -122,12 +122,33 @@ export function resolveTargetJoints(
   genericJoints: { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number },
   seed?: { j1?: number },
 ) {
-  const solved = solveModelJoints(model, x, y, z, a, b, c, genericJoints);
+  const raw = solveModelJoints(model, x, y, z, a, b, c, genericJoints);
+  // A solver may give a joint as the same angle a whole turn away (-333 for 27); the pose is the same, but the value is outside the travel of the joint.
+  const solved = raw === genericJoints || !model ? raw : withinTravel(raw, model);
   // The solvers give the base joint as atan2(y, x), clipped to the limits: right next to the +-180 seam that is a
   // jump of a whole turn for a robot whose base can turn further. Given the base's present angle, take the angle
   // that points the same way inside the limits and is closest to it. See jogSafety.ts.
   if (!model || seed?.j1 === undefined || solved === genericJoints) return solved;
   return withContinuousBase(solved, { x, y }, seed.j1, jointLimitsFor(model, 'j1'));
+}
+
+const TRAVEL_JOINTS = ['j1', 'j2', 'j3', 'j4', 'j5', 'j6'] as const;
+
+/** The angle a whole number of turns away from `value` that lies inside [lo, hi], or `value` itself when it is inside already or no such angle exists. */
+export function wrapIntoTravel(value: number, lo: number, hi: number): number {
+  if (!Number.isFinite(value) || (value >= lo && value <= hi)) return value;
+  const shifted = value - 360 * Math.round((value - (lo + hi) / 2) / 360);
+  return shifted >= lo && shifted <= hi ? shifted : value;
+}
+
+/** The joint set with every joint that left its travel by whole turns brought back inside, so the pose stays the same. */
+function withinTravel<T extends { j1: number; j2: number; j3: number; j4: number; j5: number; j6: number }>(joints: T, model: RobotModel): T {
+  const out = { ...joints };
+  for (const joint of TRAVEL_JOINTS) {
+    const [lo, hi] = jointLimitsFor(model, joint);
+    out[joint] = wrapIntoTravel(joints[joint], lo, hi);
+  }
+  return out;
 }
 
 function solveModelJoints(

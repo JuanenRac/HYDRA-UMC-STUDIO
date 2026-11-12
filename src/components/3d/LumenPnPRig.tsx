@@ -297,9 +297,8 @@ export default function LumenPnPRig({ module, machineType = 'lumenPnP' }: { modu
     // Z=-100.81mm (front-leg-extension's own real bbox min, see
     // parts/manifest.json) to actually touch the floor. Without this
     // offset the rig's local Y=0 sits at the WORK surface, so those legs
-    // rendered poking below this app's own shared ground plane (visible
-    // real bug: "half the machine hidden below the floor" once the legs
-    // existed to make it obvious) - GROUND_OFFSET_M lifts the whole rig
+    // rendered poking below this app's own shared ground plane (half the
+    // machine hidden below the floor) - GROUND_OFFSET_M lifts the whole rig
     // so the real lowest point (the legs' own feet) sits at Y=0 instead.
     <MachineContext.Provider value={machineType}>
     <PartColorsContext.Provider value={partColors}>

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- **The inverse kinematics gives the joints inside their travel:** a solver may return a joint as the same angle a whole turn away (-333 for 27, 351 for -9); the dispatcher now brings such a joint back inside the travel of its model, so the pose is the same and the value is no longer outside the range (11 models returned values outside it). Tests cover the angles taken from inside the range of every model.
+
+- **Enabling the XY table writes its layout at once:** a robot that gets a table now has the 300 mm layout from the first click, so the size fields and the jog answer without pressing Reset first.
+
 - **The kinematic table is the document of the SDK, and the F-RAM routes are checked against the pinned contract:** `src/data/kinematicData.json` is now byte for byte `contracts/kinematics.json` of the SDK (a test compares both when the SDK is next to this repository or in `HYDRA_UMC_SDK_DIR`), the continuous integration is pinned to the SDK tag that carries the F-RAM routes and that document, and the exemption the route test kept for `/api/hardware/fram/*` is gone: the app may only call routes the pinned contract declares.
 
 - **The Flasher offers the self-test and the erase of the F-RAM of the kinematic brain when the server announces them:** the preflight no longer refuses the erase outright; it reads `capabilities.fram_erase` of the version query (true only when the SPI bridge and the server both offer the operation, both off by default) and refuses with a reason when it is missing or the target is not the brain, whose main board holds the chip. A new panel under the Flasher has a self-test button and an erase button whose dialog asks for the word `ERASE` typed (the server and the bridge ask for it again); the option "erase the F-RAM after the flash" runs the erase after a successful hardware flash of the brain, and the confirmation of the flash says so. All the texts are in the eight languages.
