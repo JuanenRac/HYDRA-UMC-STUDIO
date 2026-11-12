@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- **The robot detail screen is cut into parts, with the same behaviour:** `RobotDetail.tsx` goes from 761 to about 330 lines. The five confirmation dialogs (`RobotDetailDialogs.tsx`), the action row under the 3D view (`ActionRow.tsx`), and the controls over the 3D view (`ViewportControls.tsx`: move/rotate/scale/centre and full screen, the camera windows and the buttons that reopen them, the compact STOP/START/PAUSE panel of the embedded Android screen) are their own components that receive what they need as properties. Component tests with a real DOM check each part: one click on the global stop, no play without points, START turning into STOP and ALL for a group, PAUSE through the atomic command for the whole group, HOME and delete-points asking first, REPEAT keeping the rest of the playback state, the icon-only Android layout, the reach dialog offering only the refusal when the trajectory cannot be scaled, the camera windows of the combined robots. The comments that told the story of old bugs are now one line each with the reason for the decision.
+
+- **The shapes of the state live in their own file:** the types of the robots, cameras, controllers, settings and the store context move from `store.ts` to `types/hydra.ts` (a file with only types; `store.ts` re-exports every name, so no import changes and `store.ts` keeps only the values: the stream labels, the default port, the context and its hook). A test checks that the types file exports no value and that every name is still reachable through the store.
+
 All notable changes to this project are documented here.
 
 ## [0.8.1.9] - The Flasher sends the board and the oldest bootloader the manifest names: the entry of an image in the manifest of the release may state `target` (the board the image is for) and `min_bootloader` (the oldest bootloader that may take it); the Flasher reads them

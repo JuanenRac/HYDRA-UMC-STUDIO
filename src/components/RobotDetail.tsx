@@ -8,18 +8,17 @@ import { useRef, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motionSource } from '../motionSource';
 import { type RobotState } from '../store';
-import { RotateCcw, Home, AlertOctagon, ArrowUp, Play, Square, Pause, Crosshair, RefreshCw, Maximize2, Minimize2, Camera as CameraIcon, Trash2, Repeat, Grid3x3, Plus } from 'lucide-react';
 import { cn } from './robotDetail/shared';
 import { ConfigPanel } from './robotDetail/ConfigPanel';
 import { PointsPanel } from './robotDetail/PointsPanel';
-import { CameraPIP } from './robotDetail/CameraPIP';
 import { VirtualKinematics } from './VirtualKinematics';
 import { JointControlsOverlay, JoystickOverlay, XYTableOverlay } from './robotDetail/FloatingJogOverlays';
 import { jointLimitsFor } from '../examples/robotKinematicsDispatch';
-import { ConfirmDialog } from './ConfirmDialog';
+import { ActionRow } from './robotDetail/ActionRow';
+import { RobotDetailDialogs } from './robotDetail/RobotDetailDialogs';
+import { CameraLayer, ViewportActionOverlay, ViewportToolbars, type ControlMode } from './robotDetail/ViewportControls';
 import { usePanelLayout } from '../hooks/usePanelLayout';
 import { useRobotCommands } from '../hooks/useRobotCommands';
-import { TrajectoryPreview } from './TrajectoryPreview';
 import { useReachGate } from '../hooks/useReachGate';
 import { usePlayback } from '../hooks/usePlayback';
 import { useTrajectoryLoading } from '../hooks/useTrajectoryLoading';
@@ -38,62 +37,23 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   const { emergencyStop, reportCommandIssue } = useCommandFeedback();
   const { settings, updateSettings } = useSettingsStore();
   const { updateRobot, setRobotJoints, sendRobotCommand, loadKinematics, robots, cameras } = useFleet();
-  // Real bug this fixes, reported live: a robot's Camera PIP still showed
-  // in the 3D viewport with every camera actually disconnected. `visionEnabled`
-  // is a robot-level flag MEANT to mirror its assigned camera's own
-  // `connected` state (CamerasView.tsx's toggleConnection/retryConnection
-  // both write both together) - but it also has its own `true` seed default
-  // (store.tsx) independent of any camera ever really connecting, and can
-  // drift from the real camera state if a camera gets reassigned to a
-  // different robot (see CamerasView.tsx's own assignedRobotId comment) or
-  // toggled through a path that only touches one of the two fields.
-  // `cam?.connected` (looked up the same assignedRobotId way Dashboard.tsx's
-  // own OverviewPanel already does, not a positional id match) is the
-  // actually-authoritative signal - requiring BOTH true is the safe
-  // direction to fix this in: it can only ever hide a PIP that
-  // visionEnabled alone would have wrongly shown, never show one that's
-  // genuinely supposed to be hidden.
+  // A camera window is shown only when the robot's own `visionEnabled` flag AND its assigned camera's `connected` state are both true: the flag has
+  // its own default and can drift from the camera (reassigned camera, a toggle that writes only one of the two), so the camera decides.
   const isVisionActive = (bot: RobotState) => bot.visionEnabled && (cameras.find(c => c.assignedRobotId === bot.id)?.connected ?? false);
-  // Real request from live device testing: condense the viewportOnly action
-  // row (E-STOP/START/PAUSE/HOME/HOME XY/RESET/RESET 3D/REPEAT/Add-Delete
-  // Point) to icon-only buttons on Android specifically, to free up
-  // vertical space for the 3D view - explicitly NOT for STUDIO's own
-  // desktop/tablet browser UI, where the text labels stay exactly as they
-  // are. ThreeDScreen.kt's WebView appends a real, distinctive token to its
-  // own User-Agent string precisely so this page could tell the two apart
-  // without a URL flag that any other embedder (a future iOS WebView,
-  // say) would also trip - see that file's own comment on why it's
-  // appended rather than replacing the UA outright.
+  // The Android app's WebView adds a distinctive token to its user agent; the action row shows icons only there and keeps its text labels in a browser.
   const isAndroidApp = typeof navigator !== 'undefined' && navigator.userAgent.includes('HYDRA-UMC-ANDROID-CONTROL');
   const robotsRef = useRef(robots);
   useEffect(() => { robotsRef.current = robots; }, [robots]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadWorkFileRef = useRef<HTMLInputElement>(null);
-  // Real, server-synced setting (robot.jogStep) rather than component-local
-  // state - real feedback from live multi-client testing: the jog step
-  // shown/used on one client (Android) never matched another (STUDIO
-  // desktop), since each had always kept its own independent default. Kept
-  // as the same `jogStep`/`setJogStep` names every sub-panel below already
-  // reads/calls, so only this definition needed to change - `?? 1` covers
-  // any already-saved settings.json from before this field existed.
-  //
-  // Routed through the atomic 'jogStep' command (sendRobotCommand), not
-  // updateRobot - updateRobot's optimistic-local + 500ms-debounced-
-  // full-tree save never broadcasts to any OTHER connected client (see
-  // handleReset's own comment below for the full reasoning, same gap),
-  // which would have meant a step chosen on one client still silently
-  // never appeared on another - the exact bug this field exists to fix.
+  // The jog step is a server-synced setting of the robot (`?? 1` covers settings saved before the field existed). It goes through the atomic 'jogStep'
+  // command, not updateRobot, because updateRobot's debounced save never reaches the other connected clients.
   const jogStep = robot.jogStep ?? 1;
   const setJogStep = (v: number) => sendRobotCommand(robot.id, 'jogStep', { value: v }, () => ({ jogStep: v }));
   const [selectedExample, setSelectedExample] = useState<string>(robot.selectedExample || '');
   const [selectedWorkFile, setSelectedWorkFile] = useState<string>(robot.selectedWorkFile || '');
-  // Real "adjust state during render" pattern (React's own recommended
-  // replacement for a reset-only effect): both selectedExample and
-  // selectedWorkFile are just local edit buffers seeded from THIS robot's
-  // own saved fields, and both need resetting together the instant the
-  // panel starts showing a different robot - tracking the robot.id we
-  // last reset for is what tells "switched robot" apart from "this robot's
-  // own field changed underneath us" without an effect.
+  // Both edit buffers are seeded from this robot's saved fields and reset together when the panel shows another robot; the robot id last reset for tells
+  // a switch of robot from a change of the same robot's field (React's "adjust state during render" pattern, no effect needed).
   const [resetForRobotId, setResetForRobotId] = useState(robot.id);
   if (robot.id !== resetForRobotId) {
     setResetForRobotId(robot.id);
@@ -150,7 +110,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
 
       const [rightTab, setRightTab] = useState<'trajectories' | 'config' | 'io'>('trajectories');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [controlMode, setControlMode] = useState<'translate' | 'rotate' | 'scale' | 'none'>('none');
+  const [controlMode, setControlMode] = useState<ControlMode>('none');
   const toggleControl = (mode: 'translate' | 'rotate' | 'scale') => setControlMode(prev => prev === mode ? 'none' : mode);
 
   const hasXYTable = robot.hasXYTable;
@@ -159,14 +119,8 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   const isStartAll = combinedBotsInfo.length > 0;
 
   const [reset3DKey, setReset3DKey] = useState(0);
-  // Cross-client RESET 3D sync - watches robot.reset3DTrigger (bumped by
-  // handleReset3D on ANY client via the atomic 'reset3D' command, this
-  // client's own press included) and remounts VirtualKinematics locally
-  // whenever it changes, so this camera-only reset now really reaches
-  // every other connected client instead of just the one pressed. Skips
-  // the very first render (a ref, not state) so loading a robot that
-  // already has a `reset3DTrigger` from a past session doesn't remount the
-  // freshly-mounted 3D view a second time for nothing.
+  // RESET 3D reaches every client: `reset3DTrigger` is bumped through the atomic 'reset3D' command and each client remounts its 3D view when it changes.
+  // The first render is skipped (a ref, not state) so a robot loaded with an old trigger does not remount the view for nothing.
   const sawReset3DTrigger = useRef(false);
   useEffect(() => {
     if (robot.reset3DTrigger === undefined) return;
@@ -213,62 +167,12 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
 
   return (
     <div className="relative flex flex-col h-full bg-slate-950 text-slate-200">
-      <ConfirmDialog
-        open={pendingAction !== null}
-        message={pendingAction ? t(`robot_detail.confirm_${pendingAction}`) : ''}
-        danger={pendingAction === 'delete_points'}
-        onConfirm={runPendingAction}
-        onCancel={() => setPendingAction(null)}
-      />
-      <ConfirmDialog
-        open={pendingPreview !== null}
-        title={t('trajectory_preview.title')}
-        message={pendingPreview ? (pendingPreview.clean ? t('trajectory_preview.ask_clean') : t('trajectory_preview.ask_issues', { count: pendingPreview.issues.length })) : ''}
-        details={pendingPreview && <TrajectoryPreview report={pendingPreview} />}
-        confirmLabel={pendingPreview && !pendingPreview.clean ? t('trajectory_preview.play_anyway') : t('trajectory_preview.play')}
-        danger={pendingPreview ? !pendingPreview.clean : false}
-        onConfirm={runPendingPreview}
-        onCancel={cancelPreview}
-      />
-      <ConfirmDialog
-        open={pendingReach !== null}
-        title={t('robot_detail.reach_title')}
-        message={pendingReach ? t('robot_detail.reach_rejected', { count: pendingReach.report.count, model: robot.model, worst: Number.isFinite(pendingReach.report.worstMm) ? Math.round(pendingReach.report.worstMm) : '-', threshold: pendingReach.report.toleranceMm }) : ''}
-        details={pendingReach && (
-          <div className="flex flex-col gap-2 text-xs text-slate-400">
-            <ul data-testid="reach-offenders" className="max-h-32 overflow-y-auto font-mono">
-              {pendingReach.report.offenders.slice(0, 12).map((o) => (
-                <li key={o.index}>{t('robot_detail.reach_point', { point: o.index + 1, mm: Number.isFinite(o.mm) ? Math.round(o.mm) : '-' })}</li>
-              ))}
-              {pendingReach.report.offenders.length > 12 && <li>{t('robot_detail.reach_more', { count: pendingReach.report.offenders.length - 12 })}</li>}
-            </ul>
-            {pendingReach.sendScaled && pendingReach.fit && (
-              <p>{pendingReach.fit.fits
-                ? t('robot_detail.reach_scale_fits', { percent: Math.round(pendingReach.fit.scale * 100) })
-                : t('robot_detail.reach_scale_partial', { percent: Math.round(pendingReach.fit.scale * 100), remaining: pendingReach.fit.remaining })}</p>
-            )}
-          </div>
-        )}
-        hideConfirm={!pendingReach?.sendScaled}
-        confirmLabel={t('robot_detail.reach_scale_button')}
-        cancelLabel={t('robot_detail.reach_reject_button')}
-        danger={false}
-        onConfirm={runPendingReach}
-        onCancel={cancelPendingReach}
-      />
-      <ConfirmDialog
-        open={pendingTool !== null}
-        message={t('robot_detail.confirm_tool', { tool: pendingTool ?? '' })}
-        danger={false}
-        onConfirm={runPendingTool}
-        onCancel={() => setPendingTool(null)}
-      />
-      <ConfirmDialog
-        open={pendingModel !== null}
-        message={t('robot_detail.confirm_model', { model: pendingModel ?? '' })}
-        danger={false}
-        onConfirm={runPendingModel}
-        onCancel={() => setPendingModel(null)}
+      <RobotDetailDialogs
+        t={t} robotModel={robot.model} pendingAction={pendingAction} setPendingAction={setPendingAction} runPendingAction={runPendingAction}
+        pendingPreview={pendingPreview} runPendingPreview={runPendingPreview} cancelPreview={cancelPreview}
+        pendingReach={pendingReach} runPendingReach={runPendingReach} cancelPendingReach={cancelPendingReach}
+        pendingTool={pendingTool} setPendingTool={setPendingTool} runPendingTool={runPendingTool}
+        pendingModel={pendingModel} setPendingModel={setPendingModel} runPendingModel={runPendingModel}
       />
       {!viewportOnly && (
         <div className="flex items-center justify-between p-3 border-b border-slate-800 bg-slate-900 shrink-0">
@@ -296,70 +200,17 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
         {/* Left Panel: 3D View */}
         <div className="flex-1 flex flex-col gap-2 min-w-0 min-h-0">
           <div
-            // min-h-0 defensively added on the viewportOnly flex-1 chain
-            // (here and its two ancestors above) while chasing the Android
-            // 3D-viewport bug - turned out NOT to be the actual cause (that
-            // was HYDRA-UMC-ANDROID-CONTROL's own WebView never getting real
-            // LayoutParams from Compose, see ThreeDScreen.kt), confirmed by
-            // this exact chain rendering with real height in a real desktop
-            // browser even without it. Left in anyway: it's the correct,
-            // standard defensive class for a flex-1 child nested this many
-            // levels deep (avoids the well-known min-height:auto-wins-over-
-            // flex-grow gotcha regardless of what content ever ends up
-            // inside), not just dead weight from a wrong guess.
+            // min-h-0 on this flex-1 chain avoids the min-height:auto-wins-over-flex-grow trap of a deeply nested flex child
             className={cn("relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col group shrink-0", viewportOnly ? "flex-1 min-h-0" : "min-h-[200px]")}
             style={!viewportOnly ? { flex: threeDHeight ? `0 0 ${threeDHeight}px` : '1 1 0%' } : {}}
           >
             <VirtualKinematics key={reset3DKey} robot={robot} controlMode={controlMode} onSelectRobot={onNavigateToRobot} lowPower={viewportOnly} />
 
             {!viewportOnly && (
-              <>
-                <div className="absolute bottom-4 left-4 z-50 flex gap-2 pointer-events-auto">
-                  <button
-                    onClick={() => toggleControl('translate')}
-                    className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'translate' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
-                    title={t('robot_detail.move', 'Move')} aria-label={t('robot_detail.move', 'Move')}
-                  >
-                    <ArrowUp size={16} />
-                  </button>
-                  <button
-                    onClick={() => toggleControl('rotate')}
-                    className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'rotate' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
-                    title={t('robot_detail.rotate', 'Rotate')} aria-label={t('robot_detail.rotate', 'Rotate')}
-                  >
-                    <RotateCcw size={16} />
-                  </button>
-                  <button
-                    onClick={() => toggleControl('scale')}
-                    className={cn("p-2 rounded bg-slate-950/80 border backdrop-blur-sm transition-colors", controlMode === 'scale' ? "border-sky-500 text-sky-400" : "border-slate-800 text-slate-400 hover:text-slate-300")}
-                    title={t('robot_detail.resize', 'Resize')} aria-label={t('robot_detail.resize', 'Resize')}
-                  >
-                    <Maximize2 size={16} />
-                  </button>
-                  <div className="w-px h-6 bg-slate-800 self-center mx-1"></div>
-                  <button
-                    onClick={() => {
-                      updateRobot(robot.id, {
-                        cameraView: undefined,
-                        centerCameraTrigger: Date.now()
-                      });
-                    }}
-                    className="p-2 rounded bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-300 backdrop-blur-sm transition-colors"
-                    title={t('robot_detail.center_view', 'Center View')} aria-label={t('robot_detail.center_view', 'Center View')}
-                  >
-                    <Crosshair size={16} />
-                  </button>
-                </div>
-
-                <div className="absolute top-4 right-4 z-50 flex gap-2 pointer-events-auto">
-                  <button
-                    onClick={() => setIsFullscreen(!isFullscreen)}
-                    className="p-2 rounded bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-300 backdrop-blur-sm transition-colors"
-                  >
-                    {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-                  </button>
-                </div>
-              </>
+              <ViewportToolbars
+                t={t} robotId={robot.id} controlMode={controlMode} toggleControl={toggleControl}
+                isFullscreen={isFullscreen} setIsFullscreen={setIsFullscreen} updateRobot={updateRobot}
+              />
             )}
 
             {!viewportOnly && (
@@ -396,65 +247,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
               />
             )}
 
-            {/* Closed Camera Icons (Bottom Right) - only for a bot whose
-                camera is actually enabled, matching the PIP's own gating
-                just below: reopening a PIP for a disabled camera would just
-                do nothing, so don't offer a dead "Show Camera" button for
-                it. */}
-            <div className="absolute bottom-4 right-4 z-50 flex gap-2 pointer-events-auto">
-              {[robot, ...combinedBotsInfo].filter(isVisionActive).map(bot => {
-                const pipConfig = settings.uiLayout?.cameraPips?.[bot.id];
-                if (pipConfig?.isOpen === false) {
-                  return (
-                    <button 
-                      key={bot.id}
-                      onClick={() => {
-                        updateSettings({
-                          uiLayout: {
-                            ...settings.uiLayout,
-                            cameraPips: {
-                              ...settings.uiLayout?.cameraPips,
-                              [bot.id]: { ...pipConfig, isOpen: true }
-                            }
-                          }
-                        });
-                      }}
-                      className="p-2 rounded bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-emerald-500/50 backdrop-blur-sm transition-colors flex items-center gap-1"
-                      title={t('robot_detail.show_camera', { name: bot.name })}
-                    >
-                      <CameraIcon size={16} />
-                      <span className="text-[10px] font-bold max-w-[60px] truncate">{bot.name}</span>
-                    </button>
-                  );
-                }
-                return null;
-              })}
-            </div>
-
-            {/* Camera PIP Windows - gated on visionEnabled too, not just
-                online, so a robot with its camera explicitly turned off
-                (OverviewPanel/CamerasView's own vision toggle, which writes
-                this same field) doesn't get a PIP window anyway just for
-                being online. */}
-            {robot.online && isVisionActive(robot) && (
-              <CameraPIP
-                bot={robot}
-                initialX={0}
-                initialY={0}
-                label={robot.name}
-                t={t}
-              />
-            )}
-            {combinedBotsInfo.map((bot, index) => (bot.online && isVisionActive(bot)) ? (
-              <CameraPIP
-                key={bot.id}
-                bot={bot}
-                initialX={-200 * (index + 1)}
-                initialY={0}
-                label={bot.name}
-                t={t}
-              />
-            ) : null)}
+            <CameraLayer t={t} robot={robot} combinedBotsInfo={combinedBotsInfo} isVisionActive={isVisionActive} settings={settings} updateSettings={updateSettings} />
             
             {/* Horizontal Resize Handle for 3D View */}
             <div 
@@ -482,90 +275,11 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
                 style already used for the move/rotate/resize/center
                 buttons above - real per the operator's own request. */}
             {viewportOnly && (
-              <div className="absolute z-50 pointer-events-auto bottom-2 left-1/2 -translate-x-1/2 flex flex-wrap items-center justify-center landscape:gap-1 portrait:gap-1.5 bg-slate-950/70 backdrop-blur-md border border-slate-800 rounded-xl landscape:p-1 portrait:p-1.5 max-w-[calc(100%-1rem)]">
-                <button
-                  onClick={() => handleEmergencyStop()}
-                  className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 hover:bg-red-950 border border-slate-800 hover:border-red-800 text-red-400 rounded-lg transition-colors animate-pulse"
-                  title={t('robot_detail.estop', 'STOP')}
-                >
-                  <AlertOctagon size={18} />
-                  <span className="ml-1 text-xs font-black uppercase tracking-widest">{t('robot_detail.estop', 'STOP')}</span>
-                </button>
-
-                {!robot.playbackState?.isPlaying ? (
-                  <button
-                    onClick={() => handlePlay()}
-                    disabled={robot.recordedPoints.length === 0}
-                    className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 hover:bg-emerald-950 disabled:opacity-40 border border-slate-800 hover:border-emerald-800 text-emerald-400 rounded-lg transition-colors"
-                    title={isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START')} aria-label={isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START')}
-                  >
-                    <Play size={18} />
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleStop}
-                    className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 hover:bg-red-950 border border-slate-800 hover:border-red-800 text-red-400 rounded-lg transition-colors"
-                    title={isStartAll ? t('robot_detail.stop_all', 'STOP ALL') : t('robot_detail.stop', 'STOP')} aria-label={isStartAll ? t('robot_detail.stop_all', 'STOP ALL') : t('robot_detail.stop', 'STOP')}
-                  >
-                    <Square size={18} />
-                  </button>
-                )}
-
-                <button
-                  onClick={() => {
-                    const isPaused = robot.playbackState?.isPaused || false;
-                    sendRobotCommand(
-                      robot.id,
-                      'pause',
-                      { paused: !isPaused },
-                      (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: true, playing: true, isPaused: !isPaused, paused: !isPaused, requestPause: !isPaused, requestStop: false, isFinished: false, finished: false } }),
-                      isStartAll ? [robot.id, ...(robot.combinedWith || [])] : [robot.id]
-                    );
-                  }}
-                  disabled={!robot.playbackState?.isPlaying}
-                  className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 disabled:opacity-40 border border-slate-800 hover:border-amber-800 text-amber-400 rounded-lg transition-colors"
-                  title={robot.playbackState?.isPaused ? t('robot_detail.continue', 'CONTINUE') : (isStartAll ? t('robot_detail.pause_all', 'PAUSE ALL') : t('robot_detail.pause', 'PAUSE'))}
-                >
-                  {robot.playbackState?.isPaused ? <Play size={18} /> : <Pause size={18} />}
-                </button>
-
-                {/* Landscape-only: every other control, folded into this
-                    same translucent panel instead of hidden entirely -
-                    real per the operator's own request (more width to
-                    spare once the phone is held sideways). */}
-                <div className="hidden landscape:flex items-center gap-1">
-                  <div className="w-px h-5 bg-slate-700 mx-0.5" />
-
-                  <button onClick={handleHome} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title={t('robot_detail.home')} aria-label={t('robot_detail.home')}>
-                    <Home size={16} />
-                  </button>
-
-                  {robot.hasXYTable && (
-                    <button onClick={handleResetXY} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title={t('robot_detail.home_xy')} aria-label={t('robot_detail.home_xy')}>
-                      <Grid3x3 size={16} />
-                    </button>
-                  )}
-
-                  <button onClick={handleReset} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title={t('robot_detail.reset_pose')} aria-label={t('robot_detail.reset_pose')}>
-                    <RefreshCw size={16} />
-                  </button>
-
-                  <button onClick={handleReset3D} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 rounded-lg transition-colors" title={t('robot_detail.reset_3d')} aria-label={t('robot_detail.reset_3d')}>
-                    <RotateCcw size={16} />
-                  </button>
-
-                  <button onClick={() => updateRobot(robot.id, { playbackState: { ...(robot.playbackState || { isPlaying: false, activeStep: 0, speed: 100 }), isLooping: !robot.playbackState?.isLooping } })} className={cn("flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] border rounded-lg transition-colors", robot.playbackState?.isLooping ? "bg-fuchsia-950 border-fuchsia-800 text-fuchsia-400" : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200")} title={t('robot_detail.repeat', 'Repeat')} aria-label={t('robot_detail.repeat', 'Repeat')}>
-                    <Repeat size={16} className={cn(robot.playbackState?.isLooping && "animate-spin-slow")} />
-                  </button>
-
-                  <button onClick={handleAddPoint} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-sky-400 rounded-lg transition-colors" title={t('robot_detail.add_point', '+ Add Point')} aria-label={t('robot_detail.add_point', '+ Add Point')}>
-                    <Plus size={16} />
-                  </button>
-                  <button onClick={() => setPendingAction('delete_points')} className="flex items-center justify-center p-1.5 min-h-[36px] min-w-[36px] bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-rose-400 rounded-lg transition-colors" title={t('robot_detail.delete_points', 'Delete points')} aria-label={t('robot_detail.delete_points', 'Delete points')}>
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
+              <ViewportActionOverlay
+                t={t} robot={robot} isStartAll={isStartAll} handleEmergencyStop={handleEmergencyStop} handlePlay={handlePlay} handleStop={handleStop}
+                handleHome={handleHome} handleResetXY={handleResetXY} handleReset={handleReset} handleReset3D={handleReset3D} handleAddPoint={handleAddPoint}
+                setPendingAction={setPendingAction} sendRobotCommand={sendRobotCommand} updateRobot={updateRobot}
+              />
             )}
           </div>
 
@@ -573,160 +287,12 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
               viewport it would split the available height roughly in half and the 3D view would not fill the screen. The overlay panel inside the 3D viewport
               div above covers the same controls without taking a share of the layout. */}
           {!viewportOnly && (
-          <div className="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0 pr-2 pb-2">
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2 pointer-events-auto shrink-0">
-            {/* E-STOP Button (First, Glowing, Blinking) */}
-            <button
-              onClick={() => handleEmergencyStop()}
-              className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-red-600 hover:bg-red-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_20px_rgba(220,38,38,0.8)] border border-red-500 animate-pulse", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
-              title={t('robot_detail.estop', 'STOP')}
-            >
-              <AlertOctagon size={16} /> {!isAndroidApp && t('robot_detail.estop', 'STOP')}
-            </button>
-
-            {/* START/STOP Button */}
-            {!robot.playbackState?.isPlaying ? (
-              <button
-                onClick={() => handlePlay()}
-                disabled={robot.recordedPoints.length === 0}
-                className={cn("flex-1 flex items-center justify-center gap-2 min-h-[48px] bg-green-500 hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(34,197,94,0.6)] border border-green-400", isAndroidApp ? "px-3 py-2 min-h-[40px] flex-initial" : "px-4 py-3")}
-                title={isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START')}
-              >
-                <Play size={16} /> {!isAndroidApp && (isStartAll ? t('robot_detail.start_all', 'START ALL') : t('robot_detail.start', 'START'))}
-              </button>
-            ) : (
-              <button
-                onClick={handleStop}
-                className={cn("flex-1 flex items-center justify-center gap-2 min-h-[48px] bg-red-600 hover:bg-red-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_15px_rgba(220,38,38,0.6)] border border-red-500", isAndroidApp ? "px-3 py-2 min-h-[40px] flex-initial" : "px-4 py-3")}
-                title={isStartAll ? t('robot_detail.stop_all', 'STOP ALL') : t('robot_detail.stop', 'STOP')}
-              >
-                <Square size={16} /> {!isAndroidApp && (isStartAll ? t('robot_detail.stop_all', 'STOP ALL') : t('robot_detail.stop', 'STOP'))}
-              </button>
-            )}
-
-            {/* PAUSE / CONTINUE Button */}
-            <button
-              onClick={() => {
-                const isPaused = robot.playbackState?.isPaused || false;
-                // Atomic 'pause' command - server.ts's own case already
-                // fans this out to combinedWith via affectedIds on its
-                // own, so one call covers the whole group server-side;
-                // localMutate's own affectedIds list below only controls
-                // which robots get the INSTANT optimistic update (matches
-                // this button's original isStartAll-gated scope - a
-                // sibling not included here still ends up paused once its
-                // own delta arrives, same as PLAY's own comment above).
-                sendRobotCommand(
-                  robot.id,
-                  'pause',
-                  { paused: !isPaused },
-                  (r) => ({ playbackState: { ...(r.playbackState || {}), isPlaying: true, playing: true, isPaused: !isPaused, paused: !isPaused, requestPause: !isPaused, requestStop: false, isFinished: false, finished: false } }),
-                  isStartAll ? [robot.id, ...(robot.combinedWith || [])] : [robot.id]
-                );
-              }}
-              disabled={!robot.playbackState?.isPlaying}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-2 min-h-[48px] text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border disabled:opacity-50 disabled:cursor-not-allowed",
-                isAndroidApp ? "px-3 py-2 min-h-[40px] flex-initial" : "px-4 py-3",
-                robot.playbackState?.isPaused ? 'bg-blue-500 hover:bg-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.6)] border-blue-400' : 'bg-amber-500 hover:bg-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.6)] border-amber-400'
-              )}
-              title={robot.playbackState?.isPaused ? t('robot_detail.continue', 'CONTINUE') : (isStartAll ? t('robot_detail.pause_all', 'PAUSE ALL') : t('robot_detail.pause', 'PAUSE'))}
-            >
-              {robot.playbackState?.isPaused ? (
-                <><Play size={16} /> {!isAndroidApp && t('robot_detail.continue', 'CONTINUE')}</>
-              ) : (
-                <><Pause size={16} /> {!isAndroidApp && (isStartAll ? t('robot_detail.pause_all', 'PAUSE ALL') : t('robot_detail.pause', 'PAUSE'))}</>
-              )}
-            </button>
-
-            {/* HOME Button */}
-            <button
-              onClick={handleHome}
-              className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
-              title={t('robot_detail.home')}
-            >
-              <Home size={16} /> {!isAndroidApp && t('robot_detail.home')}
-            </button>
-
-            {/* HOME XY Button - a distinct Grid3x3 icon from plain HOME
-                (both used the same Home icon before - reported live as
-                confusing on Android's now icon-only layout, but the
-                mismatch existed for STUDIO's own text+icon buttons too;
-                fixed for both). */}
-            {robot.hasXYTable && (
-              <button
-                onClick={handleResetXY}
-                className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-yellow-500 hover:bg-yellow-400 text-yellow-950 text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
-                title={t('robot_detail.home_xy')}
-              >
-                <Grid3x3 size={16} /> {!isAndroidApp && t('robot_detail.home_xy')}
-              </button>
-            )}
-
-            {/* RESET Button */}
-            <button
-              onClick={handleReset}
-              className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-amber-500 shadow-[0_0_15px_rgba(217,119,6,0.3)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
-              title={t('robot_detail.reset_pose')}
-            >
-              <RefreshCw size={16} /> {!isAndroidApp && t('robot_detail.reset_pose')}
-            </button>
-
-            {/* RESET 3D Button - a rotate icon, because a camera/record glyph would read as unrelated to what this button
-                does: remount the 3D viewport. */}
-            <button
-              onClick={handleReset3D}
-              className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-teal-600 hover:bg-teal-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border border-teal-500 shadow-[0_0_15px_rgba(13,148,136,0.3)]", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
-              title={t('robot_detail.reset_3d')}
-            >
-              <RotateCcw size={16} /> {!isAndroidApp && t('robot_detail.reset_3d')}
-            </button>
-
-            {/* LOAD Button only (EXPORT removed) */}
-            <input 
-              type="file" 
-              accept=".json" 
-              className="hidden" 
-              ref={fileInputRef} 
-              onChange={(e) => loadKinematics(robot.id, e)}
+            <ActionRow
+              t={t} robot={robot} isStartAll={isStartAll} isAndroidApp={isAndroidApp} fileInputRef={fileInputRef} loadKinematics={loadKinematics}
+              handleEmergencyStop={handleEmergencyStop} handlePlay={handlePlay} handleStop={handleStop} handleHome={handleHome} handleResetXY={handleResetXY}
+              handleReset={handleReset} handleReset3D={handleReset3D} handleAddPoint={handleAddPoint} setPendingAction={setPendingAction}
+              sendRobotCommand={sendRobotCommand} updateRobot={updateRobot}
             />
-            <button
-              onClick={() => updateRobot(robot.id, { playbackState: { ...(robot.playbackState || { isPlaying: false, activeStep: 0, speed: 100 }), isLooping: !robot.playbackState?.isLooping } })}
-              className={cn(
-                "flex items-center justify-center gap-2 min-h-[48px] text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all border",
-                isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3",
-                robot.playbackState?.isLooping
-                  ? "bg-fuchsia-700 border-fuchsia-400 shadow-[inset_0_4px_8px_rgba(0,0,0,0.8),0_0_10px_rgba(217,70,239,0.5)] translate-y-[2px]"
-                  : "bg-fuchsia-500 hover:bg-fuchsia-400 border-fuchsia-400 shadow-[0_0_15px_rgba(217,70,239,0.5)] hover:-translate-y-[1px]"
-              )}
-              title={t('robot_detail.repeat', 'Repeat')}
-            >
-              <Repeat size={16} className={cn(robot.playbackState?.isLooping && "animate-spin-slow")} /> {!isAndroidApp && t('robot_detail.repeat', 'Repeat')}
-            </button>
-
-            {/* Add/Delete Point mini-frame */}
-            {(
-              <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 rounded-lg px-2 py-1">
-                <button
-                  onClick={handleAddPoint}
-                  className={cn("bg-sky-500/20 hover:bg-sky-500/30 text-sky-400 border border-sky-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors flex items-center justify-center", isAndroidApp ? "p-2 min-h-[40px] min-w-[40px]" : "px-4 py-2 min-h-[44px]")}
-                  title={t('robot_detail.add_point', '+ Add Point')}
-                >
-                  {isAndroidApp ? <Plus size={16} /> : t('robot_detail.add_point', '+ Add Point')}
-                </button>
-                <button
-                  onClick={() => setPendingAction('delete_points')}
-                  className={cn("flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-sm font-bold uppercase tracking-wider transition-colors", isAndroidApp ? "p-2 min-h-[40px] min-w-[40px]" : "p-2 min-h-[44px] min-w-[44px]")}
-                  title={t('robot_detail.delete_points', 'Delete points')} aria-label={t('robot_detail.delete_points', 'Delete points')}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            )}
-          </div>
-
-          </div>
           )}
         </div>
 

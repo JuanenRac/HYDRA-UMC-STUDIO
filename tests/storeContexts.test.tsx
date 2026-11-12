@@ -14,7 +14,7 @@ afterEach(cleanup);
 
 describe('the store is cut in domains', () => {
   it('puts every field of the store in exactly one domain', () => {
-    const source = readFileSync('src/store.ts', 'utf-8');
+    const source = readFileSync('src/types/hydra.ts', 'utf-8');
     const start = source.indexOf('export interface HydraStoreContextType');
     const body = source.slice(start, source.indexOf('\n}\n', start));
     const fields = [...body.matchAll(/^ {2}(\w+)\??:/gm)].map((m) => m[1]);
