@@ -13,7 +13,16 @@
     "robot_failed": "PAS arrêté",
     "outputs": "vannes coupées {{valves}}, pompes coupées {{pumps}}",
     "reserved_by": "réservé par {{owner}}",
-    "retry": "Réessayer STOP"
+    "retry": "Réessayer STOP",
+    "state_stopped": "ARRÊTÉ",
+    "state_ready": "Prêt",
+    "state_unknown": "Arrêt non surveillé",
+    "badge_tooltip": "Arrêt d'urgence physique : {{physical}} - arrêt global : {{software}}",
+    "physical_latched": "verrouillé",
+    "physical_ready": "relâché",
+    "physical_unknown": "non surveillé",
+    "software_stopped": "actif",
+    "software_ready": "inactif"
   },
   "command_issue": {
     "title": "Commande non livrée",

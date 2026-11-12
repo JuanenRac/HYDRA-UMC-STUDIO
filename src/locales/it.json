@@ -13,7 +13,16 @@
     "robot_failed": "NON fermato",
     "outputs": "valvole spente {{valves}}, pompe spente {{pumps}}",
     "reserved_by": "riservato da {{owner}}",
-    "retry": "Riprova STOP"
+    "retry": "Riprova STOP",
+    "state_stopped": "FERMO",
+    "state_ready": "Pronto",
+    "state_unknown": "Arresto non monitorato",
+    "badge_tooltip": "Arresto di emergenza fisico: {{physical}} - arresto globale: {{software}}",
+    "physical_latched": "bloccato",
+    "physical_ready": "rilasciato",
+    "physical_unknown": "non monitorato",
+    "software_stopped": "attivo",
+    "software_ready": "inattivo"
   },
   "command_issue": {
     "title": "Comando non consegnato",

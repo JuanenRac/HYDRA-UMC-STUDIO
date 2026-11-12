@@ -13,7 +13,16 @@
     "robot_failed": "NOT stopped",
     "outputs": "valves off {{valves}}, pumps off {{pumps}}",
     "reserved_by": "reserved by {{owner}}",
-    "retry": "Try STOP again"
+    "retry": "Try STOP again",
+    "state_stopped": "STOPPED",
+    "state_ready": "Ready",
+    "state_unknown": "Stop not monitored",
+    "badge_tooltip": "Physical emergency stop: {{physical}} - global stop: {{software}}",
+    "physical_latched": "latched",
+    "physical_ready": "released",
+    "physical_unknown": "not monitored",
+    "software_stopped": "on",
+    "software_ready": "off"
   },
   "command_issue": {
     "title": "Command not delivered",

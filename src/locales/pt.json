@@ -13,7 +13,16 @@
     "robot_failed": "NÃO parado",
     "outputs": "válvulas desligadas {{valves}}, bombas desligadas {{pumps}}",
     "reserved_by": "reservado por {{owner}}",
-    "retry": "Tentar STOP de novo"
+    "retry": "Tentar STOP de novo",
+    "state_stopped": "PARADO",
+    "state_ready": "Pronto",
+    "state_unknown": "Paragem não monitorizada",
+    "badge_tooltip": "Paragem de emergência física: {{physical}} - paragem global: {{software}}",
+    "physical_latched": "bloqueada",
+    "physical_ready": "libertada",
+    "physical_unknown": "não monitorizada",
+    "software_stopped": "ativa",
+    "software_ready": "inativa"
   },
   "command_issue": {
     "title": "Comando não entregue",

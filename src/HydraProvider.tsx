@@ -5,6 +5,7 @@
 // =============================================================================
 
 import { publishClaimsEvent } from './lib/claimsFeed';
+import { publishStopStateEvent } from './lib/stopStateFeed';
 import React, { useMemo, useRef } from 'react';
 import { saveFailureText } from './lib/serverErrors';
 import { type CommandResult } from './lib/commandResult';
@@ -66,7 +67,7 @@ export const HydraProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Live sync: any client that writes the settings or a robot is broadcast back to every connected client
   // (hooks/useSettingsSocket.ts). Without a token the socket is not opened at all.
   useSettingsSocket({
-    authToken, applyRobotDelta, applyServerData, publishClaims: publishClaimsEvent, setCanotaProgress, setServerReachable,
+    authToken, applyRobotDelta, applyServerData, publishClaims: publishClaimsEvent, publishStopState: publishStopStateEvent, setCanotaProgress, setServerReachable,
     attemptTokenRefresh, logout,
   });
 

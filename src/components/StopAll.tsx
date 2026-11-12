@@ -14,13 +14,14 @@
 // later stop is answered.
 // =============================================================================
 
-import { useEffect } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertOctagon, CheckCircle2, X } from 'lucide-react';
 import { STOP_ALL_SHORTCUT_LABEL, isStopAllShortcut, reportNeedsAttention } from '../lib/stopAll';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useCommandFeedback } from '../storeContexts';
+import { stopStateSnapshot, subscribeStopState } from '../lib/stopStateFeed';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -48,6 +49,37 @@ export function StopAllButton({ variant = 'header' }: { variant?: 'header' | 'fo
       <AlertOctagon size={variant === 'footer' ? 14 : 20} />
       {t('stop_all.label')}
     </button>
+  );
+}
+
+/**
+ * The one stop state beside the STOP button: red while the physical emergency stop or the global stop is on, green once the physical stop is known to be released,
+ * grey while the server does not watch it (the default). Nothing is drawn before the server has said anything. Read only: it never sends a stop.
+ */
+export function StopStateBadge() {
+  const { t } = useTranslation();
+  const snapshot = useSyncExternalStore(subscribeStopState, stopStateSnapshot);
+  if (!snapshot) return null;
+  const tooltip = t('stop_all.badge_tooltip', {
+    physical: t(`stop_all.physical_${snapshot.physical === 'latched' ? 'latched' : snapshot.physical === 'ready' ? 'ready' : 'unknown'}`),
+    software: t(`stop_all.software_${snapshot.software === 'stopped' ? 'stopped' : 'ready'}`),
+  });
+  return (
+    <span
+      data-testid="stop-state-badge"
+      data-state={snapshot.state}
+      role="status"
+      title={tooltip}
+      aria-label={tooltip}
+      className={cn(
+        'rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider shrink-0',
+        snapshot.state === 'STOPPED' && 'border-rose-400 bg-rose-950 text-rose-200',
+        snapshot.state === 'READY' && 'border-emerald-500 bg-emerald-950 text-emerald-200',
+        snapshot.state === 'UNKNOWN' && 'border-slate-600 bg-slate-900 text-slate-400',
+      )}
+    >
+      {t(`stop_all.state_${snapshot.state === 'STOPPED' ? 'stopped' : snapshot.state === 'READY' ? 'ready' : 'unknown'}`)}
+    </span>
   );
 }
 

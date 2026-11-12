@@ -13,7 +13,16 @@
     "robot_failed": "停止できず",
     "outputs": "バルブ{{valves}}個オフ、ポンプ{{pumps}}個オフ",
     "reserved_by": "{{owner}}が予約中",
-    "retry": "STOP をもう一度試す"
+    "retry": "STOP をもう一度試す",
+    "state_stopped": "停止中",
+    "state_ready": "準備完了",
+    "state_unknown": "停止状態は未監視",
+    "badge_tooltip": "物理非常停止: {{physical}} - グローバル停止: {{software}}",
+    "physical_latched": "ラッチ中",
+    "physical_ready": "解除済み",
+    "physical_unknown": "未監視",
+    "software_stopped": "オン",
+    "software_ready": "オフ"
   },
   "command_issue": {
     "title": "コマンドが届いていません",

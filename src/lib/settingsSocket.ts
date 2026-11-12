@@ -11,6 +11,7 @@ export interface SocketHandlers {
   applyServerData: (payload: any) => void;
   publishClaims: (msg: any) => void;
   setCanotaProgress: (payload: Record<string, unknown>) => void;
+  publishStopState: (msg: any) => void;
 }
 
 /** Delay before the socket is opened again after it dropped (the same 3 s every other client uses). */
@@ -31,6 +32,8 @@ export function routeSocketFrame(raw: unknown, h: SocketHandlers): void {
       h.applyServerData(msg.payload);
     } else if (msg?.type === 'claims') {
       h.publishClaims(msg);
+    } else if (msg?.type === 'stop-state') {
+      h.publishStopState(msg);
     } else if (msg?.type === 'canota_progress' && msg.payload) {
       h.setCanotaProgress(msg.payload);
     } else if (msg?.error) {

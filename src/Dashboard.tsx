@@ -12,7 +12,7 @@ import { ROBOT_MANUFACTURERS } from './store';
 import { apiUrl } from './lib/apiBase';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { CommandIssueBanner } from './components/CommandIssueBanner';
-import { StopAllButton, StopAllReportBanner, StopAllShortcut } from './components/StopAll';
+import { StopAllButton, StopAllReportBanner, StopAllShortcut, StopStateBadge } from './components/StopAll';
 import { authFetch } from './lib/session';
 import { setSelectedRobotId, useSelectedRobotId } from './lib/selectedRobot';
 import { useGamepadSession } from './lib/gamepadSession';
@@ -220,6 +220,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-4">
             {/* The global STOP: one click, every robot, always in sight (Ctrl+Shift+Space does the same). */}
+            <StopStateBadge />
             <StopAllButton variant="header" />
             <IconButton onClick={() => setIsSettingsOpen(true)} icon={<Settings size={18}/>} label={t('dashboard.configure')} />
             <IconButton onClick={() => openHelp()} icon={<HelpCircle size={18}/>} label={t('dashboard.help')} />

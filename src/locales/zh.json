@@ -13,7 +13,16 @@
     "robot_failed": "未停止",
     "outputs": "阀门已关 {{valves}}，泵已关 {{pumps}}",
     "reserved_by": "已被 {{owner}} 预约",
-    "retry": "再次尝试 STOP"
+    "retry": "再次尝试 STOP",
+    "state_stopped": "已停止",
+    "state_ready": "就绪",
+    "state_unknown": "停止状态未监控",
+    "badge_tooltip": "物理急停：{{physical}} - 全局停止：{{software}}",
+    "physical_latched": "已锁定",
+    "physical_ready": "已释放",
+    "physical_unknown": "未监控",
+    "software_stopped": "开启",
+    "software_ready": "关闭"
   },
   "command_issue": {
     "title": "命令未送达",

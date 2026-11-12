@@ -13,7 +13,16 @@
     "robot_failed": "NICHT angehalten",
     "outputs": "Ventile aus {{valves}}, Pumpen aus {{pumps}}",
     "reserved_by": "reserviert von {{owner}}",
-    "retry": "STOP erneut versuchen"
+    "retry": "STOP erneut versuchen",
+    "state_stopped": "GESTOPPT",
+    "state_ready": "Bereit",
+    "state_unknown": "Stopp nicht überwacht",
+    "badge_tooltip": "Physischer Not-Halt: {{physical}} - globaler Halt: {{software}}",
+    "physical_latched": "verriegelt",
+    "physical_ready": "freigegeben",
+    "physical_unknown": "nicht überwacht",
+    "software_stopped": "aktiv",
+    "software_ready": "inaktiv"
   },
   "command_issue": {
     "title": "Befehl nicht zugestellt",

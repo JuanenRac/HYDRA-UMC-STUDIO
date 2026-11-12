@@ -13,7 +13,16 @@
     "robot_failed": "NO parado",
     "outputs": "válvulas apagadas {{valves}}, bombas apagadas {{pumps}}",
     "reserved_by": "reservado por {{owner}}",
-    "retry": "Repetir STOP"
+    "retry": "Repetir STOP",
+    "state_stopped": "PARADA",
+    "state_ready": "Lista",
+    "state_unknown": "Parada no supervisada",
+    "badge_tooltip": "Parada de emergencia física: {{physical}} - parada global: {{software}}",
+    "physical_latched": "enclavada",
+    "physical_ready": "liberada",
+    "physical_unknown": "no supervisada",
+    "software_stopped": "activa",
+    "software_ready": "inactiva"
   },
   "command_issue": {
     "title": "Comando no entregado",
