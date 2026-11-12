@@ -46,7 +46,8 @@
     "claim_controller_required": "Le robot {{robots}} est réservé à un contrôleur précis et cette requête n'en indiquait aucun - la commande {{command}} a été refusée. {{detail}}",
     "jog_not_armed": "Le jog du robot {{robots}} n'est pas armé - la commande {{command}} n'a pas été appliquée. Armez d'abord le jog. {{detail}}",
     "arm_jog": "Armer le jog",
-    "sim_blocked": "Le robot {{robots}} est en mode Sim - la commande {{command}} n'a pas été envoyée. Passez-le en Live pour déplacer ou modifier le robot réel.",
+    "sim_blocked": "Le robot {{robots}} est en mode Sim - la commande {{command}} n'a pas été envoyée. Passez-le en Live pour déplacer ou modifier le robot réel.",
+    "listen_only": "L'écoute seule est activée : la commande {{command}} n'a pas été envoyée. Seuls STOP et la désactivation du mode sûr partent. Désactivez-la dans Configuration, Préférences.",
     "settings_admin_only": "Seul un administrateur modifie le réglage {{detail}} : il n'a pas été modifié. Le thème, la langue et la disposition des panneaux restent à vous.",
     "jog_limit": "Jog refusé : le pas dépasse la limite de {{detail}} fixée par le serveur pour ce modèle. Rien n'a été envoyé.",
     "temperature_limit": "Le serveur a abaissé la consigne du plateau chauffant ({{detail}} °C) à la limite de ce modèle.",
@@ -2197,7 +2198,10 @@
     "reduce_motion": "Réduire les animations",
     "reduce_motion_hint": "Les transitions et les effets animés sont supprimés. La vue 3D du robot n'est pas concernée.",
     "saved": "Enregistré dans ce navigateur",
-    "reset": "Rétablir les valeurs par défaut"
+    "reset": "Rétablir les valeurs par défaut",
+    "listen_only": "Écoute seule",
+    "listen_only_hint": "Affiche les robots et leurs données mais n'envoie aucune commande : les commandes ne font rien, sauf STOP et la désactivation du mode sûr, qui fonctionnent toujours. Désactivée par défaut ; conservée dans ce navigateur.",
+    "listen_only_banner": "Écoute seule : les commandes sont désactivées. STOP fonctionne toujours."
   },
   "notify": {
     "title": "Notifications push",

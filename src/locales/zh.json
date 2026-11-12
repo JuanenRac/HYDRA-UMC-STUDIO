@@ -46,7 +46,8 @@
     "claim_controller_required": "机器人 {{robots}} 已为特定控制器预留，而此请求未指明控制器，{{command}} 命令被拒绝。{{detail}}",
     "jog_not_armed": "机器人 {{robots}} 的点动尚未启用，{{command}} 命令未执行。请先启用点动。{{detail}}",
     "arm_jog": "启用点动",
-    "sim_blocked": "机器人 {{robots}} 处于 Sim 模式，{{command}} 命令未发送。要移动或更改真实机器人，请切换到 Live。",
+    "sim_blocked": "机器人 {{robots}} 处于 Sim 模式，{{command}} 命令未发送。要移动或更改真实机器人，请切换到 Live。",
+    "listen_only": "仅监听已开启：命令 {{command}} 未发送。只有 STOP 和安全模式的关闭会发出。可在配置的偏好设置中关闭。",
     "settings_admin_only": "只有管理员可以更改设置 {{detail}}，该设置未被更改。主题、语言和面板布局可由您自行更改。",
     "jog_limit": "点动被拒绝：步长超过服务器为此型号设定的上限 {{detail}}。未发送任何内容。",
     "temperature_limit": "服务器已将热床目标温度（{{detail}} °C）降至此型号的上限。",
@@ -2197,7 +2198,10 @@
     "reduce_motion": "减少动画",
     "reduce_motion_hint": "过渡和动态效果将被取消。机器人的 3D 视图不受影响。",
     "saved": "已保存在此浏览器",
-    "reset": "恢复默认值"
+    "reset": "恢复默认值",
+    "listen_only": "仅监听",
+    "listen_only_hint": "显示机器人及其数据，但不发送任何命令：控件不起作用，只有 STOP 和安全模式的关闭始终有效。默认关闭，保存在此浏览器中。",
+    "listen_only_banner": "仅监听：命令已禁用。STOP 仍然有效。"
   },
   "notify": {
     "title": "推送通知",

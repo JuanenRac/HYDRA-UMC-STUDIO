@@ -29,6 +29,27 @@ describe('motionGuard: one place that decides whether a command may leave the wi
     }
   });
 
+  it('in Listen only sends nothing but STOP and the safe-mode disable', () => {
+    for (const command of ['stop', 'estop', 'disable']) {
+      expect(guardCommand({ ...base, listenOnly: true, command }), command).toEqual({ ok: true });
+    }
+    for (const command of ['jog', 'table', 'play', 'pause', 'reset', 'enable', 'tool', 'valve', 'pump', 'speed', 'joints', 'vision', 'home']) {
+      const verdict = guardCommand({ ...base, listenOnly: true, command, params: {} });
+      expect(verdict.ok, command).toBe(false);
+      if (!verdict.ok) {
+        expect(verdict.issue).toEqual({ code: 'listen_only', command, robotIds: [7], detail: null });
+        expect(verdict.serverCode).toBe('listen-only');
+      }
+    }
+  });
+
+  it('Listen only is off when it is not asked for, and is checked before Sim', () => {
+    expect(guardCommand({ ...base, command: 'play' })).toEqual({ ok: true });
+    expect(guardCommand({ ...base, listenOnly: false, command: 'play' })).toEqual({ ok: true });
+    const both = guardCommand({ ...base, modes: sim, listenOnly: true, command: 'jog', params: {} });
+    expect(both.ok === false && both.issue.code).toBe('listen_only');
+  });
+
   it('refuses the whole group when one robot of the group is in Sim', () => {
     const verdict = guardCommand({ ...base, modes: sim, robotIds: [3, 7], command: 'jog', params: { axis: 'x', amount: 1 } });
     expect(verdict.ok).toBe(false);

@@ -4,7 +4,6 @@
   "svg": "en",
   "exempt": [
     "CODE_OF_CONDUCT.md",
-    "dev-proxy.config.json",
     "CONTRIBUTING.md",
     "SECURITY.md",
     "SUPPORT.md",
@@ -935,6 +934,29 @@
             "ja": "パッケージのメタデータとスクリプト",
             "zh": "包的元数据和脚本",
             "pt": "metadados e scripts do pacote"
+          }
+        },
+        {
+          "name": "dev-proxy.config.json",
+          "desc": {
+            "en": "Folders the dev server forwards",
+            "es": "Carpetas que reenvía el servidor de desarrollo",
+            "de": "Ordner, die der Entwicklungsserver weiterleitet",
+            "fr": "Dossiers que le serveur de développement relaie",
+            "it": "Cartelle inoltrate dal server di sviluppo",
+            "ja": "開発サーバーが転送するフォルダー",
+            "zh": "开发服务器转发的文件夹",
+            "pt": "Pastas que o servidor de desenvolvimento reencaminha"
+          },
+          "tree_desc": {
+            "en": "Where the dev server sends requests: the address of the server and the folders it forwards besides /api and /ws",
+            "es": "A dónde envía las peticiones el servidor de desarrollo: la dirección del servidor y las carpetas que reenvía además de /api y /ws",
+            "de": "Wohin der Entwicklungsserver Anfragen schickt: die Adresse des Servers und die Ordner, die er außer /api und /ws weiterleitet",
+            "fr": "Où le serveur de développement envoie les requêtes : l'adresse du serveur et les dossiers relayés en plus de /api et /ws",
+            "it": "Dove il server di sviluppo inoltra le richieste: l'indirizzo del server e le cartelle inoltrate oltre a /api e /ws",
+            "ja": "開発サーバーのリクエスト転送先：サーバーのアドレスと、/api と /ws 以外に転送するフォルダー",
+            "zh": "开发服务器转发请求的去向：服务器地址，以及除 /api 和 /ws 之外转发的文件夹",
+            "pt": "Para onde o servidor de desenvolvimento envia os pedidos: o endereço do servidor e as pastas que reencaminha além de /api e /ws"
           }
         },
         {

@@ -46,7 +46,8 @@
     "claim_controller_required": "O robô {{robots}} está reservado para um controlador específico e este pedido não indicou nenhum - o comando {{command}} foi recusado. {{detail}}",
     "jog_not_armed": "O jog do robô {{robots}} não está armado - o comando {{command}} não foi aplicado. Arme primeiro o jog. {{detail}}",
     "arm_jog": "Armar o jog",
-    "sim_blocked": "O robô {{robots}} está em modo Sim - o comando {{command}} não foi enviado. Mude para Live para mover ou alterar o robô real.",
+    "sim_blocked": "O robô {{robots}} está em modo Sim - o comando {{command}} não foi enviado. Mude para Live para mover ou alterar o robô real.",
+    "listen_only": "O modo só escuta está ativo - o comando {{command}} não foi enviado. Só saem o STOP e a desativação do modo seguro. Desative-o em Configuração, Preferências.",
     "settings_admin_only": "Só um administrador altera a definição {{detail}}: não foi alterada. O tema, o idioma e a disposição dos painéis podem ser alterados por si.",
     "jog_limit": "Jog recusado: o passo excede o limite de {{detail}} definido pelo servidor para este modelo. Não foi enviado nada.",
     "temperature_limit": "O servidor reduziu a temperatura alvo da cama ({{detail}} °C) para o limite deste modelo.",
@@ -2197,7 +2198,10 @@
     "reduce_motion": "Reduzir as animações",
     "reduce_motion_hint": "As transições e os efeitos em movimento ficam reduzidos a nada. A vista 3D do robô não é afetada.",
     "saved": "Guardado neste navegador",
-    "reset": "Repor os valores por omissão"
+    "reset": "Repor os valores por omissão",
+    "listen_only": "Só escuta",
+    "listen_only_hint": "Mostra os robôs e os seus dados, mas não envia nenhum comando: os controlos não fazem nada, exceto o STOP e a desativação do modo seguro, que funcionam sempre. Desativado por predefinição; guardado neste navegador.",
+    "listen_only_banner": "Só escuta: os comandos estão desativados. O STOP continua a funcionar."
   },
   "notify": {
     "title": "Notificações push",

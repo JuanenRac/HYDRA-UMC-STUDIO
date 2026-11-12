@@ -26,7 +26,7 @@ describe('studioPrefs', () => {
 
   it('keeps a valid choice in this browser only and writes it on the page', () => {
     setStudioPrefs({ density: 'compact', reduceMotion: true, helpLevel: 'technical' });
-    expect(getStudioPrefs()).toEqual({ helpLevel: 'technical', density: 'compact', reduceMotion: true });
+    expect(getStudioPrefs()).toEqual({ helpLevel: 'technical', density: 'compact', reduceMotion: true, listenOnly: false });
     expect(document.documentElement.dataset.density).toBe('compact');
     expect(document.documentElement.dataset.motion).toBe('reduced');
     expect(window.localStorage.getItem(STUDIO_PREFS_KEY)).toContain('technical');
@@ -37,7 +37,7 @@ describe('studioPrefs', () => {
 
   it('applies the preferences to any root element it is given', () => {
     const root = document.createElement('div');
-    applyStudioPrefs({ helpLevel: 'all', density: 'compact', reduceMotion: false }, root);
+    applyStudioPrefs({ helpLevel: 'all', density: 'compact', reduceMotion: false, listenOnly: false }, root);
     expect(root.dataset.density).toBe('compact');
     expect(root.dataset.motion).toBe('full');
   });
@@ -50,8 +50,22 @@ describe('PreferencesTab', () => {
     fireEvent.click(screen.getByTestId('prefs-level-advanced'));
     fireEvent.click(screen.getByTestId('prefs-density-compact'));
     fireEvent.click(screen.getByTestId('prefs-reduce-motion'));
-    expect(getStudioPrefs()).toEqual({ helpLevel: 'advanced', density: 'compact', reduceMotion: true });
+    expect(getStudioPrefs()).toEqual({ helpLevel: 'advanced', density: 'compact', reduceMotion: true, listenOnly: false });
     expect((screen.getByTestId('prefs-density-compact') as HTMLInputElement).checked).toBe(true);
+  });
+
+  it('turns Listen only on and off, off by default, and keeps it in this browser', () => {
+    expect(getStudioPrefs().listenOnly).toBe(false);
+    render(<PreferencesTab />);
+    const box = screen.getByTestId('prefs-listen-only') as HTMLInputElement;
+    expect(box.checked).toBe(false);
+    fireEvent.click(box);
+    expect(getStudioPrefs().listenOnly).toBe(true);
+    expect(window.localStorage.getItem(STUDIO_PREFS_KEY)).toContain('"listenOnly":true');
+    fireEvent.click(box);
+    expect(getStudioPrefs().listenOnly).toBe(false);
+    setStudioPrefs({ listenOnly: 'yes' as never });
+    expect(getStudioPrefs().listenOnly).toBe(false);
   });
 
   it('puts everything back with one button', () => {

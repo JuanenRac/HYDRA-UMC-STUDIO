@@ -3,8 +3,8 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0-or-later - see LICENSE
 // =============================================================================
-// The personal preferences of this browser: which level of the Help opens first, how dense the interface is and whether the animations
-// are reduced. Each change is saved at once in this browser and applied to the page at once; nothing here is sent to the server and no
+// The personal preferences of this browser: which level of the Help opens first, how dense the interface is, whether the animations
+// are reduced and whether this window only listens (Listen only: no robot command but STOP). Each change is saved at once in this browser and applied to the page at once; nothing here is sent to the server and no
 // preference changes what a robot does.
 import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal } from 'lucide-react';
@@ -45,6 +45,11 @@ export function PreferencesTab() {
       <label className="flex items-start gap-3 bg-slate-950 rounded-xl border border-slate-800 p-4 text-xs text-slate-300">
         <input type="checkbox" data-testid="prefs-reduce-motion" checked={prefs.reduceMotion} onChange={(e) => setStudioPrefs({ reduceMotion: e.target.checked })} className="mt-0.5" />
         <span><strong className="block text-slate-200">{t('prefs.reduce_motion')}</strong><span className="text-[10px] text-slate-500">{t('prefs.reduce_motion_hint')}</span></span>
+      </label>
+
+      <label className="flex items-start gap-3 bg-slate-950 rounded-xl border border-slate-800 p-4 text-xs text-slate-300">
+        <input type="checkbox" data-testid="prefs-listen-only" checked={prefs.listenOnly} onChange={(e) => setStudioPrefs({ listenOnly: e.target.checked })} className="mt-0.5" />
+        <span><strong className="block text-slate-200">{t('prefs.listen_only')}</strong><span className="text-[10px] text-slate-500">{t('prefs.listen_only_hint')}</span></span>
       </label>
 
       <div className="flex items-center justify-between">

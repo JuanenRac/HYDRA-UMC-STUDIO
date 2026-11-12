@@ -6,6 +6,7 @@
 // One place decides whether a command that moves a robot may leave this window. Before, the three checks lived in
 // three files (Sim mode in liveSim, the size of a jog in safetyLimits and tableMove, the swing of a joint in
 // examples/jogSafety) and each caller joined them in its own order. Here they are joined once:
+//   0. in Listen only (a switch in the preferences, off by default) nothing but STOP and the safe-mode disable is sent;
 //   1. a real command (one that moves or switches something on) is refused for a robot put in Sim;
 //   2. a jog is bounded by the limits of the model the server reports;
 //   3. a table move is bounded by the same limits, as a whole;
@@ -21,7 +22,10 @@ import { checkTable } from './tableMove';
 export type GuardIssue = Omit<CommandIssue, 'id'>;
 
 /** The answer of the guard: let the command through, or what to tell the operator and the code of a refused result. */
-export type GuardVerdict = { ok: true } | { ok: false; issue: GuardIssue; serverCode: 'sim-mode' | 'jog-limit' };
+export type GuardVerdict = { ok: true } | { ok: false; issue: GuardIssue; serverCode: 'sim-mode' | 'jog-limit' | 'listen-only' };
+
+/** The only commands that leave this window in Listen only: refusing a stop would be the unsafe side. */
+export const LISTEN_ONLY_ALLOWED: ReadonlySet<string> = new Set(['stop', 'estop', 'disable']);
 
 export interface GuardRequest {
   command: string;
@@ -32,6 +36,8 @@ export interface GuardRequest {
   model?: unknown;
   limits: SafetyLimitsConfig;
   modes: ModeState;
+  /** Listen only is on: nothing but STOP and the safe-mode disable is sent. Off when left out. */
+  listenOnly?: boolean;
   /** Where the table of the robot stands now, for a relative move. */
   tablePosition?: { x?: number; y?: number; rz?: number };
 }
@@ -43,6 +49,9 @@ const limitDetail = (check: { kind: 'amount' | 'absolute' | null; limit: number 
 /** Whether `command` may be sent now. Pure: the same request always gets the same answer. */
 export function guardCommand(request: GuardRequest): GuardVerdict {
   const { command, params, robotIds, model, limits, modes } = request;
+  if (request.listenOnly && !LISTEN_ONLY_ALLOWED.has(command)) {
+    return { ok: false, issue: { code: 'listen_only', command, robotIds, detail: null }, serverCode: 'listen-only' };
+  }
   if (blockedBySim(modes, robotIds, command)) {
     return { ok: false, issue: { code: 'sim_blocked', command, robotIds, detail: null }, serverCode: 'sim-mode' };
   }

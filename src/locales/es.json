@@ -47,6 +47,7 @@
     "jog_not_armed": "El jog del robot {{robots}} no está armado: no se aplicó el comando {{command}}. Arma primero el jog. {{detail}}",
     "arm_jog": "Armar el jog",
     "sim_blocked": "El robot {{robots}} está en modo Sim: no se envió el comando {{command}}. Cámbialo a Live para mover o cambiar el robot real.",
+    "listen_only": "Solo escucha está activado: el comando {{command}} no se envió. Solo salen STOP y la desactivación del modo seguro. Desactívelo en Configuración, Preferencias.",
     "settings_admin_only": "Solo un administrador cambia el ajuste {{detail}}: no se cambió. El tema, el idioma y la disposición de los paneles sí puedes cambiarlos tú.",
     "jog_limit": "Jog rechazado: el paso supera el límite de {{detail}} que fija el servidor para este modelo. No se envió nada.",
     "temperature_limit": "El servidor redujo la temperatura objetivo de la cama ({{detail}} °C) al límite de este modelo.",
@@ -2197,7 +2198,10 @@
     "reduce_motion": "Reducir las animaciones",
     "reduce_motion_hint": "Las transiciones y los efectos en movimiento se reducen a nada. La vista 3D del robot no se ve afectada.",
     "saved": "Guardado en este navegador",
-    "reset": "Restaurar valores por defecto"
+    "reset": "Restaurar valores por defecto",
+    "listen_only": "Solo escucha",
+    "listen_only_hint": "Muestra los robots y sus datos pero no envía ningún comando: los controles no hacen nada, salvo STOP y la desactivación del modo seguro, que siempre funcionan. Desactivado por defecto; se guarda en este navegador.",
+    "listen_only_banner": "Solo escucha: los comandos están desactivados. STOP sigue funcionando."
   },
   "notify": {
     "title": "Notificaciones push",

@@ -104,7 +104,7 @@ export function networkFailure(detail?: string): CommandResult {
 export interface CommandIssue {
   id: number;
   /** Which sentence to show: a failure code, or one of the client-side codes. */
-  code: CommandFailureCode | 'jog_jump' | 'estop_failed' | 'warnings' | 'power_failed' | 'import_invalid' | 'sim_blocked' | 'jog_limit' | 'temperature_limit' | 'jog_server_limit' | 'settings_admin_only';
+  code: CommandFailureCode | 'jog_jump' | 'estop_failed' | 'warnings' | 'power_failed' | 'import_invalid' | 'sim_blocked' | 'listen_only' | 'jog_limit' | 'temperature_limit' | 'jog_server_limit' | 'settings_admin_only';
   command: string;
   /** Robots the issue is about. */
   robotIds: number[];

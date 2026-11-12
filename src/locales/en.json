@@ -46,7 +46,8 @@
     "claim_controller_required": "Robot {{robots}} is reserved for a specific controller and this request did not name one - the {{command}} command was refused. {{detail}}",
     "jog_not_armed": "The jog of robot {{robots}} is not armed - the {{command}} command was not applied. Arm the jog first. {{detail}}",
     "arm_jog": "Arm the jog",
-    "sim_blocked": "Robot {{robots}} is in Sim mode - the {{command}} command was not sent. Switch it to Live to move or change the real robot.",
+    "sim_blocked": "Robot {{robots}} is in Sim mode - the {{command}} command was not sent. Switch it to Live to move or change the real robot.",
+    "listen_only": "Listen only is on - the {{command}} command was not sent. Only STOP and the safe-mode disable go out. Switch it off in Configuration, Preferences.",
     "settings_admin_only": "Only an administrator changes the setting {{detail}} - it was not changed. The theme, the language and the layout of the panels are yours to change.",
     "jog_limit": "Jog refused: the step is above the limit of {{detail}} set by the server for this model. Nothing was sent.",
     "temperature_limit": "The server lowered the bed target ({{detail}} °C) to the limit of this model.",
@@ -2197,7 +2198,10 @@
     "reduce_motion": "Reduce animations",
     "reduce_motion_hint": "Transitions and moving effects are cut to nothing. The 3D view of the robot is not affected.",
     "saved": "Saved in this browser",
-    "reset": "Restore defaults"
+    "reset": "Restore defaults",
+    "listen_only": "Listen only",
+    "listen_only_hint": "Shows the robots and their data but sends no command: the controls do nothing, except STOP and the safe-mode disable, which always work. Off by default; kept in this browser.",
+    "listen_only_banner": "Listen only: commands are disabled. STOP still works."
   },
   "notify": {
     "title": "Push notifications",

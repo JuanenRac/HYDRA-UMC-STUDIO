@@ -15,10 +15,12 @@ export type StudioPrefs = {
   helpLevel: (typeof HELP_LEVELS)[number];
   density: (typeof DENSITIES)[number];
   reduceMotion: boolean;
+  /** Listen only: this window shows the robots and their data but sends no robot command except STOP and the safe-mode disable. */
+  listenOnly: boolean;
 };
 
 export const STUDIO_PREFS_KEY = 'hydra_studio_prefs';
-export const STUDIO_DEFAULTS: StudioPrefs = { helpLevel: 'all', density: 'comfortable', reduceMotion: false };
+export const STUDIO_DEFAULTS: StudioPrefs = { helpLevel: 'all', density: 'comfortable', reduceMotion: false, listenOnly: false };
 
 let prefs: Prefs<StudioPrefs> | null = null;
 
@@ -27,7 +29,7 @@ function store(): Prefs<StudioPrefs> {
     storage: browserStorage('localStorage'),
     key: STUDIO_PREFS_KEY,
     defaults: STUDIO_DEFAULTS,
-    schema: { helpLevel: oneOf(...HELP_LEVELS), density: oneOf(...DENSITIES), reduceMotion: bool },
+    schema: { helpLevel: oneOf(...HELP_LEVELS), density: oneOf(...DENSITIES), reduceMotion: bool, listenOnly: bool },
   });
   return prefs;
 }

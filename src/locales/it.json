@@ -46,7 +46,8 @@
     "claim_controller_required": "Il robot {{robots}} è riservato a un controller specifico e questa richiesta non ne indicava nessuno - il comando {{command}} è stato rifiutato. {{detail}}",
     "jog_not_armed": "Il jog del robot {{robots}} non è armato - il comando {{command}} non è stato applicato. Arma prima il jog. {{detail}}",
     "arm_jog": "Arma il jog",
-    "sim_blocked": "Il robot {{robots}} è in modalità Sim - il comando {{command}} non è stato inviato. Passa a Live per muovere o modificare il robot reale.",
+    "sim_blocked": "Il robot {{robots}} è in modalità Sim - il comando {{command}} non è stato inviato. Passa a Live per muovere o modificare il robot reale.",
+    "listen_only": "Solo ascolto è attivo: il comando {{command}} non è stato inviato. Partono solo STOP e la disattivazione della modalità sicura. Disattivalo in Configurazione, Preferenze.",
     "settings_admin_only": "Solo un amministratore modifica l'impostazione {{detail}}: non è stata modificata. Tema, lingua e disposizione dei pannelli puoi cambiarli tu.",
     "jog_limit": "Jog rifiutato: il passo supera il limite di {{detail}} impostato dal server per questo modello. Non è stato inviato nulla.",
     "temperature_limit": "Il server ha abbassato la temperatura obiettivo del piatto ({{detail}} °C) al limite di questo modello.",
@@ -2197,7 +2198,10 @@
     "reduce_motion": "Riduci le animazioni",
     "reduce_motion_hint": "Transizioni ed effetti in movimento vengono azzerati. La vista 3D del robot non è interessata.",
     "saved": "Salvato in questo browser",
-    "reset": "Ripristina i valori predefiniti"
+    "reset": "Ripristina i valori predefiniti",
+    "listen_only": "Solo ascolto",
+    "listen_only_hint": "Mostra i robot e i loro dati ma non invia alcun comando: i controlli non fanno nulla, tranne STOP e la disattivazione della modalità sicura, che funzionano sempre. Disattivato per impostazione predefinita; salvato in questo browser.",
+    "listen_only_banner": "Solo ascolto: i comandi sono disattivati. STOP continua a funzionare."
   },
   "notify": {
     "title": "Notifiche push",
