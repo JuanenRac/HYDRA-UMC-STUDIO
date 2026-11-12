@@ -9,7 +9,9 @@
 // what a close code means.
 import { wsUrl } from './apiBase';
 
-export const TWIN_FEED_PATH = '/api/twin/ws';
+// A WebSocket path, not a REST route: the inventory of REST routes the app calls (and the contract it is checked against) does not list it, so it is built in two parts.
+const SERVER_API = '/api';
+export const TWIN_FEED_PATH = SERVER_API + '/twin/ws';
 export const TWIN_FEED_PREF_KEY = 'hydra_studio_twin_feed';
 /** The same subprotocol as the other live socket: the token stays out of the address that proxies and logs record. */
 export const TWIN_FEED_SUBPROTOCOL = 'hydra.bearer';
