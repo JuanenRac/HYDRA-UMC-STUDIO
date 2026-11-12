@@ -35,7 +35,7 @@ import { IngestSwitchesPanel } from './IngestSwitchesPanel';
 import { DetectionHefPanel } from './DetectionHefPanel';
 import { LiveActivityPanel } from './LiveActivityPanel';
 import { DeveloperNodeStatusPanel } from './DeveloperNodeStatusPanel';
-import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
+import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
 
 interface HydraInfo {
@@ -120,6 +120,9 @@ export function AdminServer() {
   const [trustedNetworksOn, setTrustedNetworksOn] = useState(false);
   const [rulOn, setRulOn] = useState(false);
   const [safetyPublish, setSafetyPublish] = useState(false);
+  const [framErase, setFramErase] = useState(false);
+  const [pendingFram, setPendingFram] = useState(false);
+  const [estopWatchText, setEstopWatchText] = useState('');
   const [jdRelay, setJdRelay] = useState(false);
   const [jdMapText, setJdMapText] = useState('');
   const [jdAllow, setJdAllow] = useState(false);
@@ -161,7 +164,11 @@ export function AdminServer() {
       if (state.bridgeGateway) setBridgeGatewayOn(state.bridgeGateway.enabled.value);
       if (state.trustedNetworks) setTrustedNetworksOn(state.trustedNetworks.enabled.value);
       if (state.rul) setRulOn(state.rul.enabled.value);
-      if (state.safety) setSafetyPublish(state.safety.publishGlobalStop.value);
+      if (state.safety) {
+        setSafetyPublish(state.safety.publishGlobalStop.value);
+        setFramErase(state.safety.framErase?.value ?? false);
+        setEstopWatchText(state.safety.estopWatchMs ? String(state.safety.estopWatchMs.value) : '');
+      }
       if (state.jobDispatcher) {
         setJdRelay(state.jobDispatcher.stopRelay.enabled.value);
         setJdMapText(robotMapToText(state.jobDispatcher.stopRelay.robotMap));
@@ -190,6 +197,23 @@ export function AdminServer() {
   };
 
   // Sends one part of the access options and shows what the server answered (or why it refused).
+  // The options of the safety block go in one request: only what the server announced and what is not fixed by its environment is sent.
+  const stopOptionsBody = () => {
+    const safety = security?.safety;
+    if (!safety) return null;
+    const extra: { framErase?: boolean; estopWatchMs?: number } = {};
+    if (safety.framErase && !isLocked(safety.framErase.source) && framErase !== safety.framErase.value) extra.framErase = framErase;
+    const watch = parseEstopWatchText(estopWatchText);
+    if (safety.estopWatchMs && !isLocked(safety.estopWatchMs.source) && watch !== null && watch !== safety.estopWatchMs.value) extra.estopWatchMs = watch;
+    return safetyPatch(isLocked(safety.publishGlobalStop.source) ? null : safetyPublish, extra);
+  };
+  const saveStopOptions = () => {
+    const body = stopOptionsBody();
+    if (!body || !security?.safety || Object.keys(body.safety).length === 0) return;
+    if (body.safety.framErase !== undefined && framEraseChangeNeedsConfirmation(security.safety.framErase?.value ?? false, body.safety.framErase)) { setPendingFram(true); return; }
+    void saveSecurity(body);
+  };
+
   const saveSecurity = async (patch: Record<string, unknown>) => {
     setSaving(true); setError(''); setNotice(''); setWarning('');
     try {
@@ -1122,7 +1146,43 @@ export function AdminServer() {
               </label>
               <span className="text-[10px] text-slate-500">{sourceText(security.safety.publishGlobalStop.source)}</span>
               <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_stop_help')}</div>
-              <button onClick={() => void saveSecurity(safetyPatch(safetyPublish))} disabled={saving || isLocked(security.safety.publishGlobalStop.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+              {security.safety.framErase && (
+                <div className="space-y-1">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                    <input
+                      type="checkbox"
+                      data-testid="safety-fram-erase"
+                      checked={framErase}
+                      disabled={saving || isLocked(security.safety.framErase.source)}
+                      onChange={e => setFramErase(e.target.checked)}
+                    />
+                    {t('ecosystem.admin_security_fram_label')}
+                  </label>
+                  <span className="text-[10px] text-slate-500">{sourceText(security.safety.framErase.source)}</span>
+                  <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_fram_help')}</div>
+                </div>
+              )}
+              {security.safety.estopWatchMs && (
+                <div className="space-y-1">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                    {t('ecosystem.admin_security_estop_watch_label')}
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      data-testid="safety-estop-watch"
+                      value={estopWatchText}
+                      placeholder="0"
+                      disabled={saving || isLocked(security.safety.estopWatchMs.source)}
+                      onChange={e => setEstopWatchText(e.target.value)}
+                      className="w-24 px-2 py-1 rounded bg-slate-950 border border-slate-700 text-xs font-mono text-slate-200"
+                    />
+                  </label>
+                  <span className="text-[10px] text-slate-500">{sourceText(security.safety.estopWatchMs.source)}</span>
+                  <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_estop_watch_help')}</div>
+                  {parseEstopWatchText(estopWatchText) === null && <div className="text-[10px] text-red-400" data-testid="safety-estop-watch-invalid">{t('ecosystem.admin_security_estop_watch_invalid')}</div>}
+                </div>
+              )}
+              <button onClick={saveStopOptions} disabled={saving || (isLocked(security.safety.publishGlobalStop.source) && !security.safety.framErase && !security.safety.estopWatchMs) || parseEstopWatchText(estopWatchText) === null} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
                 <Save size={14} /> {t('ecosystem.admin_security_stop_save')}
               </button>
             </div>
@@ -1293,6 +1353,13 @@ export function AdminServer() {
         message={t('ecosystem.admin_security_auth_rotate_confirm')}
         onConfirm={() => { setPendingRotate(false); void rotateAuthKey(); }}
         onCancel={() => setPendingRotate(false)}
+      />
+
+      <ConfirmDialog
+        open={pendingFram}
+        message={t('ecosystem.admin_security_fram_confirm')}
+        onConfirm={() => { setPendingFram(false); const body = stopOptionsBody(); if (body) void saveSecurity(body); }}
+        onCancel={() => setPendingFram(false)}
       />
 
       <ConfirmDialog

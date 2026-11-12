@@ -783,7 +783,9 @@
       "preflight_no_hardware_id": "Dieses Image hat keine Hardware-ID (eine lokale Datei): Wählen Sie es aus dem Release, damit die Platine prüfen kann, dass es für sie ist.",
       "preflight_no_version": "Dieses Image hat keine Version: Wählen Sie es aus dem Release, damit die Platine es mit der installierten vergleichen kann.",
       "preflight_downgrade_blocked": "Dieses Image ist älter als die installierte Version: Haken Sie die Downgrade-Option an, wenn Sie das wollen.",
-      "preflight_fram_erase_unsupported": "Das Löschen des F-RAM ist über den echten Bus nicht möglich: Haken entfernen (nur die Simulation beachtet es)."
+      "preflight_fram_erase_unsupported": "Das Löschen des F-RAM wird nicht angeboten: Server oder Bridge hat es ausgeschaltet (oder die Version wurde nicht gelesen). Haken entfernen.",
+      "preflight_fram_erase_wrong_tier": "Der F-RAM sitzt im kinematischen Gehirn: bei jedem anderen Ziel den Haken zum Löschen entfernen.",
+      "fram_after_flash": "Lösche den F-RAM nach dem Flashen..."
     },
     "progress": {
       "connecting": "Verbinde...",
@@ -802,7 +804,34 @@
     "download_github": "Von GitHub herunterladen",
     "no_releases": "Noch keine .bin-Releases veröffentlicht.",
     "simulation_banner": "SIMULATION - es wird nichts an die Platinen gesendet (CAN-OTA-Transport auf Hardware stellen, um wirklich zu flashen)",
-    "show_bootloaders": "Auch Bootloader-Images auflisten (Experte)"
+    "show_bootloaders": "Auch Bootloader-Images auflisten (Experte)",
+    "fram_title": "F-RAM des kinematischen Gehirns",
+    "fram_unknown": "Zuerst die Version lesen: Server und Bridge sagen hier, ob die F-RAM-Operationen angeboten werden.",
+    "fram_unsupported": "Die F-RAM-Operationen werden nicht angeboten. Sie sind standardmäßig aus: in Server Admin > Sicherheit einschalten (F-RAM löschen) und die Bridge mit --enable-fram-erase starten.",
+    "fram_selftest": "F-RAM testen",
+    "fram_erase": "F-RAM löschen...",
+    "fram_erase_title": "Gesamten F-RAM löschen",
+    "fram_erase_body": "Dies schreibt Nullen über alle 8192 Bytes des F-RAM des kinematischen Gehirns, während der Stack läuft, und lässt sich nicht rückgängig machen. Zur Bestätigung {{word}} eingeben.",
+    "fram_erase_placeholder": "{{word}} eingeben",
+    "fram_erase_confirm": "Löschen",
+    "fram_busy": "Arbeite am F-RAM...",
+    "fram_result_erase_ok": "F-RAM gelöscht: {{value}} Bytes geschrieben und zurückgelesen.",
+    "fram_result_selftest_ok": "F-RAM-Selbsttest bestanden; der Inhalt wurde nicht verändert.",
+    "fram_result_failed": "F-RAM-Vorgang ({{operation}}) nicht abgeschlossen: {{status}}.",
+    "fram_operation_erase": "Löschen",
+    "fram_operation_selftest": "Selbsttest",
+    "fram_status": {
+      "disabled": "die Firmware hat die F-RAM-Operationen ausgeschaltet",
+      "no-chip": "die Firmware hat keinen Treiber für den Chip (kein I2C-Timing im Build)",
+      "wrong-slot": "die Anfrage galt nicht dem Gehirn",
+      "busy": "das Gehirn ist beschäftigt",
+      "chip-error": "der Chip antwortete nicht oder behielt das Geschriebene nicht",
+      "verify-fail": "eine Zelle liest sich nicht wie geschrieben zurück",
+      "server_disabled": "der Server hat die F-RAM-Operationen ausgeschaltet",
+      "unreachable": "Server oder Bridge antwortete nicht",
+      "unknown": "unbekannte Antwort"
+    },
+    "confirm_flash_erase": "Nach dem Flashen wird auch der F-RAM des kinematischen Gehirns gelöscht."
   },
   "tester": {
     "title": "Tester",
@@ -1388,7 +1417,13 @@
     "admin_security_rul_title": "Restnutzungsdauer für Bediener",
     "admin_security_rul_label": "Bedienern die Schätzung der Restnutzungsdauer des KI-Dashboards erlauben (POST /api/ai/anomaly-detector/rul)",
     "admin_security_rul_help": "Standardmäßig aus: Dann darf nur ein Administrator die Anfrage senden, wie bisher. Eingeschaltet dürfen es auch Bediener; Größe und Zeit der Anfrage sind begrenzt, und nur diese Anfrage wird geöffnet (jeder andere Schreibzugriff auf den Detektor bleibt Administratoren vorbehalten).",
-    "admin_security_rul_save": "Restnutzungsdauer speichern"
+    "admin_security_rul_save": "Restnutzungsdauer speichern",
+    "admin_security_fram_label": "Löschen und Selbsttest des F-RAM des kinematischen Gehirns anbieten",
+    "admin_security_fram_help": "Standardmäßig aus. Braucht die SPI-Bridge, gestartet mit --enable-fram-erase, und eine dafür gebaute Firmware; ein Löschen verlangt außerdem das Wort ERASE im Flasher.",
+    "admin_security_fram_confirm": "Das Löschen des F-RAM anbieten? Ein Administrator kann dann im Flasher Nullen über den gesamten F-RAM des kinematischen Gehirns schreiben.",
+    "admin_security_estop_watch_label": "Not-Halt-Überwachung alle (ms)",
+    "admin_security_estop_watch_help": "Leer oder 0: aus. Sonst 500 bis 60000. Der Server liest den physischen Not-Halt in diesem Abstand von der SPI-Bridge und zeigt in den Apps einen einzigen Haltzustand. Eine Änderung gilt nach dem Neustart des Servers.",
+    "admin_security_estop_watch_invalid": "0 (aus) oder eine ganze Zahl von 500 bis 60000 verwenden."
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Zugang",

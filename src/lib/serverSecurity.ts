@@ -99,6 +99,10 @@ export interface SecurityState {
   } | null;
   safety: {
     publishGlobalStop: { value: boolean; source: SecuritySource };
+    /** Absent when the server predates the F-RAM erase of the kinematic brain (off by default there). */
+    framErase?: { value: boolean; source: SecuritySource };
+    /** Every how many milliseconds the server reads the physical emergency stop from the SPI bridge (0: off). Absent when the server predates the option. */
+    estopWatchMs?: { value: number; source: SecuritySource };
   } | null;
   /** Absent when the server predates the exposure options (camera pictures, token in the WebSocket address, blanking of secrets in the log, signature of a spoken confirmation). */
   exposure: {
@@ -433,7 +437,26 @@ function parseSafety(raw: any): SecurityState['safety'] {
   if (!raw || typeof raw !== 'object') return null;
   const publish = raw.publishGlobalStop;
   if (!publish || typeof publish.value !== 'boolean' || !isSource(publish.source)) return null;
-  return { publishGlobalStop: { value: publish.value, source: publish.source } };
+  const state: NonNullable<SecurityState['safety']> = { publishGlobalStop: { value: publish.value, source: publish.source } };
+  const fram = raw.framErase;
+  if (fram && typeof fram.value === 'boolean' && isSource(fram.source)) state.framErase = { value: fram.value, source: fram.source };
+  const watch = raw.estopWatchMs;
+  if (watch && validEstopWatchMs(watch.value) && isSource(watch.source)) state.estopWatchMs = { value: watch.value, source: watch.source };
+  return state;
+}
+
+/** 0 (the watch is off) or a whole number of milliseconds from 500 to 60000: what the server accepts for the interval of the emergency stop watch. */
+export function validEstopWatchMs(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && (value === 0 || (value >= 500 && value <= 60000));
+}
+
+/** The interval typed in the box, as a number the server accepts, or null when the text is not one ("" is 0, the watch off). */
+export function parseEstopWatchText(text: string): number | null {
+  const trimmed = text.trim();
+  if (trimmed === '') return 0;
+  if (!/^\d+$/.test(trimmed)) return null;
+  const value = Number(trimmed);
+  return validEstopWatchMs(value) ? value : null;
 }
 
 function parseMavlink(raw: any): SecurityState['mavlink'] {
@@ -784,11 +807,25 @@ export function jobDispatcherChangeNeedsConfirmation(current: NonNullable<Securi
   return relayOn || unconfirmed;
 }
 
-export type SafetyPatchBody = { safety: { publishGlobalStop: boolean } };
+export type SafetyPatchBody = { safety: { publishGlobalStop?: boolean; framErase?: boolean; estopWatchMs?: number; confirm?: true } };
 
-/** The request body for the option that announces a global stop on the MQTT bridge (off by default). Announcing a stop is the safe direction: it never asks. */
-export function safetyPatch(publishGlobalStop: boolean): SafetyPatchBody {
-  return { safety: { publishGlobalStop } };
+/** The request body for the options of the safety block: the announcement of a global stop on the MQTT bridge (off by default; announcing a stop is the safe direction and never asks), and,
+ * only when given, the F-RAM erase of the kinematic brain (off by default; turning it on carries the confirmation the server asks for) and the interval of the emergency stop watch. */
+export function safetyPatch(publishGlobalStop: boolean | null, extra: { framErase?: boolean; estopWatchMs?: number } = {}): SafetyPatchBody {
+  // null leaves the announcement out: a server that has it fixed by its environment refuses any request that names it
+  const safety: SafetyPatchBody['safety'] = {};
+  if (publishGlobalStop !== null) safety.publishGlobalStop = publishGlobalStop;
+  if (extra.framErase !== undefined) {
+    safety.framErase = extra.framErase;
+    if (extra.framErase) safety.confirm = true;
+  }
+  if (extra.estopWatchMs !== undefined) safety.estopWatchMs = extra.estopWatchMs;
+  return { safety };
+}
+
+/** Offering the erase of the F-RAM asks first; switching it off never does. */
+export function framEraseChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
+  return !current && next;
 }
 
 export type MavlinkPatchBody = { mavlink: { signingKeyFile: string; signingAllowUnsigned: boolean } };

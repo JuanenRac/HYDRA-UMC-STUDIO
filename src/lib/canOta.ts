@@ -57,9 +57,9 @@ export function slotLabel(robotIndex0: number): string {
   return `A${robotIndex0 + 1}`;
 }
 
-/** CAN_ID_STACKA_BASE + slot*0x20 - see architecture.md section 3. */
+/** CAN_ID_STACKA_BASE + slot*0x40 - the window of a slot is 64 identifiers wide (HYDRA-UMC docs/FRAM_ERASE.md, tools/can_ids.py). */
 export function slotBaseId(robotIndex0: number): number {
-  return 0x600 + robotIndex0 * 0x20;
+  return 0x600 + robotIndex0 * SLOT_WINDOW;
 }
 
 /**
@@ -82,8 +82,8 @@ export const SLOT_FRAMES = {
   bootDowngradeNonceResponse: 0x1c,
 } as const;
 
-/** The window of identifiers each slot owns (0x20), so every frame above fits inside it. */
-export const SLOT_WINDOW = 0x20;
+/** The window of identifiers each slot owns (0x40, 64 identifiers: the eight slots fill 0x600 to 0x7FF), so every frame above fits inside it. */
+export const SLOT_WINDOW = 0x40;
 
 /** The CAN identifier of a frame of a robot's slot. */
 export function slotFrameId(robotIndex0: number, frame: keyof typeof SLOT_FRAMES): number {
@@ -159,6 +159,8 @@ export interface VersionQueryResult {
   bootloaderVersion?: string;
   hardwareId?: string;
   expansionBoardType?: number; // only meaningful for a urtcHead query
+  /** true only when the server announced capabilities.fram_erase: the bridge offers the F-RAM operations and the server has them switched on. */
+  framEraseSupported?: boolean;
 }
 
 /** Simulates the VERSION_QUERY/VERSION_RESPONSE round trip (mirrors URTC's own 0x7F8/0x7F9/0x7FA). */
@@ -394,13 +396,17 @@ export function isOlderVersion(a: { major: number; minor: number; patch: number 
 /** Why a flash over the real bus must not start, or null when it may. The hardware path sends the version and the hardware id of the image and the
  * installed version is compared first: an image without a hardware id (a local file) or without a version is refused instead of being sent as 0, an
  * older image needs the explicit downgrade choice, and the F-RAM erase is refused because the bridge has no command for it (the simulation alone honours it). */
-export type FlashRefusal = 'no_hardware_id' | 'no_version' | 'downgrade_blocked' | 'fram_erase_unsupported';
-export function flashPreflight(input: { hardwareId?: string; versionTag?: string; installedVersion?: string; allowDowngrade: boolean; eraseFram: boolean }): FlashRefusal | null {
+export type FlashRefusal = 'no_hardware_id' | 'no_version' | 'downgrade_blocked' | 'fram_erase_unsupported' | 'fram_erase_wrong_tier';
+export function flashPreflight(input: { hardwareId?: string; versionTag?: string; installedVersion?: string; allowDowngrade: boolean; eraseFram: boolean; framEraseSupported?: boolean; tier?: CanOtaTier }): FlashRefusal | null {
   const id = input.hardwareId ? Number(input.hardwareId) : 0;
   if (!Number.isFinite(id) || id <= 0) return 'no_hardware_id';
   const image = parseVersion(input.versionTag);
   if (!image) return 'no_version';
-  if (input.eraseFram) return 'fram_erase_unsupported';
+  if (input.eraseFram) {
+    // The erase is refused unless the server announced it (capabilities.fram_erase of the version query), and the chip is the brain's: no other target has one.
+    if (!input.framEraseSupported) return 'fram_erase_unsupported';
+    if (input.tier !== undefined && input.tier !== 'kinematicBrain') return 'fram_erase_wrong_tier';
+  }
   const installed = parseVersion(input.installedVersion);
   if (installed && isOlderVersion(image, installed) && !input.allowDowngrade) return 'downgrade_blocked';
   return null;
@@ -638,9 +644,48 @@ export async function hardwareQueryVersion(target: CanOtaTarget, authToken: stri
       online: true,
       firmwareVersion: `${body.firmware_major}.${body.firmware_minor}.0`,
       hardwareId: `0x${Number(body.hardware_id || 0).toString(16).toUpperCase().padStart(8, '0')}`,
+      framEraseSupported: body.capabilities?.fram_erase === true,
     };
   } catch {
     return { online: false };
+  }
+}
+
+/** The word an erase of the F-RAM needs typed before it is sent (the server and the bridge ask for it too). */
+export const FRAM_ERASE_WORD = 'ERASE';
+
+/** Whether what was typed is exactly the word (after trimming the spaces around it): a letter of another case does not confirm. */
+export function framEraseWordMatches(typed: string): boolean {
+  return typed.trim() === FRAM_ERASE_WORD;
+}
+
+export type FramOperation = 'erase' | 'selftest';
+
+export interface FramOperationResult {
+  /** false when the server or the bridge could not be reached at all. */
+  reachable: boolean;
+  ok: boolean;
+  /** The name the brain answered (ok, disabled, no-chip, wrong-slot, busy, chip-error, verify-fail), or server_disabled / unreachable / unknown. */
+  status: string;
+  /** Bytes written (erase) or the address that failed (self-test). */
+  value: number;
+}
+
+/** Real POST /api/hardware/fram/erase or /selftest (administrators only; off by default in the server). An erase sends the word the person typed. */
+export async function hardwareFramOperation(operation: FramOperation, authToken: string | null, typedWord = ''): Promise<FramOperationResult> {
+  if (operation === 'erase' && !framEraseWordMatches(typedWord)) return { reachable: true, ok: false, status: 'unknown', value: 0 };
+  try {
+    const res = await fetch(apiUrl(`/api/hardware/fram/${operation}`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders(authToken) },
+      body: JSON.stringify(operation === 'erase' ? { confirm: FRAM_ERASE_WORD } : {}),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (res.status === 403 && body.code === 'FRAM_ERASE_DISABLED') return { reachable: true, ok: false, status: 'server_disabled', value: 0 };
+    if (!res.ok && typeof body.status !== 'string') return { reachable: true, ok: false, status: res.status === 503 || res.status === 504 ? 'unreachable' : 'unknown', value: 0 };
+    return { reachable: true, ok: body.ok === true, status: typeof body.status === 'string' ? body.status : 'unknown', value: Number(body.value) || 0 };
+  } catch {
+    return { reachable: false, ok: false, status: 'unreachable', value: 0 };
   }
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { productionPatch, productionChangeNeedsConfirmation, parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { productionPatch, productionChangeNeedsConfirmation, parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, validEstopWatchMs, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -228,6 +228,46 @@ describe('the gateway to the machine bridges option', () => {
     expect(bridgeGatewayPatch(true)).toEqual({ bridgeGateway: { enabled: true } });
     expect(bridgeGatewayPatch(false)).toEqual({ bridgeGateway: { enabled: false } });
     expect(knownWarnings(['bridge_gateway_on', 'other'])).toEqual(['bridge_gateway_on']);
+  });
+});
+
+describe('the F-RAM erase and the emergency stop watch options', () => {
+  const stop = { publishGlobalStop: { value: false, source: 'default' } };
+
+  it('reads the two options when the server reports them and ignores a damaged one', () => {
+    const both = { ...stop, framErase: { value: false, source: 'default' }, estopWatchMs: { value: 2000, source: 'config' } };
+    expect(parseSecurityState({ ...answer, safety: both })?.safety).toEqual(both);
+    expect(parseSecurityState({ ...answer, safety: { ...stop, framErase: { value: 'no', source: 'default' } } })?.safety).toEqual(stop);
+    expect(parseSecurityState({ ...answer, safety: { ...stop, estopWatchMs: { value: 100, source: 'default' } } })?.safety).toEqual(stop);
+    expect(parseSecurityState({ ...answer, safety: { ...stop, estopWatchMs: { value: 1000, source: 'nowhere' } } })?.safety).toEqual(stop);
+  });
+
+  it('knows the interval the server accepts: 0 or a whole number from 500 to 60000', () => {
+    for (const ok of [0, 500, 2000, 60000]) expect(validEstopWatchMs(ok)).toBe(true);
+    for (const bad of [-1, 499, 60001, 1.5, NaN, '500', null, undefined]) expect(validEstopWatchMs(bad)).toBe(false);
+    expect(parseEstopWatchText('')).toBe(0);
+    expect(parseEstopWatchText('  ')).toBe(0);
+    expect(parseEstopWatchText('0')).toBe(0);
+    expect(parseEstopWatchText(' 2000 ')).toBe(2000);
+    for (const bad of ['499', '60001', '1e3', '-5', 'abc', '2.5']) expect(parseEstopWatchText(bad)).toBeNull();
+  });
+
+  it('builds the request: the first option alone is the one it always was, the new ones only when given', () => {
+    expect(safetyPatch(false)).toEqual({ safety: { publishGlobalStop: false } });
+    expect(safetyPatch(true, { estopWatchMs: 1500 })).toEqual({ safety: { publishGlobalStop: true, estopWatchMs: 1500 } });
+    expect(safetyPatch(false, { estopWatchMs: 0 })).toEqual({ safety: { publishGlobalStop: false, estopWatchMs: 0 } });
+    expect(safetyPatch(false, { framErase: true })).toEqual({ safety: { publishGlobalStop: false, framErase: true, confirm: true } });
+    expect(safetyPatch(false, { framErase: false })).toEqual({ safety: { publishGlobalStop: false, framErase: false } });
+    // the announcement left out (fixed by the environment of the server): the others still go
+    expect(safetyPatch(null, { estopWatchMs: 1000 })).toEqual({ safety: { estopWatchMs: 1000 } });
+    expect(safetyPatch(null)).toEqual({ safety: {} });
+  });
+
+  it('asks before offering the erase and never before switching it off', () => {
+    expect(framEraseChangeNeedsConfirmation(false, true)).toBe(true);
+    expect(framEraseChangeNeedsConfirmation(true, false)).toBe(false);
+    expect(framEraseChangeNeedsConfirmation(true, true)).toBe(false);
+    expect(framEraseChangeNeedsConfirmation(false, false)).toBe(false);
   });
 });
 

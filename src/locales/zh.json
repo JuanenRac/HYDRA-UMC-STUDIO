@@ -783,7 +783,9 @@
       "preflight_no_hardware_id": "此镜像没有硬件 ID（本地文件）：请从发布版中选择，以便板子核对它是否适用。",
       "preflight_no_version": "此镜像没有版本号：请从发布版中选择，以便板子与已安装版本比较。",
       "preflight_downgrade_blocked": "此镜像比已安装版本更旧：如确需降级，请勾选降级选项。",
-      "preflight_fram_erase_unsupported": "真实总线不支持擦除 F-RAM：请取消勾选（只有模拟会执行）。"
+      "preflight_fram_erase_unsupported": "未提供 F-RAM 擦除：服务器或桥已将其关闭（或尚未读取版本）。请取消勾选。",
+      "preflight_fram_erase_wrong_tier": "F-RAM 位于运动学大脑：对其他任何目标请取消勾选擦除。",
+      "fram_after_flash": "刷写后正在擦除 F-RAM..."
     },
     "progress": {
       "connecting": "连接中…",
@@ -802,7 +804,34 @@
     "download_github": "从 GitHub 下载",
     "no_releases": "尚未发布任何 .bin 版本。",
     "simulation_banner": "模拟 - 不会向板卡发送任何内容(要真实刷写,请将 CAN-OTA 传输设为硬件)",
-    "show_bootloaders": "同时列出引导程序镜像（专家）"
+    "show_bootloaders": "同时列出引导程序镜像（专家）",
+    "fram_title": "运动学大脑的 F-RAM",
+    "fram_unknown": "请先读取版本：服务器和桥会在此说明是否提供 F-RAM 操作。",
+    "fram_unsupported": "未提供 F-RAM 操作。默认关闭：请在 Server Admin > 安全（F-RAM 擦除）中开启，并用 --enable-fram-erase 启动桥。",
+    "fram_selftest": "测试 F-RAM",
+    "fram_erase": "擦除 F-RAM...",
+    "fram_erase_title": "擦除整个 F-RAM",
+    "fram_erase_body": "这会在堆栈运行时向运动学大脑 F-RAM 的全部 8192 字节写入零，且无法撤销。请输入 {{word}} 以确认。",
+    "fram_erase_placeholder": "输入 {{word}}",
+    "fram_erase_confirm": "擦除",
+    "fram_busy": "正在处理 F-RAM...",
+    "fram_result_erase_ok": "F-RAM 已擦除：已写入并回读 {{value}} 字节。",
+    "fram_result_selftest_ok": "F-RAM 自检通过；内容未改变。",
+    "fram_result_failed": "F-RAM {{operation}}未完成：{{status}}。",
+    "fram_operation_erase": "擦除",
+    "fram_operation_selftest": "自检",
+    "fram_status": {
+      "disabled": "固件已关闭 F-RAM 操作",
+      "no-chip": "固件没有该芯片的驱动（构建中没有 I2C 时序）",
+      "wrong-slot": "该请求不是发给大脑的",
+      "busy": "大脑正忙",
+      "chip-error": "芯片没有应答，或没有保留所写内容",
+      "verify-fail": "有一个单元回读结果与写入不一致",
+      "server_disabled": "服务器已关闭 F-RAM 操作",
+      "unreachable": "服务器或桥没有应答",
+      "unknown": "未知应答"
+    },
+    "confirm_flash_erase": "刷写后还会擦除运动学大脑的 F-RAM。"
   },
   "tester": {
     "title": "Tester 测试工具",
@@ -1388,7 +1417,13 @@
     "admin_security_rul_title": "操作员的剩余使用寿命",
     "admin_security_rul_label": "允许操作员使用 AI 仪表板的剩余使用寿命估算（POST /api/ai/anomaly-detector/rul）",
     "admin_security_rul_help": "默认关闭：此时只有管理员可以发送该请求，与以前相同。开启后操作员也可以发送；请求的大小和时间受到限制，并且只开放这一个请求（对检测器的其他写入仍仅限管理员）。",
-    "admin_security_rul_save": "保存剩余使用寿命设置"
+    "admin_security_rul_save": "保存剩余使用寿命设置",
+    "admin_security_fram_label": "提供运动学大脑 F-RAM 的擦除和自检",
+    "admin_security_fram_help": "默认关闭。需要用 --enable-fram-erase 启动 SPI 桥，以及为此构建的固件；擦除还需要在 Flasher 中输入 ERASE 一词。",
+    "admin_security_fram_confirm": "要提供 F-RAM 擦除吗？管理员将能在 Flasher 中向运动学大脑的整个 F-RAM 写入零。",
+    "admin_security_estop_watch_label": "急停监视间隔 (ms)",
+    "admin_security_estop_watch_help": "留空或 0：关闭。否则为 500 到 60000。服务器按此间隔从 SPI 桥读取物理急停，并在各应用中显示统一的停止状态。更改在服务器重启后生效。",
+    "admin_security_estop_watch_invalid": "请使用 0（关闭）或 500 到 60000 之间的整数。"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO 访问",

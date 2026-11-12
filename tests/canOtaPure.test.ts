@@ -8,8 +8,8 @@
 // =============================================================================
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  chipNameFor, crc32, flashPreflight, downloadGithubFirmware, fetchGithubFirmwareReleases, hardwareQueryVersion, hardwareStartFlash,
-  hasAdvancedExpansion, hopCount, hopDescription, resolveHardwareTarget, slotBaseId, slotLabel, tierBaseId,
+  chipNameFor, crc32, flashPreflight, downloadGithubFirmware, fetchGithubFirmwareReleases, hardwareFramOperation, hardwareQueryVersion, hardwareStartFlash,
+  framEraseWordMatches, FRAM_ERASE_WORD, hasAdvancedExpansion, hopCount, hopDescription, resolveHardwareTarget, slotBaseId, slotLabel, tierBaseId,
   SPI_TARGET_SELF, SPI_TARGET_STACKA,
 } from '../src/lib/canOta';
 import type { CanOtaTarget, CanOtaTier } from '../src/lib/canOta';
@@ -21,17 +21,17 @@ const target = (tier: CanOtaTier, robotIndex0 = 2): CanOtaTarget => ({ controlle
 afterEach(() => { vi.unstubAllGlobals(); });
 
 describe('slot addressing', () => {
-  it('labels the eight slots A1 to A8 and gives each its own 0x20 window from 0x600', () => {
+  it('labels the eight slots A1 to A8 and gives each its own 0x40 window from 0x600', () => {
     expect(Array.from({ length: 8 }, (_, i) => slotLabel(i))).toEqual(['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8']);
     expect(slotBaseId(0)).toBe(0x600);
-    expect(slotBaseId(1)).toBe(0x620);
-    expect(slotBaseId(7)).toBe(0x6e0);
+    expect(slotBaseId(1)).toBe(0x640);
+    expect(slotBaseId(7)).toBe(0x7c0);
   });
 
   it('never lets two slots overlap and keeps every slot inside the 11-bit CAN identifier range', () => {
     const bases = Array.from({ length: 8 }, (_, i) => slotBaseId(i));
-    for (let i = 1; i < bases.length; i++) expect(bases[i] - bases[i - 1]).toBe(0x20);
-    expect(bases[7] + 0x1f).toBeLessThanOrEqual(0x7ff);
+    for (let i = 1; i < bases.length; i++) expect(bases[i] - bases[i - 1]).toBe(0x40);
+    expect(bases[7] + 0x3f).toBeLessThanOrEqual(0x7ff);
   });
 
   it('uses the slot base for the controller board whatever the tier argument', () => {
@@ -107,10 +107,17 @@ describe('hardwareQueryVersion', () => {
     const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({ online: true, firmware_major: 0, firmware_minor: 2, hardware_id: 0x47343031 }) }));
     vi.stubGlobal('fetch', fetchMock);
     const result = await hardwareQueryVersion(target('urtcHead', 3), 'tok');
-    expect(result).toEqual({ online: true, firmwareVersion: '0.2.0', hardwareId: '0x47343031' });
+    expect(result).toEqual({ online: true, firmwareVersion: '0.2.0', hardwareId: '0x47343031', framEraseSupported: false });
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, { headers: Record<string, string> }];
     expect(url).toBe('/api/hardware/canota/version?tier=2&slot=3&relay=1');
     expect(init.headers).toEqual({ Authorization: 'Bearer tok' });
+  });
+
+  it('reads the announcement of the F-RAM operations: true only for the exact true', async () => {
+    for (const [capabilities, expected] of [[{ fram_erase: true }, true], [{ fram_erase: false }, false], [{}, false], [undefined, false], [{ fram_erase: 'true' }, false], [{ fram_erase: 1 }, false]] as const) {
+      vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ online: true, firmware_major: 0, firmware_minor: 1, hardware_id: 1, capabilities }) })));
+      expect((await hardwareQueryVersion(target('kinematicBrain', 0), 't')).framEraseSupported).toBe(expected);
+    }
   });
 
   it('sends no Authorization header without a token', async () => {
@@ -243,6 +250,76 @@ describe('downloadGithubFirmware', () => {
   });
 });
 
+describe('the word an erase of the F-RAM needs', () => {
+  it('is exactly ERASE, with the spaces around it ignored', () => {
+    expect(FRAM_ERASE_WORD).toBe('ERASE');
+    expect(framEraseWordMatches('ERASE')).toBe(true);
+    expect(framEraseWordMatches('  ERASE ')).toBe(true);
+    for (const typed of ['', 'erase', 'Erase', 'ERAS', 'ERASEE', 'ERASE ME', 'E R A S E']) expect(framEraseWordMatches(typed)).toBe(false);
+  });
+});
+
+describe('hardwareFramOperation', () => {
+  const answer = (status: number, body: unknown) => vi.fn(async () => ({ ok: status >= 200 && status < 300, status, json: async () => body }));
+
+  it('sends the word with an erase, to the erase route, with the token', async () => {
+    const fetchMock = answer(200, { operation: 'erase', status: 'ok', ok: true, board_id: 0, value: 8192 });
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await hardwareFramOperation('erase', 'tok', 'ERASE');
+    expect(result).toEqual({ reachable: true, ok: true, status: 'ok', value: 8192 });
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, { method: string; headers: Record<string, string>; body: string }];
+    expect(url).toBe('/api/hardware/fram/erase');
+    expect(init.method).toBe('POST');
+    expect(init.headers.Authorization).toBe('Bearer tok');
+    expect(JSON.parse(init.body)).toEqual({ confirm: 'ERASE' });
+  });
+
+  it('never sends an erase unless the word was typed', async () => {
+    const fetchMock = answer(200, { status: 'ok', ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    for (const typed of ['', 'erase', 'ERAS']) {
+      const result = await hardwareFramOperation('erase', 't', typed);
+      expect(result.ok).toBe(false);
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('runs the self-test without a word', async () => {
+    const fetchMock = answer(200, { operation: 'selftest', status: 'ok', ok: true, value: 0 });
+    vi.stubGlobal('fetch', fetchMock);
+    expect((await hardwareFramOperation('selftest', null)).ok).toBe(true);
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, { headers: Record<string, string>; body: string }];
+    expect(url).toBe('/api/hardware/fram/selftest');
+    expect(init.headers.Authorization).toBeUndefined();
+    expect(JSON.parse(init.body)).toEqual({});
+  });
+
+  it('reports what the brain refused, by name, and never as done', async () => {
+    for (const status of ['disabled', 'no-chip', 'chip-error', 'verify-fail']) {
+      vi.stubGlobal('fetch', answer(200, { operation: 'erase', status, ok: false, value: 7 }));
+      expect(await hardwareFramOperation('erase', 't', 'ERASE')).toEqual({ reachable: true, ok: false, status, value: 7 });
+    }
+  });
+
+  it('tells a server that has the operations off from a bridge that could not be reached', async () => {
+    vi.stubGlobal('fetch', answer(403, { error: 'off', code: 'FRAM_ERASE_DISABLED' }));
+    expect((await hardwareFramOperation('selftest', 't')).status).toBe('server_disabled');
+    vi.stubGlobal('fetch', answer(503, { error: 'unavailable' }));
+    expect((await hardwareFramOperation('selftest', 't')).status).toBe('unreachable');
+    vi.stubGlobal('fetch', answer(504, { error: 'no answer' }));
+    expect((await hardwareFramOperation('selftest', 't')).status).toBe('unreachable');
+    vi.stubGlobal('fetch', answer(500, {}));
+    expect((await hardwareFramOperation('selftest', 't')).status).toBe('unknown');
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('network'); }));
+    expect(await hardwareFramOperation('selftest', 't')).toEqual({ reachable: false, ok: false, status: 'unreachable', value: 0 });
+  });
+
+  it('does not take an ok:true that is not exactly true', async () => {
+    vi.stubGlobal('fetch', answer(200, { status: 'ok', ok: 'yes', value: 1 }));
+    expect((await hardwareFramOperation('selftest', 't')).ok).toBe(false);
+  });
+});
+
 describe('flashPreflight', () => {
   const ok = { hardwareId: '0x48374334', versionTag: '0.3.1', installedVersion: '0.2.9', allowDowngrade: false, eraseFram: false };
   it('lets an image with a hardware id and a newer version go', () => {
@@ -261,7 +338,24 @@ describe('flashPreflight', () => {
     expect(flashPreflight({ ...ok, versionTag: '0.1.9', installedVersion: '0.2.0' })).toBe('downgrade_blocked');
     expect(flashPreflight({ ...ok, versionTag: '0.2.8', allowDowngrade: true })).toBeNull();
   });
-  it('refuses the F-RAM erase that the real bridge cannot do', () => {
+  it('refuses the F-RAM erase unless the server announced it', () => {
     expect(flashPreflight({ ...ok, eraseFram: true })).toBe('fram_erase_unsupported');
+    expect(flashPreflight({ ...ok, eraseFram: true, framEraseSupported: false })).toBe('fram_erase_unsupported');
+  });
+  it('lets the F-RAM erase go when the server announced it and the target is the kinematic brain', () => {
+    expect(flashPreflight({ ...ok, eraseFram: true, framEraseSupported: true })).toBeNull();
+    expect(flashPreflight({ ...ok, eraseFram: true, framEraseSupported: true, tier: 'kinematicBrain' })).toBeNull();
+  });
+  it('refuses the F-RAM erase for any other target: the chip is the brain\'s', () => {
+    for (const tier of ['controllerBoard', 'urtcHead', 'urtcExpansion'] as const) {
+      expect(flashPreflight({ ...ok, eraseFram: true, framEraseSupported: true, tier })).toBe('fram_erase_wrong_tier');
+    }
+  });
+  it('does not look at the announcement when no erase is asked for', () => {
+    expect(flashPreflight({ ...ok, eraseFram: false, framEraseSupported: false, tier: 'controllerBoard' })).toBeNull();
+  });
+  it('still checks the image before the erase', () => {
+    expect(flashPreflight({ ...ok, hardwareId: undefined, eraseFram: true, framEraseSupported: true })).toBe('no_hardware_id');
+    expect(flashPreflight({ ...ok, versionTag: '0.2.8', eraseFram: true, framEraseSupported: true })).toBe('downgrade_blocked');
   });
 });

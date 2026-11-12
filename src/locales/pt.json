@@ -783,7 +783,9 @@
       "preflight_no_hardware_id": "Esta imagem não tem identificador de hardware (um ficheiro local): escolha-a a partir da versão publicada para que a placa possa verificar que é para si.",
       "preflight_no_version": "Esta imagem não tem versão: escolha-a a partir da versão publicada para que a placa a compare com a instalada.",
       "preflight_downgrade_blocked": "Esta imagem é mais antiga do que a versão instalada: marque a opção de retrocesso se for isso que pretende.",
-      "preflight_fram_erase_unsupported": "Apagar a F-RAM não está disponível no barramento real: desmarque-o (só a simulação o respeita)."
+      "preflight_fram_erase_unsupported": "O apagamento da F-RAM não é oferecido: o servidor ou a ponte tem-no desativado (ou a versão não foi lida). Desmarque-o.",
+      "preflight_fram_erase_wrong_tier": "A F-RAM está no cérebro cinemático: desmarque o apagamento para qualquer outro destino.",
+      "fram_after_flash": "A apagar a F-RAM depois do flash..."
     },
     "progress": {
       "connecting": "A ligar...",
@@ -802,7 +804,34 @@
     "download_github": "Descarregar do GitHub",
     "no_releases": "Ainda não há versões .bin publicadas.",
     "simulation_banner": "SIMULAÇÃO - não é enviado nada às placas (mude o transporte CAN-OTA para hardware para gravar a sério)",
-    "show_bootloaders": "Listar também imagens de bootloader (avançado)"
+    "show_bootloaders": "Listar também imagens de bootloader (avançado)",
+    "fram_title": "F-RAM do cérebro cinemático",
+    "fram_unknown": "Leia primeiro a versão: o servidor e a ponte indicam aqui se as operações da F-RAM são oferecidas.",
+    "fram_unsupported": "As operações da F-RAM não são oferecidas. Estão desativadas por defeito: ative-as em Server Admin > Segurança (apagar a F-RAM) e inicie a ponte com --enable-fram-erase.",
+    "fram_selftest": "Testar a F-RAM",
+    "fram_erase": "Apagar a F-RAM...",
+    "fram_erase_title": "Apagar toda a F-RAM",
+    "fram_erase_body": "Isto escreve zeros nos 8192 bytes da F-RAM do cérebro cinemático, com a pilha a funcionar, e não se pode desfazer. Escreva {{word}} para confirmar.",
+    "fram_erase_placeholder": "Escreva {{word}}",
+    "fram_erase_confirm": "Apagar",
+    "fram_busy": "A trabalhar na F-RAM...",
+    "fram_result_erase_ok": "F-RAM apagada: {{value}} bytes escritos e relidos.",
+    "fram_result_selftest_ok": "Autoteste da F-RAM concluído com êxito; o conteúdo não mudou.",
+    "fram_result_failed": "A operação da F-RAM ({{operation}}) não terminou: {{status}}.",
+    "fram_operation_erase": "apagamento",
+    "fram_operation_selftest": "autoteste",
+    "fram_status": {
+      "disabled": "o firmware tem as operações da F-RAM desativadas",
+      "no-chip": "o firmware não tem controlador para o chip (sem temporização I2C na compilação)",
+      "wrong-slot": "o pedido não era para o cérebro",
+      "busy": "o cérebro está ocupado",
+      "chip-error": "o chip não respondeu ou não guardou o que foi escrito",
+      "verify-fail": "uma célula não é relida como foi escrita",
+      "server_disabled": "o servidor tem as operações da F-RAM desativadas",
+      "unreachable": "o servidor ou a ponte não respondeu",
+      "unknown": "resposta desconhecida"
+    },
+    "confirm_flash_erase": "Depois do flash, a F-RAM do cérebro cinemático também será apagada."
   },
   "tester": {
     "title": "Tester",
@@ -1388,7 +1417,13 @@
     "admin_security_rul_title": "Vida útil restante para operadores",
     "admin_security_rul_label": "Permitir que os operadores usem a estimativa de vida útil restante do painel de IA (POST /api/ai/anomaly-detector/rul)",
     "admin_security_rul_help": "Desativado por predefinição: só um administrador pode então enviar o pedido, como antes. Ativado, os operadores também podem; o tamanho e o tempo do pedido são limitados e só este pedido é aberto (qualquer outra escrita no detetor continua reservada aos administradores).",
-    "admin_security_rul_save": "Guardar vida útil restante"
+    "admin_security_rul_save": "Guardar vida útil restante",
+    "admin_security_fram_label": "Oferecer o apagamento e o autoteste da F-RAM do cérebro cinemático",
+    "admin_security_fram_help": "Desativado por defeito. Precisa da ponte SPI iniciada com --enable-fram-erase e de um firmware compilado para isso; um apagamento exige ainda a palavra ERASE escrita no Flasher.",
+    "admin_security_fram_confirm": "Oferecer o apagamento da F-RAM? Um administrador poderá escrever zeros em toda a F-RAM do cérebro cinemático a partir do Flasher.",
+    "admin_security_estop_watch_label": "Vigilância da paragem de emergência a cada (ms)",
+    "admin_security_estop_watch_help": "Vazio ou 0: desativada. Caso contrário, de 500 a 60000. O servidor lê a paragem de emergência física da ponte SPI nesse intervalo e mostra um único estado de paragem nas apps. Uma alteração aplica-se quando o servidor reinicia.",
+    "admin_security_estop_watch_invalid": "Use 0 (desativada) ou um número inteiro de 500 a 60000."
   },
   "auth": {
     "title": "Acesso ao HYDRA-UMC STUDIO",

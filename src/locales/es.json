@@ -783,7 +783,9 @@
       "preflight_no_hardware_id": "Esta imagen no tiene identificador de hardware (un fichero local): elígela desde la release para que la placa pueda comprobar que es suya.",
       "preflight_no_version": "Esta imagen no tiene versión: elígela desde la release para que la placa la compare con la instalada.",
       "preflight_downgrade_blocked": "Esta imagen es más antigua que la versión instalada: marca la opción de bajar de versión si es lo que quieres.",
-      "preflight_fram_erase_unsupported": "Borrar la F-RAM no está disponible por el bus real: desmárcalo (solo la simulación lo respeta)."
+      "preflight_fram_erase_unsupported": "El borrado de la F-RAM no está ofrecido: el servidor o el puente lo tiene desactivado (o no se leyó la versión). Desmárcalo.",
+      "preflight_fram_erase_wrong_tier": "La F-RAM está en el cerebro cinemático: desmarca el borrado para cualquier otro destino.",
+      "fram_after_flash": "Borrando la F-RAM tras el flasheo..."
     },
     "progress": {
       "connecting": "Conectando...",
@@ -802,7 +804,34 @@
     "download_github": "Descargar de GitHub",
     "no_releases": "Todavía no hay releases .bin publicados.",
     "simulation_banner": "SIMULACIÓN - no se envía nada a las placas (cambia el transporte CAN-OTA a hardware para flashear de verdad)",
-    "show_bootloaders": "Listar también imágenes de bootloader (experto)"
+    "show_bootloaders": "Listar también imágenes de bootloader (experto)",
+    "fram_title": "F-RAM del cerebro cinemático",
+    "fram_unknown": "Lee primero la versión: el servidor y el puente indican aquí si las operaciones de la F-RAM están ofrecidas.",
+    "fram_unsupported": "Las operaciones de la F-RAM no están ofrecidas. Están desactivadas por defecto: actívalas en Server Admin > Seguridad (borrado de F-RAM) e inicia el puente con --enable-fram-erase.",
+    "fram_selftest": "Probar F-RAM",
+    "fram_erase": "Borrar F-RAM...",
+    "fram_erase_title": "Borrar toda la F-RAM",
+    "fram_erase_body": "Esto escribe ceros en los 8192 bytes de la F-RAM del cerebro cinemático, con la pila en marcha, y no se puede deshacer. Escribe {{word}} para confirmar.",
+    "fram_erase_placeholder": "Escribe {{word}}",
+    "fram_erase_confirm": "Borrar",
+    "fram_busy": "Trabajando en la F-RAM...",
+    "fram_result_erase_ok": "F-RAM borrada: {{value}} bytes escritos y releídos.",
+    "fram_result_selftest_ok": "Autotest de la F-RAM superado; el contenido no cambió.",
+    "fram_result_failed": "La operación de F-RAM ({{operation}}) no terminó: {{status}}.",
+    "fram_operation_erase": "borrado",
+    "fram_operation_selftest": "autotest",
+    "fram_status": {
+      "disabled": "el firmware tiene desactivadas las operaciones de la F-RAM",
+      "no-chip": "el firmware no tiene controlador para el chip (sin temporización I2C en la compilación)",
+      "wrong-slot": "la petición no era para el cerebro",
+      "busy": "el cerebro está ocupado",
+      "chip-error": "el chip no respondió o no conservó lo escrito",
+      "verify-fail": "una celda no se relee como se escribió",
+      "server_disabled": "el servidor tiene desactivadas las operaciones de la F-RAM",
+      "unreachable": "el servidor o el puente no respondió",
+      "unknown": "respuesta desconocida"
+    },
+    "confirm_flash_erase": "Tras el flasheo también se borrará la F-RAM del cerebro cinemático."
   },
   "tester": {
     "title": "Tester",
@@ -1388,7 +1417,13 @@
     "admin_security_rul_title": "Vida útil restante para operadores",
     "admin_security_rul_label": "Permitir que los operadores usen la estimación de vida útil restante del panel de IA (POST /api/ai/anomaly-detector/rul)",
     "admin_security_rul_help": "Desactivado por defecto: entonces solo un administrador puede enviar la petición, como antes. Activado, también los operadores; se limitan el tamaño y el tiempo de la petición, y solo se abre esta petición (cualquier otra escritura en el detector sigue siendo de administradores).",
-    "admin_security_rul_save": "Guardar vida útil restante"
+    "admin_security_rul_save": "Guardar vida útil restante",
+    "admin_security_fram_label": "Ofrecer el borrado y el autotest de la F-RAM del cerebro cinemático",
+    "admin_security_fram_help": "Desactivado por defecto. Necesita el puente SPI iniciado con --enable-fram-erase y un firmware compilado para ello; un borrado además exige escribir la palabra ERASE en el Flasher.",
+    "admin_security_fram_confirm": "¿Ofrecer el borrado de la F-RAM? Un administrador podrá escribir ceros en toda la F-RAM del cerebro cinemático desde el Flasher.",
+    "admin_security_estop_watch_label": "Vigilancia de la parada de emergencia cada (ms)",
+    "admin_security_estop_watch_help": "Vacío o 0: desactivada. Si no, de 500 a 60000. El servidor lee la parada de emergencia física del puente SPI con ese intervalo y muestra un solo estado de parada en las apps. Un cambio se aplica al reiniciar el servidor.",
+    "admin_security_estop_watch_invalid": "Usa 0 (desactivada) o un número entero de 500 a 60000."
   },
   "auth": {
     "title": "Acceso a HYDRA-UMC STUDIO",

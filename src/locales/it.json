@@ -783,7 +783,9 @@
       "preflight_no_hardware_id": "Questa immagine non ha un identificativo hardware (un file locale): sceglila dalla release così la scheda può verificare che sia per lei.",
       "preflight_no_version": "Questa immagine non ha una versione: sceglila dalla release così la scheda la confronta con quella installata.",
       "preflight_downgrade_blocked": "Questa immagine è più vecchia della versione installata: spunta l'opzione di downgrade se è ciò che vuoi.",
-      "preflight_fram_erase_unsupported": "La cancellazione della F-RAM non è disponibile sul bus reale: deseleziona l'opzione (solo la simulazione la rispetta)."
+      "preflight_fram_erase_unsupported": "La cancellazione della F-RAM non è offerta: il server o il bridge l'ha disattivata (o la versione non è stata letta). Deseleziona l'opzione.",
+      "preflight_fram_erase_wrong_tier": "La F-RAM è sul cervello cinematico: deseleziona la cancellazione per qualsiasi altra destinazione.",
+      "fram_after_flash": "Cancellazione della F-RAM dopo il flashing..."
     },
     "progress": {
       "connecting": "Connessione...",
@@ -802,7 +804,34 @@
     "download_github": "Scarica da GitHub",
     "no_releases": "Nessuna release .bin pubblicata finora.",
     "simulation_banner": "SIMULAZIONE - nulla viene inviato alle schede (imposta il trasporto CAN-OTA su hardware per flashare davvero)",
-    "show_bootloaders": "Elenca anche le immagini del bootloader (esperto)"
+    "show_bootloaders": "Elenca anche le immagini del bootloader (esperto)",
+    "fram_title": "F-RAM del cervello cinematico",
+    "fram_unknown": "Leggi prima la versione: il server e il bridge indicano qui se le operazioni sulla F-RAM sono offerte.",
+    "fram_unsupported": "Le operazioni sulla F-RAM non sono offerte. Sono disattivate per impostazione predefinita: attivale in Server Admin > Sicurezza (cancellazione F-RAM) e avvia il bridge con --enable-fram-erase.",
+    "fram_selftest": "Prova F-RAM",
+    "fram_erase": "Cancella F-RAM...",
+    "fram_erase_title": "Cancella tutta la F-RAM",
+    "fram_erase_body": "Questo scrive zeri su tutti gli 8192 byte della F-RAM del cervello cinematico, con lo stack in funzione, e non si può annullare. Digita {{word}} per confermare.",
+    "fram_erase_placeholder": "Digita {{word}}",
+    "fram_erase_confirm": "Cancella",
+    "fram_busy": "Lavoro sulla F-RAM...",
+    "fram_result_erase_ok": "F-RAM cancellata: {{value}} byte scritti e riletti.",
+    "fram_result_selftest_ok": "Autotest della F-RAM superato; il contenuto non è cambiato.",
+    "fram_result_failed": "L'operazione F-RAM ({{operation}}) non è terminata: {{status}}.",
+    "fram_operation_erase": "cancellazione",
+    "fram_operation_selftest": "autotest",
+    "fram_status": {
+      "disabled": "il firmware ha disattivato le operazioni sulla F-RAM",
+      "no-chip": "il firmware non ha un driver per il chip (nessun timing I2C nella build)",
+      "wrong-slot": "la richiesta non era per il cervello",
+      "busy": "il cervello è occupato",
+      "chip-error": "il chip non ha risposto o non ha conservato ciò che è stato scritto",
+      "verify-fail": "una cella non si rilegge come è stata scritta",
+      "server_disabled": "il server ha disattivato le operazioni sulla F-RAM",
+      "unreachable": "il server o il bridge non ha risposto",
+      "unknown": "risposta sconosciuta"
+    },
+    "confirm_flash_erase": "Dopo il flashing verrà cancellata anche la F-RAM del cervello cinematico."
   },
   "tester": {
     "title": "Tester",
@@ -1388,7 +1417,13 @@
     "admin_security_rul_title": "Vita utile residua per gli operatori",
     "admin_security_rul_label": "Consenti agli operatori di usare la stima della vita utile residua del cruscotto IA (POST /api/ai/anomaly-detector/rul)",
     "admin_security_rul_help": "Disattivata per impostazione predefinita: solo un amministratore può allora inviare la richiesta, come prima. Attivata, possono anche gli operatori; dimensione e tempo della richiesta sono limitati e si apre solo questa richiesta (ogni altra scrittura nel rilevatore resta riservata agli amministratori).",
-    "admin_security_rul_save": "Salva vita utile residua"
+    "admin_security_rul_save": "Salva vita utile residua",
+    "admin_security_fram_label": "Offri la cancellazione e l'autotest della F-RAM del cervello cinematico",
+    "admin_security_fram_help": "Disattivato per impostazione predefinita. Richiede il bridge SPI avviato con --enable-fram-erase e un firmware costruito per questo; una cancellazione richiede inoltre la parola ERASE digitata nel Flasher.",
+    "admin_security_fram_confirm": "Offrire la cancellazione della F-RAM? Un amministratore potrà scrivere zeri su tutta la F-RAM del cervello cinematico dal Flasher.",
+    "admin_security_estop_watch_label": "Monitoraggio dell'arresto di emergenza ogni (ms)",
+    "admin_security_estop_watch_help": "Vuoto o 0: disattivato. Altrimenti da 500 a 60000. Il server legge l'arresto di emergenza fisico dal bridge SPI con questo intervallo e mostra un solo stato di arresto nelle app. Una modifica si applica al riavvio del server.",
+    "admin_security_estop_watch_invalid": "Usa 0 (disattivato) o un numero intero da 500 a 60000."
   },
   "auth": {
     "title": "Accesso a HYDRA-UMC STUDIO",

@@ -23,9 +23,10 @@ import { Cpu, Upload, Download, Zap, AlertTriangle, CheckCircle2, XCircle, Refre
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { ConfirmDialog } from './ConfirmDialog';
+import { FramPanel } from './FramPanel';
 import {
   chipNameFor, crc32, downloadGithubFirmware, fetchGithubFirmwareReleases, GITHUB_FIRMWARE_REPO,
-  flashSigningOptions, hardwareQueryVersion, hardwareStartFlash, normalizeSignature, hasAdvancedExpansion, hopDescription, mockFlash, mockQueryVersion,
+  flashSigningOptions, FRAM_ERASE_WORD, hardwareFramOperation, hardwareQueryVersion, hardwareStartFlash, normalizeSignature, hasAdvancedExpansion, hopDescription, mockFlash, mockQueryVersion,
   resolveHardwareTarget, slotLabel,
   flashPreflight, type CanOtaTarget, type CanOtaTier, type FlashPhase, type GithubFirmwareAsset,
 } from '../lib/canOta';
@@ -60,6 +61,8 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
   const [file, setFile] = useState<{ name: string; size: number; bytes: Uint8Array; crc: number; hardwareId?: string; versionTag?: string; signature?: string; target?: string; minBootloader?: string } | null>(null);
   const [allowDowngrade, setAllowDowngrade] = useState(false);
   const [eraseFram, setEraseFram] = useState(false);
+  // What the last version query said about the F-RAM operations (capabilities.fram_erase: the bridge and the server both offer them); null until a query was made.
+  const [framSupported, setFramSupported] = useState<boolean | null>(null);
   const [querying, setQuerying] = useState(false);
   const [flashing, setFlashing] = useState(false);
   const [phase, setPhase] = useState<FlashPhase | null>(null);
@@ -103,6 +106,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
     setResetForTargetKey(currentTargetKey);
     setGhAssets(null);
     setGhLoading(false);
+    setFramSupported(null);
   }
   useEffect(() => { if (tier === 'urtcExpansion' && !expansionAvailable) setTier('urtcHead'); }, [robotId]); // eslint-disable-line
 
@@ -194,6 +198,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
     pushLog(t('flasher.log.querying', { hop: hopDescription(target) }));
     const res = isHardwareTransport ? await hardwareQueryVersion(target, authToken) : await mockQueryVersion(target);
     setQuerying(false);
+    setFramSupported(isHardwareTransport && res.online ? res.framEraseSupported === true : null);
     if (!res.online) {
       pushLog(t('flasher.log.no_response'), 'error');
       return;
@@ -224,7 +229,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
         pushLog(t('flasher.log.hardware_target_unreachable'), 'error');
         return;
       }
-      const refusal = flashPreflight({ hardwareId: file.hardwareId, versionTag: file.versionTag, installedVersion: boardState?.firmwareVersion, allowDowngrade, eraseFram });
+      const refusal = flashPreflight({ hardwareId: file.hardwareId, versionTag: file.versionTag, installedVersion: boardState?.firmwareVersion, allowDowngrade, eraseFram, framEraseSupported: framSupported === true, tier });
       if (refusal) {
         pushLog(t(`flasher.log.preflight_${refusal}`), 'error');
         return;
@@ -245,6 +250,12 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
           setPercent(100);
           pushLog(t('flasher.log.flash_done'), 'ok');
           applyBoardPatch({ firmwareVersion: file.versionTag || file.name.replace(/\.bin$/i, ''), bootloaderVersion: boardState?.bootloaderVersion || '0.0.0', hardwareId: boardState?.hardwareId, lastSeen: Date.now() });
+          if (eraseFram) {
+            // The person ticked the erase and confirmed the flash, whose dialog says it: the word is the one the server and the bridge ask for.
+            pushLog(t('flasher.log.fram_after_flash'));
+            const erased = await hardwareFramOperation('erase', authToken, FRAM_ERASE_WORD);
+            pushLog(erased.ok ? t('flasher.fram_result_erase_ok', { value: erased.value }) : t('flasher.fram_result_failed', { operation: t('flasher.fram_operation_erase'), status: t(`flasher.fram_status.${erased.status}`, { defaultValue: t('flasher.fram_status.unknown') }) }), erased.ok ? 'ok' : 'error');
+          }
         } else {
           setPhase('error');
           pushLog(t('flasher.log.flash_hardware_failed', { reason: result.reason }), 'error');
@@ -407,7 +418,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
               {t('flasher.allow_downgrade', 'Allow downgrade (bypass anti-rollback)')}
             </label>
             <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
-              <input type="checkbox" checked={eraseFram} onChange={e => setEraseFram(e.target.checked)} className="accent-sky-500" />
+              <input type="checkbox" checked={eraseFram} disabled={isHardwareTransport && (framSupported !== true || tier !== 'kinematicBrain')} onChange={e => setEraseFram(e.target.checked)} className="accent-sky-500" />
               {t('flasher.erase_fram', 'Erase F-RAM after flash')}
             </label>
             <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
@@ -416,6 +427,13 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
             </label>
           </div>
         </div>
+
+        {isHardwareTransport && tier === 'kinematicBrain' && (
+          <FramPanel authToken={authToken} supported={framSupported} disabled={flashing} onResult={(operation, result) => pushLog(
+            result.ok ? t(operation === 'erase' ? 'flasher.fram_result_erase_ok' : 'flasher.fram_result_selftest_ok', { value: result.value }) : t('flasher.fram_result_failed', { operation: t(`flasher.fram_operation_${operation}`), status: t(`flasher.fram_status.${result.status}`, { defaultValue: t('flasher.fram_status.unknown') }) }),
+            result.ok ? 'ok' : 'error')}
+          />
+        )}
 
         {/* Flash action + progress */}
         <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
@@ -455,7 +473,7 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
       </div>
       <ConfirmDialog
         open={showFlashConfirm}
-        message={t('flasher.confirm_flash', { target: targetLabel, robot: robot?.name || activeController?.name })}
+        message={t('flasher.confirm_flash', { target: targetLabel, robot: robot?.name || activeController?.name }) + (isHardwareTransport && eraseFram ? ` ${t('flasher.confirm_flash_erase')}` : '')}
         onConfirm={() => { setShowFlashConfirm(false); doFlash(); }}
         onCancel={() => setShowFlashConfirm(false)}
       />

@@ -783,7 +783,9 @@
       "preflight_no_hardware_id": "This image has no hardware id (a local file): pick it from the release so the board can check it is for it.",
       "preflight_no_version": "This image has no version: pick it from the release so the board can check it against the installed one.",
       "preflight_downgrade_blocked": "This image is older than the installed version: tick the downgrade choice if that is what you want.",
-      "preflight_fram_erase_unsupported": "Erasing the F-RAM is not available over the real bus: untick it (the simulation alone honours it)."
+      "preflight_fram_erase_unsupported": "Erasing the F-RAM is not offered: the server or the bridge has it switched off (or the version was not read). Untick it.",
+      "preflight_fram_erase_wrong_tier": "The F-RAM is on the kinematic brain: untick the erase for any other target.",
+      "fram_after_flash": "Erasing the F-RAM after the flash..."
     },
     "progress": {
       "connecting": "Connecting...",
@@ -802,7 +804,34 @@
     "download_github": "Download from GitHub",
     "no_releases": "No .bin releases published yet.",
     "simulation_banner": "SIMULATION - nothing is sent to the boards (set the CAN-OTA transport to hardware to flash for real)",
-    "show_bootloaders": "Also list bootloader images (expert)"
+    "show_bootloaders": "Also list bootloader images (expert)",
+    "fram_title": "F-RAM of the kinematic brain",
+    "fram_unknown": "Read the version first: the server and the bridge say here whether the F-RAM operations are offered.",
+    "fram_unsupported": "The F-RAM operations are not offered. They are off by default: turn them on in Server Admin > Security (F-RAM erase) and start the bridge with --enable-fram-erase.",
+    "fram_selftest": "Test F-RAM",
+    "fram_erase": "Erase F-RAM...",
+    "fram_erase_title": "Erase the whole F-RAM",
+    "fram_erase_body": "This writes zeros over all 8192 bytes of the F-RAM of the kinematic brain, with the stack running, and cannot be undone. Type {{word}} to confirm.",
+    "fram_erase_placeholder": "Type {{word}}",
+    "fram_erase_confirm": "Erase",
+    "fram_busy": "Working on the F-RAM...",
+    "fram_result_erase_ok": "F-RAM erased: {{value}} bytes written and read back.",
+    "fram_result_selftest_ok": "F-RAM self-test passed; the contents were not changed.",
+    "fram_result_failed": "F-RAM {{operation}} did not finish: {{status}}.",
+    "fram_operation_erase": "erase",
+    "fram_operation_selftest": "self-test",
+    "fram_status": {
+      "disabled": "the firmware has the F-RAM operations switched off",
+      "no-chip": "the firmware has no driver for the chip (no I2C timing in the build)",
+      "wrong-slot": "the request was not for the brain",
+      "busy": "the brain is busy",
+      "chip-error": "the chip did not answer or did not keep what was written",
+      "verify-fail": "a cell does not read back as written",
+      "server_disabled": "the server has the F-RAM operations switched off",
+      "unreachable": "the server or the bridge did not answer",
+      "unknown": "unknown answer"
+    },
+    "confirm_flash_erase": "The F-RAM of the kinematic brain will also be erased after the flash."
   },
   "tester": {
     "title": "Tester",
@@ -1388,7 +1417,13 @@
     "admin_security_rul_title": "Remaining useful life for operators",
     "admin_security_rul_label": "Let operators use the remaining-useful-life estimate of the AI dashboard (POST /api/ai/anomaly-detector/rul)",
     "admin_security_rul_help": "Off by default: only an administrator may then send the request, as before. When on, operators may too; the size and the time of the request are limited, and only this request is opened (every other write to the detector stays for administrators).",
-    "admin_security_rul_save": "Save remaining useful life"
+    "admin_security_rul_save": "Save remaining useful life",
+    "admin_security_fram_label": "Offer the erase and self-test of the F-RAM of the kinematic brain",
+    "admin_security_fram_help": "Off by default. Needs the SPI bridge started with --enable-fram-erase and a firmware built for it; an erase also needs the word ERASE typed in the Flasher.",
+    "admin_security_fram_confirm": "Offer the F-RAM erase? An administrator will be able to write zeros over the whole F-RAM of the kinematic brain from the Flasher.",
+    "admin_security_estop_watch_label": "Emergency stop watch every (ms)",
+    "admin_security_estop_watch_help": "Empty or 0: off. Otherwise 500 to 60000. The server reads the physical emergency stop from the SPI bridge at that interval and shows one stop state in the apps. A change applies when the server restarts.",
+    "admin_security_estop_watch_invalid": "Use 0 (off) or a whole number from 500 to 60000."
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO Access",

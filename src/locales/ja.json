@@ -783,7 +783,9 @@
       "preflight_no_hardware_id": "このイメージにはハードウェア ID がありません (ローカルファイル)。基板が自分用か確認できるよう、リリースから選んでください。",
       "preflight_no_version": "このイメージにはバージョンがありません。基板がインストール済みと比較できるよう、リリースから選んでください。",
       "preflight_downgrade_blocked": "このイメージはインストール済みのバージョンより古いです。意図する場合はダウングレードの選択をオンにしてください。",
-      "preflight_fram_erase_unsupported": "F-RAM の消去は実バスでは利用できません。チェックを外してください (シミュレーションのみ対応)。"
+      "preflight_fram_erase_unsupported": "F-RAM の消去は提供されていません。サーバーまたはブリッジでオフになっています (またはバージョンを読み取っていません)。チェックを外してください。",
+      "preflight_fram_erase_wrong_tier": "F-RAM は運動学ブレインにあります。他のターゲットでは消去のチェックを外してください。",
+      "fram_after_flash": "書き込み後に F-RAM を消去しています..."
     },
     "progress": {
       "connecting": "接続中…",
@@ -802,7 +804,34 @@
     "download_github": "GitHub からダウンロード",
     "no_releases": "まだ公開された .bin リリースはありません。",
     "simulation_banner": "シミュレーション - ボードには何も送信されません(実際に書き込むには CAN-OTA トランスポートをハードウェアに設定してください)",
-    "show_bootloaders": "ブートローダーのイメージも一覧に表示（上級者向け）"
+    "show_bootloaders": "ブートローダーのイメージも一覧に表示（上級者向け）",
+    "fram_title": "運動学ブレインの F-RAM",
+    "fram_unknown": "先にバージョンを読み取ってください。F-RAM 操作が提供されているかどうかは、サーバーとブリッジがここに示します。",
+    "fram_unsupported": "F-RAM 操作は提供されていません。既定ではオフです。Server Admin > セキュリティ (F-RAM 消去) でオンにし、ブリッジを --enable-fram-erase で起動してください。",
+    "fram_selftest": "F-RAM を検査",
+    "fram_erase": "F-RAM を消去...",
+    "fram_erase_title": "F-RAM 全体を消去",
+    "fram_erase_body": "スタックが動作中のまま、運動学ブレインの F-RAM の 8192 バイトすべてにゼロを書き込みます。元に戻せません。確認のため {{word}} と入力してください。",
+    "fram_erase_placeholder": "{{word}} と入力",
+    "fram_erase_confirm": "消去",
+    "fram_busy": "F-RAM を処理中...",
+    "fram_result_erase_ok": "F-RAM を消去しました: {{value}} バイトを書き込み、読み戻しました。",
+    "fram_result_selftest_ok": "F-RAM のセルフテストに合格しました。内容は変わっていません。",
+    "fram_result_failed": "F-RAM の{{operation}}が完了しませんでした: {{status}}。",
+    "fram_operation_erase": "消去",
+    "fram_operation_selftest": "セルフテスト",
+    "fram_status": {
+      "disabled": "ファームウェアで F-RAM 操作がオフになっています",
+      "no-chip": "ファームウェアにチップのドライバーがありません (ビルドに I2C タイミングがありません)",
+      "wrong-slot": "要求はブレイン宛てではありませんでした",
+      "busy": "ブレインがビジー状態です",
+      "chip-error": "チップが応答しないか、書き込んだ内容を保持しませんでした",
+      "verify-fail": "書き込んだとおりに読み戻せないセルがあります",
+      "server_disabled": "サーバーで F-RAM 操作がオフになっています",
+      "unreachable": "サーバーまたはブリッジが応答しませんでした",
+      "unknown": "不明な応答"
+    },
+    "confirm_flash_erase": "書き込み後に、運動学ブレインの F-RAM も消去されます。"
   },
   "tester": {
     "title": "Tester",
@@ -1388,7 +1417,13 @@
     "admin_security_rul_title": "オペレーター向けの残存耐用年数",
     "admin_security_rul_label": "オペレーターが AI ダッシュボードの残存耐用年数の推定を使えるようにする（POST /api/ai/anomaly-detector/rul）",
     "admin_security_rul_help": "既定ではオフです。オフのときは、これまでどおり管理者だけがこのリクエストを送れます。オンにするとオペレーターも送れます。リクエストのサイズと時間は制限され、開放されるのはこのリクエストだけです（検出器へのその他の書き込みは管理者専用のままです）。",
-    "admin_security_rul_save": "残存耐用年数の設定を保存"
+    "admin_security_rul_save": "残存耐用年数の設定を保存",
+    "admin_security_fram_label": "運動学ブレインの F-RAM の消去とセルフテストを提供する",
+    "admin_security_fram_help": "既定ではオフです。--enable-fram-erase で起動した SPI ブリッジと、それに対応してビルドしたファームウェアが必要です。消去には、Flasher で ERASE という語の入力も必要です。",
+    "admin_security_fram_confirm": "F-RAM の消去を提供しますか？ 管理者は Flasher から運動学ブレインの F-RAM 全体にゼロを書き込めるようになります。",
+    "admin_security_estop_watch_label": "非常停止の監視間隔 (ms)",
+    "admin_security_estop_watch_help": "空欄または 0: オフ。それ以外は 500〜60000。サーバーはこの間隔で SPI ブリッジから物理的な非常停止を読み取り、アプリに 1 つの停止状態を表示します。変更はサーバーの再起動後に反映されます。",
+    "admin_security_estop_watch_invalid": "0 (オフ) または 500〜60000 の整数を指定してください。"
   },
   "auth": {
     "title": "HYDRA-UMC STUDIO アクセス",
