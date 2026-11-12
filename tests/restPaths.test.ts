@@ -36,10 +36,6 @@ export function calledRoutes(): string[] {
   return [...found].sort();
 }
 
-// Routes that the contract of the SDK declares in its unreleased part and the pinned tag of the continuous integration does not hold yet. Drop an entry when the
-// pin moves to a tag that has it.
-const NOT_IN_PINNED_CONTRACT = ['/api/hardware/fram/{p}'];
-
 describe('server routes called by the app', () => {
   it('match the recorded list', () => {
     const recorded = JSON.parse(readFileSync(join(ROOT, 'tests', 'fixtures', 'rest_routes.json'), 'utf8')) as string[];
@@ -54,7 +50,7 @@ describe('server routes called by the app', () => {
     const matches = (route: string, path: string): boolean =>
       new RegExp('^' + route.replace(/\{p\}/g, '[^/]+') + '$').test(path.replace(/\{[^}]+\}/g, 'x'));
     // the relay of the server to the local services (/api/ai/<service>/...) is one wildcard route that the inventory does not list path by path
-    const unknown = calledRoutes().filter((r) => !r.startsWith('/api/ai/') && !NOT_IN_PINNED_CONTRACT.includes(r) && !paths.some((p) => matches(r, p)));
+    const unknown = calledRoutes().filter((r) => !r.startsWith('/api/ai/') && !paths.some((p) => matches(r, p)));
     expect(unknown).toEqual([]);
   });
 
@@ -64,7 +60,7 @@ describe('server routes called by the app', () => {
     const routes = (JSON.parse(readFileSync(table, 'utf8')) as { routes: { path: string }[] }).routes;
     const matches = (route: string, path: string): boolean =>
       new RegExp('^' + route.replace(/\{p\}/g, '[^/]+') + '$').test(path.replace(/\{[^}]+\}/g, 'x'));
-    const unknown = calledRoutes().filter((r) => !r.startsWith('/api/ai/') && !NOT_IN_PINNED_CONTRACT.includes(r) && !routes.some((p) => matches(r, p.path)));
+    const unknown = calledRoutes().filter((r) => !r.startsWith('/api/ai/') && !routes.some((p) => matches(r, p.path)));
     expect(unknown).toEqual([]);
   });
 });

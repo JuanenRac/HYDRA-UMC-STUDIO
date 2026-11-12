@@ -107,6 +107,13 @@ describe('the shared table of joint ranges and home poses', () => {
     for (const [model, constant] of LIMIT_CONSTANTS) for (const joint of JOINTS) expect(models[model].limits[joint], `${model} ${joint}`).toEqual(constant[joint]);
   });
 
+  it('is the document of the SDK the continuous integration is pinned to, when that checkout is there', () => {
+    const sdk = process.env.HYDRA_UMC_SDK_DIR || path.resolve(__dirname, '../../HYDRA-UMC-SDK');
+    const file = path.join(sdk, 'contracts', 'kinematics.json');
+    if (!existsSync(file)) return;
+    expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual(kinematicData);
+  });
+
   it('is the same file HYDRA-UMC-SUITE reads, when that repository is next to this one', () => {
     const sibling = path.resolve(__dirname, '../../HYDRA-UMC-SUITE/assets/kinematic_data.json');
     if (!existsSync(sibling)) return;
