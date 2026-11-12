@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import './i18n'
 import { applyStudioPrefs, getStudioPrefs } from './lib/studioPrefs'
+import { installListenOnlyGuard } from './lib/listenOnlyGuard'
 import App from './App.tsx'
 
 // Real fix for a real production crash confirmed on the CM5's own kiosk
@@ -26,6 +27,7 @@ import App from './App.tsx'
 // this is a complete, permanent fix, not a workaround. The sessionStorage
 // guard stops a genuinely broken deploy (missing file for a real reason,
 // not just a stale reference) from reload-looping forever.
+installListenOnlyGuard();
 const PRELOAD_ERROR_KEY = 'hydra-umc-studio:reloaded-after-preload-error';
 window.addEventListener('vite:preloadError', () => {
   if (sessionStorage.getItem(PRELOAD_ERROR_KEY)) return; // already tried once this load - a real missing file, not a stale reference, don't loop forever

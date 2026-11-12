@@ -2200,7 +2200,7 @@
     "saved": "Enregistré dans ce navigateur",
     "reset": "Rétablir les valeurs par défaut",
     "listen_only": "Écoute seule",
-    "listen_only_hint": "Affiche les robots et leurs données mais n'envoie aucune commande : les commandes ne font rien, sauf STOP et la désactivation du mode sûr, qui fonctionnent toujours. Désactivée par défaut ; conservée dans ce navigateur.",
+    "listen_only_hint": "Affiche les robots et leurs données mais n'envoie aucune commande : les commandes ne font rien, sauf STOP et la désactivation du mode sûr, qui fonctionnent toujours. Désactivée par défaut ; conservée dans ce navigateur. Rien n'est non plus écrit sur le serveur (services, caméras, réglages, utilisateurs, fichiers).",
     "listen_only_banner": "Écoute seule : les commandes sont désactivées. STOP fonctionne toujours."
   },
   "notify": {

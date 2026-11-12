@@ -2200,7 +2200,7 @@
     "saved": "Salvato in questo browser",
     "reset": "Ripristina i valori predefiniti",
     "listen_only": "Solo ascolto",
-    "listen_only_hint": "Mostra i robot e i loro dati ma non invia alcun comando: i controlli non fanno nulla, tranne STOP e la disattivazione della modalità sicura, che funzionano sempre. Disattivato per impostazione predefinita; salvato in questo browser.",
+    "listen_only_hint": "Mostra i robot e i loro dati ma non invia alcun comando: i controlli non fanno nulla, tranne STOP e la disattivazione della modalità sicura, che funzionano sempre. Disattivato per impostazione predefinita; salvato in questo browser. Non viene scritto nulla neppure sul server (servizi, telecamere, impostazioni, utenti, file).",
     "listen_only_banner": "Solo ascolto: i comandi sono disattivati. STOP continua a funzionare."
   },
   "notify": {

@@ -2200,7 +2200,7 @@
     "saved": "Guardado en este navegador",
     "reset": "Restaurar valores por defecto",
     "listen_only": "Solo escucha",
-    "listen_only_hint": "Muestra los robots y sus datos pero no envía ningún comando: los controles no hacen nada, salvo STOP y la desactivación del modo seguro, que siempre funcionan. Desactivado por defecto; se guarda en este navegador.",
+    "listen_only_hint": "Muestra los robots y sus datos pero no envía ningún comando: los controles no hacen nada, salvo STOP y la desactivación del modo seguro, que siempre funcionan. Desactivado por defecto; se guarda en este navegador. Tampoco se escribe nada en el servidor (servicios, cámaras, ajustes, usuarios, archivos).",
     "listen_only_banner": "Solo escucha: los comandos están desactivados. STOP sigue funcionando."
   },
   "notify": {

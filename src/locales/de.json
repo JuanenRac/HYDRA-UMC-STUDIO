@@ -2200,7 +2200,7 @@
     "saved": "In diesem Browser gespeichert",
     "reset": "Standardwerte wiederherstellen",
     "listen_only": "Nur Zuhören",
-    "listen_only_hint": "Zeigt die Roboter und ihre Daten, sendet aber keinen Befehl: die Bedienelemente tun nichts, außer STOP und dem Abschalten des abgesicherten Modus, die immer funktionieren. Standardmäßig aus; wird in diesem Browser gespeichert.",
+    "listen_only_hint": "Zeigt die Roboter und ihre Daten, sendet aber keinen Befehl: die Bedienelemente tun nichts, außer STOP und dem Abschalten des abgesicherten Modus, die immer funktionieren. Standardmäßig aus; wird in diesem Browser gespeichert. Auch auf den Server wird nichts geschrieben (Dienste, Kameras, Einstellungen, Benutzer, Dateien).",
     "listen_only_banner": "Nur Zuhören: Befehle sind deaktiviert. STOP funktioniert weiterhin."
   },
   "notify": {
