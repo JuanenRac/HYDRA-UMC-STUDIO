@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- **More tests of the assistant, and a coverage floor:** reading aloud (no speech in the browser means no sound and no error, a voice of the language of the interface, the callbacks, the numbering of steps) and the placement of the bubble (inside the work area whenever it fits, for 500 boxes drawn with a fixed seed, the preference for the sides, windows smaller than their margins). The coverage step of the CI now keeps a floor at the measured values (86 % statements, 79 % branches, 78 % functions, 87 % lines).
 - **The CI measures the coverage of the tests:** a step of the workflow runs the tests with V8 coverage and prints the table of each file and a summary (report only, no floor yet); the floor will be fixed with the measured number.
 - **The jog pad has names for screen readers:** the eight direction buttons and the two Z buttons of the 3D jog pad carried only an icon (or a bare Z); each now has an `aria-label` built from the existing "Jog X +" sentences, so it is translated in the eight languages. `tests/joystickLabels.test.tsx`.
 - **Server Admin > Machine bridges shows the flight policy switches of the machine bridges:** the UAV bridge's envelope requirement, human confirmation, chaining in flight and geofence upload, and the droid bridge's human confirmation and going home, in the eight languages. The server reports them like the other bridge switches, the risky values (a requirement turned off, chaining or the geofence upload turned on) ask for a confirmation first, and the bridges apply them in the tightening direction only.
