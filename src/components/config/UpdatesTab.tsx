@@ -12,6 +12,7 @@ import { RefreshCw, DownloadCloud } from 'lucide-react';
 import studioPackage from '../../../package.json';
 import { failureKey, panelRead, type PanelFailure } from '../../lib/panelApi';
 import { SelfUpdatePanel } from './SelfUpdatePanel';
+import { FleetUpdatePanel } from './FleetUpdatePanel';
 import { parseInstalled, parseServerInfo, uptimeText, versionedCount, type InstalledProject, type ServerInfo } from '../../lib/updatesView';
 
 export const STUDIO_VERSION = studioPackage.version;
@@ -77,6 +78,8 @@ export function UpdatesTab() {
       </div>
 
       <SelfUpdatePanel />
+
+      <FleetUpdatePanel />
 
       <p data-testid="updates-no-source" className="text-[10px] text-slate-500 leading-relaxed border border-slate-800 rounded-xl p-4">{t('updates.no_source')}</p>
     </div>
