@@ -35,7 +35,7 @@ import { IngestSwitchesPanel } from './IngestSwitchesPanel';
 import { DetectionHefPanel } from './DetectionHefPanel';
 import { LiveActivityPanel } from './LiveActivityPanel';
 import { DeveloperNodeStatusPanel } from './DeveloperNodeStatusPanel';
-import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
+import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, readOnlyPatch, readOnlyChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
 
 interface HydraInfo {
@@ -103,6 +103,8 @@ export function AdminServer() {
   const [pendingVoice, setPendingVoice] = useState<VoicePatchBody | null>(null);
   const [robotsAllowEnable, setRobotsAllowEnable] = useState(false);
   const [pendingRobots, setPendingRobots] = useState(false);
+  const [readOnlyOn, setReadOnlyOn] = useState(false);
+  const [pendingReadOnly, setPendingReadOnly] = useState(false);
   const [connectionsRecordAddress, setConnectionsRecordAddress] = useState(false);
   const [pendingConnections, setPendingConnections] = useState(false);
   const [productionRdp, setProductionRdp] = useState(false);
@@ -155,6 +157,7 @@ export function AdminServer() {
         setVoiceConfidence(String(state.voice.minConfidence.value));
       }
       if (state.robots) setRobotsAllowEnable(state.robots.allowEnable.value);
+      if (state.robots?.readOnly) setReadOnlyOn(state.robots.readOnly.value);
       if (state.connections) setConnectionsRecordAddress(state.connections.recordAddress.value);
       if (state.production) setProductionRdp(state.production.rdpLevel.value === 1);
       if (state.auth) { setAuthAlgorithm(state.auth.jwtAlgorithm.value); setAuthAcceptHs256(state.auth.acceptHs256.value); }
@@ -227,6 +230,7 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('voice_heard_text_on')) setWarning(t('ecosystem.admin_security_voice_heard_warning'));
       if (knownWarnings(data.warnings).includes('voice_confidence_off')) setWarning(t('ecosystem.admin_security_voice_confidence_warning'));
       if (knownWarnings(data.warnings).includes('robot_enable_allowed')) setWarning(t('ecosystem.admin_security_robots_warning'));
+      if (knownWarnings(data.warnings).includes('server_read_only_on')) setWarning(t('ecosystem.admin_security_readonly_warning'));
       if (knownWarnings(data.warnings).includes('connection_address_recorded')) setWarning(t('ecosystem.admin_security_connections_warning'));
       if (knownWarnings(data.warnings).includes('health_open')) setWarning(t('ecosystem.admin_security_health_warning'));
       if (knownWarnings(data.warnings).includes('jwt_eddsa_on')) setWarning(t('ecosystem.admin_security_auth_eddsa_warning'));
@@ -289,6 +293,10 @@ export function AdminServer() {
     else void saveSecurity(body);
   };
 
+  const saveReadOnly = () => {
+    if (!security?.robots?.readOnly) return;
+    if (readOnlyChangeNeedsConfirmation(security.robots.readOnly.value, readOnlyOn)) setPendingReadOnly(true);
+  };
   const saveRobots = () => {
     if (!security?.robots) return;
     if (robotsChangeNeedsConfirmation(security.robots.allowEnable.value, robotsAllowEnable)) setPendingRobots(true);
@@ -719,6 +727,27 @@ export function AdminServer() {
               <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_robots_help')}</div>
               <button onClick={saveRobots} disabled={saving || isLocked(security.robots.allowEnable.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
                 <Save size={14} /> {t('ecosystem.admin_security_robots_save')}
+              </button>
+            </div>
+          )}
+
+          {security.robots?.readOnly && (
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_readonly_title')}</h5>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                <input
+                  type="checkbox"
+                  data-testid="server-read-only"
+                  checked={readOnlyOn}
+                  disabled={saving || isLocked(security.robots.readOnly.source)}
+                  onChange={e => setReadOnlyOn(e.target.checked)}
+                />
+                {t('ecosystem.admin_security_readonly_label')}
+              </label>
+              <span className="text-[10px] text-slate-500">{sourceText(security.robots.readOnly.source)}</span>
+              <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_readonly_help')}</div>
+              <button onClick={saveReadOnly} data-testid="server-read-only-save" disabled={saving || isLocked(security.robots.readOnly.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                <Save size={14} /> {t('ecosystem.admin_security_readonly_save')}
               </button>
             </div>
           )}
@@ -1290,6 +1319,13 @@ export function AdminServer() {
         message={t('ecosystem.admin_security_jd_confirm')}
         onConfirm={() => { const body = pendingJd; setPendingJd(null); if (body) void saveSecurity(body); }}
         onCancel={() => setPendingJd(null)}
+      />
+
+      <ConfirmDialog
+        open={pendingReadOnly}
+        message={t('ecosystem.admin_security_readonly_confirm')}
+        onConfirm={() => { setPendingReadOnly(false); void saveSecurity(readOnlyPatch(readOnlyOn)); }}
+        onCancel={() => setPendingReadOnly(false)}
       />
 
       <ConfirmDialog

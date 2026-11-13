@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- **The read-only mode of the server can be switched in Server Admin, and its refusal is told in the language of the person:** Server Admin > Security has a switch for the read-only mode of the whole server (off by default, asks to confirm every change, locked when the variable of the server fixes it; a server that predates the option shows nothing). A command refused with `server-read-only` (423) is no longer shown as a robot in safe mode: the banner says that the server is read-only and that only STOP and the safe-mode disable go through, in the eight languages. `tests/serverReadOnly.test.ts`.
 - **Listen only can be set for one server (off by default):** next to the general switch, Configuration, Preferences has a switch for the server this window talks to (`listenOnlyServers`, the list of origins kept in this browser). While it is on, every write to that server is answered with a 423 at the door of `fetch` and every robot command except STOP and the safe-mode disable is refused with the translated notice, and nothing is lost: reads, STOP and the sign-in go on, other servers are not affected, and the switch is locked while the general one is on. The text is in the eight languages. `tests/listenOnlyServers.test.tsx`.
 
 ## [0.8.2.0] - Listen-only mode, one stop state in the header, the kinematic table of the SDK and the F-RAM self-test and erase in the Flasher

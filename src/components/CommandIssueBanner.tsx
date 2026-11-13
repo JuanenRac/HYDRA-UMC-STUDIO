@@ -58,7 +58,7 @@ export function CommandIssueBanner() {
           aria-live="assertive"
           className={
             'pointer-events-auto max-w-3xl w-full rounded-lg border px-4 py-3 shadow-2xl flex items-start gap-3 ' +
-            (commandIssue.code === 'warnings' || commandIssue.code === 'temperature_limit' || commandIssue.code === 'sim_blocked' || commandIssue.code === 'listen_only' || commandIssue.code === 'settings_admin_only'
+            (commandIssue.code === 'warnings' || commandIssue.code === 'temperature_limit' || commandIssue.code === 'sim_blocked' || commandIssue.code === 'listen_only' || commandIssue.code === 'server_read_only' || commandIssue.code === 'settings_admin_only'
               ? 'border-amber-500/50 bg-amber-950/95 text-amber-100'
               : 'border-rose-500 bg-rose-950/95 text-rose-100')
           }
