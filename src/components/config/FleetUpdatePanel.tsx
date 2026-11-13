@@ -60,7 +60,7 @@ export function FleetUpdatePanel() {
     const seen = await readFleet();
     if (!alive.current) return;
     if (seen.kind === 'status') {
-      setStatus(seen.status); setFailure(null);
+      setStatus(seen.status); setFailure(null); setGaveUp(false); setSilent(null);
       if (runActive(seen.status.report)) { serverWasUpdating.current = true; void follow(); }
     } else {
       setStatus(null); setFailure(seen.kind === 'stop' ? 'forbidden' : 'unsupported');
