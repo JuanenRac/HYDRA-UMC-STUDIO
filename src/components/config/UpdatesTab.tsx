@@ -4,13 +4,15 @@
 // GPL-3.0-or-later - see LICENSE
 // =============================================================================
 // What is installed: the version of this STUDIO, the one of the server and the version each program next to the server reports.
-// The server offers no route that says which version is the newest or that installs one, so this tab changes nothing and says so
-// plainly instead of showing a button that would do nothing.
+// Below the list, the section "HYDRA-UMC updates" (SelfUpdatePanel) looks for the newest signed release of the server, Studio and the agent of the
+// operating system through the server and, only when the person allows it, installs one or puts the earlier one back.
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCw, DownloadCloud } from 'lucide-react';
 import studioPackage from '../../../package.json';
 import { failureKey, panelRead, type PanelFailure } from '../../lib/panelApi';
+import { SelfUpdatePanel } from './SelfUpdatePanel';
+import { FleetUpdatePanel } from './FleetUpdatePanel';
 import { parseInstalled, parseServerInfo, uptimeText, versionedCount, type InstalledProject, type ServerInfo } from '../../lib/updatesView';
 
 export const STUDIO_VERSION = studioPackage.version;
@@ -74,6 +76,10 @@ export function UpdatesTab() {
         )}
         {projects && projects.length > 0 && <p data-testid="updates-count" className="px-4 py-2 border-t border-slate-800 text-[10px] text-slate-600">{t('updates.count', { with: versionedCount(projects), total: projects.length })}</p>}
       </div>
+
+      <SelfUpdatePanel />
+
+      <FleetUpdatePanel />
 
       <p data-testid="updates-no-source" className="text-[10px] text-slate-500 leading-relaxed border border-slate-800 rounded-xl p-4">{t('updates.no_source')}</p>
     </div>
