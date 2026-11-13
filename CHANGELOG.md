@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.8.2.0] - Listen-only mode, one stop state in the header, the kinematic table of the SDK and the F-RAM self-test and erase in the Flasher
 
 - **README: the platform statement:** a note says that where the README speaks of the CM5 it means the pilot bench that runs today, and that the target platform of HYDRA-UMC, an NVIDIA Jetson Orin NX 16 GB, is a design that has not been built or tested.
 - **Listen only (off by default):** a switch in Configuration, Preferences makes this window show the robots and their data without sending any robot command. While it is on, the guard of every command refuses everything except STOP and the safe-mode disable (refusing a stop would be the unsafe side), says so with its own sentence, and a banner stays on top of the page; the choice is kept in this browser. Every other write to the server (services, cameras, settings, users, files, shutdown) is also refused at the door of the browser with a 423 and never leaves it, except STOP, the sign-in, the renewal and the end of the session (`lib/listenOnlyGuard.ts`, installed on fetch once). Texts in the eight languages; 17 tests.
