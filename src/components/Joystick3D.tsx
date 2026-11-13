@@ -14,6 +14,7 @@ import { useEffect, useRef } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { ChevronUp, ChevronDown, ArrowUpRight, ArrowUpLeft, ArrowDownRight, ArrowDownLeft, Crosshair } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useTranslation } from 'react-i18next';
 import { createJogRepeater } from '../lib/jogRepeater';
 
 interface Joystick3DProps {
@@ -28,7 +29,26 @@ const REPEAT_MS = 150;
 // with the pointer still, a system dialog took the pointer) the repeat would otherwise run for ever.
 const MAX_HOLD_MS = 8000;
 
+/** The name a screen reader gives a direction button: one existing "Jog <axis> +/-" sentence per axis it moves. */
+export function jogLabel(
+  t: (key: string, fallback: string, opts: { axis: string }) => string,
+  dx: number,
+  dy: number,
+  dz: number
+): string {
+  const parts: string[] = [];
+  const add = (axis: string, d: number) => {
+    if (d === 0) return;
+    parts.push(d > 0 ? t('kbstage.jog_axis_pos', 'Jog {{axis}} +', { axis }) : t('kbstage.jog_axis_neg', 'Jog {{axis}} -', { axis }));
+  };
+  add('X', dx);
+  add('Y', dy);
+  add('Z', dz);
+  return parts.join(', ');
+}
+
 export function Joystick3D({ onJog, disabled, className }: Joystick3DProps) {
+  const { t } = useTranslation();
   const onJogRef = useRef(onJog);
   useEffect(() => { onJogRef.current = onJog; }, [onJog]);
   const repeaterRef = useRef(createJogRepeater({ intervalMs: REPEAT_MS, maxHoldMs: MAX_HOLD_MS }));
@@ -72,6 +92,7 @@ export function Joystick3D({ onJog, disabled, className }: Joystick3DProps) {
     <button
       type="button"
       disabled={disabled}
+      aria-label={jogLabel(t, dx, dy, 0)}
       {...hold(dx, dy, 0)}
       className={clsx(
         "flex items-center justify-center bg-slate-900/80 hover:bg-sky-500/20 active:bg-sky-500/40 border border-slate-700 hover:border-sky-500/50 text-sky-400 rounded-lg transition-colors touch-none select-none disabled:opacity-30 disabled:pointer-events-none",
@@ -101,6 +122,7 @@ export function Joystick3D({ onJog, disabled, className }: Joystick3DProps) {
         <button
           type="button"
           disabled={disabled}
+          aria-label={jogLabel(t, 0, 0, 1)}
           {...hold(0, 0, 1)}
           className="flex flex-col items-center justify-center bg-slate-900/80 hover:bg-emerald-500/20 active:bg-emerald-500/40 border border-slate-700 hover:border-emerald-500/50 text-emerald-400 rounded-lg transition-colors touch-none select-none disabled:opacity-30 disabled:pointer-events-none"
         >
@@ -109,6 +131,7 @@ export function Joystick3D({ onJog, disabled, className }: Joystick3DProps) {
         <button
           type="button"
           disabled={disabled}
+          aria-label={jogLabel(t, 0, 0, -1)}
           {...hold(0, 0, -1)}
           className="flex flex-col items-center justify-center bg-slate-900/80 hover:bg-rose-500/20 active:bg-rose-500/40 border border-slate-700 hover:border-rose-500/50 text-rose-400 rounded-lg transition-colors touch-none select-none disabled:opacity-30 disabled:pointer-events-none"
         >
