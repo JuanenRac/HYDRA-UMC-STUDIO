@@ -20,7 +20,7 @@ export type RowAction = (typeof ROW_ACTIONS)[number];
 /** The steps of one program, in the order the device goes through them. */
 export const FLEET_STEPS = ['disk', 'fetching', 'backup', 'building', 'installing', 'verifying', 'done'] as const;
 export const FLEET_ERRORS = ['low_disk', 'fetch_failed', 'tag_mismatch', 'tag_unsigned', 'checkout_failed', 'backup_failed', 'build_failed', 'installer_failed', 'version_mismatch', 'not_healthy', 'journal_errors', 'sdk_not_importable', 'interrupted', 'unexpected'] as const;
-export const FLEET_REASONS = ['special_stack', 'no_release', 'version_unreadable', 'installed_newer', 'unit_inactive', 'repo_dirty', 'goes_with_server', 'not_asked', 'no_checkout'] as const;
+export const FLEET_REASONS = ['special_stack', 'no_release', 'version_unreadable', 'installed_newer', 'unit_inactive', 'repo_dirty', 'goes_with_server', 'not_asked', 'no_checkout', 'migrated_needs_packages', 'migrated_no_package', 'own_package'] as const;
 /** What the server needs free to build and install, in MB (the device checks the same numbers). */
 export const SERVER_NEEDS_MB = 2500;
 

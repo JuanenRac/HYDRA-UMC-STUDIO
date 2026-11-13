@@ -79,6 +79,7 @@ describe('fleetUpdate parsing', () => {
     expect(errorKey('sdk_not_importable')).toBe('fleet.err_sdk_not_importable');
     expect(errorKey('something new')).toBe('fleet.err_unexpected');
     expect(reasonKey('repo_dirty')).toBe('fleet.reason_repo_dirty');
+    for (const reason of ['migrated_needs_packages', 'migrated_no_package', 'own_package']) expect(reasonKey(reason)).toBe(`fleet.reason_${reason}`);
     expect(reasonKey('')).toBeNull();
     expect(reasonKey('weird')).toBeNull();
   });
