@@ -593,6 +593,8 @@ describe('the switches of the machine bridges', () => {
     expect(ask({ 'amr.publishState': true })).toBe(false);
     expect(ask({ 'openpnp.boardCode': 'required' })).toBe(false);
     expect(knownWarnings(['bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'other'])).toEqual(['bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop']);
+    const flight = ['bridge_uav_envelopeRequired', 'bridge_uav_confirmationRequired', 'bridge_uav_chainInFlight', 'bridge_uav_uploadGeofence', 'bridge_droids_confirmationRequired'];
+    expect(knownWarnings([...flight, 'other'])).toEqual(flight);
   });
 });
 
