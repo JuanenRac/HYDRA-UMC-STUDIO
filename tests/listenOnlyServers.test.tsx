@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 // =============================================================================
 // HYDRA-UMC STUDIO - tests/listenOnlyServers.test.tsx
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
