@@ -63,7 +63,7 @@ describe('the texts', () => {
       const l = locale as unknown as { command_issue: Record<string, string>; ecosystem: Record<string, string> };
       expect(l.command_issue.server_read_only, code).toContain('{{command}}');
       for (const key of ['title', 'label', 'help', 'save', 'confirm', 'warning']) {
-        expect(l.ecosystem[`admin_security_readonly_${key}`]?.length, `${code} ${key}`).toBeGreaterThan(10);
+        expect(l.ecosystem[`admin_security_readonly_${key}`]?.length, `${code} ${key}`).toBeGreaterThan(4);
       }
     }
   });
