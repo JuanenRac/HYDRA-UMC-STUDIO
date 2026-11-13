@@ -234,7 +234,7 @@ describe('SelfUpdatePanel', () => {
         { status: 200, body: job({ state: 'restarting' }) },
         { status: 200, body: job({ state: 'done', log: [{ at: '2030-01-01T00:01:00.000Z', step: 'done', text: '0.9.0 is in use' }] }) },
       ],
-      '/api/admin/self-update': [{ status: 200, body: status() }, { status: 200, body: status() }, { status: 200, body: status({ items: [item('server', '0.9.0', '0.9.0', '0.8.1.0', 'current'), item('studio', '0.8.1.0', '0.8.1.0', null, 'current'), item('os-agent', '0.8.1.0', '0.9.0')] }) }],
+      '/api/admin/self-update': [{ status: 200, body: status() }, { status: 200, body: status({ items: [item('server', '0.9.0', '0.9.0', '0.8.1.0', 'current'), item('studio', '0.8.1.0', '0.8.1.0', null, 'current'), item('os-agent', '0.8.1.0', '0.9.0')] }) }],
     });
     render(<SelfUpdatePanel />);
     await settle();
@@ -244,7 +244,7 @@ describe('SelfUpdatePanel', () => {
     await settle();
     expect(seen.find((call) => call.method === 'POST')?.body).toContain('"confirm":true');
     expect(screen.getByTestId('selfupdate-job')).toBeTruthy();
-    await settle(1500);
+    // the first look comes at once, the next ones every second and a half
     expect(screen.getByTestId('selfupdate-step-downloading').getAttribute('data-mark')).toBe('now');
     await settle(1500);
     expect(screen.getByTestId('selfupdate-step-applying').getAttribute('data-mark')).toBe('now');
