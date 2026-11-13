@@ -13,7 +13,7 @@ import { type CommandSequence } from '../lib/commandSequence';
 import { guardCommand } from '../lib/motionGuard';
 import { getModeState, getSafetyState } from '../lib/accessStore';
 import { fetchRobot } from '../lib/accessApi';
-import { getStudioPrefs } from '../lib/studioPrefs';
+import { currentServerOrigin, listenOnlyActiveFor } from '../lib/listenOnlyGuard';
 import { isUnknownCommand, markTableCommand, serverHasTableCommand } from '../lib/tableMove';
 import { postRobotCommand as postRobotCommandRequest, tableThroughJogs as tableThroughJogsRequest, type PostRobotCommand } from '../lib/robotCommandPost';
 import type { HydraController, RobotState } from '../store';

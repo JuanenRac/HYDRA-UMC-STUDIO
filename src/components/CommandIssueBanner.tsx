@@ -14,6 +14,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertOctagon, X } from 'lucide-react';
 import { armJog } from '../lib/accessApi';
+import { currentServerOrigin, listenOnlyActiveFor } from '../lib/listenOnlyGuard';
 import { useStudioPrefs } from '../lib/studioPrefs';
 import { useCommandFeedback, useFleet, useServerStatus } from '../storeContexts';
 
