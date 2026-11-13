@@ -60,7 +60,7 @@ describe('UpdatesTab', () => {
     expect(screen.getAllByTestId('updates-row')[0].textContent).toContain('0.5.0');
     expect(screen.getAllByTestId('updates-row')[1].textContent).toContain('not reported');
     expect(screen.getByTestId('updates-count').textContent).toContain('1 of 2');
-    expect(screen.getByTestId('updates-no-source').textContent).toContain('no route');
+    expect(screen.getByTestId('updates-no-source').textContent).toContain('updater');
     expect(screen.queryByTestId('updates-error')).toBeNull();
   });
 
