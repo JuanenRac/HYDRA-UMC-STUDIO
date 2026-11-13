@@ -61,12 +61,11 @@ jobs:
           npm run typecheck --if-present
           npm test --if-present
           npm run lint --if-present
-      - name: Measure the coverage of the tests (report only, no floor yet)
+      - name: Measure the coverage of the tests and keep the floor
         if: ${{ hashFiles('package.json') != '' }}
-        continue-on-error: true
         run: |
           npm install --no-save --ignore-scripts @vitest/coverage-v8@^5
-          npx vitest run --coverage.enabled --coverage.provider=v8 --coverage.reporter=text --coverage.reporter=text-summary > "$RUNNER_TEMP/coverage.txt" 2>&1 || true
+          npx vitest run --coverage.enabled --coverage.provider=v8 --coverage.reporter=text --coverage.reporter=text-summary --coverage.thresholds.statements=86 --coverage.thresholds.branches=79 --coverage.thresholds.functions=78 --coverage.thresholds.lines=87 > "$RUNNER_TEMP/coverage.txt" 2>&1 || status=$?
           grep -E "Tests |Test Files|Statements|Branches|Functions|Lines|All files|\.tsx? +\|" "$RUNNER_TEMP/coverage.txt" | head -400
           {
             echo "### Test coverage (report only)"
@@ -74,6 +73,7 @@ jobs:
             grep -E "Tests |Test Files|Statements|Branches|Functions|Lines" "$RUNNER_TEMP/coverage.txt"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+          exit ${status:-0}
       - name: Build the production page
         if: ${{ hashFiles('package.json') != '' }}
         run: npm run build --if-present
