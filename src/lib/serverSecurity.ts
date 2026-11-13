@@ -53,6 +53,8 @@ export interface SecurityState {
   /** Absent when the server predates safe mode. */
   robots: {
     allowEnable: { value: boolean; source: SecuritySource };
+    /** Read-only mode of the whole server; absent when the server is older than the option. */
+    readOnly?: { value: boolean; source: SecuritySource };
   } | null;
   /** Absent when the server predates the optional asymmetric sign-in tokens. */
   auth: {
@@ -169,7 +171,9 @@ function parseRobots(raw: any): SecurityState['robots'] {
   if (!raw || typeof raw !== 'object') return null;
   const allow = raw.allowEnable;
   if (!allow || typeof allow.value !== 'boolean' || !isSource(allow.source)) return null;
-  return { allowEnable: { value: allow.value, source: allow.source } };
+  const readOnly = raw.readOnly;
+  const hasReadOnly = readOnly && typeof readOnly.value === 'boolean' && isSource(readOnly.source);
+  return { allowEnable: { value: allow.value, source: allow.source }, ...(hasReadOnly ? { readOnly: { value: readOnly.value, source: readOnly.source } } : {}) };
 }
 
 function parseAuth(raw: any): SecurityState['auth'] {
@@ -608,6 +612,18 @@ export function robotsPatch(allowEnable: boolean): RobotsPatchBody {
   return { robots: { allowEnable } };
 }
 
+export type ReadOnlyPatchBody = { robots: { readOnly: boolean } };
+
+/** The request body for the read-only mode of the whole server (off by default). */
+export function readOnlyPatch(readOnly: boolean): ReadOnlyPatchBody {
+  return { robots: { readOnly } };
+}
+
+/** Any change of the read-only mode is confirmed: switching it on stops every app from changing anything, switching it off lets them again. */
+export function readOnlyChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
+  return current !== next;
+}
+
 /** Allowing a client to enable a robot lowers the protection of safe mode: ask first. Turning it off never asks. */
 export function robotsChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
   return !current && next;
@@ -844,6 +860,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'rate_limits_off', 'rate_limits_loose', 'bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'jwt_eddsa_on', 'jwt_hs256_refused'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'server_read_only_on', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'rate_limits_off', 'rate_limits_loose', 'bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'bridge_droids_confirmationRequired', 'bridge_uav_envelopeRequired', 'bridge_uav_confirmationRequired', 'bridge_uav_chainInFlight', 'bridge_uav_uploadGeofence', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'jwt_eddsa_on', 'jwt_hs256_refused'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }

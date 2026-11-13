@@ -593,6 +593,8 @@ describe('the switches of the machine bridges', () => {
     expect(ask({ 'amr.publishState': true })).toBe(false);
     expect(ask({ 'openpnp.boardCode': 'required' })).toBe(false);
     expect(knownWarnings(['bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'other'])).toEqual(['bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop']);
+    const flight = ['bridge_uav_envelopeRequired', 'bridge_uav_confirmationRequired', 'bridge_uav_chainInFlight', 'bridge_uav_uploadGeofence', 'bridge_droids_confirmationRequired'];
+    expect(knownWarnings([...flight, 'other'])).toEqual(flight);
   });
 });
 
@@ -613,5 +615,19 @@ describe('the read-out protection level of a production flash', () => {
     expect(productionChangeNeedsConfirmation(true, false)).toBe(false);
     expect(productionChangeNeedsConfirmation(true, true)).toBe(false);
     expect(productionChangeNeedsConfirmation(false, false)).toBe(false);
+  });
+});
+
+describe('the read-only option of the server', () => {
+  it('is read when the server reports it and left out for a server that predates it', () => {
+    const withIt = parseSecurityState({ ...answer, robots: { allowEnable: { value: false, source: 'default' }, readOnly: { value: true, source: 'env' } } })?.robots;
+    expect(withIt).toEqual({ allowEnable: { value: false, source: 'default' }, readOnly: { value: true, source: 'env' } });
+    expect(parseSecurityState({ ...answer, robots: { allowEnable: { value: false, source: 'default' } } })?.robots).toEqual({ allowEnable: { value: false, source: 'default' } });
+  });
+
+  it('ignores a malformed value without hiding the option for the safe mode', () => {
+    for (const bad of [{ value: 'yes', source: 'default' }, { value: true, source: 'nowhere' }, null, 5]) {
+      expect(parseSecurityState({ ...answer, robots: { allowEnable: { value: false, source: 'default' }, readOnly: bad } })?.robots).toEqual({ allowEnable: { value: false, source: 'default' } });
+    }
   });
 });
