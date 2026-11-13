@@ -49,7 +49,7 @@ export function About({ onClose }: { onClose: () => void }) {
       <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[500px] max-w-full overflow-hidden flex flex-col">
         <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Info className="text-sky-400" size={20} /> {t('dashboard.about_title')}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200 p-1">&times;</button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-200 p-1" aria-label={t('dashboard.close', 'Close')}>&times;</button>
         </div>
         <div className="p-6 space-y-4 text-slate-300 text-sm flex flex-col items-center">
           <img src={HydraIcon} alt={t('dashboard.logo_alt')} className="w-24 h-24 object-contain mb-4" />

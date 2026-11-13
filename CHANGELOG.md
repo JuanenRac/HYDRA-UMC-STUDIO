@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- **The close buttons of the About window, the settings window and the camera message have a name for screen readers:** each one held only a multiplication sign and was read as "times"; they now carry the translated label that the Help window already used. A test reads every component and fails for a close button made of a multiplication sign without a name.
 - **The shared tools and the CI jobs have time limits:** the project tool, the validators and the build test pass a timeout to every child process (`HYDRA_UMC_GIT_TIMEOUT_S`, 120 s by default, and `HYDRA_UMC_COMMAND_TIMEOUT_S`, 3600 s by default; a value that is not a positive number means the default), and the baseline and notify jobs of the workflows carry `timeout-minutes`, so a stuck step ends with a message instead of holding a runner.
 - **More tests of the assistant, and a coverage floor:** reading aloud (no speech in the browser means no sound and no error, a voice of the language of the interface, the callbacks, the numbering of steps) and the placement of the bubble (inside the work area whenever it fits, for 500 boxes drawn with a fixed seed, the preference for the sides, windows smaller than their margins). The coverage step of the CI now keeps a floor at the measured values (86 % statements, 79 % branches, 78 % functions, 87 % lines).
 - **The CI measures the coverage of the tests:** a step of the workflow runs the tests with V8 coverage and prints the table of each file and a summary (report only, no floor yet); the floor will be fixed with the measured number.

@@ -219,7 +219,7 @@ export function CamerasView() {
       {recordingError && (
         <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
           <span>{recordingError}</span>
-          <button onClick={() => setRecordingError(null)} className="text-rose-400 hover:text-rose-300 font-bold px-2">&times;</button>
+          <button onClick={() => setRecordingError(null)} className="text-rose-400 hover:text-rose-300 font-bold px-2" aria-label={t('dashboard.close', 'Close')}>&times;</button>
         </div>
       )}
 
