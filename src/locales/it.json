@@ -2201,6 +2201,8 @@
     "reset": "Ripristina i valori predefiniti",
     "listen_only": "Solo ascolto",
     "listen_only_hint": "Mostra i robot e i loro dati ma non invia alcun comando: i controlli non fanno nulla, tranne STOP e la disattivazione della modalità sicura, che funzionano sempre. Disattivato per impostazione predefinita; salvato in questo browser. Non viene scritto nulla neppure sul server (servizi, telecamere, impostazioni, utenti, file).",
+    "listen_only_server": "Solo ascolto per questo server ({{server}})",
+    "listen_only_server_hint": "Non invia alcun comando a questo server da questo browser, tranne STOP e la disattivazione della modalità sicura, che funzionano sempre. Disattivato per impostazione predefinita; conservato in questo browser solo per questo server. Gli altri server non sono interessati.",
     "listen_only_banner": "Solo ascolto: i comandi sono disattivati. STOP continua a funzionare."
   },
   "notify": {

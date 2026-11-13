@@ -14,6 +14,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertOctagon, X } from 'lucide-react';
 import { armJog } from '../lib/accessApi';
+import { currentServerOrigin, listenOnlyActiveFor } from '../lib/listenOnlyGuard';
 import { useStudioPrefs } from '../lib/studioPrefs';
 import { useCommandFeedback, useFleet, useServerStatus } from '../storeContexts';
 
@@ -22,7 +23,8 @@ export function CommandIssueBanner() {
   const { commandIssue, dismissCommandIssue, emergencyStop } = useCommandFeedback();
   const { settingsLoadError } = useServerStatus();
   const { robots } = useFleet();
-  const { listenOnly } = useStudioPrefs();
+  const prefs = useStudioPrefs();
+  const listenOnly = listenOnlyActiveFor(currentServerOrigin(), prefs);
 
   // A remark on a command the server accepted is information, not an alarm: it fades. Every failure stays.
   const fades = commandIssue?.code === 'warnings' || commandIssue?.code === 'temperature_limit';

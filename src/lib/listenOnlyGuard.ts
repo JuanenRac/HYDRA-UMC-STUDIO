@@ -10,7 +10,8 @@
 //   - STOP: the global stop and a robot command that is stop, estop or disable;
 //   - the sign-in, the renewal of the session and the sign-out, which write nothing about the machine.
 // =============================================================================
-import { getStudioPrefs } from './studioPrefs';
+import { API_BASE } from './apiBase';
+import { getStudioPrefs, type StudioPrefs } from './studioPrefs';
 import { LISTEN_ONLY_ALLOWED } from './motionGuard';
 
 const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
@@ -44,16 +45,36 @@ export function listenOnlyRefusal(): Response {
 
 type FetchLike = typeof fetch;
 
-/** A fetch that applies [listenOnlyAllows] while `isOn()` says Listen only is on, and is `base` otherwise. */
-export function withListenOnly(base: FetchLike, isOn: () => boolean): FetchLike {
+/** The origin of a server address, or null when it is not an absolute address. */
+export function originOf(address: string, base?: string): string | null {
+  try {
+    return new URL(address, base).origin;
+  } catch {
+    return null;
+  }
+}
+
+/** The origin of the server this window talks to (the base of its API; this page's own origin when the API is relative). */
+export function currentServerOrigin(): string | null {
+  return originOf(API_BASE, typeof location !== 'undefined' ? location.href : 'http://localhost/');
+}
+
+/** Whether requests to [origin] are read-only: Listen only is on for every server, or for that one. A request to an unknown origin follows the general switch. */
+export function listenOnlyActiveFor(origin: string | null, prefs: Pick<StudioPrefs, 'listenOnly' | 'listenOnlyServers'> = getStudioPrefs()): boolean {
+  return prefs.listenOnly || (origin !== null && prefs.listenOnlyServers.includes(origin));
+}
+
+/** A fetch that applies [listenOnlyAllows] while `isOn(origin)` says Listen only is on for the server of the request (null: its origin is unknown), and is `base` otherwise. */
+export function withListenOnly(base: FetchLike, isOn: (origin: string | null) => boolean): FetchLike {
   return (input: RequestInfo | URL, init?: RequestInit) => {
-    if (!isOn()) return base(input, init);
     const isRequest = typeof Request !== 'undefined' && input instanceof Request;
-    const method = init?.method ?? (isRequest ? input.method : 'GET');
     const url = isRequest ? input.url : String(input);
+    const here = typeof location !== 'undefined' ? location.href : 'http://localhost/';
+    if (!isOn(originOf(url, here))) return base(input, init);
+    const method = init?.method ?? (isRequest ? input.method : 'GET');
     let pathname = url;
     try {
-      pathname = new URL(url, typeof location !== 'undefined' ? location.href : 'http://localhost/').pathname;
+      pathname = new URL(url, here).pathname;
     } catch {
       /* a relative path is used as given */
     }
@@ -68,5 +89,5 @@ let installed = false;
 export function installListenOnlyGuard(target: { fetch: FetchLike } = window): void {
   if (installed) return;
   installed = true;
-  target.fetch = withListenOnly(target.fetch.bind(target), () => getStudioPrefs().listenOnly);
+  target.fetch = withListenOnly(target.fetch.bind(target), (origin) => listenOnlyActiveFor(origin));
 }

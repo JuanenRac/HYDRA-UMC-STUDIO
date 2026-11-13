@@ -2201,6 +2201,8 @@
     "reset": "Restore defaults",
     "listen_only": "Listen only",
     "listen_only_hint": "Shows the robots and their data but sends no command: the controls do nothing, except STOP and the safe-mode disable, which always work. Off by default; kept in this browser. Nothing is written to the server either (services, cameras, settings, users, files).",
+    "listen_only_server": "Listen only for this server ({{server}})",
+    "listen_only_server_hint": "Sends no command to this server from this browser, except STOP and the safe-mode disable, which always work. Off by default; kept in this browser for this server only. Other servers are not affected.",
     "listen_only_banner": "Listen only: commands are disabled. STOP still works."
   },
   "notify": {

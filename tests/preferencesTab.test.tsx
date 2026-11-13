@@ -26,7 +26,7 @@ describe('studioPrefs', () => {
 
   it('keeps a valid choice in this browser only and writes it on the page', () => {
     setStudioPrefs({ density: 'compact', reduceMotion: true, helpLevel: 'technical' });
-    expect(getStudioPrefs()).toEqual({ helpLevel: 'technical', density: 'compact', reduceMotion: true, listenOnly: false });
+    expect(getStudioPrefs()).toEqual({ helpLevel: 'technical', density: 'compact', reduceMotion: true, listenOnly: false, listenOnlyServers: [] });
     expect(document.documentElement.dataset.density).toBe('compact');
     expect(document.documentElement.dataset.motion).toBe('reduced');
     expect(window.localStorage.getItem(STUDIO_PREFS_KEY)).toContain('technical');
@@ -37,7 +37,7 @@ describe('studioPrefs', () => {
 
   it('applies the preferences to any root element it is given', () => {
     const root = document.createElement('div');
-    applyStudioPrefs({ helpLevel: 'all', density: 'compact', reduceMotion: false, listenOnly: false }, root);
+    applyStudioPrefs({ helpLevel: 'all', density: 'compact', reduceMotion: false, listenOnly: false, listenOnlyServers: [] }, root);
     expect(root.dataset.density).toBe('compact');
     expect(root.dataset.motion).toBe('full');
   });
@@ -50,7 +50,7 @@ describe('PreferencesTab', () => {
     fireEvent.click(screen.getByTestId('prefs-level-advanced'));
     fireEvent.click(screen.getByTestId('prefs-density-compact'));
     fireEvent.click(screen.getByTestId('prefs-reduce-motion'));
-    expect(getStudioPrefs()).toEqual({ helpLevel: 'advanced', density: 'compact', reduceMotion: true, listenOnly: false });
+    expect(getStudioPrefs()).toEqual({ helpLevel: 'advanced', density: 'compact', reduceMotion: true, listenOnly: false, listenOnlyServers: [] });
     expect((screen.getByTestId('prefs-density-compact') as HTMLInputElement).checked).toBe(true);
   });
 

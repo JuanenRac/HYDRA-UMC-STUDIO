@@ -7,7 +7,15 @@
 // animations are reduced. They live in localStorage only (a convenience of this browser, never sent to the server), are read
 // defensively (a blocked or damaged storage gives the defaults) and are applied to the page as attributes of the root element.
 import { useSyncExternalStore } from 'react';
-import { bool, browserStorage, createPrefs, oneOf, type Prefs } from 'hydra-umc-studio-kit';
+import { bool, browserStorage, createPrefs, oneOf, type Prefs, type Validator } from 'hydra-umc-studio-kit';
+
+export const MAX_LISTEN_ONLY_SERVERS = 50;
+/** A list of short texts without repeats, at most MAX_LISTEN_ONLY_SERVERS long; anything else takes the default (an empty list). */
+export const originList: Validator<string[]> = (value) => {
+  if (!Array.isArray(value) || value.length > MAX_LISTEN_ONLY_SERVERS) return undefined;
+  if (!value.every((item) => typeof item === 'string' && item.length > 0 && item.length <= 200)) return undefined;
+  return [...new Set(value as string[])];
+};
 
 export const HELP_LEVELS = ['all', 'basic', 'advanced', 'technical'] as const;
 export const DENSITIES = ['comfortable', 'compact'] as const;
@@ -17,10 +25,12 @@ export type StudioPrefs = {
   reduceMotion: boolean;
   /** Listen only: this window shows the robots and their data but sends no robot command except STOP and the safe-mode disable. */
   listenOnly: boolean;
+  /** Listen only for some servers only: the origins (scheme, host and port) whose requests this window keeps read-only. */
+  listenOnlyServers: string[];
 };
 
 export const STUDIO_PREFS_KEY = 'hydra_studio_prefs';
-export const STUDIO_DEFAULTS: StudioPrefs = { helpLevel: 'all', density: 'comfortable', reduceMotion: false, listenOnly: false };
+export const STUDIO_DEFAULTS: StudioPrefs = { helpLevel: 'all', density: 'comfortable', reduceMotion: false, listenOnly: false, listenOnlyServers: [] };
 
 let prefs: Prefs<StudioPrefs> | null = null;
 
@@ -29,7 +39,7 @@ function store(): Prefs<StudioPrefs> {
     storage: browserStorage('localStorage'),
     key: STUDIO_PREFS_KEY,
     defaults: STUDIO_DEFAULTS,
-    schema: { helpLevel: oneOf(...HELP_LEVELS), density: oneOf(...DENSITIES), reduceMotion: bool, listenOnly: bool },
+    schema: { helpLevel: oneOf(...HELP_LEVELS), density: oneOf(...DENSITIES), reduceMotion: bool, listenOnly: bool, listenOnlyServers: originList },
   });
   return prefs;
 }

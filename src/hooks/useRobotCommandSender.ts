@@ -13,7 +13,7 @@ import { type CommandSequence } from '../lib/commandSequence';
 import { guardCommand } from '../lib/motionGuard';
 import { getModeState, getSafetyState } from '../lib/accessStore';
 import { fetchRobot } from '../lib/accessApi';
-import { getStudioPrefs } from '../lib/studioPrefs';
+import { currentServerOrigin, listenOnlyActiveFor } from '../lib/listenOnlyGuard';
 import { isUnknownCommand, markTableCommand, serverHasTableCommand } from '../lib/tableMove';
 import { postRobotCommand as postRobotCommandRequest, tableThroughJogs as tableThroughJogsRequest, type PostRobotCommand } from '../lib/robotCommandPost';
 import type { HydraController, RobotState } from '../store';
@@ -67,7 +67,7 @@ export function useRobotCommandSender({
     // never refused. A refused command is not sent and the interface says which rule stopped it.
     const target = command === 'jog' || command === 'table' ? controllersRef.current.flatMap((c) => c.robots).find((r) => r.id === id) : undefined;
     const verdict = guardCommand({
-      command, params, robotIds: ids, model: target?.model, limits: getSafetyState().limits, modes: getModeState(), listenOnly: getStudioPrefs().listenOnly,
+      command, params, robotIds: ids, model: target?.model, limits: getSafetyState().limits, modes: getModeState(), listenOnly: listenOnlyActiveFor(currentServerOrigin()),
       tablePosition: { x: target?.xyTable?.pos?.x, y: target?.xyTable?.pos?.y, rz: target?.pos?.trz },
     });
     if (!verdict.ok) {

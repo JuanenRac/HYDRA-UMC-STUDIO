@@ -2201,6 +2201,8 @@
     "reset": "Repor os valores por omissão",
     "listen_only": "Só escuta",
     "listen_only_hint": "Mostra os robôs e os seus dados, mas não envia nenhum comando: os controlos não fazem nada, exceto o STOP e a desativação do modo seguro, que funcionam sempre. Desativado por predefinição; guardado neste navegador. Também não se escreve nada no servidor (serviços, câmaras, definições, utilizadores, ficheiros).",
+    "listen_only_server": "Só escuta para este servidor ({{server}})",
+    "listen_only_server_hint": "Não envia nenhum comando a este servidor a partir deste navegador, exceto o STOP e a desativação do modo seguro, que funcionam sempre. Desativado por predefinição; guardado neste navegador apenas para este servidor. Os outros servidores não são afetados.",
     "listen_only_banner": "Só escuta: os comandos estão desativados. O STOP continua a funcionar."
   },
   "notify": {
