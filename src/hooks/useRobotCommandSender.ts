@@ -67,7 +67,7 @@ export function useRobotCommandSender({
     // never refused. A refused command is not sent and the interface says which rule stopped it.
     const target = command === 'jog' || command === 'table' ? controllersRef.current.flatMap((c) => c.robots).find((r) => r.id === id) : undefined;
     const verdict = guardCommand({
-      command, params, robotIds: ids, model: target?.model, limits: getSafetyState().limits, modes: getModeState(), listenOnly: getStudioPrefs().listenOnly,
+      command, params, robotIds: ids, model: target?.model, limits: getSafetyState().limits, modes: getModeState(), listenOnly: listenOnlyActiveFor(currentServerOrigin()),
       tablePosition: { x: target?.xyTable?.pos?.x, y: target?.xyTable?.pos?.y, rz: target?.pos?.trz },
     });
     if (!verdict.ok) {

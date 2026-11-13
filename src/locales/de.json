@@ -2201,6 +2201,8 @@
     "reset": "Standardwerte wiederherstellen",
     "listen_only": "Nur Zuhören",
     "listen_only_hint": "Zeigt die Roboter und ihre Daten, sendet aber keinen Befehl: die Bedienelemente tun nichts, außer STOP und dem Abschalten des abgesicherten Modus, die immer funktionieren. Standardmäßig aus; wird in diesem Browser gespeichert. Auch auf den Server wird nichts geschrieben (Dienste, Kameras, Einstellungen, Benutzer, Dateien).",
+    "listen_only_server": "Nur zuhören für diesen Server ({{server}})",
+    "listen_only_server_hint": "Sendet von diesem Browser aus keinen Befehl an diesen Server, außer STOP und das Abschalten des sicheren Modus, die immer funktionieren. Standardmäßig aus; wird nur für diesen Server in diesem Browser gespeichert. Andere Server sind nicht betroffen.",
     "listen_only_banner": "Nur Zuhören: Befehle sind deaktiviert. STOP funktioniert weiterhin."
   },
   "notify": {

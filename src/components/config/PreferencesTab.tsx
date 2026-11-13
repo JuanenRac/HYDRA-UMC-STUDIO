@@ -9,10 +9,18 @@
 import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal } from 'lucide-react';
 import { DENSITIES, HELP_LEVELS, resetStudioPrefs, setStudioPrefs, useStudioPrefs } from '../../lib/studioPrefs';
+import { currentServerOrigin } from '../../lib/listenOnlyGuard';
 
 export function PreferencesTab() {
   const { t } = useTranslation();
   const prefs = useStudioPrefs();
+  const server = currentServerOrigin();
+  const serverOn = server !== null && prefs.listenOnlyServers.includes(server);
+  const toggleServer = (on: boolean) => {
+    if (server === null) return;
+    const rest = prefs.listenOnlyServers.filter((origin) => origin !== server);
+    setStudioPrefs({ listenOnlyServers: on ? [...rest, server] : rest });
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300" data-testid="preferences-tab">
@@ -51,6 +59,13 @@ export function PreferencesTab() {
         <input type="checkbox" data-testid="prefs-listen-only" checked={prefs.listenOnly} onChange={(e) => setStudioPrefs({ listenOnly: e.target.checked })} className="mt-0.5" />
         <span><strong className="block text-slate-200">{t('prefs.listen_only')}</strong><span className="text-[10px] text-slate-500">{t('prefs.listen_only_hint')}</span></span>
       </label>
+
+      {server !== null && (
+        <label className="flex items-start gap-3 bg-slate-950 rounded-xl border border-slate-800 p-4 text-xs text-slate-300">
+          <input type="checkbox" data-testid="prefs-listen-only-server" checked={serverOn} disabled={prefs.listenOnly} onChange={(e) => toggleServer(e.target.checked)} className="mt-0.5" />
+          <span><strong className="block text-slate-200">{t('prefs.listen_only_server', { server })}</strong><span className="text-[10px] text-slate-500">{t('prefs.listen_only_server_hint')}</span></span>
+        </label>
+      )}
 
       <div className="flex items-center justify-between">
         <span role="status" className="text-[10px] text-emerald-400">{t('prefs.saved')}</span>
