@@ -16,7 +16,7 @@ import en from '../src/locales/en.json';
 import es from '../src/locales/es.json';
 import de from '../src/locales/de.json';
 import fr from '../src/locales/fr.json';
-import it from '../src/locales/it.json';
+import itLocale from '../src/locales/it.json';
 import ja from '../src/locales/ja.json';
 import zh from '../src/locales/zh.json';
 import pt from '../src/locales/pt.json';
@@ -107,7 +107,7 @@ describe('the switch of the preferences tab', () => {
 
 describe('the texts', () => {
   it('exist in the eight languages with the server placeholder', () => {
-    for (const [code, locale] of Object.entries({ en, es, de, fr, it, ja, zh, pt })) {
+    for (const [code, locale] of Object.entries({ en, es, de, fr, it: itLocale, ja, zh, pt })) {
       const prefs = (locale as unknown as { prefs: Record<string, string> }).prefs;
       expect(prefs.listen_only_server, code).toContain('{{server}}');
       expect(prefs.listen_only_server_hint.length, code).toBeGreaterThan(20);
