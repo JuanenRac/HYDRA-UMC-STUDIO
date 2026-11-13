@@ -20,7 +20,10 @@ import {
 
 const RELOAD_AFTER_MS = 5000;
 
-export function FleetUpdatePanel() {
+/** The times are the ones of a person waiting for a machine; a test of the whole way with a server that restarts passes shorter ones. */
+export interface FleetUpdatePanelTimes { pollMs?: number; silenceMs?: number; reloadMs?: number }
+
+export function FleetUpdatePanel({ pollMs, silenceMs, reloadMs }: FleetUpdatePanelTimes = {}) {
   const { t } = useTranslation();
   const prefs = useStudioPrefs();
   const [status, setStatus] = useState<FleetStatus | null>(null);
@@ -42,7 +45,7 @@ export function FleetUpdatePanel() {
     following.current = true;
     setGaveUp(false);
     const end = await followFleet({
-      read: readFleet, cancelled: () => !alive.current,
+      read: readFleet, cancelled: () => !alive.current, intervalMs: pollMs, silenceLimitMs: silenceMs,
       onStatus: (next) => { if (alive.current) { setStatus(next); setSilent(null); } },
       onWaiting: (seconds) => { if (alive.current) setSilent(seconds); },
     });
@@ -72,9 +75,9 @@ export function FleetUpdatePanel() {
   // The server updated itself: the page loads the new Studio.
   useEffect(() => {
     if (!serverUpdated) return;
-    const timer = window.setTimeout(() => window.location.reload(), RELOAD_AFTER_MS);
+    const timer = window.setTimeout(() => window.location.reload(), reloadMs ?? RELOAD_AFTER_MS);
     return () => window.clearTimeout(timer);
-  }, [serverUpdated]);
+  }, [serverUpdated, reloadMs]);
 
   const report = status?.report ?? null;
   const running = runActive(report);
