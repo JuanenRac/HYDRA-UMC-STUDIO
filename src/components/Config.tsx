@@ -72,7 +72,7 @@ export function Config({ onClose }: { onClose: () => void }) {
     { id: 'models', label: t('config.custom_models') },
     { id: 'integrations', label: t('config.integrations') },
     { id: 'remoteaccess', label: t('config.remote_access_tab') },
-    { id: 'users', label: t('config.users') },
+    { id: 'users', label: t('common.users') },
     { id: 'paths', label: t('config.paths') },
     { id: 'canota', label: t('config.can_ota') },
     { id: 'aihailo', label: t('config.ai_hailo') },
