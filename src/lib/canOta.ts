@@ -455,7 +455,7 @@ export interface GithubReleaseAsset {
 
 /** The lowercase hex of a "sha256:<hex>" digest, or undefined. */
 export function sha256FromDigest(digest: string | undefined | null): string | undefined {
-  const m = /^sha256:([0-9a-fA-F]{64})$/.exec((digest ?? '').trim());
+  const m = /^sha256:([0-9a-f]{64})$/i.exec((digest ?? '').trim());
   return m ? m[1].toLowerCase() : undefined;
 }
 

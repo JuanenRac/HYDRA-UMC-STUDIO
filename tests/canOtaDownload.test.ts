@@ -143,6 +143,10 @@ describe('fetchGithubFirmwareReleases from the latest release (HYDRA-UMC)', () =
 describe('sha256FromDigest', () => {
   it('takes the hash of a sha256 digest and nothing else', () => {
     expect(sha256FromDigest(`sha256:${'AB'.repeat(32)}`)).toBe('ab'.repeat(32));
+    expect(sha256FromDigest(`SHA256:${'cd'.repeat(32)}`)).toBe('cd'.repeat(32));
+    expect(sha256FromDigest(` sha256:${'ef'.repeat(32)} `)).toBe('ef'.repeat(32));
+    expect(sha256FromDigest(`sha256:${'ab'.repeat(31)}`)).toBeUndefined();
+    expect(sha256FromDigest(`sha256:${'zz'.repeat(32)}`)).toBeUndefined();
     expect(sha256FromDigest('sha1:abc')).toBeUndefined();
     expect(sha256FromDigest(null)).toBeUndefined();
   });
