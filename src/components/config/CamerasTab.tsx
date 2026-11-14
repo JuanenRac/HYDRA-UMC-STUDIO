@@ -288,7 +288,7 @@ export function CamerasTab({ tools }: { tools: CameraTools }) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('config.ip_password')}</label>
+                      <label className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">{t('common.password')}</label>
                       <input
                         type="password"
                         value={c.ipPassword || ""}

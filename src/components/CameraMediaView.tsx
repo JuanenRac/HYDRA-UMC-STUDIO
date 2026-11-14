@@ -189,14 +189,14 @@ export function CameraMediaView() {
                 disabled={deleting}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700 text-xs font-bold text-rose-400 hover:text-rose-300 hover:border-rose-500 transition-colors disabled:opacity-50"
               >
-                <Trash2 size={14} /> {t('cameraMedia.delete', 'Delete')}
+                <Trash2 size={14} /> {t('common.delete', 'Delete')}
               </button>
               <a
                 href={downloadUrl(selected)}
                 download={selected.filename}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700 text-xs font-bold text-slate-300 hover:text-slate-100 hover:border-slate-500 transition-colors"
               >
-                <Download size={14} /> {t('cameraMedia.download', 'Download')}
+                <Download size={14} /> {t('common.download', 'Download')}
               </a>
             </div>
           )}

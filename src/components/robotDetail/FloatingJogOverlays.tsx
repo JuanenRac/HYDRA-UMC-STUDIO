@@ -10,6 +10,7 @@
 import { useState } from 'react';
 import { motion, useDragControls } from 'motion/react';
 import { RotateCcw, RotateCw } from 'lucide-react';
+import { labelWithColon } from '../../lib/labelColon';
 import { RotaryKnob } from '../RotaryKnob';
 import { FuturisticSlider } from '../FuturisticSlider';
 import { Joystick3D } from '../Joystick3D';
@@ -79,7 +80,7 @@ export function JointControlsOverlay({
             </select>
           </div>
           <div className="flex items-center gap-2 bg-slate-900/80 px-2 py-1.5 rounded-lg border border-slate-800">
-            <span className="text-[9px] text-slate-400 font-bold uppercase w-14 shrink-0">{t('robot_detail.speed', 'Speed:')}</span>
+            <span className="text-[9px] text-slate-400 font-bold uppercase w-14 shrink-0">{labelWithColon(t('common.speed'))}</span>
             <RotaryKnob min={10} max={500} value={playbackSpeed} onChange={onSpeedChange} size={28} step={5} />
             <div className="flex-1"><FuturisticSlider min={10} max={500} value={playbackSpeed} onChange={onSpeedChange} step={5} /></div>
             <span className="text-[9px] font-mono text-sky-400 w-8 text-right shrink-0">{playbackSpeed}%</span>

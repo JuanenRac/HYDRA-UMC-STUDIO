@@ -183,10 +183,10 @@ export function Assistant({ view, go, openHelp, openSettings }: Props) {
               <small className="assistant-asked">{t('assistant.step_of', { step: guide.step + 1, total: steps.length })}</small>
               <p>{steps[guide.step]}</p>
               <div className="assistant-actions">
-                <button type="button" disabled={guide.step === 0} onClick={() => setGuide({ ...guide, step: guide.step - 1 })}>{t('assistant.prev')}</button>
+                <button type="button" disabled={guide.step === 0} onClick={() => setGuide({ ...guide, step: guide.step - 1 })}>{t('common.previous')}</button>
                 {guide.step < steps.length - 1
-                  ? <button type="button" className="primary" onClick={() => setGuide({ ...guide, step: guide.step + 1 })}>{t('assistant.next')}</button>
-                  : <button type="button" className="primary" onClick={() => setGuide(null)}>{t('assistant.done')}</button>}
+                  ? <button type="button" className="primary" onClick={() => setGuide({ ...guide, step: guide.step + 1 })}>{t('common.next')}</button>
+                  : <button type="button" className="primary" onClick={() => setGuide(null)}>{t('common.done')}</button>}
                 {guide.topic.view !== view && <button type="button" onClick={() => goTo(guide.topic.view)}>{t('assistant.goto')}</button>}
               </div>
             </>

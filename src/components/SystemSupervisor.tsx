@@ -242,7 +242,7 @@ export function SystemSupervisor() {
       {/* Stat tiles */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <StatTile accent="cpu" icon={<Cpu size={13} />} label={t('ecosystem.supervisor_cpu', 'CPU')} value={`${snapshot.cpu.overallPercent.toFixed(0)}%`} sub={snapshot.cpu.model ? `${snapshot.cpu.coreCount} ${t('ecosystem.supervisor_cores', 'cores')}` : undefined} />
-        <StatTile accent="mem" icon={<MemoryStick size={13} />} label={t('ecosystem.supervisor_memory', 'Memory')} value={memPercent !== null ? `${memPercent}%` : 'N/A'} sub={snapshot.memory ? `${formatBytes(snapshot.memory.usedBytes)} / ${formatBytes(snapshot.memory.totalBytes)}` : undefined} />
+        <StatTile accent="mem" icon={<MemoryStick size={13} />} label={t('common.memory', 'Memory')} value={memPercent !== null ? `${memPercent}%` : 'N/A'} sub={snapshot.memory ? `${formatBytes(snapshot.memory.usedBytes)} / ${formatBytes(snapshot.memory.totalBytes)}` : undefined} />
         <StatTile accent="disk" icon={<HardDrive size={13} />} label={t('ecosystem.supervisor_disk', 'Flash')} value={diskPercent !== null ? `${diskPercent}%` : 'N/A'} sub={snapshot.disk ? `${formatBytes(snapshot.disk.usedBytes)} / ${formatBytes(snapshot.disk.totalBytes)}` : undefined} />
         <StatTile accent="temp" icon={<Thermometer size={13} />} label={t('ecosystem.supervisor_cpu_temp', 'CPU Temp')} value={snapshot.temps.cpu !== null ? `${snapshot.temps.cpu.toFixed(0)}°C` : 'N/A'} />
         <StatTile accent="temp" icon={<Thermometer size={13} />} label={t('ecosystem.supervisor_rp1_temp', 'RP1 Temp')} value={snapshot.temps.rp1 !== null ? `${snapshot.temps.rp1.toFixed(0)}°C` : 'N/A'} />
@@ -314,7 +314,7 @@ export function SystemSupervisor() {
           )}
         </ChartCard>
 
-        <ChartCard title={t('ecosystem.supervisor_temp_trend', 'Temperature')} icon={<Thermometer size={12} />} accent="temp">
+        <ChartCard title={t('common.temperature', 'Temperature')} icon={<Thermometer size={12} />} accent="temp">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={tempData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
               <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" vertical={false} />

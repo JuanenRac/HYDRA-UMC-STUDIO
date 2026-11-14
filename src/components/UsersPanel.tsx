@@ -141,7 +141,7 @@ export function UsersPanel() {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       <div>
-        <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><UsersIcon size={16} /> {t('config.users')}</h3>
+        <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><UsersIcon size={16} /> {t('common.users')}</h3>
         <p className="text-[10px] text-slate-600 leading-relaxed pt-2">{t('config.users_desc')}</p>
       </div>
 
@@ -154,7 +154,7 @@ export function UsersPanel() {
           <thead className="bg-slate-900 border-b border-slate-800">
             <tr>
               <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.users_username')}</th>
-              <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.users_role')}</th>
+              <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('common.role')}</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
@@ -164,7 +164,7 @@ export function UsersPanel() {
                 <td className="px-4 py-3 text-slate-200 font-bold">{u.username}</td>
                 <td className="px-4 py-3">
                   <span className={u.role === 'admin' ? 'inline-flex items-center gap-1 text-emerald-400 text-[10px] font-black uppercase' : 'inline-flex items-center gap-1 text-sky-400 text-[10px] font-black uppercase'}>
-                    {u.role === 'admin' && <ShieldCheck size={12} />} {u.role === 'admin' ? t('config.users_role_admin') : u.role === 'viewer' ? t('config.users_role_viewer') : t('config.users_role_operator')}
+                    {u.role === 'admin' && <ShieldCheck size={12} />} {u.role === 'admin' ? t('common.administrator') : u.role === 'viewer' ? t('config.users_role_viewer') : t('config.users_role_operator')}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -206,7 +206,7 @@ export function UsersPanel() {
         <select value={newRole} onChange={e => setNewRole(e.target.value as 'admin' | 'operator' | 'viewer')} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-sm text-slate-200 outline-none focus:border-sky-500">
           <option value="operator">{t('config.users_role_operator')}</option>
           <option value="viewer">{t('config.users_role_viewer')}</option>
-          <option value="admin">{t('config.users_role_admin')}</option>
+          <option value="admin">{t('common.administrator')}</option>
         </select>
         <p className="text-[9px] text-slate-600 leading-relaxed">{t('config.users_role_hint')}</p>
         <button type="submit" disabled={!newUsername || !newPassword} className="w-full py-2.5 bg-emerald-500/20 hover:bg-emerald-500/30 disabled:opacity-40 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">

@@ -45,7 +45,7 @@ export function ConnectorHubGatePanel() {
     setSaving(true); setMessage(''); setConfirming(false);
     const result = await connectorHubGateApi.write(wanted);
     setSaving(false);
-    if (result.ok) { setSettings(result.value); setWanted(result.value.allowLoopbackNoIdentity); setProblem(''); setMessage(t('hubGate.saved')); return; }
+    if (result.ok) { setSettings(result.value); setWanted(result.value.allowLoopbackNoIdentity); setProblem(''); setMessage(t('common.saved')); return; }
     setProblem(result.reason ? t('hubGate.save_error', { reason: result.reason }) : t(FAILURE_KEY[result.failure]));
   };
 
@@ -82,7 +82,7 @@ export function ConnectorHubGatePanel() {
             disabled={saving || blocked || wanted === settings.allowLoopbackNoIdentity}
             className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-50 text-sky-300 border border-sky-500/30 rounded-lg text-xs font-bold transition-all"
           >
-            <Save size={14} /> {t('hubGate.save')}
+            <Save size={14} /> {t('common.save')}
           </button>
         </>
       )}

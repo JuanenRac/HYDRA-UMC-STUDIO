@@ -94,7 +94,7 @@ export function SecurityTab() {
             <>
               <p className="text-xs text-slate-300">{t('security.algorithm')}: <span className="font-mono" data-testid="security-algorithm">{keys.algorithm ?? '-'}</span>{current ? <> - {t('security.active_key')}: <span className="font-mono" data-testid="security-active-kid">{current.kid}</span></> : null}</p>
               <table className="w-full text-xs">
-                <thead><tr className="text-left text-[9px] uppercase tracking-widest text-slate-600"><th className="py-1">{t('security.col_key')}</th><th>{t('security.col_created')}</th><th>{t('security.col_state')}</th></tr></thead>
+                <thead><tr className="text-left text-[9px] uppercase tracking-widest text-slate-600"><th className="py-1">{t('common.key')}</th><th>{t('security.col_created')}</th><th>{t('security.col_state')}</th></tr></thead>
                 <tbody>
                   {keys.keys.map((key) => (
                     <tr key={key.kid} data-testid="security-key-row" className="border-t border-slate-800 text-slate-300">

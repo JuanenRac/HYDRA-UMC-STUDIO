@@ -133,14 +133,14 @@ export function TotpPanel() {
         <div className="space-y-2">
           <p className="text-[10px] text-slate-400">{t('totp.scan')}</p>
           <QrImage text={enrolment.uri} />
-          <div className="text-xs font-bold text-slate-200">{t('totp.key_label')}</div>
+          <div className="text-xs font-bold text-slate-200">{t('common.key')}</div>
           <code data-testid="totp-key" className="block bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-sky-300 break-all select-all">{groupedKey(enrolment.secret)}</code>
           <button onClick={copyKey} className={buttonClass}>{t('totp.copy')}</button>
           <label className="text-xs font-bold text-slate-200" htmlFor="totp-code">{t('totp.code_label')}</label>
           <input id="totp-code" inputMode="numeric" autoComplete="one-time-code" value={code} disabled={busy} onChange={e => setCode(e.target.value)} className={inputClass} />
           <div className="flex gap-2">
             <button onClick={confirm} disabled={busy || !code.trim()} className={buttonClass}><ShieldCheck size={14} /> {t('totp.confirm')}</button>
-            <button onClick={() => { setEnrolment(null); setCode(''); setError(''); setStep('off'); }} disabled={busy} className={buttonClass}>{t('totp.cancel')}</button>
+            <button onClick={() => { setEnrolment(null); setCode(''); setError(''); setStep('off'); }} disabled={busy} className={buttonClass}>{t('common.cancel')}</button>
           </div>
         </div>
       )}

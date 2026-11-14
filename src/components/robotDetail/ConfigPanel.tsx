@@ -7,7 +7,7 @@
 // changes nothing by itself.
 // =============================================================================
 import { Power, Droplets, Save, FolderOpen, Download } from 'lucide-react';
-import { cn, URTC_TOOLS } from './shared';
+import { cn, isUrtcTool, URTC_TOOLS } from './shared';
 import { browserStorage } from '../../lib/robotDetailHelpers';
 import { saveReachTolerance } from '../../lib/reachCheck';
 import { examples } from '../../examples/kinematics';
@@ -103,7 +103,7 @@ export function ConfigPanel(props: ConfigPanelProps) {
                   onClick={handleSaveWorkFile}
                   disabled={robot.playbackState?.isPlaying || robot.recordedPoints.length === 0}
                   className="flex items-center justify-center w-10 h-10 bg-indigo-600 hover:bg-indigo-500 text-white rounded transition-colors disabled:opacity-50 shrink-0"
-                  title={t('robot_detail.save_trajectory', 'Save')} aria-label={t('robot_detail.save_trajectory', 'Save')}
+                  title={t('common.save', 'Save')} aria-label={t('common.save', 'Save')}
                 >
                   <Save size={20} />
                 </button>
@@ -252,7 +252,7 @@ export function ConfigPanel(props: ConfigPanelProps) {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('robot_detail.role', 'Role')}</label>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.role', 'Role')}</label>
               <select 
                 value={robot.role}
                 onChange={e => updateRobot(robot.id, { role: e.target.value as any })}
@@ -274,10 +274,14 @@ export function ConfigPanel(props: ConfigPanelProps) {
                 onChange={e => setPendingTool(e.target.value)}
                 className="bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
               >
+                {robot.tool && !isUrtcTool(robot.tool) && <option value={robot.tool}>{robot.tool}</option>}
                 {URTC_TOOLS.map(t => (
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
+              {robot.tool && !isUrtcTool(robot.tool) && (
+                <p className="text-[11px] text-amber-400" data-testid="tool-not-in-family">{t('robot_detail.tool_not_in_family', 'This tool is not one of the URTC family; it is kept as it is.')}</p>
+              )}
             </div>
           </div>
 
@@ -367,7 +371,7 @@ export function ConfigPanel(props: ConfigPanelProps) {
             </div>
 
             <div className="mt-4 pt-4 border-t border-slate-800">
-              <h4 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">{t('robot_detail.endstops_upper', 'ENDSTOPS')}</h4>
+              <h4 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">{t('common.endstops')}</h4>
               <div className="flex gap-2">
                 {(['x1', 'x2', 'y1', 'y2', 'z0'] as const).map(axis => (
                   <div key={axis} className={cn(

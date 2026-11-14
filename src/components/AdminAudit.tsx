@@ -110,14 +110,14 @@ export function AdminAudit() {
 
       <div className="flex items-end flex-wrap gap-3">
         <label className="flex flex-col gap-1 text-[10px] font-black uppercase tracking-wider text-slate-500">
-          {t('audit.filter_type')}
+          {t('common.type')}
           <select className={field} value={type} onChange={(e) => setType(e.target.value)} data-testid="audit-type">
             <option value="">{t('audit.all_types')}</option>
             {AUDIT_TYPES.map((name) => <option key={name} value={name}>{t(`audit.type_${auditTypeKey(name)}`, name)}</option>)}
           </select>
         </label>
         <label className="flex flex-col gap-1 text-[10px] font-black uppercase tracking-wider text-slate-500">
-          {t('audit.filter_robot')}
+          {t('common.robot')}
           <select className={field} value={robotId} onChange={(e) => setRobotId(e.target.value)} data-testid="audit-robot">
             <option value="">{t('audit.all_robots')}</option>
             {robots.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
@@ -130,7 +130,7 @@ export function AdminAudit() {
           </select>
         </label>
         <label className="flex flex-col gap-1 text-[10px] font-black uppercase tracking-wider text-slate-500">
-          {t('audit.filter_account')}
+          {t('common.account')}
           <select className={field} value={account} onChange={(e) => setAccount(e.target.value)} data-testid="audit-account">
             <option value="">{t('audit.all_accounts')}</option>
             {accounts.map((name) => <option key={name} value={name}>{name}</option>)}
@@ -151,7 +151,7 @@ export function AdminAudit() {
           </select>
         </label>
         <label className="flex flex-col gap-1 text-[10px] font-black uppercase tracking-wider text-slate-500">
-          {t('audit.filter_text')}
+          {t('common.search')}
           <input className={field} value={search} onChange={(e) => setSearch(e.target.value)} data-testid="audit-search" />
         </label>
         {myUsername && (
@@ -197,13 +197,13 @@ export function AdminAudit() {
               <thead>
                 <tr className="text-slate-500 uppercase tracking-wider text-[10px]">
                   <th className="py-1 pr-3">{t('audit.col_seq')}</th>
-                  <th className="py-1 pr-3">{t('audit.col_time')}</th>
-                  <th className="py-1 pr-3">{t('audit.col_type')}</th>
+                  <th className="py-1 pr-3">{t('common.time')}</th>
+                  <th className="py-1 pr-3">{t('common.type')}</th>
                   <th className="py-1 pr-3">{t('audit.col_outcome')}</th>
-                  <th className="py-1 pr-3">{t('audit.col_account')}</th>
+                  <th className="py-1 pr-3">{t('common.account')}</th>
                   <th className="py-1 pr-3">{t('audit.col_controller')}</th>
                   <th className="py-1 pr-3">{t('audit.col_address')}</th>
-                  <th className="py-1 pr-3">{t('audit.col_robot')}</th>
+                  <th className="py-1 pr-3">{t('common.robot')}</th>
                   <th className="py-1">{t('audit.col_detail')}</th>
                 </tr>
               </thead>

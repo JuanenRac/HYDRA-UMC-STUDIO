@@ -250,8 +250,8 @@ export function DownsamplePlanEditor() {
         title={t('ecosystem.plan_confirm_title')}
         message={turningDeleteOn ? t('ecosystem.plan_confirm_delete_message') : t('ecosystem.plan_confirm_message')}
         details={effects?.next ? <p className="text-xs text-slate-300">{t('ecosystem.plan_effects', { raw: effects.next.rawPointsToRollUp, rollups: effects.next.rollupsToExpire, fine: effects.next.fineRollupsToExpire })}</p> : undefined}
-        confirmLabel={t('ecosystem.plan_confirm_save')}
-        cancelLabel={t('ecosystem.plan_confirm_cancel')}
+        confirmLabel={t('common.save')}
+        cancelLabel={t('common.cancel')}
         danger={turningDeleteOn}
         onConfirm={() => void save()}
         onCancel={() => setConfirming(false)}

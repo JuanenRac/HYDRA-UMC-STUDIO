@@ -370,7 +370,7 @@ export function Tester({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
           <div className="bg-black/40 rounded-lg h-40 overflow-y-auto custom-scrollbar font-mono text-[10px]">
             <table className="w-full">
               <thead className="sticky top-0 bg-slate-950 text-slate-500">
-                <tr><th className="text-left px-2 py-1 font-normal">{t('tester.col_time', 'Time')}</th><th className="text-left px-2 py-1 font-normal">{t('tester.col_id', 'ID')}</th><th className="text-left px-2 py-1 font-normal">DLC</th><th className="text-left px-2 py-1 font-normal">{t('tester.col_data', 'Data')}</th></tr>
+                <tr><th className="text-left px-2 py-1 font-normal">{t('common.time', 'Time')}</th><th className="text-left px-2 py-1 font-normal">{t('tester.col_id', 'ID')}</th><th className="text-left px-2 py-1 font-normal">DLC</th><th className="text-left px-2 py-1 font-normal">{t('tester.col_data', 'Data')}</th></tr>
               </thead>
               <tbody>
                 {frames.slice().reverse().map((f, i) => (
@@ -417,7 +417,7 @@ function ToolTelemetryPanel({ category }: { category: ToolCategory }) {
       <div className="flex items-center gap-4">
         <Thermometer size={28} className="text-rose-400" />
         <div className="flex-1">
-          <div className="flex justify-between text-xs text-slate-400 mb-1"><span>{t('tester.telemetry.temperature', 'Temperature')}</span><span className="font-mono text-slate-200">{temp.toFixed(1)}°C</span></div>
+          <div className="flex justify-between text-xs text-slate-400 mb-1"><span>{t('common.temperature', 'Temperature')}</span><span className="font-mono text-slate-200">{temp.toFixed(1)}°C</span></div>
           <div className="bg-slate-900 rounded-full h-2 overflow-hidden"><div className="h-full bg-rose-500" style={{ width: `${Math.min(100, temp / 3)}%` }} /></div>
         </div>
       </div>

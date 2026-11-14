@@ -139,13 +139,13 @@ export function AdminLogs() {
             onClick={handleClear}
             className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-sky-400 transition-colors"
           >
-            <Eraser size={12} /> {t('ecosystem.logs_clear')}
+            <Eraser size={12} /> {t('common.clear')}
           </button>
           <button
             onClick={() => setLive(l => !l)}
             className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-sky-400 transition-colors"
           >
-            {live ? <><Pause size={12} /> {t('ecosystem.logs_pause')}</> : <><Play size={12} /> {t('ecosystem.logs_resume')}</>}
+            {live ? <><Pause size={12} /> {t('common.pause')}</> : <><Play size={12} /> {t('ecosystem.logs_resume')}</>}
           </button>
         </div>
       </div>

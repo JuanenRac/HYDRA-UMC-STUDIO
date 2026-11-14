@@ -42,7 +42,7 @@ function PanelLoadingFallback() {
   const { t } = useTranslation();
   return (
     <div className="flex-1 flex items-center justify-center text-slate-600 text-sm">
-      <RefreshCw size={18} className="animate-spin mr-2" /> {t('dashboard.loading')}
+      <RefreshCw size={18} className="animate-spin mr-2" /> {t('common.loading')}
     </div>
   );
 }
@@ -65,14 +65,14 @@ export function Config({ onClose }: { onClose: () => void }) {
 
   const tabs: { id: ConfigTab, label: string }[] = [
     { id: 'identity', label: t('config.identity') },
-    { id: 'controllers', label: t('config.controllers') },
+    { id: 'controllers', label: t('common.controllers') },
     { id: 'ui', label: t('config.ui_themes') },
     { id: 'robots', label: t('config.robot_names') },
     { id: 'cameras', label: t('config.camera_setup') },
     { id: 'models', label: t('config.custom_models') },
     { id: 'integrations', label: t('config.integrations') },
     { id: 'remoteaccess', label: t('config.remote_access_tab') },
-    { id: 'users', label: t('config.users') },
+    { id: 'users', label: t('common.users') },
     { id: 'paths', label: t('config.paths') },
     { id: 'canota', label: t('config.can_ota') },
     { id: 'aihailo', label: t('config.ai_hailo') },
@@ -91,7 +91,7 @@ export function Config({ onClose }: { onClose: () => void }) {
       <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[850px] max-w-full overflow-hidden flex flex-col h-250 max-h-[95vh]">
         <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Settings className="text-sky-400" size={20} /> {t('config.title')}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200 p-1">&times;</button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-200 p-1" aria-label={t('dashboard.close', 'Close')}>&times;</button>
         </div>
 
         <div className="flex flex-1 overflow-hidden">
