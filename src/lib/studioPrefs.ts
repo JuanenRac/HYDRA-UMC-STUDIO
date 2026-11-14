@@ -27,10 +27,12 @@ export type StudioPrefs = {
   listenOnly: boolean;
   /** Listen only for some servers only: the origins (scheme, host and port) whose requests this window keeps read-only. */
   listenOnlyServers: string[];
+  /** Applying updates of the programs of the machine from Configuration, Updates. Off: that section only looks (checks), it never installs or goes back. */
+  selfUpdateApply: boolean;
 };
 
 export const STUDIO_PREFS_KEY = 'hydra_studio_prefs';
-export const STUDIO_DEFAULTS: StudioPrefs = { helpLevel: 'all', density: 'comfortable', reduceMotion: false, listenOnly: false, listenOnlyServers: [] };
+export const STUDIO_DEFAULTS: StudioPrefs = { helpLevel: 'all', density: 'comfortable', reduceMotion: false, listenOnly: false, listenOnlyServers: [], selfUpdateApply: false };
 
 let prefs: Prefs<StudioPrefs> | null = null;
 
@@ -39,7 +41,7 @@ function store(): Prefs<StudioPrefs> {
     storage: browserStorage('localStorage'),
     key: STUDIO_PREFS_KEY,
     defaults: STUDIO_DEFAULTS,
-    schema: { helpLevel: oneOf(...HELP_LEVELS), density: oneOf(...DENSITIES), reduceMotion: bool, listenOnly: bool, listenOnlyServers: originList },
+    schema: { helpLevel: oneOf(...HELP_LEVELS), density: oneOf(...DENSITIES), reduceMotion: bool, listenOnly: bool, listenOnlyServers: originList, selfUpdateApply: bool },
   });
   return prefs;
 }
