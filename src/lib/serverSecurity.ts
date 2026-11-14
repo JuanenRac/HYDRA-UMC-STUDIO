@@ -97,6 +97,8 @@ export interface SecurityState {
   /** Absent when the server predates the options of the job dispatcher. */
   jobDispatcher: {
     stopRelay: { enabled: { value: boolean; source: SecuritySource }; robotMap: Record<string, number>; appliesOnRestart: boolean };
+    /** Absent when the server predates the executor of the assigned jobs. `live` false is a dry run. */
+    executor?: { enabled: { value: boolean; source: SecuritySource }; live: { value: boolean; source: SecuritySource }; appliesOnRestart: boolean };
     replan: { allowUnconfirmed: { value: boolean; source: SecuritySource }; stopAckTimeoutSeconds: { value: number; source: SecuritySource }; editable: boolean; reload: DispatcherReloadState };
   } | null;
   safety: {
@@ -426,8 +428,13 @@ function parseJobDispatcher(raw: any): SecurityState['jobDispatcher'] {
   if (relay.robotMap && typeof relay.robotMap === 'object' && !Array.isArray(relay.robotMap)) {
     for (const [id, number] of Object.entries(relay.robotMap)) if (typeof number === 'number' && Number.isInteger(number)) robotMap[id] = number;
   }
+  const executor = raw.executor;
+  const executorOk = executor && typeof executor === 'object' && typeof executor.enabled?.value === 'boolean' && isSource(executor.enabled?.source) && typeof executor.live?.value === 'boolean' && isSource(executor.live?.source);
   return {
     stopRelay: { enabled: { value: relay.enabled.value, source: relay.enabled.source }, robotMap, appliesOnRestart: relay.appliesOnRestart === true },
+    ...(executorOk
+      ? { executor: { enabled: { value: executor.enabled.value, source: executor.enabled.source }, live: { value: executor.live.value, source: executor.live.source }, appliesOnRestart: executor.appliesOnRestart === true } }
+      : {}),
     replan: {
       allowUnconfirmed: { value: replan.allowUnconfirmed.value, source: replan.allowUnconfirmed.source },
       stopAckTimeoutSeconds: { value: replan.stopAckTimeoutSeconds.value, source: replan.stopAckTimeoutSeconds.source },
@@ -795,6 +802,8 @@ export type JobDispatcherPatchBody = {
   jobDispatcher: {
     stopRelay: { enabled: boolean; robotMap: Record<string, number> };
     replan?: { allowUnconfirmed: boolean; stopAckTimeoutSeconds: number };
+    /** Only the switches that are not locked by the environment; `live: false` is the dry run. */
+    executor?: { enabled?: boolean; live?: boolean };
   };
 };
 
@@ -802,10 +811,16 @@ export type JobDispatcherPatchBody = {
  * The request body for the job dispatcher options; null when the robot map or the wait is not valid (a comma is read as a decimal point; an empty
  * text is not a number). The replanning part is left out when the server cannot write the file of the dispatcher.
  */
-export function jobDispatcherPatch(input: { relayEnabled: boolean; robotMapText: string; replanEditable: boolean; allowUnconfirmed: boolean; timeoutText: string }): JobDispatcherPatchBody | null {
+export function jobDispatcherPatch(input: { relayEnabled: boolean; robotMapText: string; replanEditable: boolean; allowUnconfirmed: boolean; timeoutText: string; executorEnabled?: boolean; executorLive?: boolean }): JobDispatcherPatchBody | null {
   const robotMap = parseRobotMapText(input.robotMapText);
   if (robotMap === null) return null;
   const body: JobDispatcherPatchBody = { jobDispatcher: { stopRelay: { enabled: input.relayEnabled, robotMap } } };
+  if (input.executorEnabled !== undefined || input.executorLive !== undefined) {
+    body.jobDispatcher.executor = {
+      ...(input.executorEnabled !== undefined ? { enabled: input.executorEnabled } : {}),
+      ...(input.executorLive !== undefined ? { live: input.executorLive } : {}),
+    };
+  }
   if (input.replanEditable) {
     const text = input.timeoutText.trim().replace(',', '.');
     if (text === '' || !/^\d*\.?\d+$|^\d+\.$/.test(text)) return null;
@@ -820,7 +835,12 @@ export function jobDispatcherPatch(input: { relayEnabled: boolean; robotMapText:
 export function jobDispatcherChangeNeedsConfirmation(current: NonNullable<SecurityState['jobDispatcher']>, next: JobDispatcherPatchBody): boolean {
   const relayOn = !current.stopRelay.enabled.value && next.jobDispatcher.stopRelay.enabled;
   const unconfirmed = next.jobDispatcher.replan !== undefined && !current.replan.allowUnconfirmed.value && next.jobDispatcher.replan.allowUnconfirmed;
-  return relayOn || unconfirmed;
+  return relayOn || unconfirmed || jobExecutorGoesLive(current, next);
+}
+
+/** Letting the executor move the robots by itself (it was a dry run or off) asks first, with its own words. */
+export function jobExecutorGoesLive(current: NonNullable<SecurityState['jobDispatcher']>, next: JobDispatcherPatchBody): boolean {
+  return next.jobDispatcher.executor?.live === true && !(current.executor?.live.value ?? false);
 }
 
 export type SafetyPatchBody = { safety: { publishGlobalStop?: boolean; framErase?: boolean; estopWatchMs?: number; confirm?: true } };
@@ -860,6 +880,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'server_read_only_on', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'rate_limits_off', 'rate_limits_loose', 'bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'bridge_droids_confirmationRequired', 'bridge_uav_envelopeRequired', 'bridge_uav_confirmationRequired', 'bridge_uav_chainInFlight', 'bridge_uav_uploadGeofence', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'jwt_eddsa_on', 'jwt_hs256_refused'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'server_read_only_on', 'job_executor_on', 'job_executor_live', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'rate_limits_off', 'rate_limits_loose', 'bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'bridge_droids_confirmationRequired', 'bridge_uav_envelopeRequired', 'bridge_uav_confirmationRequired', 'bridge_uav_chainInFlight', 'bridge_uav_uploadGeofence', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'jwt_eddsa_on', 'jwt_hs256_refused'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }

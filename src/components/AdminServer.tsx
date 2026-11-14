@@ -35,7 +35,7 @@ import { IngestSwitchesPanel } from './IngestSwitchesPanel';
 import { DetectionHefPanel } from './DetectionHefPanel';
 import { LiveActivityPanel } from './LiveActivityPanel';
 import { DeveloperNodeStatusPanel } from './DeveloperNodeStatusPanel';
-import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, readOnlyPatch, readOnlyChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
+import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, readOnlyPatch, readOnlyChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
 
 interface HydraInfo {
@@ -128,6 +128,8 @@ export function AdminServer() {
   const [jdRelay, setJdRelay] = useState(false);
   const [jdMapText, setJdMapText] = useState('');
   const [jdAllow, setJdAllow] = useState(false);
+  const [jdExecEnabled, setJdExecEnabled] = useState(false);
+  const [jdExecLive, setJdExecLive] = useState(false);
   const [jdTimeout, setJdTimeout] = useState('30');
   const [pendingJd, setPendingJd] = useState<JobDispatcherPatchBody | null>(null);
   const [exposure, setExposure] = useState<ExposureValues>({ cameraOpen: false, wsQueryToken: false, logRedaction: true, voiceSignature: false });
@@ -176,6 +178,8 @@ export function AdminServer() {
         setJdRelay(state.jobDispatcher.stopRelay.enabled.value);
         setJdMapText(robotMapToText(state.jobDispatcher.stopRelay.robotMap));
         setJdAllow(state.jobDispatcher.replan.allowUnconfirmed.value);
+        setJdExecEnabled(state.jobDispatcher.executor?.enabled.value ?? false);
+        setJdExecLive(state.jobDispatcher.executor?.live.value ?? false);
         setJdTimeout(String(state.jobDispatcher.replan.stopAckTimeoutSeconds.value));
       }
       if (state.exposure) setExposure({ cameraOpen: state.exposure.cameraOpen.value, wsQueryToken: state.exposure.wsQueryToken.value, logRedaction: state.exposure.logRedaction.value, voiceSignature: state.exposure.voiceSignature.value });
@@ -249,6 +253,8 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('mavlink_signing_off')) setWarning(t('ecosystem.admin_security_mavlink_off_warning'));
       if (knownWarnings(data.warnings).includes('job_stop_relay_on')) setWarning(t('ecosystem.admin_security_jd_warning_relay'));
       if (knownWarnings(data.warnings).includes('replan_unconfirmed_allowed')) setWarning(t('ecosystem.admin_security_jd_warning_replan'));
+      if (knownWarnings(data.warnings).includes('job_executor_on')) setWarning(t('ecosystem.admin_security_jd_warning_exec'));
+      if (knownWarnings(data.warnings).includes('job_executor_live')) setWarning(t('ecosystem.admin_security_jd_warning_exec_live'));
       setNotice(t('common.saved'));
     } catch {
       setError(t('ecosystem.admin_server_load_error'));
@@ -284,7 +290,9 @@ export function AdminServer() {
 
   const saveJobDispatcher = () => {
     if (!security?.jobDispatcher) return;
-    const body = jobDispatcherPatch({ relayEnabled: jdRelay, robotMapText: jdMapText, replanEditable: security.jobDispatcher.replan.editable, allowUnconfirmed: jdAllow, timeoutText: jdTimeout });
+    const body = jobDispatcherPatch({ relayEnabled: jdRelay, robotMapText: jdMapText, replanEditable: security.jobDispatcher.replan.editable, allowUnconfirmed: jdAllow, timeoutText: jdTimeout,
+      executorEnabled: security.jobDispatcher.executor && !isLocked(security.jobDispatcher.executor.enabled.source) ? jdExecEnabled : undefined,
+      executorLive: security.jobDispatcher.executor && !isLocked(security.jobDispatcher.executor.live.source) ? jdExecLive : undefined });
     if (!body) {
       setError(parseRobotMapText(jdMapText) === null ? t('ecosystem.admin_security_jd_map_invalid') : t('ecosystem.admin_security_jd_timeout_invalid'));
       return;
@@ -1240,6 +1248,35 @@ export function AdminServer() {
                 className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 font-mono outline-none"
               />
               <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_jd_map_help')}</div>
+              {security.jobDispatcher.executor && (
+                <>
+                  <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_jd_exec_title')}</h5>
+                  <label className="flex items-center gap-2 text-xs text-slate-200">
+                    <input
+                      type="checkbox"
+                      data-testid="jd-exec-enabled"
+                      checked={jdExecEnabled}
+                      disabled={saving || isLocked(security.jobDispatcher.executor.enabled.source)}
+                      onChange={e => setJdExecEnabled(e.target.checked)}
+                    />
+                    {t('ecosystem.admin_security_jd_exec_enabled_label')}
+                  </label>
+                  <span className="text-[10px] text-slate-500">{sourceText(security.jobDispatcher.executor.enabled.source)}</span>
+                  <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_jd_exec_enabled_help')}</div>
+                  <label className="flex items-center gap-2 text-xs text-slate-200">
+                    <input
+                      type="checkbox"
+                      data-testid="jd-exec-live"
+                      checked={jdExecLive}
+                      disabled={saving || isLocked(security.jobDispatcher.executor.live.source)}
+                      onChange={e => setJdExecLive(e.target.checked)}
+                    />
+                    {t('ecosystem.admin_security_jd_exec_live_label')}
+                  </label>
+                  <span className="text-[10px] text-slate-500">{sourceText(security.jobDispatcher.executor.live.source)}</span>
+                  <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_jd_exec_live_help')}</div>
+                </>
+              )}
               <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_jd_replan_title')}</h5>
               <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
                 <input
@@ -1316,7 +1353,7 @@ export function AdminServer() {
 
       <ConfirmDialog
         open={pendingJd !== null}
-        message={t('ecosystem.admin_security_jd_confirm')}
+        message={security?.jobDispatcher && pendingJd && jobExecutorGoesLive(security.jobDispatcher, pendingJd) ? t('ecosystem.admin_security_jd_exec_confirm') : t('ecosystem.admin_security_jd_confirm')}
         onConfirm={() => { const body = pendingJd; setPendingJd(null); if (body) void saveSecurity(body); }}
         onCancel={() => setPendingJd(null)}
       />
