@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **The digest of a downloaded release asset is read with the same rule as the Android app and the shared app package of the SDK:** the `sha256:` prefix is accepted in any case (`SHA256:...`), a digest of another length or with characters that are not hexadecimal counts as not published, and the SDK is pinned to its newest release for the route tests.
+
 - **A short guide to updating the machine from here, with the way to recover, in the eight languages:** the assistant answers "how do I update the programs of the machine" with the steps (look at the device, read the table, allow applying, update, what each program shows, the restart of the server) and the recovery (a program that failed is put back and the run stops: read the reason and take it up again; a cut run shows as interrupted; "look again" after a long silence; unit files not restored; the last resort by hand). The table also says, in the eight languages, why a program that runs from its release link is left alone or comes in its own signed package.
 
 - **The update of everything installed is tried against a server that restarts itself:** `tests/fleetIntegration.test.tsx` runs the panel against a fake server over real HTTP that answers the routes of `/api/admin/fleet-update`, runs a scripted update program after program and, at the end of its own update, closes its socket, refuses connections for a while and comes back. It proves that the panel keeps asking and says it is waiting, ends with the result when the server answers and reloads, says it after a long silence and finds the result when looked at again, shows a cut run as interrupted and takes the program up, and stops at a failure. The panel takes optional times (`pollMs`, `silenceMs`, `reloadMs`) for such tests.
