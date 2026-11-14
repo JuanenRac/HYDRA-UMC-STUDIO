@@ -10,6 +10,7 @@ import { setLanguage } from './i18n';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { ROBOT_MANUFACTURERS } from './store';
 import { apiUrl } from './lib/apiBase';
+import { labelWithColon } from './lib/labelColon';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { CommandIssueBanner } from './components/CommandIssueBanner';
 import { StopAllButton, StopAllReportBanner, StopAllShortcut, StopStateBadge } from './components/StopAll';
@@ -309,7 +310,7 @@ export default function Dashboard() {
                       <div className="flex items-center gap-4"><Cpu size={18} /> HYDRA-UMC</div>
                       <ChevronRight size={14} />
                     </button>
-                    <NavItem icon={<Video size={18} />} label={t('dashboard.vision_center')} active={activeTab === 'cameras'} onClick={() => setActiveTab('cameras')} tour="nav-cameras" className="mt-2 font-black text-[10px]" />
+                    <NavItem icon={<Video size={18} />} label={t('common.vision_center')} active={activeTab === 'cameras'} onClick={() => setActiveTab('cameras')} tour="nav-cameras" className="mt-2 font-black text-[10px]" />
                   </div>
                </div>
              )}
@@ -550,7 +551,7 @@ function OverviewPanel() {
                     {isRunning && <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-300 animate-pulse">{t('dashboard.running')}</span>}
                   </div>
                   <span className="font-black text-2xl text-white truncate tracking-tighter uppercase">{r.name}</span>
-                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{t('dashboard.role')}: <span className="text-slate-300">{r.role}</span></span>
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{labelWithColon(t('common.role'))} <span className="text-slate-300">{r.role}</span></span>
                   {combinedNames.length > 0 && (
                     <span className="text-[9px] font-bold text-amber-400/90 uppercase tracking-widest mt-0.5">{t('dashboard.combined_with')}: {combinedNames.join(', ')}</span>
                   )}

@@ -52,7 +52,10 @@
     "level_advanced": "进阶",
     "level_technical": "技术",
     "sign_in": "登录",
-    "finish": "完成"
+    "finish": "完成",
+    "endstops": "限位开关",
+    "speed": "速度",
+    "vision_center": "视觉中心"
   },
   "stop_all": {
     "label": "STOP",
@@ -132,7 +135,6 @@
     "micro_factory_status": "微工厂状态",
     "combined_into": "已合并至 ",
     "model": "型号：",
-    "role": "角色：",
     "tool": "工具：",
     "xy_assigned": "已分配 XY",
     "camera_active": "摄像头已启用",
@@ -213,7 +215,6 @@
     "firmware_update": "固件更新",
     "hardware_tester": "硬件测试器",
     "kinematic_brain": "运动学大脑",
-    "vision_center": "视觉中心",
     "logo_alt": "HYDRA 标志"
   },
   "config": {
@@ -426,7 +427,6 @@
     "model": "型号：",
     "tool": "工具：",
     "step": "步进：",
-    "speed": "速度：",
     "acceleration": "加速度：",
     "joints": "关节",
     "points": "点位",
@@ -470,7 +470,6 @@
     "combine_desc": "在 3D 视图中显示所选机器人。参数在其自身菜单中配置。",
     "valve_1": "阀门 1",
     "valve_2": "阀门 2",
-    "endstops_upper": "限位开关",
     "select": "-- 选择 --",
     "pause": "暂停",
     "pause_all": "全部暂停",

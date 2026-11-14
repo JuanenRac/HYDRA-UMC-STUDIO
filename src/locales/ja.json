@@ -52,7 +52,10 @@
     "level_advanced": "上級",
     "level_technical": "技術",
     "sign_in": "サインイン",
-    "finish": "完了"
+    "finish": "完了",
+    "endstops": "エンドストップ",
+    "speed": "速度",
+    "vision_center": "ビジョンセンター"
   },
   "stop_all": {
     "label": "STOP",
@@ -132,7 +135,6 @@
     "micro_factory_status": "マイクロファクトリー状態",
     "combined_into": "統合先：",
     "model": "型式：",
-    "role": "役割：",
     "tool": "ツール：",
     "xy_assigned": "XY 割り当て済み",
     "camera_active": "カメラ有効",
@@ -213,7 +215,6 @@
     "firmware_update": "ファームウェア更新",
     "hardware_tester": "ハードウェアテスター",
     "kinematic_brain": "キネマティック・ブレイン",
-    "vision_center": "ビジョンセンター",
     "logo_alt": "HYDRA ロゴ"
   },
   "config": {
@@ -426,7 +427,6 @@
     "model": "型式：",
     "tool": "ツール：",
     "step": "ステップ：",
-    "speed": "速度：",
     "acceleration": "加速度：",
     "joints": "関節",
     "points": "ポイント",
@@ -470,7 +470,6 @@
     "combine_desc": "選択したロボットを 3D ビューに表示します。パラメーターはそのロボット自身のメニューで設定します。",
     "valve_1": "バルブ 1",
     "valve_2": "バルブ 2",
-    "endstops_upper": "エンドストップ",
     "select": "-- 選択 --",
     "pause": "一時停止",
     "pause_all": "すべて一時停止",

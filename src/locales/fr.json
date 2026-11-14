@@ -52,7 +52,10 @@
     "level_advanced": "Avancé",
     "level_technical": "Technique",
     "sign_in": "Se Connecter",
-    "finish": "Terminer"
+    "finish": "Terminer",
+    "endstops": "Fins de course",
+    "speed": "Vitesse",
+    "vision_center": "Centre de vision"
   },
   "stop_all": {
     "label": "STOP",
@@ -132,7 +135,6 @@
     "micro_factory_status": "Statut de la Micro-Usine",
     "combined_into": "Combiné dans ",
     "model": "Modèle:",
-    "role": "Rôle:",
     "tool": "Outil:",
     "xy_assigned": "XY Assigné",
     "camera_active": "Caméra Active",
@@ -213,7 +215,6 @@
     "firmware_update": "Mise à jour du firmware",
     "hardware_tester": "Testeur matériel",
     "kinematic_brain": "Cerveau cinématique",
-    "vision_center": "Centre de vision",
     "logo_alt": "Logo HYDRA"
   },
   "config": {
@@ -426,7 +427,6 @@
     "model": "Modèle:",
     "tool": "Outil:",
     "step": "Pas:",
-    "speed": "Vitesse:",
     "acceleration": "Accélération:",
     "joints": "Articulations",
     "points": "Points",
@@ -470,7 +470,6 @@
     "combine_desc": "Affiche le robot sélectionné dans la vue 3D. Les paramètres sont configurés dans son propre menu.",
     "valve_1": "Vanne 1",
     "valve_2": "Vanne 2",
-    "endstops_upper": "FINS DE COURSE",
     "select": "-- Sélectionner --",
     "pause": "PAUSE",
     "pause_all": "TOUT PAUSER",
