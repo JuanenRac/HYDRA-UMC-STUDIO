@@ -3,7 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0-or-later - see LICENSE
 // =============================================================================
-// The last health frame that the kinematic brain heard from each controller board (SERVER route GET /api/node-health?slot=N), read defensively: a server that
+// The last health frame that the kinematic brain heard from each controller board (SERVER route GET /api/ecosystem/node-health?slot=N), read defensively: a server that
 // predates the route, or one where an administrator did not turn it on, answers 404 and the panel stays out of the way. Read only.
 import { apiUrl } from './apiBase';
 import { authFetch } from './session';
@@ -52,7 +52,7 @@ export function slotState(health: NodeHealth): SlotState {
 
 export async function loadNodeHealth(slot: number): Promise<NodeHealthResult> {
   try {
-    const res = await authFetch(apiUrl(`/api/node-health?slot=${slot}`));
+    const res = await authFetch(apiUrl(`/api/ecosystem/node-health?slot=${slot}`));
     if (res.status === 404) return { ok: false, failure: 'unsupported' };
     if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
     if (!res.ok) return { ok: false, failure: 'http', status: res.status };

@@ -1465,7 +1465,7 @@
     "admin_security_ecosystem_health_help": "Standardmäßig aus: Die Route antwortet dann, als gäbe es sie nicht. Eingeschaltet listet sie jeden Dienst mit Zustand, gemeldeter Version und den Resttagen des TLS-Zertifikats; nur Administratoren sehen zusätzlich Ports und Units.",
     "admin_security_ecosystem_health_save": "Gesundheit des Ökosystems speichern",
     "admin_security_node_health_title": "Gesundheit der Controllerplatinen",
-    "admin_security_node_health_label": "Bedienern und Administratoren erlauben, den letzten Gesundheitsrahmen jeder Controllerplatine zu lesen (GET /api/node-health)",
+    "admin_security_node_health_label": "Bedienern und Administratoren erlauben, den letzten Gesundheitsrahmen jeder Controllerplatine zu lesen (GET /api/ecosystem/node-health)",
     "admin_security_node_health_help": "Standardmäßig aus: Die Route antwortet dann, als gäbe es sie nicht. Eingeschaltet fragt der Server die SPI-Brücke der CM5, die ihre Option und ein Gehirn mit der Gesundheitsabfrage braucht. Nur Lesen: An die Platinen wird nichts gesendet.",
     "admin_security_node_health_save": "Gesundheit der Controllerplatinen speichern",
     "admin_security_twin_relay_title": "Live-Zustand des Zwillings",

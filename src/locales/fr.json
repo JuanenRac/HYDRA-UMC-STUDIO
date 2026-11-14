@@ -1465,7 +1465,7 @@
     "admin_security_ecosystem_health_help": "Désactivé par défaut : la route répond alors comme si elle n'existait pas. Activé, elle liste chaque service avec son état, la version qu'il annonce et les jours restants du certificat TLS ; seuls les administrateurs voient aussi les ports et les unités.",
     "admin_security_ecosystem_health_save": "Enregistrer la santé de l'écosystème",
     "admin_security_node_health_title": "Santé des cartes contrôleurs",
-    "admin_security_node_health_label": "Laisser les opérateurs et les administrateurs lire la dernière trame de santé de chaque carte contrôleur (GET /api/node-health)",
+    "admin_security_node_health_label": "Laisser les opérateurs et les administrateurs lire la dernière trame de santé de chaque carte contrôleur (GET /api/ecosystem/node-health)",
     "admin_security_node_health_help": "Désactivé par défaut : la route répond alors comme si elle n'existait pas. Activé, le serveur interroge le pont SPI de la CM5, qui a besoin de son option et d'un cerveau compilé avec la requête de santé. Lecture seule : rien n'est envoyé aux cartes.",
     "admin_security_node_health_save": "Enregistrer la santé des cartes contrôleurs",
     "admin_security_twin_relay_title": "État en direct du jumeau",

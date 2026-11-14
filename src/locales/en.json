@@ -1465,7 +1465,7 @@
     "admin_security_ecosystem_health_help": "Off by default: the route then answers as if it did not exist. When on, it lists each service with its state, the version it reports and the days left of the TLS certificate; only administrators also see ports and units.",
     "admin_security_ecosystem_health_save": "Save health of the ecosystem",
     "admin_security_node_health_title": "Health of the controller boards",
-    "admin_security_node_health_label": "Let operators and administrators read the last health frame of each controller board (GET /api/node-health)",
+    "admin_security_node_health_label": "Let operators and administrators read the last health frame of each controller board (GET /api/ecosystem/node-health)",
     "admin_security_node_health_help": "Off by default: the route then answers as if it did not exist. When on, the server asks the SPI bridge of the CM5, which needs its option and a brain built with the health query. Read only: nothing is sent to the boards.",
     "admin_security_node_health_save": "Save health of the controller boards",
     "admin_security_twin_relay_title": "Live state of the twin",

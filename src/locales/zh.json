@@ -1465,7 +1465,7 @@
     "admin_security_ecosystem_health_help": "默认关闭：此时该路由的响应就像它不存在一样。开启后，会列出每个服务的状态、上报的版本和 TLS 证书的剩余天数；只有管理员还能看到端口和单元。",
     "admin_security_ecosystem_health_save": "保存生态系统健康设置",
     "admin_security_node_health_title": "控制器板健康状态",
-    "admin_security_node_health_label": "允许操作员和管理员读取每块控制器板的最后一帧健康信息（GET /api/node-health）",
+    "admin_security_node_health_label": "允许操作员和管理员读取每块控制器板的最后一帧健康信息（GET /api/ecosystem/node-health）",
     "admin_security_node_health_help": "默认关闭：此时该路由的应答就像它不存在一样。开启后，服务器向 CM5 的 SPI 桥询问，桥需要启用其选项，大脑需要带有健康查询的构建。只读：不会向板子发送任何内容。",
     "admin_security_node_health_save": "保存控制器板健康状态",
     "admin_security_twin_relay_title": "孪生体实时状态",

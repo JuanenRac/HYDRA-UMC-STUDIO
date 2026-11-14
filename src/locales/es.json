@@ -1465,7 +1465,7 @@
     "admin_security_ecosystem_health_help": "Desactivado por defecto: la ruta responde entonces como si no existiera. Activado, lista cada servicio con su estado, la versión que informa y los días que le quedan al certificado TLS; solo los administradores ven además puertos y unidades.",
     "admin_security_ecosystem_health_save": "Guardar salud del ecosistema",
     "admin_security_node_health_title": "Salud de las placas controladoras",
-    "admin_security_node_health_label": "Dejar que operadores y administradores lean el último mensaje de salud de cada placa controladora (GET /api/node-health)",
+    "admin_security_node_health_label": "Dejar que operadores y administradores lean el último mensaje de salud de cada placa controladora (GET /api/ecosystem/node-health)",
     "admin_security_node_health_help": "Apagado por defecto: la ruta responde entonces como si no existiera. Encendido, el servidor pregunta al puente SPI de la CM5, que necesita su opción y un cerebro compilado con la consulta de salud. Solo lectura: no se envía nada a las placas.",
     "admin_security_node_health_save": "Guardar la salud de las placas controladoras",
     "admin_security_twin_relay_title": "Estado en vivo del gemelo",

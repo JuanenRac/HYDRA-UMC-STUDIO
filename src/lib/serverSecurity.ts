@@ -708,7 +708,7 @@ export function twinRelayPatch(enabled: boolean): TwinRelayPatchBody {
 
 export type NodeHealthPatchBody = { nodeHealth: { enabled: boolean } };
 
-/** The request body for the option that lets operators and administrators read GET /api/node-health (off by default). */
+/** The request body for the option that lets operators and administrators read GET /api/ecosystem/node-health (off by default). */
 export function nodeHealthPatch(enabled: boolean): NodeHealthPatchBody {
   return { nodeHealth: { enabled } };
 }

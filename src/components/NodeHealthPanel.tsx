@@ -3,7 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0-or-later - see LICENSE
 // =============================================================================
-// The last health frame that the kinematic brain heard from each of the eight controller boards (GET /api/node-health, read only). It shows nothing at all
+// The last health frame that the kinematic brain heard from each of the eight controller boards (GET /api/ecosystem/node-health, read only). It shows nothing at all
 // when the server does not offer the route (an administrator did not turn it on) or the account may not read it, and it says plainly when a slot has never been
 // heard or when the brain does not answer: nothing is invented.
 import { useCallback, useEffect, useState } from 'react';

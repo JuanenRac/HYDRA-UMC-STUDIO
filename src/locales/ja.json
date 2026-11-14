@@ -1465,7 +1465,7 @@
     "admin_security_ecosystem_health_help": "既定ではオフです。オフのとき、このルートは存在しないかのように応答します。オンにすると、各サービスの状態、報告されるバージョン、TLS 証明書の残り日数を一覧にします。ポートとユニットも見えるのは管理者だけです。",
     "admin_security_ecosystem_health_save": "エコシステムの健全性を保存",
     "admin_security_node_health_title": "コントローラーボードのヘルス",
-    "admin_security_node_health_label": "オペレーターと管理者が各コントローラーボードの最後のヘルスフレームを読めるようにする（GET /api/node-health）",
+    "admin_security_node_health_label": "オペレーターと管理者が各コントローラーボードの最後のヘルスフレームを読めるようにする（GET /api/ecosystem/node-health）",
     "admin_security_node_health_help": "既定ではオフ：ルートは存在しないかのように応答します。オンにすると、サーバーは CM5 の SPI ブリッジに問い合わせます。ブリッジには専用のオプションが、頭脳にはヘルス問い合わせ付きのビルドが必要です。読み取り専用で、ボードには何も送りません。",
     "admin_security_node_health_save": "コントローラーボードのヘルスを保存",
     "admin_security_twin_relay_title": "ツインのライブ状態",

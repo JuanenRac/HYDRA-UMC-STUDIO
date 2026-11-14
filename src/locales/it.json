@@ -1465,7 +1465,7 @@
     "admin_security_ecosystem_health_help": "Disattivata per impostazione predefinita: la route risponde allora come se non esistesse. Attivata, elenca ogni servizio con il suo stato, la versione che comunica e i giorni rimasti del certificato TLS; solo gli amministratori vedono anche porte e unità.",
     "admin_security_ecosystem_health_save": "Salva salute dell'ecosistema",
     "admin_security_node_health_title": "Salute delle schede controller",
-    "admin_security_node_health_label": "Consentire a operatori e amministratori di leggere l'ultimo messaggio di salute di ogni scheda controller (GET /api/node-health)",
+    "admin_security_node_health_label": "Consentire a operatori e amministratori di leggere l'ultimo messaggio di salute di ogni scheda controller (GET /api/ecosystem/node-health)",
     "admin_security_node_health_help": "Spento per impostazione predefinita: la rotta risponde allora come se non esistesse. Acceso, il server interroga il ponte SPI della CM5, che richiede la sua opzione e un cervello compilato con la richiesta di salute. Sola lettura: alle schede non viene inviato nulla.",
     "admin_security_node_health_save": "Salva la salute delle schede controller",
     "admin_security_twin_relay_title": "Stato in tempo reale del gemello",

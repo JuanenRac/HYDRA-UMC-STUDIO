@@ -4,7 +4,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0-or-later - see LICENSE
 //
-// The health of the controller boards as the brain heard it (GET /api/node-health): what is accepted, each way the route can fail, the panel as rendered
+// The health of the controller boards as the brain heard it (GET /api/ecosystem/node-health): what is accepted, each way the route can fail, the panel as rendered
 // (nothing at all when the server does not offer it, plain sentences for a slot never heard and for a brain that does not answer), the switch of Server Admin and
 // the eight languages.
 // =============================================================================
@@ -52,7 +52,7 @@ describe('asking the server', () => {
     answer(200, heard(2));
     const result = await loadNodeHealth(2);
     expect(result.ok && result.value.sequence).toBe(7);
-    expect(String((vi.mocked(fetch).mock.calls[0] as unknown[])[0])).toContain('/api/node-health?slot=2');
+    expect(String((vi.mocked(fetch).mock.calls[0] as unknown[])[0])).toContain('/api/ecosystem/node-health?slot=2');
   });
 
   it('tells each way it can fail', async () => {

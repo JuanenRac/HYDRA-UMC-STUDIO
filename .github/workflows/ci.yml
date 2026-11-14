@@ -49,11 +49,12 @@ jobs:
         run: node scripts/mesh_pack.mjs ensure --source download
       - name: Fetch the HYDRA-UMC-SDK contracts for the route tests
         # The routes the app calls are checked against the contract and the route table generated from it. The tag is the one the
-        # SDK pin tool keeps in step; without these files the two tests skip themselves.
+        # SDK pin tool keeps in step (a commit of the SDK until its next tag, which has the route of the health of the boards);
+        # without these files the two tests skip themselves.
         if: ${{ hashFiles('tests/restPaths.test.ts') != '' }}
         run: |
           mkdir -p "$RUNNER_TEMP/hydra-umc-sdk"
-          curl -fsSL --retry 3 https://github.com/JuanenRac/HYDRA-UMC-SDK/archive/refs/tags/v0.6.1.tar.gz | tar -xz --strip-components=1 -C "$RUNNER_TEMP/hydra-umc-sdk"
+          curl -fsSL --retry 3 https://github.com/JuanenRac/HYDRA-UMC-SDK/archive/0a42d4ebb91633e377eee331331bf8580d4389c0.tar.gz | tar -xz --strip-components=1 -C "$RUNNER_TEMP/hydra-umc-sdk"
           echo "HYDRA_UMC_SDK_DIR=$RUNNER_TEMP/hydra-umc-sdk" >> "$GITHUB_ENV"
       - name: Validate Node.js or TypeScript project
         if: ${{ hashFiles('package.json') != '' }}
