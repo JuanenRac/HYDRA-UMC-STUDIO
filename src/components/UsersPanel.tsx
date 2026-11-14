@@ -141,7 +141,7 @@ export function UsersPanel() {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       <div>
-        <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><UsersIcon size={16} /> {t('config.users')}</h3>
+        <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><UsersIcon size={16} /> {t('common.users')}</h3>
         <p className="text-[10px] text-slate-600 leading-relaxed pt-2">{t('config.users_desc')}</p>
       </div>
 
@@ -154,7 +154,7 @@ export function UsersPanel() {
           <thead className="bg-slate-900 border-b border-slate-800">
             <tr>
               <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.users_username')}</th>
-              <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.users_role')}</th>
+              <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('common.role')}</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
