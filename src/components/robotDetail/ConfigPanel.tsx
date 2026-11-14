@@ -103,7 +103,7 @@ export function ConfigPanel(props: ConfigPanelProps) {
                   onClick={handleSaveWorkFile}
                   disabled={robot.playbackState?.isPlaying || robot.recordedPoints.length === 0}
                   className="flex items-center justify-center w-10 h-10 bg-indigo-600 hover:bg-indigo-500 text-white rounded transition-colors disabled:opacity-50 shrink-0"
-                  title={t('robot_detail.save_trajectory', 'Save')} aria-label={t('robot_detail.save_trajectory', 'Save')}
+                  title={t('common.save', 'Save')} aria-label={t('common.save', 'Save')}
                 >
                   <Save size={20} />
                 </button>

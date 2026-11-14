@@ -42,4 +42,16 @@ describe('the common texts', () => {
     expect(pt.loading).toBe('A carregar…');
     expect(pt.offline).toBe('Desligado');
   });
+
+  it('are the only copy of the words the screens used to repeat: the old keys are gone and the screens use common.*', () => {
+    const repeated = ['gamepad_config.mode.dismiss', 'dashboard.loading', 'config.users_role_admin', 'robot_detail.save_trajectory', 'ecosystem.plan_confirm_save', 'ecosystem.admin_server_save',
+      'plannerIdentity.save', 'hilBridge.save', 'hubGate.save', 'serviceIdentity.save', 'ingestSwitches.save', 'ecosystem.plan_confirm_cancel', 'totp.cancel'];
+    const has = (tree: unknown, key: string): boolean => key.split('.').reduce<unknown>((node, part) => (node && typeof node === 'object' ? (node as Record<string, unknown>)[part] : undefined), tree) !== undefined;
+    for (const language of LANGUAGES) {
+      const tree = JSON.parse(readFileSync(`src/locales/${language}.json`, 'utf8')) as unknown;
+      for (const key of repeated) expect(has(tree, key), `${language} still has ${key}`).toBe(false);
+    }
+    const sources = ['src/components/ConnectorHubGatePanel.tsx', 'src/components/HilBridgePanel.tsx', 'src/components/IngestSwitchesPanel.tsx', 'src/components/PlannerIdentityPanel.tsx', 'src/components/ServiceIdentityPanel.tsx'];
+    for (const file of sources) expect(readFileSync(file, 'utf8'), file).toContain("t('common.save')");
+  });
 });
