@@ -252,7 +252,7 @@ export function ConfigPanel(props: ConfigPanelProps) {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('robot_detail.role', 'Role')}</label>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('common.role', 'Role')}</label>
               <select 
                 value={robot.role}
                 onChange={e => updateRobot(robot.id, { role: e.target.value as any })}

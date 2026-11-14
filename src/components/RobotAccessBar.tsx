@@ -43,8 +43,8 @@ export function ClaimsList({ claims, robotNames, myUsername }: { claims: ClaimEn
     <table className="w-full text-[11px] text-left" data-testid="claims-list">
       <thead>
         <tr className="text-slate-500 uppercase tracking-wider">
-          <th className="py-1 pr-3">{t('access.col_robot')}</th>
-          <th className="py-1 pr-3">{t('access.col_owner')}</th>
+          <th className="py-1 pr-3">{t('common.robot')}</th>
+          <th className="py-1 pr-3">{t('common.account')}</th>
           <th className="py-1 pr-3">{t('access.col_controller')}</th>
           <th className="py-1">{t('access.col_left')}</th>
         </tr>
@@ -261,12 +261,12 @@ export function RobotAccessBar({ robot }: { robot: RobotState }) {
         )}
         {!disabled && (
           <button type="button" disabled={busy} data-testid="safe-mode-disable" onClick={() => { void setSafeMode(false); }} title={t('access.safe_mode_disable_hint')} className={buttonClass + ' border-rose-600 text-rose-300 hover:bg-rose-950'}>
-            <Power size={12} />{t('access.safe_mode_disable')}
+            <Power size={12} />{t('common.disable')}
           </button>
         )}
         {disabled && isAdmin && (
           <button type="button" disabled={busy} data-testid="safe-mode-enable" onClick={() => setConfirmEnable(true)} title={t('access.safe_mode_enable_hint')} className={buttonClass + ' border-emerald-600 text-emerald-300 hover:bg-emerald-950'}>
-            <Power size={12} />{t('access.safe_mode_enable')}
+            <Power size={12} />{t('common.enable')}
           </button>
         )}
 

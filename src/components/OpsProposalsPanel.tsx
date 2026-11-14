@@ -84,7 +84,7 @@ export function OpsProposalsPanel() {
           <div className="flex gap-2">
             <button onClick={() => ask(p.incidentId, 'approved')} disabled={busy} data-testid="ops-proposal-approve"
               className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 disabled:opacity-50 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-bold">
-              <Check size={14} /> {t('opsProposals.approve')}
+              <Check size={14} /> {t('common.approve')}
             </button>
             <button onClick={() => ask(p.incidentId, 'rejected')} disabled={busy} data-testid="ops-proposal-reject"
               className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 disabled:opacity-50 text-rose-300 border border-rose-500/30 rounded-lg text-xs font-bold">
@@ -104,7 +104,7 @@ export function OpsProposalsPanel() {
         open={confirming !== null}
         title={t('opsProposals.confirm_title')}
         message={t('opsProposals.confirm_message', { id: confirming ?? '' })}
-        confirmLabel={t('opsProposals.confirm_button')}
+        confirmLabel={t('common.approve')}
         onConfirm={() => { if (confirming) void decide(confirming, 'approved'); }}
         onCancel={() => setConfirming(null)}
       />

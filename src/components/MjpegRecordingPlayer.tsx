@@ -117,7 +117,7 @@ export function MjpegRecordingPlayer({ url, durationMs, frameCount: knownFrameCo
         <button
           onClick={() => setPlaying(p => !p)}
           className="p-2 rounded-lg bg-slate-800 text-slate-200 hover:bg-slate-700 transition-colors"
-          title={playing ? t('cameraMedia.pause', 'Pause') : t('cameraMedia.play', 'Play')}
+          title={playing ? t('common.pause', 'Pause') : t('cameraMedia.play', 'Play')}
         >
           {playing ? <Pause size={16} /> : <Play size={16} />}
         </button>

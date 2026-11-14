@@ -183,7 +183,7 @@ export function ATCToolsConfig() {
         <div className="flex items-center gap-2">
           <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={loadConfig} />
           <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 hover:glow-border-sky border border-slate-700 transition-all text-slate-200 text-xs font-semibold rounded-lg transition-colors border border-slate-700">
-            <Upload size={14} /> {t('robot_detail.load', 'Load Config')}
+            <Upload size={14} /> {t('common.load', 'Load Config')}
           </button>
           <button onClick={saveConfig} className="flex items-center gap-2 px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-xs font-semibold rounded-lg transition-colors border border-sky-500/30">
             <Save size={14} />{t('modules.save_config', 'Save Config')}</button>

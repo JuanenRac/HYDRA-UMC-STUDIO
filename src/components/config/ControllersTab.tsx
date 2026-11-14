@@ -21,7 +21,7 @@ export function ControllersTab() {
         <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden shadow-2xl">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-900 border-b border-slate-800">
-              <tr><th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.node_name')}</th><th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.ip_address')}</th><th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.status')}</th><th className="px-4 py-3"></th></tr>
+              <tr><th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.node_name')}</th><th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.ip_address')}</th><th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('common.status')}</th><th className="px-4 py-3"></th></tr>
             </thead>
             <tbody>
               {controllers.map(c => {

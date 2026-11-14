@@ -45,7 +45,7 @@ export function ConnectorHubGatePanel() {
     setSaving(true); setMessage(''); setConfirming(false);
     const result = await connectorHubGateApi.write(wanted);
     setSaving(false);
-    if (result.ok) { setSettings(result.value); setWanted(result.value.allowLoopbackNoIdentity); setProblem(''); setMessage(t('hubGate.saved')); return; }
+    if (result.ok) { setSettings(result.value); setWanted(result.value.allowLoopbackNoIdentity); setProblem(''); setMessage(t('common.saved')); return; }
     setProblem(result.reason ? t('hubGate.save_error', { reason: result.reason }) : t(FAILURE_KEY[result.failure]));
   };
 

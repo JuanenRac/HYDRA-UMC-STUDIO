@@ -249,7 +249,7 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('mavlink_signing_off')) setWarning(t('ecosystem.admin_security_mavlink_off_warning'));
       if (knownWarnings(data.warnings).includes('job_stop_relay_on')) setWarning(t('ecosystem.admin_security_jd_warning_relay'));
       if (knownWarnings(data.warnings).includes('replan_unconfirmed_allowed')) setWarning(t('ecosystem.admin_security_jd_warning_replan'));
-      setNotice(t('ecosystem.admin_security_saved'));
+      setNotice(t('common.saved'));
     } catch {
       setError(t('ecosystem.admin_server_load_error'));
     } finally {
@@ -505,11 +505,11 @@ export function AdminServer() {
               <div className="text-sm font-black text-slate-200 font-mono mt-0.5">{formatUptime(info.uptimeSeconds)}</div>
             </div>
             <div>
-              <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{t('ecosystem.admin_server_stat_controllers')}</div>
+              <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{t('common.controllers')}</div>
               <div className="text-sm font-black text-slate-200 font-mono mt-0.5">{info.controllerCount ?? '-'}</div>
             </div>
             <div>
-              <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{t('ecosystem.admin_server_stat_robots')}</div>
+              <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{t('common.robots')}</div>
               <div className="text-sm font-black text-slate-200 font-mono mt-0.5">{info.robotCount ?? '-'}</div>
             </div>
             <div>
