@@ -1,7 +1,18 @@
 {
   "common": {
     "confirm": "Confirmar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "close": "Fechar",
+    "retry": "Tentar novamente",
+    "yes": "Sim",
+    "no": "Não",
+    "loading": "A carregar…",
+    "online": "Ligado",
+    "offline": "Desligado",
+    "administrator": "Administrador",
+    "operator": "Operador",
+    "viewer": "Observador"
   },
   "stop_all": {
     "label": "STOP",

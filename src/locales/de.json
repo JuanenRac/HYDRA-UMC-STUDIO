@@ -1,7 +1,18 @@
 {
   "common": {
     "confirm": "Bestätigen",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "close": "Schließen",
+    "retry": "Erneut versuchen",
+    "yes": "Ja",
+    "no": "Nein",
+    "loading": "Wird geladen…",
+    "online": "Online",
+    "offline": "Offline",
+    "administrator": "Administrator",
+    "operator": "Bediener",
+    "viewer": "Betrachter"
   },
   "stop_all": {
     "label": "STOP",
