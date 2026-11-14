@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { productionPatch, productionChangeNeedsConfirmation, parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, validEstopWatchMs, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { productionPatch, productionChangeNeedsConfirmation, parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, validEstopWatchMs, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, nodeHealthPatch, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -670,5 +670,17 @@ describe('the switches of the executor of the assigned jobs', () => {
 
   it('knows the two warnings of the answer', () => {
     expect(knownWarnings(['job_executor_on', 'job_executor_live', 'other'])).toEqual(['job_executor_on', 'job_executor_live']);
+  });
+});
+
+describe('the switch for the health of the controller boards', () => {
+  it('is read with its source, left out for a server that predates it, and sent as it is', () => {
+    const withIt = { ...answer, nodeHealth: { enabled: { value: false, source: 'default' } } };
+    expect(parseSecurityState(withIt)?.nodeHealth).toEqual({ enabled: { value: false, source: 'default' } });
+    expect(parseSecurityState(answer)?.nodeHealth ?? null).toBeNull();
+    expect(parseSecurityState({ ...withIt, nodeHealth: { enabled: { value: 'no', source: 'default' } } })?.nodeHealth ?? null).toBeNull();
+    expect(parseSecurityState({ ...withIt, nodeHealth: { enabled: { value: true, source: 'nowhere' } } })?.nodeHealth ?? null).toBeNull();
+    expect(nodeHealthPatch(true)).toEqual({ nodeHealth: { enabled: true } });
+    expect(nodeHealthPatch(false)).toEqual({ nodeHealth: { enabled: false } });
   });
 });
