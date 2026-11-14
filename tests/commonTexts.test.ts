@@ -55,4 +55,13 @@ describe('the common texts', () => {
     const sources = ['src/components/ConnectorHubGatePanel.tsx', 'src/components/HilBridgePanel.tsx', 'src/components/IngestSwitchesPanel.tsx', 'src/components/PlannerIdentityPanel.tsx', 'src/components/ServiceIdentityPanel.tsx'];
     for (const file of sources) expect(readFileSync(file, 'utf8'), file).toContain("t('common.save')");
   });
+
+  it('keeps removed the keys that no screen, test or dynamic name used', () => {
+    const dead = ["dashboard.active_controller", "dashboard.add_robot", "dashboard.back", "dashboard.camera_active", "dashboard.camera_offline", "dashboard.collapse_sidebar", "dashboard.combined_into", "dashboard.disconnect", "dashboard.expand_sidebar", "dashboard.global_estop_confirm", "dashboard.idle_short", "dashboard.kinematic_brain_stage", "dashboard.micro_factory_status", "dashboard.remote_app_access_short", "dashboard.role_label", "dashboard.shared_resources", "dashboard.stack_a_slot", "dashboard.subtitle", "dashboard.title", "dashboard.vision_cameras", "dashboard.xy_assigned", "robot_detail.back", "robot_detail.connect", "robot_detail.disconnect", "robot_detail.export", "robot_detail.floating_overlay_hint", "robot_detail.ip_address", "robot_detail.record", "robot_detail.return_zero", "robot_detail.status.disconnected", "robot_detail.vac"];
+    const has = (tree: unknown, key: string): boolean => key.split('.').reduce<unknown>((node, part) => (node && typeof node === 'object' ? (node as Record<string, unknown>)[part] : undefined), tree) !== undefined;
+    for (const language of LANGUAGES) {
+      const tree = JSON.parse(readFileSync(`src/locales/${language}.json`, 'utf8')) as unknown;
+      for (const key of dead) expect(has(tree, key), `${language} has ${key} again`).toBe(false);
+    }
+  });
 });
