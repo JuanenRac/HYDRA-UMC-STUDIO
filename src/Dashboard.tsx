@@ -50,6 +50,9 @@ function PanelLoadingFallback() {
 
 // Components
 import { HelpModal } from './components/HelpModal';
+import { TourHost } from './tour/TourHost';
+import { startTour } from './tour/tourStore';
+import { tourForView } from './tour/tours';
 import { About } from './components/About';
 import { Config } from './components/Config';
 import { Assistant } from './assistant/Assistant';
@@ -204,7 +207,9 @@ export default function Dashboard() {
 
       {isAboutOpen && <About onClose={() => setIsAboutOpen(false)} />}
 
-      {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} initialTab={helpStart.tab} initialTopic={helpStart.topic} onGo={goToView} />}
+      {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} initialTab={helpStart.tab} initialTopic={helpStart.topic} onGo={goToView} onStartTour={startTour} screenTour={tourForView(activeTab)?.id} />}
+
+      {!hideUI && <TourHost view={activeTab} setView={setActiveTab} />}
 
       {!hideUI && <Assistant view={activeTab} go={goToView} openHelp={openHelp} openSettings={() => setIsSettingsOpen(true)} />}
 
@@ -221,9 +226,9 @@ export default function Dashboard() {
           <div className="flex items-center gap-4">
             {/* The global STOP: one click, every robot, always in sight (Ctrl+Shift+Space does the same). */}
             <StopStateBadge />
-            <StopAllButton variant="header" />
-            <IconButton onClick={() => setIsSettingsOpen(true)} icon={<Settings size={18}/>} label={t('dashboard.configure')} />
-            <IconButton onClick={() => openHelp()} icon={<HelpCircle size={18}/>} label={t('dashboard.help')} />
+            <span data-tour="stop" className="inline-flex"><StopAllButton variant="header" /></span>
+            <IconButton onClick={() => setIsSettingsOpen(true)} icon={<Settings size={18}/>} label={t('dashboard.configure')} tour="settings" />
+            <IconButton onClick={() => openHelp()} icon={<HelpCircle size={18}/>} label={t('dashboard.help')} tour="help" />
             <IconButton onClick={() => setIsAboutOpen(true)} icon={<Info size={18}/>} label={t('dashboard.about')} />
             <div className="w-px h-6 bg-slate-800 mx-2"></div>
             <div className="flex items-center gap-3">
@@ -270,11 +275,11 @@ export default function Dashboard() {
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Nav */}
         {!hideUI && (
-          <nav className={cn("shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col gap-1 z-10 transition-all duration-300", isSidebarOpen ? "w-64 p-4" : "w-0 p-0 opacity-0 overflow-hidden border-none")}>
+          <nav data-tour="sidebar" className={cn("shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col gap-1 z-10 transition-all duration-300", isSidebarOpen ? "w-64 p-4" : "w-0 p-0 opacity-0 overflow-hidden border-none")}>
 
              {currentMenu === 'root' && (
                <div className="flex flex-col h-full animate-in slide-in-from-left-4 duration-300 overflow-hidden">
-                  <NavItem icon={<Activity size={18} />} label={t('dashboard.overview')} active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
+                  <NavItem icon={<Activity size={18} />} label={t('dashboard.overview')} active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} tour="nav-overview" />
 
                   <div className="mt-6 mb-2 px-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1 shrink-0">{t('dashboard.networked_robots')}</div>
 
@@ -304,7 +309,7 @@ export default function Dashboard() {
                       <div className="flex items-center gap-4"><Cpu size={18} /> HYDRA-UMC</div>
                       <ChevronRight size={14} />
                     </button>
-                    <NavItem icon={<Video size={18} />} label={t('dashboard.vision_center')} active={activeTab === 'cameras'} onClick={() => setActiveTab('cameras')} className="mt-2 font-black text-[10px]" />
+                    <NavItem icon={<Video size={18} />} label={t('dashboard.vision_center')} active={activeTab === 'cameras'} onClick={() => setActiveTab('cameras')} tour="nav-cameras" className="mt-2 font-black text-[10px]" />
                   </div>
                </div>
              )}
@@ -357,7 +362,7 @@ export default function Dashboard() {
         )}
 
         {/* Main Content Area */}
-        <main className={cn(
+        <main data-tour="stage" className={cn(
             "flex-1 flex flex-col overflow-hidden backdrop-blur-sm relative transition-all duration-300",
             hideUI ? "bg-black pt-0 px-0 pb-0" : "bg-slate-950/80 pt-0 px-0 pb-0"
         )}>
@@ -477,18 +482,18 @@ export default function Dashboard() {
   );
 }
 
-function NavItem({ icon, label, active, onClick, className }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void, className?: string }) {
+function NavItem({ icon, label, active, onClick, className, tour }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void, className?: string, tour?: string }) {
   return (
-    <button onClick={onClick} className={cn("flex items-center gap-4 px-4 py-4 min-h-[56px] rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] transition-all", active ? "bg-sky-500 text-slate-950 shadow-[0_8px_20px_rgba(0,229,255,0.35)] border border-sky-300 scale-[1.02]" : "text-slate-500 hover:bg-slate-800 hover:text-sky-400", className)}>
+    <button onClick={onClick} data-tour={tour} className={cn("flex items-center gap-4 px-4 py-4 min-h-[56px] rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] transition-all", active ? "bg-sky-500 text-slate-950 shadow-[0_8px_20px_rgba(0,229,255,0.35)] border border-sky-300 scale-[1.02]" : "text-slate-500 hover:bg-slate-800 hover:text-sky-400", className)}>
       <div className={cn("transition-transform duration-300", active && "scale-110")}>{icon}</div>
       <span className="truncate">{label}</span>
     </button>
   );
 }
 
-function IconButton({ icon, label, onClick }: { icon: React.ReactNode, label: string, onClick: () => void }) {
+function IconButton({ icon, label, onClick, tour }: { icon: React.ReactNode, label: string, onClick: () => void, tour?: string }) {
   return (
-    <button onClick={onClick} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-all group shadow-lg">
+    <button onClick={onClick} data-tour={tour} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-all group shadow-lg">
       <div className="text-sky-400">{icon}</div>
       <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
     </button>
