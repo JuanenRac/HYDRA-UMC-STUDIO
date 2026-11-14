@@ -258,6 +258,10 @@ HYDRA-UMC STUDIO 本身是一个纯客户端——除了当前会话在内存中
 - **网格来自单一软件包：** 3D 模型不再放在仓库目录树中（221 MiB，与 HYDRA-UMC-SUITE 共用）。`meshes.pack.json` 固定了一个软件包（45 MB，发布在 HYDRA-UMC-MESHES）及每个网格的 SHA-256；`npm run dev`、`npm run build` 和测试会在首次运行时获取它：只需联网一次，之后软件包保存在 `~/.cache/hydra-umc/meshes`（或 `HYDRA_UMC_MESH_CACHE`）并被重复使用。没有网络时，把软件包复制到该处，或在 `HYDRA_UMC_MESH_PACKAGE` 中给出其路径。`npm run meshes -- status | check | ensure | prepare` 用于检查或恢复 `public/models/`。来源可以是 `auto`（默认）、`local`（从不下载）或 `download`（检查每个网格），在 `mesh_pack.config.json` 中或用 `HYDRA_UMC_MESH_SOURCE` 选择；不匹配的软件包不会安装任何内容，且只接受 `https` 地址。参见 [`docs/MESH_PACKAGE.md`](docs/MESH_PACKAGE.md)。 若要让 STUDIO、桌面应用和 STL 编辑器共用一个库，请将 `HYDRA_UMC_LIBRARY_DIR` 指向一个结构相同的文件夹（类别 / 模型 / 文件）：三者都会读取它，软件包绝不会安装到其上；未设置（默认）时，各自使用自己的文件夹。
 - **用于维护安装的设置页（Config）：** 更新（此 Studio、服务器及其旁各程序的已安装版本，读取自 `GET /api/hydra-info` 和 `GET /api/ecosystem/status`）、安全（检查项、两步登录，以及管理员可见的带保护轮换的令牌签名密钥，读取自 `GET /api/admin/jwt-keys`）、安装（首次启动清单）、远程访问设置（带二维码的地址、允许哪些应用类型找到服务器，以及需确认的“全部关闭”）、偏好设置（帮助级别、界面密度和减少动画，保存在此浏览器）、通知（管理员可见的推送通知状态）和历史记录（连接，以及管理员可见的审计记录）。对于服务器没有接口的内容（程序的最新发布版本、安装、更改推送开关），该页会如实说明并且不做任何更改。
 
+### 引导游览
+
+帮助中有一个**引导游览**（七步：菜单、概览、视觉中心、设置、帮助以及始终可见的停止）和一个针对概览与视觉中心的**本页面的游览**。游览会调暗页面，高亮每一步所说明的部分，自动打开对应页面，并可用键盘操作（方向键移动，Esc 关闭）。游览不会自动开始；偏好设置选项卡中的**提供引导游览**开关（默认开启，保存在此浏览器中）可隐藏这些按钮。文字提供八种语言。
+
 ## 🔒 安全与防护
 
 | 威胁 | 防御 | 位置 |
