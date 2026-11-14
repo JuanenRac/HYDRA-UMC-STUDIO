@@ -1,7 +1,18 @@
 {
   "common": {
     "confirm": "确认",
-    "cancel": "取消"
+    "cancel": "取消",
+    "save": "保存",
+    "close": "关闭",
+    "retry": "重试",
+    "yes": "是",
+    "no": "否",
+    "loading": "加载中…",
+    "online": "在线",
+    "offline": "离线",
+    "administrator": "管理员",
+    "operator": "操作员",
+    "viewer": "查看者"
   },
   "stop_all": {
     "label": "STOP",
