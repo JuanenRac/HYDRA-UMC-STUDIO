@@ -77,6 +77,10 @@ export interface SecurityState {
   ecosystemHealth: {
     enabled: { value: boolean; source: SecuritySource };
   } | null;
+  /** Absent when the server predates the health of the controller boards. */
+  nodeHealth?: {
+    enabled: { value: boolean; source: SecuritySource };
+  } | null;
   /** Absent when the server predates the relay of the live state of the twin. */
   twinRelay: {
     enabled: { value: boolean; source: SecuritySource };
@@ -209,6 +213,13 @@ function parseHealth(raw: any): SecurityState['health'] {
 }
 
 function parseEcosystemHealth(raw: any): SecurityState['ecosystemHealth'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const enabled = raw.enabled;
+  if (!enabled || typeof enabled.value !== 'boolean' || !isSource(enabled.source)) return null;
+  return { enabled: { value: enabled.value, source: enabled.source } };
+}
+
+function parseNodeHealthOption(raw: any): SecurityState['nodeHealth'] {
   if (!raw || typeof raw !== 'object') return null;
   const enabled = raw.enabled;
   if (!enabled || typeof enabled.value !== 'boolean' || !isSource(enabled.source)) return null;
@@ -531,6 +542,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     connections: parseConnections(raw.connections),
     health: parseHealth(raw.health),
     ecosystemHealth: parseEcosystemHealth(raw.ecosystemHealth),
+    nodeHealth: parseNodeHealthOption(raw.nodeHealth),
     twinRelay: parseTwinRelay(raw.twinRelay),
     bridgeGateway: parseBridgeGateway(raw.bridgeGateway),
     trustedNetworks: parseTrustedNetworks(raw.trustedNetworks),
@@ -692,6 +704,13 @@ export type TwinRelayPatchBody = { twinRelay: { enabled: boolean } };
 /** The request body for the option that lets the panels follow the live state of the twin through the server (off by default). */
 export function twinRelayPatch(enabled: boolean): TwinRelayPatchBody {
   return { twinRelay: { enabled } };
+}
+
+export type NodeHealthPatchBody = { nodeHealth: { enabled: boolean } };
+
+/** The request body for the option that lets operators and administrators read GET /api/ecosystem/node-health (off by default). */
+export function nodeHealthPatch(enabled: boolean): NodeHealthPatchBody {
+  return { nodeHealth: { enabled } };
 }
 
 export type EcosystemHealthPatchBody = { ecosystemHealth: { enabled: boolean } };

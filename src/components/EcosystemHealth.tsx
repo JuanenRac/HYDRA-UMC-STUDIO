@@ -11,6 +11,7 @@
 // =============================================================================
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { NodeHealthPanel } from './NodeHealthPanel';
 import { AlertTriangle, CheckCircle2, HeartPulse, RefreshCw, ShieldAlert, XCircle, HelpCircle } from 'lucide-react';
 import {
   SERVICE_STATES, ago, filterServices, loadEcosystemHealth, sortBySeverity,
@@ -163,6 +164,7 @@ export function EcosystemHealth() {
           )}
         </>
       )}
+      <NodeHealthPanel />
     </div>
   );
 }
