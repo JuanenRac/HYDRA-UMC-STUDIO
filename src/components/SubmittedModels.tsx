@@ -68,7 +68,7 @@ export function SubmittedModels() {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-900 border-b border-slate-800">
               <tr>
-                <th className="px-4 py-2 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.submitted_models_name')}</th>
+                <th className="px-4 py-2 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('common.name')}</th>
                 <th className="px-4 py-2 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.submitted_models_category')}</th>
                 <th className="px-4 py-2 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.submitted_models_date')}</th>
                 <th className="px-4 py-2 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('config.submitted_models_attribution')}</th>

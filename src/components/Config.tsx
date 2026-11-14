@@ -65,7 +65,7 @@ export function Config({ onClose }: { onClose: () => void }) {
 
   const tabs: { id: ConfigTab, label: string }[] = [
     { id: 'identity', label: t('config.identity') },
-    { id: 'controllers', label: t('config.controllers') },
+    { id: 'controllers', label: t('common.controllers') },
     { id: 'ui', label: t('config.ui_themes') },
     { id: 'robots', label: t('config.robot_names') },
     { id: 'cameras', label: t('config.camera_setup') },

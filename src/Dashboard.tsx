@@ -340,11 +340,11 @@ export default function Dashboard() {
                   <button onClick={() => setActiveTab('cameraMedia')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'cameraMedia' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('cameraMedia.menu_label', 'Camera Media')}</button>
 
                   <div className="mt-6 mb-2 px-4 text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] border-b border-slate-800/50 pb-1">{t('ecosystem.menu_section')}</div>
-                  <button onClick={() => setActiveTab('ecosystemServices')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemServices' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_services')}</button>
+                  <button onClick={() => setActiveTab('ecosystemServices')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemServices' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('common.services')}</button>
                   <button onClick={() => setActiveTab('ecosystemMap')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemMap' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_map')}</button>
                   <button onClick={() => setActiveTab('ecosystemHealth')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemHealth' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_health')}</button>
                   <button onClick={() => setActiveTab('ecosystemPlanning')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemPlanning' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.planning_menu')}</button>
-                  <button onClick={() => setActiveTab('ecosystemTelemetry')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemTelemetry' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_telemetry')}</button>
+                  <button onClick={() => setActiveTab('ecosystemTelemetry')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'ecosystemTelemetry' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('common.telemetry')}</button>
                   <button onClick={() => setActiveTab('aiFamilyStatus')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'aiFamilyStatus' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_ai_family')}</button>
                   <button onClick={() => setActiveTab('aiDashboard')} className={cn("text-left text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all", activeTab === 'aiDashboard' ? "bg-sky-500 text-slate-950 shadow-lg" : "text-slate-400 hover:bg-slate-800")}>{t('ecosystem.menu_ai_dashboard')}</button>
                   {isAdmin && <>
@@ -560,7 +560,7 @@ function OverviewPanel() {
                   className={cn("px-6 py-3 rounded-full text-[11px] font-black tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] border-2",
                   r.online ? "bg-[#10b981] text-white border-[#34d399] hover:bg-[#059669]" : "bg-slate-800 text-slate-500 border-slate-700 hover:border-slate-500")}
                 >
-                  {r.online ? t('dashboard.status.online') : t('dashboard.connect')}
+                  {r.online ? t('dashboard.status.online') : t('common.connect')}
                 </button>
               </div>
 
@@ -706,7 +706,7 @@ function SystemMetricsBar() {
       <span className="flex items-center gap-1.5 text-slate-400" title={t('dashboard.cpu_load')}>
         <Cpu size={12} className="text-slate-500" /> {metrics.cpu_load}%
       </span>
-      <span className="flex items-center gap-1.5 text-slate-400" title={t('dashboard.mem_load')}>
+      <span className="flex items-center gap-1.5 text-slate-400" title={t('common.memory')}>
         <Server size={12} className="text-slate-500" /> {metrics.memory_usage}%
       </span>
       <div className="flex items-center gap-2.5" title={t('dashboard.network_status')}>

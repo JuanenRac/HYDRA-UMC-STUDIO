@@ -45,7 +45,7 @@ export function PlannerIdentityPanel() {
     setSaving(true); setMessage(''); setConfirming(false);
     const result = await plannerIdentityApi.write(wanted);
     setSaving(false);
-    if (result.ok) { setSettings(result.value); setWanted(result.value.requireIdentity); setProblem(''); setMessage(t('plannerIdentity.saved')); return; }
+    if (result.ok) { setSettings(result.value); setWanted(result.value.requireIdentity); setProblem(''); setMessage(t('common.saved')); return; }
     setProblem(result.reason ? t('plannerIdentity.save_error', { reason: result.reason }) : t(FAILURE_KEY[result.failure]));
   };
 

@@ -98,7 +98,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
             <input
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder={t('auth.password')}
+              placeholder={t('common.password')}
               type="password"
               autoComplete="current-password"
               className="bg-transparent outline-none text-sm text-slate-100 flex-1"
@@ -142,7 +142,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           disabled={isSubmitting}
           className="w-full flex items-center justify-center gap-2 px-6 py-3 text-sm bg-sky-500 hover:bg-sky-400 disabled:opacity-50 text-slate-950 font-bold rounded-xl shadow-lg border border-sky-400 uppercase tracking-wide transition-all"
         >
-          <LogIn size={16} /> {isSubmitting ? t('auth.signing_in') : t('auth.sign_in')}
+          <LogIn size={16} /> {isSubmitting ? t('auth.signing_in') : t('common.sign_in')}
         </button>
 
         <div className="w-full pt-3 border-t border-slate-800 text-center space-y-1">

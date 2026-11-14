@@ -137,7 +137,7 @@ export function EcosystemTelemetry() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300 max-w-6xl">
       <div>
-        <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><LineChartIcon size={16} /> {t('ecosystem.telemetry_title')}</h3>
+        <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><LineChartIcon size={16} /> {t('common.telemetry')}</h3>
         <p className="text-[10px] text-slate-600 leading-relaxed pt-2 max-w-2xl">{t('ecosystem.telemetry_desc')}</p>
       </div>
 
@@ -232,7 +232,7 @@ export function EcosystemTelemetry() {
                       contentStyle={{ background: '#020617', border: '1px solid #1e293b', borderRadius: 8, fontSize: 11 }}
                       labelStyle={{ color: '#64748b' }}
                       labelFormatter={(v) => formatTime(v as number)}
-                      formatter={(v) => [Number(v).toFixed(3), t('ecosystem.telemetry_value')]}
+                      formatter={(v) => [Number(v).toFixed(3), t('common.value')]}
                     />
                     <Area type="monotone" dataKey="y" stroke={SKY} strokeWidth={2} fill="url(#telemetryFill)" isAnimationActive={false} dot={chartData.length < 60} />
                   </AreaChart>
@@ -245,7 +245,7 @@ export function EcosystemTelemetry() {
                       contentStyle={{ background: '#020617', border: '1px solid #1e293b', borderRadius: 8, fontSize: 11 }}
                       labelStyle={{ color: '#64748b' }}
                       labelFormatter={(v) => formatTime(v as number)}
-                      formatter={(v, n) => [n === 'y' ? Number(v).toFixed(3) : v, n === 'y' ? `${agg}(${t('ecosystem.telemetry_value')})` : t('ecosystem.telemetry_count')]}
+                      formatter={(v, n) => [n === 'y' ? Number(v).toFixed(3) : v, n === 'y' ? `${agg}(${t('common.value')})` : t('ecosystem.telemetry_count')]}
                     />
                     <Bar dataKey="y" fill={SKY} radius={[3, 3, 0, 0]} isAnimationActive={false} />
                   </BarChart>
@@ -261,7 +261,7 @@ export function EcosystemTelemetry() {
                     <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('ecosystem.telemetry_kind')}</th>
                     <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('ecosystem.telemetry_field')}</th>
                     <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('ecosystem.telemetry_timestamp')}</th>
-                    <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('ecosystem.telemetry_value')}</th>
+                    <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('common.value')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -283,7 +283,7 @@ export function EcosystemTelemetry() {
                 <thead className="bg-slate-900 border-b border-slate-800">
                   <tr>
                     <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('ecosystem.telemetry_bucket_start')}</th>
-                    <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('ecosystem.telemetry_value')} ({agg})</th>
+                    <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('common.value')} ({agg})</th>
                     <th className="px-4 py-3 text-slate-400 uppercase text-[10px] tracking-widest font-black">{t('ecosystem.telemetry_count')}</th>
                   </tr>
                 </thead>

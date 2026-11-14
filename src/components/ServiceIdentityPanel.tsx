@@ -53,7 +53,7 @@ export function ServiceIdentityPanel() {
     setSaving(false);
     if (result.ok) {
       setStatus(result.value); setWanted(result.value.enabled); setProblem('');
-      setMessage(t('serviceIdentity.saved'));
+      setMessage(t('common.saved'));
       if (!result.value.enabled) setWarning(t('serviceIdentity.off_warning'));
       return;
     }
@@ -95,7 +95,7 @@ export function ServiceIdentityPanel() {
             <Save size={14} /> {t('common.save')}
           </button>
           <div className="space-y-1" data-testid="service-identity-services">
-            <div className="text-[10px] font-bold text-slate-300">{t('serviceIdentity.services_title')}</div>
+            <div className="text-[10px] font-bold text-slate-300">{t('common.services')}</div>
             {(['accepts', 'own_verifier', 'not_yet'] as IdentitySupport[]).map(support => {
               const names = servicesBySupport(status, support);
               return (
