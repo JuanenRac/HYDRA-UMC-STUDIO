@@ -52,7 +52,10 @@
     "level_advanced": "Avançado",
     "level_technical": "Técnico",
     "sign_in": "Iniciar sessão",
-    "finish": "Concluir"
+    "finish": "Concluir",
+    "endstops": "Fins de curso",
+    "speed": "Velocidade",
+    "vision_center": "Centro de visão"
   },
   "stop_all": {
     "label": "STOP",
@@ -132,7 +135,6 @@
     "micro_factory_status": "Estado da microfábrica",
     "combined_into": "Combinado em ",
     "model": "Modelo:",
-    "role": "Função:",
     "tool": "Ferramenta:",
     "xy_assigned": "XY atribuída",
     "camera_active": "Câmara ativa",
@@ -213,7 +215,6 @@
     "firmware_update": "Atualização de firmware",
     "hardware_tester": "Testador de hardware",
     "kinematic_brain": "Cérebro cinemático",
-    "vision_center": "Centro de visão",
     "logo_alt": "Logótipo HYDRA"
   },
   "config": {
@@ -426,7 +427,6 @@
     "model": "Modelo:",
     "tool": "Ferramenta:",
     "step": "Passo:",
-    "speed": "Velocidade:",
     "acceleration": "Aceleração:",
     "joints": "Articulações",
     "points": "Pontos",
@@ -470,7 +470,6 @@
     "combine_desc": "Mostra o robô selecionado na vista 3D. Os parâmetros configuram-se no seu próprio menu.",
     "valve_1": "Válvula 1",
     "valve_2": "Válvula 2",
-    "endstops_upper": "FINS DE CURSO",
     "select": "-- Selecionar --",
     "pause": "PAUSA",
     "pause_all": "PAUSA TODOS",

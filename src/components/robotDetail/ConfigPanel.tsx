@@ -371,7 +371,7 @@ export function ConfigPanel(props: ConfigPanelProps) {
             </div>
 
             <div className="mt-4 pt-4 border-t border-slate-800">
-              <h4 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">{t('robot_detail.endstops_upper', 'ENDSTOPS')}</h4>
+              <h4 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">{t('common.endstops')}</h4>
               <div className="flex gap-2">
                 {(['x1', 'x2', 'y1', 'y2', 'z0'] as const).map(axis => (
                   <div key={axis} className={cn(
