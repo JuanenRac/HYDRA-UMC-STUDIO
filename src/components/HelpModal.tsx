@@ -4,6 +4,7 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
+import { useTourPrefs } from '../tour/tourPrefs';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HelpCircle, Rocket, Bot, Route, LayoutGrid, Video, Cpu, ShieldCheck, Boxes, ListChecks, Search } from 'lucide-react';
@@ -40,9 +41,11 @@ const LOCALES = ['en', 'es', 'de', 'fr', 'it', 'ja', 'zh', 'pt'] as const;
  * level (basic, advanced, technical), a search box and a button that goes to the screen where the task is done. The same guides are what the assistant walks a person through.
  * All the text is translated (see locales/*.json's "help" namespace and assistant/knowledge.ts) and follows the app's own language setting.
  */
-export function HelpModal({ onClose, initialTab, initialTopic, onGo }: { onClose: () => void; initialTab?: string; initialTopic?: string; onGo?: (view: string) => void }) {
+export function HelpModal({ onClose, initialTab, initialTopic, onGo, onStartTour, screenTour }: { onClose: () => void; initialTab?: string; initialTopic?: string; onGo?: (view: string) => void; onStartTour?: (id: string) => void; screenTour?: string }) {
   const { t, i18n } = useTranslation();
   const prefs = usePrefs();
+  const tourPrefs = useTourPrefs();
+  const startTourNow = (id: string) => { onClose(); onStartTour?.(id); };
   const [tab, setTab] = useState<TabKey>(initialTopic ? 'guides' : TABS.some(item => item.key === initialTab) ? initialTab as TabKey : 'start');
   const [level, setLevel] = useState<Level | 'all'>(() => getStudioPrefs().helpLevel);
   const [search, setSearch] = useState('');
@@ -65,9 +68,17 @@ export function HelpModal({ onClose, initialTab, initialTopic, onGo }: { onClose
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
             <HelpCircle className="text-sky-400" size={20} /> {t('help.title', 'Help')}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200 p-1" aria-label={t('dashboard.close', 'Close')}>
-            &times;
-          </button>
+          <div className="flex items-center gap-2">
+            {onStartTour && tourPrefs.tours && (
+              <>
+                <button onClick={() => startTourNow('welcome')} className="px-3 py-1.5 text-xs font-bold rounded-lg border border-sky-500/60 text-sky-300 hover:bg-slate-800" data-testid="help-start-tour">{t('tour.start')}</button>
+                {screenTour && <button onClick={() => startTourNow(screenTour)} className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800" data-testid="help-start-screen-tour">{t('tour.start_screen')}</button>}
+              </>
+            )}
+            <button onClick={onClose} className="text-slate-400 hover:text-slate-200 p-1" aria-label={t('dashboard.close', 'Close')}>
+              &times;
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-1 overflow-hidden">
