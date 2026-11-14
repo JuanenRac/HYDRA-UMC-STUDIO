@@ -42,7 +42,7 @@ function PanelLoadingFallback() {
   const { t } = useTranslation();
   return (
     <div className="flex-1 flex items-center justify-center text-slate-600 text-sm">
-      <RefreshCw size={18} className="animate-spin mr-2" /> {t('dashboard.loading')}
+      <RefreshCw size={18} className="animate-spin mr-2" /> {t('common.loading')}
     </div>
   );
 }

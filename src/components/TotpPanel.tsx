@@ -140,7 +140,7 @@ export function TotpPanel() {
           <input id="totp-code" inputMode="numeric" autoComplete="one-time-code" value={code} disabled={busy} onChange={e => setCode(e.target.value)} className={inputClass} />
           <div className="flex gap-2">
             <button onClick={confirm} disabled={busy || !code.trim()} className={buttonClass}><ShieldCheck size={14} /> {t('totp.confirm')}</button>
-            <button onClick={() => { setEnrolment(null); setCode(''); setError(''); setStep('off'); }} disabled={busy} className={buttonClass}>{t('totp.cancel')}</button>
+            <button onClick={() => { setEnrolment(null); setCode(''); setError(''); setStep('off'); }} disabled={busy} className={buttonClass}>{t('common.cancel')}</button>
           </div>
         </div>
       )}

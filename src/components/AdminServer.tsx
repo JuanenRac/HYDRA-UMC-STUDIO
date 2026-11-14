@@ -530,7 +530,7 @@ export function AdminServer() {
             className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-sky-500"
           />
           <button onClick={savePort} disabled={saving} className="flex items-center gap-1.5 px-4 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
-            <Save size={14} /> {t('ecosystem.admin_server_save')}
+            <Save size={14} /> {t('common.save')}
           </button>
         </div>
         <div className="flex items-start gap-2 text-[10px] text-amber-400/90 bg-amber-950/20 border border-amber-900/40 rounded-lg p-3">
@@ -603,7 +603,7 @@ export function AdminServer() {
             />
             <div className="flex items-center gap-2">
               <button onClick={saveTls} disabled={saving || isLocked(security.tls.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
-                <Save size={14} /> {t('ecosystem.admin_server_save')}
+                <Save size={14} /> {t('common.save')}
               </button>
               <span className="text-[10px] text-slate-500">{sourceText(security.tls.source)}</span>
             </div>

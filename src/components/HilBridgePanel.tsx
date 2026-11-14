@@ -83,7 +83,7 @@ export function HilBridgePanel() {
             disabled={saving || blocked !== '' || wanted === settings.requireTwinPass}
             className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-50 text-sky-300 border border-sky-500/30 rounded-lg text-xs font-bold transition-all"
           >
-            <Save size={14} /> {t('hilBridge.save')}
+            <Save size={14} /> {t('common.save')}
           </button>
         </>
       )}
