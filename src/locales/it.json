@@ -425,6 +425,7 @@
     "progress": "Progresso",
     "model_and_tools": "Modello & Strumenti",
     "urtc_tool": "Strumento URTC",
+    "tool_not_in_family": "Questo strumento non fa parte della famiglia URTC; viene mantenuto così com'è.",
     "trajectories_tab": "Traiettorie",
     "combine_with_robot": "Combina con Robot",
     "combine_desc": "Mostra il robot selezionato nella vista 3D. I parametri sono configurati nel relativo menu.",

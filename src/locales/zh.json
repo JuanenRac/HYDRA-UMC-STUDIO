@@ -425,6 +425,7 @@
     "progress": "进度",
     "model_and_tools": "型号与工具",
     "urtc_tool": "URTC 工具",
+    "tool_not_in_family": "此工具不属于 URTC 系列，将保持原样。",
     "trajectories_tab": "轨迹",
     "combine_with_robot": "与机器人合并",
     "combine_desc": "在 3D 视图中显示所选机器人。参数在其自身菜单中配置。",
