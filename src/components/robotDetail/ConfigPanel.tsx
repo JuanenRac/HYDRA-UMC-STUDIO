@@ -7,7 +7,7 @@
 // changes nothing by itself.
 // =============================================================================
 import { Power, Droplets, Save, FolderOpen, Download } from 'lucide-react';
-import { cn, URTC_TOOLS } from './shared';
+import { cn, isUrtcTool, URTC_TOOLS } from './shared';
 import { browserStorage } from '../../lib/robotDetailHelpers';
 import { saveReachTolerance } from '../../lib/reachCheck';
 import { examples } from '../../examples/kinematics';
@@ -274,10 +274,14 @@ export function ConfigPanel(props: ConfigPanelProps) {
                 onChange={e => setPendingTool(e.target.value)}
                 className="bg-slate-900 border border-slate-800 rounded p-2 text-sm text-slate-200 outline-none"
               >
+                {robot.tool && !isUrtcTool(robot.tool) && <option value={robot.tool}>{robot.tool}</option>}
                 {URTC_TOOLS.map(t => (
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
+              {robot.tool && !isUrtcTool(robot.tool) && (
+                <p className="text-[11px] text-amber-400" data-testid="tool-not-in-family">{t('robot_detail.tool_not_in_family', 'This tool is not one of the URTC family; it is kept as it is.')}</p>
+              )}
             </div>
           </div>
 

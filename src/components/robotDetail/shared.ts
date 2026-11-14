@@ -41,3 +41,11 @@ export const URTC_TOOLS: ToolType[] = [
   'Solder Paste Jetting Valve',
   'Ultrasonic Welder / Packaging Sealer'
 ];
+
+/**
+ * True when `tool` is one of the tool heads of the URTC family (the list of the selector). A tool that is not one is kept as it is: the screen
+ * only says so, it never changes or refuses it.
+ */
+export function isUrtcTool(tool: unknown): boolean {
+  return typeof tool === 'string' && (URTC_TOOLS as string[]).includes(tool);
+}

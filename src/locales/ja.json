@@ -425,6 +425,7 @@
     "progress": "進捗",
     "model_and_tools": "型式とツール",
     "urtc_tool": "URTC ツール",
+    "tool_not_in_family": "このツールは URTC ファミリーのものではありません。そのまま保持されます。",
     "trajectories_tab": "軌道",
     "combine_with_robot": "ロボットと統合",
     "combine_desc": "選択したロボットを 3D ビューに表示します。パラメーターはそのロボット自身のメニューで設定します。",
