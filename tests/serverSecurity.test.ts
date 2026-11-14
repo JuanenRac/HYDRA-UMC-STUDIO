@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { productionPatch, productionChangeNeedsConfirmation, parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, validEstopWatchMs, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { productionPatch, productionChangeNeedsConfirmation, parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, validEstopWatchMs, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -629,5 +629,46 @@ describe('the read-only option of the server', () => {
     for (const bad of [{ value: 'yes', source: 'default' }, { value: true, source: 'nowhere' }, null, 5]) {
       expect(parseSecurityState({ ...answer, robots: { allowEnable: { value: false, source: 'default' }, readOnly: bad } })?.robots).toEqual({ allowEnable: { value: false, source: 'default' } });
     }
+  });
+});
+
+describe('the switches of the executor of the assigned jobs', () => {
+  const base = {
+    stopRelay: { enabled: { value: false, source: 'default' }, robotMap: {}, appliesOnRestart: false },
+    replan: { allowUnconfirmed: { value: false, source: 'default' }, stopAckTimeoutSeconds: { value: 30, source: 'config' }, editable: true },
+  };
+  const executor = { enabled: { value: false, source: 'default' }, live: { value: false, source: 'default' }, appliesOnRestart: false };
+  const input = { relayEnabled: false, robotMapText: '', replanEditable: false, allowUnconfirmed: false, timeoutText: '30' };
+
+  it('reads them with their source, and leaves them out for a server that predates them or sends nonsense', () => {
+    const state = parseSecurityState({ ...answer, jobDispatcher: { ...base, executor } })?.jobDispatcher;
+    expect(state?.executor).toEqual({ enabled: { value: false, source: 'default' }, live: { value: false, source: 'default' }, appliesOnRestart: false });
+    expect(parseSecurityState({ ...answer, jobDispatcher: base })?.jobDispatcher?.executor).toBeUndefined();
+    for (const bad of [{ ...executor, live: { value: 'no', source: 'default' } }, { ...executor, enabled: { value: true, source: 'nowhere' } }, null, 5]) {
+      expect(parseSecurityState({ ...answer, jobDispatcher: { ...base, executor: bad } })?.jobDispatcher?.executor, JSON.stringify(bad)).toBeUndefined();
+    }
+  });
+
+  it('puts in the request only the switches that are not locked, and none for a server without the executor', () => {
+    expect(jobDispatcherPatch(input)).toEqual({ jobDispatcher: { stopRelay: { enabled: false, robotMap: {} } } });
+    expect(jobDispatcherPatch({ ...input, executorEnabled: true, executorLive: false })).toEqual({ jobDispatcher: { stopRelay: { enabled: false, robotMap: {} }, executor: { enabled: true, live: false } } });
+    expect(jobDispatcherPatch({ ...input, executorLive: true })).toEqual({ jobDispatcher: { stopRelay: { enabled: false, robotMap: {} }, executor: { live: true } } });
+  });
+
+  it('asks first, with its own words, only when the executor goes live', () => {
+    const current = parseSecurityState({ ...answer, jobDispatcher: { ...base, executor } })!.jobDispatcher!;
+    const liveOn = jobDispatcherPatch({ ...input, executorEnabled: true, executorLive: true })!;
+    const dryOn = jobDispatcherPatch({ ...input, executorEnabled: true, executorLive: false })!;
+    expect(jobExecutorGoesLive(current, liveOn)).toBe(true);
+    expect(jobDispatcherChangeNeedsConfirmation(current, liveOn)).toBe(true);
+    expect(jobExecutorGoesLive(current, dryOn)).toBe(false);
+    expect(jobDispatcherChangeNeedsConfirmation(current, dryOn)).toBe(false);
+    const already = parseSecurityState({ ...answer, jobDispatcher: { ...base, executor: { ...executor, live: { value: true, source: 'config' } } } })!.jobDispatcher!;
+    expect(jobExecutorGoesLive(already, liveOn)).toBe(false);
+    expect(jobExecutorGoesLive(parseSecurityState({ ...answer, jobDispatcher: base })!.jobDispatcher!, liveOn)).toBe(true);
+  });
+
+  it('knows the two warnings of the answer', () => {
+    expect(knownWarnings(['job_executor_on', 'job_executor_live', 'other'])).toEqual(['job_executor_on', 'job_executor_live']);
   });
 });
