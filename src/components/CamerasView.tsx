@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { ipStreamLabels } from '../store';
 import { apiUrl } from '../lib/apiBase';
+import { ServerHttpError, serverClient } from '../lib/serverClient';
 import { useMediaTicket, withTicket } from '../lib/mediaTicket';
 import { useTranslation } from 'react-i18next';
 import { Video, Maximize2, Minimize2, Camera as CameraIcon, Power, ScanLine, CircleDot, RefreshCw, Move, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
@@ -41,22 +42,14 @@ export function CamerasView() {
 
   // Recording goes through the backend calls (the same auth-header pattern as sendPtz() below): recordingIds mirrors what the server reports,
   // not a local flag.
-  function authHeaders(json = true): Record<string, string> {
-    const headers: Record<string, string> = json ? { 'Content-Type': 'application/json' } : {};
-    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-    return headers;
-  }
-
   const [recordingError, setRecordingError] = useState<string | null>(null);
 
   // Pulled out of the mount effect so a toggle can call it too: a recording can stop itself server-side with no user action, so after EVERY toggle
   // attempt (success or failure) the indicator is re-synced from GET /api/camera/media and cannot drift for more than one round trip.
   const syncRecordingIds = async () => {
     try {
-      const res = await fetch(apiUrl('/api/camera/media'), { headers: authHeaders(false) });
-      if (!res.ok) return;
-      const body = await res.json();
-      const active = new Set<number>((body.items || []).filter((item: { recording?: boolean }) => item.recording).map((item: { cameraId: number }) => item.cameraId));
+      const body = await serverClient.getCameraMedia();
+      const active = new Set<number>((body?.items || []).filter(item => item.recording).map(item => item.cameraId));
       setRecordingIds(active);
     } catch {
       // Best-effort sync - an unreachable server just leaves recordingIds at its previous value.
@@ -77,22 +70,20 @@ export function CamerasView() {
     const isRecording = recordingIds.has(id);
     setRecordingError(null);
     try {
-      const res = await fetch(apiUrl(`/api/camera/${id}/recording/${isRecording ? 'stop' : 'start'}`), {
-        method: 'POST', headers: authHeaders(),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        setRecordingError(body.error || t('cameras.recording_failed', 'Recording command failed'));
-        await syncRecordingIds(); // the server's own state may disagree with our local guess - trust it, not the failed request
-        return;
-      }
+      await (isRecording ? serverClient.postCameraByIdRecordingStop({ path: { id } }) : serverClient.postCameraByIdRecordingStart({ path: { id } }));
       setRecordingIds(prev => {
         const next = new Set(prev);
         if (isRecording) next.delete(id); else next.add(id);
         return next;
       });
-    } catch {
-      setRecordingError(t('cameras.recording_failed', 'Recording command failed'));
+    } catch (error) {
+      if (error instanceof ServerHttpError) {
+        const reason = (error.body as { error?: unknown } | null)?.error;
+        setRecordingError((typeof reason === 'string' && reason) || t('cameras.recording_failed', 'Recording command failed'));
+        await syncRecordingIds(); // the server's own state may disagree with our local guess - trust it, not the failed request
+      } else {
+        setRecordingError(t('cameras.recording_failed', 'Recording command failed'));
+      }
     }
   };
 
@@ -100,7 +91,7 @@ export function CamerasView() {
     setFlashId(id);
     setTimeout(() => setFlashId(null), 150);
     try {
-      await fetch(apiUrl(`/api/camera/${id}/snapshot`), { method: 'POST', headers: authHeaders() });
+      await serverClient.postCameraByIdSnapshot({ path: { id } });
     } catch {
       // The flash still plays even if the save failed - CameraMediaView's own empty state is the honest signal either way.
     }
@@ -124,11 +115,8 @@ export function CamerasView() {
       attempts += 1;
       let running = false;
       try {
-        const res = await fetch(apiUrl('/api/cameras/status'), { headers: authHeaders(false) });
-        if (res.ok) {
-          const status = await res.json() as Record<string, { status?: string }>;
-          running = Object.entries(status).some(([key, value]) => key.endsWith(`:${id}`) && value?.status === 'running');
-        }
+        const status = await serverClient.getCamerasStatus() as unknown as Record<string, { status?: string }>;
+        running = Object.entries(status ?? {}).some(([key, value]) => key.endsWith(`:${id}`) && value?.status === 'running');
       } catch { /* the server is unreachable: counted as not running */ }
       if (running) {
         stopConnecting();
@@ -183,20 +171,15 @@ export function CamerasView() {
   const sendPtz = async (cam: typeof cameras[number], pan: number, tilt: number, zoom: number) => {
     if (!cam.ipHost) return;
     try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-      const res = await fetch(apiUrl(`/api/camera/${cam.id}/ptz`), {
-        method: 'POST', headers,
-        body: JSON.stringify({ host: cam.ipHost, username: cam.ipUsername || '', password: cam.ipPassword || '', pan, tilt, zoom }),
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok || !body.ok) {
-        setPtzErrors(prev => ({ ...prev, [cam.id]: body.error || t('cameras.ptz_failed', 'PTZ command failed') }));
+      const body = await serverClient.postCameraByIdPtz({ path: { id: cam.id }, body: { host: cam.ipHost, username: cam.ipUsername || '', password: cam.ipPassword || '', pan, tilt, zoom } });
+      if (!body?.ok) {
+        setPtzErrors(prev => ({ ...prev, [cam.id]: ((body as unknown as { error?: string } | null)?.error) || t('cameras.ptz_failed', 'PTZ command failed') }));
       } else if (ptzErrors[cam.id]) {
         setPtzErrors(prev => { const next = { ...prev }; delete next[cam.id]; return next; });
       }
-    } catch {
-      setPtzErrors(prev => ({ ...prev, [cam.id]: t('cameras.ptz_failed', 'PTZ command failed') }));
+    } catch (error) {
+      const reason = error instanceof ServerHttpError ? (error.body as { error?: unknown } | null)?.error : undefined;
+      setPtzErrors(prev => ({ ...prev, [cam.id]: (typeof reason === 'string' && reason) || t('cameras.ptz_failed', 'PTZ command failed') }));
     }
   };
 

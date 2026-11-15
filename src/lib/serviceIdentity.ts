@@ -8,6 +8,7 @@
 // (provisioning/service_identity.py of HYDRA-UMC-OS, as root); this screen only shows the state and changes the switch of the SERVER. The
 // reading is defensive: a server without the route (404) and an account that may not use it (401/403) are told apart from a failure.
 import { apiUrl } from './apiBase';
+import { ServerHttpError, serverClient } from './serverClient';
 import { authFetch } from './session';
 
 export type IdentitySupport = 'accepts' | 'own_verifier' | 'not_yet';
@@ -64,25 +65,27 @@ export const serviceIdentityNeedsConfirmation = (current: boolean, wanted: boole
 /** The services of a support level, in the order the server listed them. */
 export const servicesBySupport = (status: ServiceIdentityStatus, support: IdentitySupport): string[] => status.services.filter((s) => s.support === support).map((s) => s.name);
 
-function failure(res: Response, data: unknown): IdentityResult<never> | null {
-  if (res.status === 404) return { ok: false, failure: 'unsupported' };
-  if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
-  if (!res.ok) {
+/** The failure for an answer of this status (a status below 300 is no failure). */
+function failureOfStatus(status: number, data: unknown): IdentityResult<never> | null {
+  if (status === 404) return { ok: false, failure: 'unsupported' };
+  if (status === 401 || status === 403) return { ok: false, failure: 'forbidden', status };
+  if (status >= 300) {
     const reason = typeof object(data).error === 'string' ? (object(data).error as string).slice(0, 300) : undefined;
-    return { ok: false, failure: 'http', status: res.status, ...(reason ? { reason } : {}) };
+    return { ok: false, failure: 'http', status, ...(reason ? { reason } : {}) };
   }
   return null;
 }
 
+function failure(res: Response, data: unknown): IdentityResult<never> | null {
+  return res.ok ? null : failureOfStatus(res.status, data);
+}
+
 async function read(): Promise<IdentityResult<ServiceIdentityStatus>> {
   try {
-    const res = await authFetch(apiUrl('/api/admin/service-identity'));
-    const data = await res.json().catch(() => ({}));
-    const bad = failure(res, data);
-    if (bad) return bad;
-    const status = parseServiceIdentity(data);
-    return status ? { ok: true, value: status } : { ok: false, failure: 'http', status: res.status };
-  } catch {
+    const status = parseServiceIdentity((await serverClient.getAdminServiceIdentity()) ?? {});
+    return status ? { ok: true, value: status } : { ok: false, failure: 'http', status: 200 };
+  } catch (error) {
+    if (error instanceof ServerHttpError) return failureOfStatus(error.status, error.body ?? {}) ?? { ok: false, failure: 'http', status: error.status };
     return { ok: false, failure: 'network' };
   }
 }
