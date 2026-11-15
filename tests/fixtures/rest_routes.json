@@ -1,4 +1,6 @@
 [
+  "/api/admin/clients",
+  "/api/admin/logs",
   "/api/admin/safety-limits",
   "/api/admin/server-config",
   "/api/admin/service-identity",

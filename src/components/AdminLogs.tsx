@@ -21,7 +21,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eraser, FileText, Pause, Play, Search } from 'lucide-react';
-import { ServerHttpError, serverClient } from '../lib/serverClient';
+import { apiUrl } from '../lib/apiBase';
 import { useServerStatus, useSession } from '../storeContexts';
 
 const POLL_MS = 3000;
@@ -50,7 +50,7 @@ export function AdminLogs() {
   // reset itself every time the operator navigated away and back,
   // silently un-clearing the view. See logsClearedAt's own doc comment on
   // the store's context type for the full reasoning.
-  const { isAdmin } = useSession();
+  const { authToken, isAdmin } = useSession();
   const { logsClearedAt: clearedAt, setLogsClearedAt: setClearedAt } = useServerStatus();
   const [lines, setLines] = useState<string[]>([]);
   const [live, setLive] = useState(true);
@@ -62,16 +62,14 @@ export function AdminLogs() {
 
   const load = async () => {
     try {
-      const data = await serverClient.getAdminLogs({ query: { lines: String(LINES) } });
-      setLines(data?.lines || []);
+      const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+      const res = await fetch(apiUrl(`/api/admin/logs?lines=${LINES}`), { headers });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
+      setLines(data.lines || []);
       setError('');
-    } catch (error) {
-      if (error instanceof ServerHttpError) {
-        const reason = (error.body as { error?: unknown } | null)?.error;
-        setError((typeof reason === 'string' && reason) || `HTTP ${error.status}`);
-      } else {
-        setError(t('ecosystem.logs_load_error'));
-      }
+    } catch {
+      setError(t('ecosystem.logs_load_error'));
     }
   };
 

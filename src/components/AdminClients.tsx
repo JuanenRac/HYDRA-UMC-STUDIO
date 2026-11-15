@@ -17,7 +17,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Radio, RefreshCw, ShieldCheck, User } from 'lucide-react';
-import { ServerHttpError, serverClient } from '../lib/serverClient';
+import { apiUrl } from '../lib/apiBase';
 import { ConnectionHistory } from './ConnectionHistory';
 import { useSession } from '../storeContexts';
 
@@ -55,16 +55,14 @@ export function AdminClients() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await serverClient.getAdminClients();
-      setClients((data?.clients || []) as unknown as ClientInfo[]);
+      const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+      const res = await fetch(apiUrl('/api/admin/clients'), { headers });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
+      setClients(data.clients || []);
       setError('');
-    } catch (error) {
-      if (error instanceof ServerHttpError) {
-        const reason = (error.body as { error?: unknown } | null)?.error;
-        setError((typeof reason === 'string' && reason) || `HTTP ${error.status}`);
-      } else {
-        setError(t('ecosystem.clients_load_error'));
-      }
+    } catch {
+      setError(t('ecosystem.clients_load_error'));
     } finally {
       setLoading(false);
     }
