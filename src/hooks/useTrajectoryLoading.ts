@@ -10,6 +10,7 @@
 // =============================================================================
 import type { ChangeEvent, RefObject } from 'react';
 import { apiUrl } from '../lib/apiBase';
+import { makeTokenClient, settle } from '../lib/serverClient';
 import { examples } from '../examples/kinematics';
 import type { RobotState } from '../store';
 import { trajectorySender } from '../lib/trajectoryCommand';
@@ -56,17 +57,9 @@ export function useTrajectoryLoading(input: UseTrajectoryLoadingInput) {
         const folderPath = worksFolderFor(robot, worksPaths);
 
         // Same bearer-token requirement as handleSaveWorkFile above.
-        const res = await fetch(apiUrl('/api/upload-work'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
-          body: JSON.stringify({
-            folderPath,
-            fileName: file.name,
-            content
-          })
-        });
+        const { status } = await settle(() => makeTokenClient(authToken).postUploadWork({ body: { folderPath, fileName: file.name, content } }));
 
-        if (res.ok) {
+        if (status < 300) {
           await fetchWorks();
           void loadWorkFile(file.name);
         } else {

@@ -63,6 +63,11 @@ export async function settle(run: () => Promise<unknown>): Promise<{ status: num
   }
 }
 
+/** A client whose requests carry the given bearer token, for the callers that are handed their token instead of reading the one of the session (without a token the request leaves with no Authorization header). */
+export function makeTokenClient(token: string | null | undefined): HydraServerClient {
+  return makeClient((url, init) => fetch(url, { ...init, headers: { ...(init.headers as Record<string, string> | undefined), ...(token ? { Authorization: `Bearer ${token}` } : {}) } }));
+}
+
 /** A client over the given fetch function (the session one when none is given); the tests of the readers hand in their own. */
 export function makeClient(send?: (url: string, init: RequestInit) => Promise<Response>): HydraServerClient {
   return send ? new HydraServerClient(makeTransport(send)) : serverClient;

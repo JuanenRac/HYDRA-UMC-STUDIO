@@ -13,8 +13,6 @@
   "/api/camera/{p}/stream",
   "/api/cameras/status",
   "/api/hardware/canota/flash",
-  "/api/hardware/canota/version",
-  "/api/hardware/fram/{p}",
   "/api/integrations/test-connection",
   "/api/login",
   "/api/logout",
@@ -29,8 +27,5 @@
   "/api/robot/{p}/jog-arm",
   "/api/robot/{p}/release",
   "/api/settings",
-  "/api/stop-all",
-  "/api/telemetry/aggregate",
-  "/api/telemetry/query",
-  "/api/upload-work"
+  "/api/stop-all"
 ]

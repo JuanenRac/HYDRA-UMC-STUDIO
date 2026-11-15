@@ -8,6 +8,7 @@
 // =============================================================================
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiUrl } from '../lib/apiBase';
+import { makeTokenClient, settle } from '../lib/serverClient';
 
 export interface UseWorkFilesInput {
   robotId: number;
@@ -73,16 +74,8 @@ export function useWorkFiles({ robotId, robotName, worksPaths, authToken, record
       // Server now requires a bearer token on this route (see server.ts's
       // own comment on POST /api/upload-work) - without this header every
       // save silently 401s for a logged-in user.
-      const res = await fetch(apiUrl('/api/upload-work'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
-        body: JSON.stringify({
-          folderPath,
-          fileName: fileName,
-          content: recordedPoints
-        })
-      });
-      if (res.ok) {
+      const { status } = await settle(() => makeTokenClient(authToken).postUploadWork({ body: { folderPath, fileName, content: recordedPoints } }));
+      if (status < 300) {
         await fetchWorks();
         onSaved(fileName);
       } else {

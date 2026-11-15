@@ -10,7 +10,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it, vi, type Mock } from 'vitest';
 import { HydraServerClient } from '../src/generated/hydra-server-client';
-import { makeClient, makeTransport, requestUrl, ServerHttpError } from '../src/lib/serverClient';
+import { makeClient, makeTokenClient, makeTransport, requestUrl, ServerHttpError } from '../src/lib/serverClient';
 import { panelCall } from '../src/lib/panelApi';
 
 const ROOT = join(__dirname, '..');
@@ -65,6 +65,21 @@ describe('the transport of the app', () => {
     const plain = await new HydraServerClient(makeTransport(reply(500, null, true))).getEcosystemHealth().catch((e: unknown) => e) as ServerHttpError;
     expect(plain.body).toBeNull();
     expect(plain.retryAfter).toBeNull();
+  });
+
+  it('makes a client that carries the token it is handed, and none without one', async () => {
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({ ok: true, status: 200, json: async () => [] }) as unknown as Response);
+    vi.stubGlobal('fetch', fetchMock);
+    await makeTokenClient('tok').getTelemetryQuery({ query: { kind: 'temp', start: '5' } });
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/telemetry/query?kind=temp&start=5', { method: 'GET', headers: { Authorization: 'Bearer tok' } });
+    await makeTokenClient(null).getTelemetryAggregate({ query: { bucketMs: '1000', agg: 'avg' } });
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/telemetry/aggregate?bucketMs=1000&agg=avg', { method: 'GET', headers: {} });
+    await makeTokenClient('tok').postUploadWork({ body: { folderPath: 'WORKS/A', fileName: 'a.json', content: [1] } });
+    const [url, init] = fetchMock.mock.calls[2] as unknown as [string, RequestInit];
+    expect(url).toBe('/api/upload-work');
+    expect(init.headers).toEqual({ Authorization: 'Bearer tok', 'Content-Type': 'application/json' });
+    expect(JSON.parse(String(init.body))).toEqual({ folderPath: 'WORKS/A', fileName: 'a.json', content: [1] });
+    vi.unstubAllGlobals();
   });
 
   it('builds a client over the given fetch function', async () => {
