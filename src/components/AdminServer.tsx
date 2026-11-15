@@ -29,6 +29,7 @@ import { ConnectorHubGatePanel } from './ConnectorHubGatePanel';
 import { PlannerIdentityPanel } from './PlannerIdentityPanel';
 import { OpsProposalsPanel } from './OpsProposalsPanel';
 import { HilBridgePanel } from './HilBridgePanel';
+import { DroidEstopPanel } from './DroidEstopPanel';
 import { Ros2SecurityPanel } from './Ros2SecurityPanel';
 import { TwinLivePanel } from './TwinLivePanel';
 import { ServiceIdentityPanel } from './ServiceIdentityPanel';
@@ -978,6 +979,7 @@ export function AdminServer() {
           <OpsProposalsPanel />
 
           <HilBridgePanel />
+          <DroidEstopPanel />
           <Ros2SecurityPanel />
           <TwinLivePanel />
           <ServiceIdentityPanel />

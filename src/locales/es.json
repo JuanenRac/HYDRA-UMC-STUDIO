@@ -1954,6 +1954,27 @@
     "confirm_off_message": "El puente HIL reenviará órdenes reales solo con su certificado de riesgo, sin un veredicto «pass» del gemelo para la trayectoria.",
     "confirm_off_button": "Dejar de exigir"
   },
+  "droidEstop": {
+    "title": "Parada de emergencia de droides en las zonas de seguridad",
+    "desc": "Si esto está activado, el servicio de zonas de seguridad escucha al puente de droides: un droide cortado, un enlace perdido o un puente en silencio impiden que empiecen trabajos nuevos en la celda. Nunca detiene una máquina que esté funcionando. Está desactivado por defecto; solo un administrador puede cambiarlo, hace falta una confirmación en ambos sentidos y cada cambio queda registrado.",
+    "label": "Retener los arranques nuevos mientras un droide esté cortado",
+    "state_on": "Activado: un droide cortado inhibe los arranques nuevos de la celda.",
+    "state_off": "Desactivado: el servicio de zonas de seguridad no lee la parada de emergencia de los droides (valor por defecto).",
+    "unsupported": "Este servicio de zonas de seguridad no se puede cambiar desde aquí (no tiene fichero de estado para el ajuste).",
+    "not_configured": "El servicio de zonas de seguridad no está configurado en este servidor.",
+    "forbidden": "Solo un administrador puede cambiar este interruptor.",
+    "load_error": "No se pudo leer el interruptor de la parada de emergencia de droides.",
+    "running": "El enlace con el puente de droides está activo.",
+    "not_running": "El enlace con el puente de droides está caído.",
+    "saved": "Guardado.",
+    "save_error": "Se rechazó el cambio: {{reason}}",
+    "confirm_on_title": "¿Leer la parada de emergencia de droides?",
+    "confirm_on_message": "A partir de ahora el servicio de zonas de seguridad inhibirá los arranques nuevos de la celda mientras un droide esté cortado, pierda el enlace o su puente se quede en silencio. Una máquina en marcha no se detiene.",
+    "confirm_on_button": "Leerla",
+    "confirm_off_title": "¿Dejar de leer la parada de emergencia de droides?",
+    "confirm_off_message": "Un droide cortado ya no impedirá que empiecen trabajos nuevos en la celda.",
+    "confirm_off_button": "Dejar de leerla"
+  },
   "hubGate": {
     "title": "Hub de conectores: llamantes sin identidad",
     "desc": "La puerta de decisiones del hub de conectores solo responde a quien presenta un token firmado de este servidor. Este interruptor permite responder sin token a un llamante de la propia máquina del hub. Está apagado por defecto; solo un administrador puede cambiarlo, encenderlo pide una confirmación y cada cambio queda registrado.",

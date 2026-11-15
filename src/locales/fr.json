@@ -1954,6 +1954,27 @@
     "confirm_off_message": "Le pont HIL transmettra les ordres réels avec leur seul certificat de risque, sans verdict « pass » du jumeau pour la trajectoire.",
     "confirm_off_button": "Ne plus exiger"
   },
+  "droidEstop": {
+    "title": "Arrêt d'urgence des droïdes dans les zones de sécurité",
+    "desc": "Si cette option est activée, le service des zones de sécurité écoute le pont des droïdes : un droïde coupé, une liaison perdue ou un pont silencieux empêchent de nouveaux démarrages dans la cellule. Une machine en marche n'est jamais arrêtée. L'option est désactivée par défaut ; seul un administrateur peut la modifier, une confirmation est exigée dans les deux sens et chaque changement est enregistré.",
+    "label": "Retenir les nouveaux démarrages tant qu'un droïde est coupé",
+    "state_on": "Activé : un droïde coupé inhibe les nouveaux démarrages de la cellule.",
+    "state_off": "Désactivé : le service des zones de sécurité ne lit pas l'arrêt d'urgence des droïdes (par défaut).",
+    "unsupported": "Ce service des zones de sécurité ne peut pas être modifié d'ici (il n'a pas de fichier d'état pour ce réglage).",
+    "not_configured": "Le service des zones de sécurité n'est pas configuré sur ce serveur.",
+    "forbidden": "Seul un administrateur peut modifier cet interrupteur.",
+    "load_error": "L'interrupteur de l'arrêt d'urgence des droïdes n'a pas pu être lu.",
+    "running": "La liaison avec le pont des droïdes est active.",
+    "not_running": "La liaison avec le pont des droïdes est coupée.",
+    "saved": "Enregistré.",
+    "save_error": "Le changement a été refusé : {{reason}}",
+    "confirm_on_title": "Lire l'arrêt d'urgence des droïdes ?",
+    "confirm_on_message": "Désormais, le service des zones de sécurité inhibera les nouveaux démarrages de la cellule tant qu'un droïde est coupé, que sa liaison est perdue ou que son pont se tait. Une machine en marche n'est pas arrêtée.",
+    "confirm_on_button": "Le lire",
+    "confirm_off_title": "Ne plus lire l'arrêt d'urgence des droïdes ?",
+    "confirm_off_message": "Un droïde coupé n'empêchera plus de nouveaux démarrages dans la cellule.",
+    "confirm_off_button": "Ne plus le lire"
+  },
   "hubGate": {
     "title": "Hub de connecteurs : appelants sans identité",
     "desc": "La porte de décision du hub de connecteurs ne répond qu'aux appelants qui présentent un jeton signé de ce serveur. Cet interrupteur permet de répondre sans jeton à un appelant situé sur la machine même du hub. Il est désactivé par défaut ; seul un administrateur peut le changer, l'activer demande une confirmation et chaque changement est consigné.",

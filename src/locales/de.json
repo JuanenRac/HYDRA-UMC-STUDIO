@@ -1954,6 +1954,27 @@
     "confirm_off_message": "Die HIL-Brücke leitet reale Befehle nur mit ihrem Risikozertifikat weiter, ohne Pass-Urteil des Zwillings für die Trajektorie.",
     "confirm_off_button": "Nicht mehr verlangen"
   },
+  "droidEstop": {
+    "title": "Not-Halt von Droiden in den Sicherheitszonen",
+    "desc": "Ist dies eingeschaltet, hört der Dienst für Sicherheitszonen den Droiden-Bridge ab: Ein abgeschalteter Droide, eine verlorene Verbindung oder eine schweigende Bridge verhindern, dass in der Zelle neue Starts beginnen. Eine laufende Maschine wird nie angehalten. Standardmäßig ist es aus; nur ein Administrator kann es ändern, in beide Richtungen ist eine Bestätigung nötig und jede Änderung wird aufgezeichnet.",
+    "label": "Neue Starts sperren, solange ein Droide abgeschaltet ist",
+    "state_on": "Ein: Ein abgeschalteter Droide sperrt neue Starts der Zelle.",
+    "state_off": "Aus: Der Dienst für Sicherheitszonen liest den Not-Halt der Droiden nicht (Standard).",
+    "unsupported": "Dieser Dienst für Sicherheitszonen kann von hier nicht umgeschaltet werden (er hat keine Statusdatei für die Einstellung).",
+    "not_configured": "Der Dienst für Sicherheitszonen ist auf diesem Server nicht eingerichtet.",
+    "forbidden": "Nur ein Administrator kann diesen Schalter ändern.",
+    "load_error": "Der Schalter für den Not-Halt der Droiden konnte nicht gelesen werden.",
+    "running": "Die Verbindung zum Droiden-Bridge steht.",
+    "not_running": "Die Verbindung zum Droiden-Bridge ist unterbrochen.",
+    "saved": "Gespeichert.",
+    "save_error": "Die Änderung wurde abgelehnt: {{reason}}",
+    "confirm_on_title": "Den Not-Halt der Droiden lesen?",
+    "confirm_on_message": "Ab jetzt sperrt der Dienst für Sicherheitszonen neue Starts der Zelle, solange ein Droide abgeschaltet ist, seine Verbindung verloren ist oder seine Bridge schweigt. Eine laufende Maschine wird nicht angehalten.",
+    "confirm_on_button": "Lesen",
+    "confirm_off_title": "Den Not-Halt der Droiden nicht mehr lesen?",
+    "confirm_off_message": "Ein abgeschalteter Droide verhindert nicht mehr, dass in der Zelle neue Starts beginnen.",
+    "confirm_off_button": "Nicht mehr lesen"
+  },
   "hubGate": {
     "title": "Connector-Hub: Aufrufer ohne Identität",
     "desc": "Das Entscheidungs-Gate des Connector-Hubs antwortet nur Aufrufern, die ein signiertes Token dieses Servers vorlegen. Mit diesem Schalter wird ein Aufrufer auf dem Rechner des Hubs auch ohne Token beantwortet. Er ist standardmäßig aus; nur ein Administrator kann ihn ändern, das Einschalten verlangt eine Bestätigung, und jede Änderung wird protokolliert.",
