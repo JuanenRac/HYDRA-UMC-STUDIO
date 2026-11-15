@@ -8,14 +8,16 @@
 // =============================================================================
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, type Mock } from 'vitest';
 import { HydraServerClient } from '../src/generated/hydra-server-client';
 import { makeTransport, requestUrl, ServerHttpError } from '../src/lib/serverClient';
 
 const ROOT = join(__dirname, '..');
 
-function reply(status: number, body: unknown, bad = false): ReturnType<typeof vi.fn> {
-  return vi.fn(async () => ({ ok: status < 300, status, json: async () => { if (bad) throw new Error('not json'); return body; } }) as unknown as Response);
+type Send = (url: string, init: RequestInit) => Promise<Response>;
+
+function reply(status: number, body: unknown, bad = false): Mock<Send> {
+  return vi.fn<Send>(async () => ({ ok: status < 300, status, json: async () => { if (bad) throw new Error('not json'); return body; } }) as unknown as Response);
 }
 
 describe('the transport of the app', () => {
@@ -46,7 +48,7 @@ describe('the transport of the app', () => {
   });
 
   it('lets a network failure through as it is', async () => {
-    const send = vi.fn(async () => { throw new Error('down'); });
+    const send = vi.fn<Send>(async () => { throw new Error('down'); });
     await expect(new HydraServerClient(makeTransport(send)).getEcosystemHealth()).rejects.toThrow('down');
   });
 });
