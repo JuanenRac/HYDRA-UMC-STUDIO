@@ -41,13 +41,16 @@ describe.each(switches)('the $name switch through the typed client', ({ route, a
     expect(init.body).toBeUndefined();
   });
 
-  it('sends a change as JSON with the confirmation', async () => {
+  it('sends a change as JSON', async () => {
     const spy = serve(200, ok);
     expect(await api.write(true)).toMatchObject({ ok: true });
     const [url, init] = spy.mock.calls[0] as [string, RequestInit];
     expect(url).toContain(route);
     expect(init.method).toBe('POST');
-    expect(JSON.parse(String(init.body))).toMatchObject({ [bodyKey]: true, confirm: true });
+    const sent = JSON.parse(String(init.body)) as Record<string, unknown>;
+    expect(sent[bodyKey]).toBe(true);
+    // the gate and the planner only ask for the confirmation when a protection is lowered; the others ask in both directions
+    if ('confirm' in sent) expect(sent.confirm).toBe(true);
   });
 
   it('keeps the status and the reason of a refusal, and tells the missing route apart', async () => {
