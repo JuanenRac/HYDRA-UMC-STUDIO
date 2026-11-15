@@ -3,7 +3,7 @@
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 // GPL-3.0-or-later - see LICENSE
 //
-// The latest status that each developer node sent to the SERVER (GET /api/developer-node/status, read only). The route answers 404 while
+// The latest status that each developer node sent to the SERVER (GET /api/dev-server/status, read only). The route answers 404 while
 // its switch is off, and the screen says so instead of drawing an empty list. Only plain texts, numbers and yes/no values of the status
 // are drawn, as text; nothing the node sends is interpreted. Asking to check the signed record shows whether its chain is intact.
 // =============================================================================

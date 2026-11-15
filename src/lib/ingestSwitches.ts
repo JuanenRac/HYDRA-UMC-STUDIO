@@ -120,7 +120,7 @@ async function write(current: IngestState, change: IngestChange): Promise<Ingest
 export const ingestApi = { read, write };
 
 // ---------------------------------------------------------------------------
-// The status of the developer node (GET /api/developer-node/status)
+// The status of the developer node (GET /api/dev-server/status)
 // ---------------------------------------------------------------------------
 export interface DeveloperNodeEntry {
   nodeId: string;
@@ -161,7 +161,7 @@ export function parseDeveloperNodeStatus(data: unknown): DeveloperNodeStatus | n
 
 async function readDeveloperNodes(verify = false): Promise<IngestResult<DeveloperNodeStatus>> {
   try {
-    const res = await authFetch(apiUrl(`/api/developer-node/status${verify ? '?verify=1' : ''}`));
+    const res = await authFetch(apiUrl(`/api/dev-server/status${verify ? '?verify=1' : ''}`));
     const data = await res.json().catch(() => ({}));
     const bad = failure(res, data);
     if (bad) return bad;

@@ -1854,6 +1854,16 @@
     "confirm_title": "Aprovar esta proposta?",
     "confirm_message": "Aprovar {{id}} abre-a como incidente de manutenção. A decisão fica registada com o seu nome."
   },
+  "ros2Security": {
+    "title": "Ponte ROS 2: segurança (SROS2)",
+    "desc": "A ponte ROS 2 pode recusar-se a arrancar se a segurança do ROS 2 (SROS2) não estiver totalmente ativa no seu ambiente. O interruptor está no ficheiro de configuração da ponte (security.require_sros2) e vem desligado por predefinição, para que uma máquina sem armazém de chaves continue a arrancar.",
+    "not_reported": "A ponte não comunica este interruptor ao servidor, por isso o STUDIO não o pode ler nem alterar a partir daqui. Este ecrã não altera a ponte e não afirma que esteja protegida.",
+    "label": "Preparar o requisito SROS2 para a ponte ROS 2",
+    "state_off": "Desligado (predefinição): não há nada a acrescentar ao ficheiro da ponte.",
+    "state_on": "Preparado: acrescente estas linhas ao ficheiro de configuração da ponte e reinicie-a. Até lá, a ponte mantém a sua definição atual.",
+    "config_title": "Secção do ficheiro de configuração da ponte",
+    "env_title": "Ambiente que a ponte verifica ao arrancar (o armazém de chaves e o enclave criam-se com as ferramentas SROS2 do ROS 2; a ponte nunca cria chaves)"
+  },
   "hilBridge": {
     "title": "Ponte HIL: veredicto «pass» do gémeo",
     "desc": "Com isto ligado, a ponte HIL só move o robô real para uma ordem cuja trajetória o gémeo tenha passado em simulação (um veredicto assinado, verificado contra os pontos exatos). Está desligado por predefinição; só um administrador o pode alterar, é preciso uma confirmação nos dois sentidos e cada alteração fica registada.",
