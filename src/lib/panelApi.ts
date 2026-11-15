@@ -7,6 +7,7 @@
 // predates the route answers 404 and the panel says so, a refused session or role is told apart from a broken connection, and an
 // answer that is not JSON is read as an empty object instead of breaking the screen.
 import { apiUrl } from './apiBase';
+import { ServerHttpError, serverClient } from './serverClient';
 import { authFetch } from './session';
 
 export type PanelFailure = 'unsupported' | 'forbidden' | 'http' | 'network';
@@ -26,6 +27,18 @@ export async function panelRead<T>(route: string, parse: (data: unknown) => T, i
     return { ok: true, value: parse(await res.json().catch(() => ({}))) };
   } catch {
     return { ok: false, failure: 'network' };
+  }
+}
+
+/** The same defensive read through a call of the typed client: `call` makes the request, `parse` reads the JSON answer (an empty object when there is none). */
+export async function panelCall<T>(call: (client: typeof serverClient) => Promise<unknown>, parse: (data: unknown) => T): Promise<PanelResult<T>> {
+  try {
+    return { ok: true, value: parse((await call(serverClient)) ?? {}) };
+  } catch (error) {
+    if (!(error instanceof ServerHttpError)) return { ok: false, failure: 'network' };
+    if (error.status === 404) return { ok: false, failure: 'unsupported', status: 404 };
+    if (error.status === 401 || error.status === 403) return { ok: false, failure: 'forbidden', status: error.status };
+    return { ok: false, failure: 'http', status: error.status };
   }
 }
 

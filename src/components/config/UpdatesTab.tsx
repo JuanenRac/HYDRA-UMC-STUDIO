@@ -10,7 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCw, DownloadCloud } from 'lucide-react';
 import studioPackage from '../../../package.json';
-import { failureKey, panelRead, type PanelFailure } from '../../lib/panelApi';
+import { failureKey, panelCall, type PanelFailure } from '../../lib/panelApi';
 import { SelfUpdatePanel } from './SelfUpdatePanel';
 import { FleetUpdatePanel } from './FleetUpdatePanel';
 import { parseInstalled, parseServerInfo, uptimeText, versionedCount, type InstalledProject, type ServerInfo } from '../../lib/updatesView';
@@ -27,8 +27,8 @@ export function UpdatesTab() {
   const load = useCallback(async () => {
     setBusy(true);
     const [infoResult, statusResult] = await Promise.all([
-      panelRead('/api/hydra-info', parseServerInfo),
-      panelRead('/api/ecosystem/status', parseInstalled),
+      panelCall(client => client.getHydraInfo(), parseServerInfo),
+      panelCall(client => client.getEcosystemStatus(), parseInstalled),
     ]);
     setInfo(infoResult.ok ? infoResult.value : null);
     setProjects(statusResult.ok ? statusResult.value : null);

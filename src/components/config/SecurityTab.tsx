@@ -13,7 +13,7 @@ import { TotpPanel } from '../TotpPanel';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { useSession } from '../../storeContexts';
 import { totpApi } from '../../lib/totpApi';
-import { failureKey, panelRead, type PanelFailure } from '../../lib/panelApi';
+import { failureKey, panelCall, type PanelFailure } from '../../lib/panelApi';
 import { activeKey, dateOf, parseKeys, rotateKey, securityChecks, type KeysState, type RotateFailure } from '../../lib/securityView';
 
 const rotateErrorKey = (failure: RotateFailure): string => {
@@ -41,7 +41,7 @@ export function SecurityTab() {
     const status = await totpApi.status();
     setSecondFactor(status.ok ? status.value.enabled : null);
     if (isAdmin) {
-      const result = await panelRead('/api/admin/jwt-keys', parseKeys);
+      const result = await panelCall(client => client.getAdminJwtKeys(), parseKeys);
       setKeys(result.ok ? result.value : null);
       setKeysFailure(result.ok ? null : result.failure);
     }

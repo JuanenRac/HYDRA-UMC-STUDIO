@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Circle, HelpCircle, ListChecks, RefreshCw } from 'lucide-react';
-import { failureKey, panelRead, type PanelFailure } from '../../lib/panelApi';
+import { failureKey, panelCall, type PanelFailure } from '../../lib/panelApi';
 import { totpApi } from '../../lib/totpApi';
 import { parseServerInfo, uptimeText, type ServerInfo } from '../../lib/updatesView';
 import { doneCount, installSteps, nextStep } from '../../lib/installationView';
@@ -22,7 +22,7 @@ export function InstallationTab() {
 
   const load = useCallback(async () => {
     setBusy(true);
-    const [infoResult, totpResult] = await Promise.all([panelRead('/api/hydra-info', parseServerInfo), totpApi.status()]);
+    const [infoResult, totpResult] = await Promise.all([panelCall(client => client.getHydraInfo(), parseServerInfo), totpApi.status()]);
     setInfo(infoResult.ok ? infoResult.value : null);
     setFailure(infoResult.ok ? null : infoResult.failure);
     setSecondFactor(totpResult.ok ? totpResult.value.enabled : null);

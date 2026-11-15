@@ -22,7 +22,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Power, Save, Server as ServerIcon, Settings } from 'lucide-react';
 import { apiUrl } from '../lib/apiBase';
-import { authFetch } from '../lib/session';
+import { serverClient } from '../lib/serverClient';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
 import { ConnectorHubGatePanel } from './ConnectorHubGatePanel';
@@ -437,8 +437,7 @@ export function AdminServer() {
       setError(t('ecosystem.admin_server_load_error'));
     }
     try {
-      const res = await authFetch(apiUrl('/api/hydra-info'));
-      if (res.ok) setInfo(await res.json());
+      setInfo((await serverClient.getHydraInfo()) as unknown as HydraInfo);
     } catch {
       // Best-effort overview snapshot - the port form above is the real
       // admin surface, this just enriches it when it's reachable.

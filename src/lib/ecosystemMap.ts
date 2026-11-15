@@ -7,8 +7,7 @@
 // that declare a service), grouped by family, each one reduced to the state a person needs to see on a map: up, down, in error or unknown. Pure
 // functions, so the screen only draws. The version drift comes from the health of the ecosystem when an administrator turned that on; without it the
 // map simply shows no drift.
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+import { serverClient } from './serverClient';
 
 export type MapState = 'up' | 'down' | 'error' | 'unknown';
 export const MAP_STATES: readonly MapState[] = ['up', 'error', 'down', 'unknown'];
@@ -110,9 +109,7 @@ export type MapResult = { ok: true; value: MapReading } | { ok: false; failure: 
 
 export async function loadEcosystemMap(): Promise<MapResult> {
   try {
-    const response = await authFetch(apiUrl('/api/ecosystem/status'));
-    if (!response.ok) return { ok: false, failure: 'error' };
-    const reading = parseMapReading(await response.json());
+    const reading = parseMapReading(await serverClient.getEcosystemStatus());
     return reading ? { ok: true, value: reading } : { ok: false, failure: 'error' };
   } catch {
     return { ok: false, failure: 'error' };

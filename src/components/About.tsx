@@ -9,8 +9,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Info, Mail, LogOut } from 'lucide-react';
-import { apiUrl } from '../lib/apiBase';
-import { authFetch } from '../lib/session';
+import { serverClient } from '../lib/serverClient';
 import HydraIcon from '../assets/HYDRA_UMC_ICON.svg';
 import studioPackage from '../../package.json';
 import { useSession } from '../storeContexts';
@@ -33,8 +32,7 @@ export function About({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     let cancelled = false;
-    authFetch(apiUrl('/api/hydra-info'))
-      .then(r => (r.ok ? r.json() : null))
+    serverClient.getHydraInfo()
       .then(data => {
         if (!cancelled && data?.appVersion) setServerVersion(String(data.appVersion));
       })

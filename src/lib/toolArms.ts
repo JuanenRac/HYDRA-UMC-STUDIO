@@ -7,8 +7,7 @@
 // how old it is and whether it is stale. A tool is armed when its power stage may act. A stale report is never shown as safe: a stale armed
 // tool is a warning and a stale disarmed tool is unknown. Nothing here arms, disarms or stops anything. The reading is defensive and checks
 // the closed shape of the contract (one bad row refuses the whole answer, so a half-read list is never shown as the truth).
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+import { ServerHttpError, serverClient } from './serverClient';
 
 export const MAX_TOOL_ARMS = 256;
 export const MAX_TOOL_ID = 24;
@@ -80,16 +79,16 @@ export function formatAge(seconds: number): { unit: 's' | 'min' | 'h'; value: nu
 
 async function read(): Promise<ToolArmsResult> {
   try {
-    const res = await authFetch(apiUrl('/api/tool-arms'));
-    if (res.status === 404) return { ok: false, failure: 'unsupported' };
+    const report = parseToolArms(await serverClient.getToolArms());
+    return report ? { ok: true, value: report } : { ok: false, failure: 'shape', status: 200 };
+  } catch (error) {
+    if (!(error instanceof ServerHttpError)) return { ok: false, failure: 'network' };
+    const status = error.status;
+    if (status === 404) return { ok: false, failure: 'unsupported' };
     // the SERVER answers 503 while it has no address of the safety zones service, and the service answers 404 while it was not started with --tool-arms
-    if (res.status === 502 || res.status === 503 || res.status === 504) return { ok: false, failure: 'unavailable', status: res.status };
-    if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
-    if (!res.ok) return { ok: false, failure: 'http', status: res.status };
-    const report = parseToolArms(await res.json().catch(() => null));
-    return report ? { ok: true, value: report } : { ok: false, failure: 'shape', status: res.status };
-  } catch {
-    return { ok: false, failure: 'network' };
+    if (status === 502 || status === 503 || status === 504) return { ok: false, failure: 'unavailable', status };
+    if (status === 401 || status === 403) return { ok: false, failure: 'forbidden', status };
+    return { ok: false, failure: 'http', status };
   }
 }
 
@@ -112,21 +111,22 @@ export type ResetResult =
 /** Reset the arm state of one tool changer (POST /api/tool-arms/reset, administrators; the SERVER answers 404 while its switch is off). */
 async function reset(arm: ToolArm, typed: string): Promise<ResetResult> {
   try {
-    const res = await authFetch(apiUrl('/api/tool-arms/reset'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(resetBody(arm, typed)) });
-    if (res.status === 200) return { ok: true };
-    const data = object(await res.json().catch(() => ({})));
-    if (res.status === 404) return { ok: false, failure: 'off' };
-    if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
-    if (res.status === 400) return { ok: false, failure: data.code === 'CONFIRMATION_MISMATCH' ? 'mismatch' : 'invalid', status: 400 };
-    if (res.status === 409) {
+    await serverClient.postToolArmsReset({ body: resetBody(arm, typed) });
+    return { ok: true };
+  } catch (error) {
+    if (!(error instanceof ServerHttpError)) return { ok: false, failure: 'network' };
+    const status = error.status;
+    const data = object(error.body ?? {});
+    if (status === 404) return { ok: false, failure: 'off' };
+    if (status === 401 || status === 403) return { ok: false, failure: 'forbidden', status };
+    if (status === 400) return { ok: false, failure: data.code === 'CONFIRMATION_MISMATCH' ? 'mismatch' : 'invalid', status: 400 };
+    if (status === 409) {
       const reason = RESET_REFUSALS.find(item => item === data.reason) ?? 'no_report';
       return { ok: false, failure: 'refused', reason, status: 409 };
     }
-    if (res.status === 502) return { ok: false, failure: 'rejected', status: 502 };
-    if (res.status === 503) return { ok: false, failure: 'unavailable', status: 503 };
-    return { ok: false, failure: 'http', status: res.status };
-  } catch {
-    return { ok: false, failure: 'network' };
+    if (status === 502) return { ok: false, failure: 'rejected', status: 502 };
+    if (status === 503) return { ok: false, failure: 'unavailable', status: 503 };
+    return { ok: false, failure: 'http', status };
   }
 }
 
