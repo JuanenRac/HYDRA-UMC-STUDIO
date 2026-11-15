@@ -110,7 +110,7 @@ async function write(current: IngestState, change: IngestChange): Promise<Ingest
   try {
     const body = ingestPatchBody(current, change);
     if (Object.keys(body.ingest).length === 0) return { ok: true, value: current };
-    const { status, data } = await settle(() => serverClient.putAdminServerConfig({ body: body as IngestServerConfigBody }));
+    const { status, data } = await settle(() => serverClient.putAdminServerConfig({ body }));
     const bad = failure(status, data);
     if (bad) return bad;
     return read();
@@ -118,9 +118,6 @@ async function write(current: IngestState, change: IngestChange): Promise<Ingest
     return { ok: false, failure: 'network' };
   }
 }
-
-// The `ingest` block is accepted by the server but the contract of the SDK does not list it among the sections of the body yet, so the body is given to the client as it is.
-type IngestServerConfigBody = NonNullable<Parameters<typeof serverClient.putAdminServerConfig>[0]>['body'];
 
 export const ingestApi = { read, write };
 

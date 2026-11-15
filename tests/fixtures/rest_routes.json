@@ -7,10 +7,8 @@
   "/api/audit",
   "/api/camera/media/{p}/{p}/{p}",
   "/api/camera/{p}/stream",
-  "/api/hardware/canota/flash",
   "/api/login",
   "/api/logout",
-  "/api/ops-agent/proposals/decide",
   "/api/refresh",
   "/api/settings",
   "/api/stop-all"

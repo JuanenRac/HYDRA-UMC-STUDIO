@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MutableRefObject } from 'react';
 import { apiUrl } from '../lib/apiBase';
+import { makeTokenClient, readSettings } from '../lib/serverClient';
 import { saveConflictText } from '../lib/serverErrors';
 import { authHeaders } from '../lib/session';
 import { applyOverlay, loadOverlay } from '../lib/settingsScope';
@@ -21,8 +22,7 @@ import { saveSettingsTree, type FetchLike } from '../lib/settingsConcurrency';
 import { type HydraController, type SystemSettings, defaultControllers } from '../store';
 
 /** The ETag of an answer of GET /api/settings, kept to send it back as If-Match when the tree is saved. */
-export function rememberSettingsEtag(ref: { current: string | null }, response: Response): void {
-  const etag = response.headers.get('ETag');
+export function rememberSettingsEtag(ref: { current: string | null }, etag: string | null): void {
   if (etag) ref.current = etag;
 }
 
@@ -124,8 +124,7 @@ export function useSharedConfig(inputs: SharedConfigInputs) {
     const delta = parseRobotDelta(msg);
     if (!delta) return;
     if (!deltaTargetExists(controllersRef.current, delta)) {
-      const headers: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
-      fetch(apiUrl('/api/settings'), { headers }).then(r => { rememberSettingsEtag(settingsEtagRef, r); return r.json(); }).then(data => applyServerData(data)).catch(() => {});
+      readSettings(makeTokenClient(authToken)).then((r) => { rememberSettingsEtag(settingsEtagRef, r.etag); if (r.data) applyServerData(r.data); }).catch(() => {});
       return;
     }
     setControllers(prev => {
@@ -141,13 +140,12 @@ export function useSharedConfig(inputs: SharedConfigInputs) {
   // shows the login screen (settingsLoadError).
   useEffect(() => {
     let cancelled = false;
-    const headers: Record<string, string> = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
 
-    fetch(apiUrl('/api/settings'), { headers }).then(async (r) => {
-      rememberSettingsEtag(settingsEtagRef, r);
+    readSettings(makeTokenClient(authToken)).then((r) => {
+      rememberSettingsEtag(settingsEtagRef, r.etag);
       // If the server refused (401: the settings need a session; 403...) its body is an error object, not settings: applying it would mix
       // {error: ...} into the settings and show the sample robots as if they were the system. Say it needs a session instead.
-      if (!r.ok) {
+      if (r.status !== 200) {
         if (!cancelled) {
           setServerReachable(true);
           setSettingsLoadError(r.status === 401 || r.status === 403 ? 'login_required' : 'server');
@@ -155,7 +153,9 @@ export function useSharedConfig(inputs: SharedConfigInputs) {
         }
         return;
       }
-      const data = await r.json();
+      // a success whose body is not JSON is no settings tree: treated as a server that did not answer, like a failed read
+      if (r.data === null) throw new Error('settings answer is not JSON');
+      const data = r.data;
       // This fetch succeeding IS the real evidence a live server answered; set before applyServerData so even a fresh
       // install with no saved controllers shows System Online.
       if (!cancelled) { setServerReachable(true); setSettingsLoadError(null); applyServerData(data); }

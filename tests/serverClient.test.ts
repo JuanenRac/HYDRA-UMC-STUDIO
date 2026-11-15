@@ -10,7 +10,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it, vi, type Mock } from 'vitest';
 import { HydraServerClient } from '../src/generated/hydra-server-client';
-import { makeClient, makeTokenClient, makeTransport, requestUrl, ServerHttpError } from '../src/lib/serverClient';
+import { makeClient, makeTokenClient, makeTransport, readSettings, requestUrl, ServerHttpError } from '../src/lib/serverClient';
 import { panelCall } from '../src/lib/panelApi';
 
 const ROOT = join(__dirname, '..');
@@ -38,6 +38,21 @@ describe('the transport of the app', () => {
     const send = reply(200, {});
     await makeTransport(send)({ method: 'POST', path: '/api/p', query: {}, headers: {}, body: { a: 1 }, access: 'admin' });
     expect(send).toHaveBeenCalledWith('/api/p', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"a":1}' });
+  });
+
+  it('sends a binary body as a Blob of its own media type and reads a text answer', async () => {
+    const send = vi.fn<Send>(async () => ({ ok: true, status: 200, json: async () => ({}), text: async () => 'line one\nline two' }) as unknown as Response);
+    await makeTransport(send)({ method: 'POST', path: '/api/b', query: {}, headers: {}, body: new Uint8Array([1, 2, 3]), access: 'admin', contentType: 'application/octet-stream' });
+    const init = send.mock.calls[0][1];
+    expect(init.headers).toEqual({ 'Content-Type': 'application/octet-stream' });
+    expect(init.body).toBeInstanceOf(Blob);
+    expect((init.body as Blob).size).toBe(3);
+    expect(await makeTransport(send)({ method: 'GET', path: '/api/t', query: {}, headers: {}, body: undefined, access: 'admin', responseType: 'text' })).toBe('line one\nline two');
+  });
+
+  it('hands back the response headers a WithHeaders call names', async () => {
+    const send = vi.fn<Send>(async () => ({ ok: true, status: 200, json: async () => ({ a: 1 }), headers: new Headers({ ETag: '"7"', 'X-Other': 'x' }) }) as unknown as Response);
+    expect(await new HydraServerClient(makeTransport(send)).getSettingsWithHeaders()).toEqual({ body: { a: 1 }, headers: { ETag: '"7"' } });
   });
 
   it('sends the headers of the route next to the body', async () => {
@@ -125,5 +140,22 @@ describe('the defensive read of the panels', () => {
   it('reads an answer that is not JSON as an empty object', async () => {
     expect(await panelCall(() => Promise.resolve(null), data => data)).toEqual({ ok: true, value: {} });
     expect(await panelCall(() => Promise.resolve({ a: 1 }), data => data)).toEqual({ ok: true, value: { a: 1 } });
+  });
+});
+
+describe('the reading of the shared settings', () => {
+  it('hands back the tree with the ETag of the answer', async () => {
+    const send = vi.fn<Send>(async () => ({ ok: true, status: 200, json: async () => ({ controllers: [] }), headers: new Headers({ ETag: '"9"' }) }) as unknown as Response);
+    expect(await readSettings(makeClient(send))).toEqual({ status: 200, data: { controllers: [] }, etag: '"9"' });
+    expect(send.mock.calls[0][0]).toBe('/api/settings');
+  });
+
+  it('keeps the status of a refusal and has no ETag', async () => {
+    expect(await readSettings(makeClient(reply(401, { error: 'login' })))).toEqual({ status: 401, data: { error: 'login' }, etag: null });
+  });
+
+  it('reads an answer that is not JSON as no tree', async () => {
+    const send = vi.fn<Send>(async () => ({ ok: true, status: 200, json: async () => { throw new Error('not json'); }, headers: new Headers() }) as unknown as Response);
+    expect(await readSettings(makeClient(send))).toEqual({ status: 200, data: null, etag: null });
   });
 });

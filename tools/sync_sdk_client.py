@@ -9,8 +9,8 @@
     python tools/sync_sdk_client.py            # copy the SDK file over the vendored one
     python tools/sync_sdk_client.py --check    # fail when the vendored copy differs; skipped when no SDK checkout is found
 
-The only change made to the file is its constructor: this app compiles with `erasableSyntaxOnly`, which refuses a parameter property, so
-`constructor(private readonly transport: HydraTransport) {}` is written as a field and an assignment (same behaviour).
+The SDK writes the constructor without a parameter property, which this app (it compiles with `erasableSyntaxOnly`) accepts as it is. An older SDK
+file that still has `constructor(private readonly transport: HydraTransport) {}` gets it written as a field and an assignment (same behaviour).
 
 The SDK is the folder named by HYDRA_UMC_SDK_DIR (the continuous integration fetches the pinned tag there) or the one next to this repository.
 """
@@ -41,7 +41,7 @@ ERASABLE = b"  private readonly transport: HydraTransport;\n  constructor(transp
 def _for_app(source: Path) -> bytes:
     """The SDK file with the constructor written without a parameter property."""
     text = _text(source)
-    if PARAMETER_PROPERTY not in text:
+    if PARAMETER_PROPERTY not in text and ERASABLE not in text:
         raise SystemExit("FAIL: the constructor of the SDK client changed; update tools/sync_sdk_client.py")
     return text.replace(PARAMETER_PROPERTY, ERASABLE)
 

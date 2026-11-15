@@ -37,7 +37,6 @@
 // and correct regardless of which transport ends up sending it.
 // =============================================================================
 
-import { apiUrl } from './apiBase';
 import { makeTokenClient, settle } from './serverClient';
 import { sha256Hex } from './sha256';
 
@@ -626,10 +625,6 @@ export function resolveHardwareTarget(target: CanOtaTarget): HardwareTargetResol
 /** What the answers of the bridge routes are read for (each field is checked where it is used). */
 interface BridgeAnswer { online?: boolean; firmware_major?: number; firmware_minor?: number; hardware_id?: number; capabilities?: { fram_erase?: unknown }; code?: string; status?: unknown; ok?: unknown; value?: unknown }
 
-function authHeaders(authToken: string | null): Record<string, string> {
-  return authToken ? { Authorization: `Bearer ${authToken}` } : {};
-}
-
 /** Real GET /api/hardware/canota/version - same VersionQueryResult shape
  * mockQueryVersion returns, so Flasher.tsx/Tester.tsx don't need a
  * separate result type for the hardware path. */
@@ -737,21 +732,10 @@ export async function hardwareStartFlash(
   if (signing.target) qs.set('target', signing.target);
   if (signing.minBootloader) qs.set('min_bootloader', signing.minBootloader);
   try {
-    const res = await fetch(apiUrl(`/api/hardware/canota/flash?${qs.toString()}`), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/octet-stream', ...authHeaders(authToken) },
-      // Wrapped in a real Blob rather than passed as a raw Uint8Array:
-      // fetch() has always accepted a typed array as BodyInit at runtime,
-      // but a newer TypeScript/DOM lib version made Uint8Array generic
-      // (Uint8Array<ArrayBufferLike>, whose `.buffer` may be a
-      // SharedArrayBuffer) in a way BodyInit/BlobPart's own typed-array
-      // overloads do not structurally match (a type-only issue). `.slice()` returns a
-      // fresh copy backed by a genuine (never shared) ArrayBuffer, which
-      // both BlobPart and BodyInit accept unambiguously.
-      body: new Blob([firmware.slice()]),
-    });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) return { reachable: true, success: false, reason: body.error || `HTTP ${res.status}` };
+    // the typed client sends the image as an octet-stream body (the transport wraps it in a Blob) and the query as a set of texts
+    const { status, data } = await settle(() => makeTokenClient(authToken).postHardwareCanotaFlash({ query: Object.fromEntries(qs), body: firmware }));
+    const body = (data && typeof data === 'object' ? data : {}) as { error?: string; success?: unknown; finalPhase?: string };
+    if (status !== 200) return { reachable: true, success: false, reason: body.error || `HTTP ${status}` };
     return { reachable: true, success: !!body.success, reason: body.finalPhase || 'unknown' };
   } catch (err) {
     return { reachable: true, success: false, reason: String(err) };
