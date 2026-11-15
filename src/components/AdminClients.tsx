@@ -17,7 +17,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Radio, RefreshCw, ShieldCheck, User } from 'lucide-react';
-import { apiUrl } from '../lib/apiBase';
+import { makeTokenClient, settle } from '../lib/serverClient';
 import { ConnectionHistory } from './ConnectionHistory';
 import { useSession } from '../storeContexts';
 
@@ -55,11 +55,12 @@ export function AdminClients() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
-      const res = await fetch(apiUrl('/api/admin/clients'), { headers });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
-      setClients(data.clients || []);
+      const { status, data } = await settle(() => makeTokenClient(authToken).getAdminClients());
+      // an answer that is not JSON is a failed load, as before
+      if (data === null) throw new Error('no JSON');
+      const body = data as { error?: string; clients?: ClientInfo[] };
+      if (status !== 200) { setError(body.error || `HTTP ${status}`); return; }
+      setClients(body.clients || []);
       setError('');
     } catch {
       setError(t('ecosystem.clients_load_error'));

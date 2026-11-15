@@ -21,7 +21,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eraser, FileText, Pause, Play, Search } from 'lucide-react';
-import { apiUrl } from '../lib/apiBase';
+import { makeTokenClient, settle } from '../lib/serverClient';
 import { useServerStatus, useSession } from '../storeContexts';
 
 const POLL_MS = 3000;
@@ -62,11 +62,12 @@ export function AdminLogs() {
 
   const load = async () => {
     try {
-      const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
-      const res = await fetch(apiUrl(`/api/admin/logs?lines=${LINES}`), { headers });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
-      setLines(data.lines || []);
+      const { status, data } = await settle(() => makeTokenClient(authToken).getAdminLogs({ query: { lines: String(LINES) } }));
+      // an answer that is not JSON is a failed load, as before
+      if (data === null) throw new Error('no JSON');
+      const body = data as { error?: string; lines?: string[] };
+      if (status !== 200) { setError(body.error || `HTTP ${status}`); return; }
+      setLines(body.lines || []);
       setError('');
     } catch {
       setError(t('ecosystem.logs_load_error'));

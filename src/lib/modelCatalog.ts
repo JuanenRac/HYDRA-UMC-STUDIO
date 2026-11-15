@@ -7,6 +7,7 @@
 // GET /api/models lists them and GET /api/models/:category/:slug/download gives the URDF and the meshes of one. STUDIO
 // only ever sent submissions; this reads what the server holds. Everything that comes from the server is read
 // defensively: an entry that is not a model is skipped, a name that would be a path is never used as a file name.
+import { makeClient, settle } from './serverClient';
 
 export interface SubmittedModel {
   slug: string;
@@ -45,28 +46,26 @@ export function parseModelCatalog(data: unknown): SubmittedModel[] {
   });
 }
 
+/** Reads GET /api/models through the typed client; `send` is the fetch function of the session by default. */
 export async function fetchModelCatalog(
-  fetchImpl: (input: string) => Promise<Response>,
-  url: string,
+  send?: (url: string, init: RequestInit) => Promise<Response>,
 ): Promise<{ models: SubmittedModel[]; error: CatalogError | null }> {
-  let response: Response;
+  let answer: { status: number; data: unknown };
   try {
-    response = await fetchImpl(url);
+    answer = await settle(() => makeClient(send).getModels());
   } catch {
     return { models: [], error: 'network' };
   }
-  if (response.status === 401 || response.status === 403) return { models: [], error: 'login_required' };
-  if (!response.ok) return { models: [], error: 'server' };
-  try {
-    return { models: parseModelCatalog(await response.json()), error: null };
-  } catch {
-    return { models: [], error: 'server' };
-  }
+  if (answer.status === 401 || answer.status === 403) return { models: [], error: 'login_required' };
+  // a refusal, or an answer that is not JSON (a page of a proxy), is a server error
+  if (answer.status !== 200 || answer.data === null) return { models: [], error: 'server' };
+  return { models: parseModelCatalog(answer.data), error: null };
 }
 
-/** The path of the download of one model (every part is encoded, so a slug cannot add a segment). */
-export function modelDownloadPath(model: Pick<SubmittedModel, 'category' | 'slug'>): string {
-  return `/api/models/${encodeURIComponent(model.category)}/${encodeURIComponent(model.slug)}/download`;
+/** GET /api/models/:category/:slug/download through the typed client (every part of the path is encoded, so a slug cannot add a segment): the answer of the server, or null when it was a refusal or not JSON. */
+export async function fetchModelDownload(model: Pick<SubmittedModel, 'category' | 'slug'>, send?: (url: string, init: RequestInit) => Promise<Response>): Promise<unknown> {
+  const { status, data } = await settle(() => makeClient(send).getModelsByCategoryBySlugDownload({ path: { category: model.category, slug: model.slug } }));
+  return status === 200 ? data : null;
 }
 
 /** The name the URDF is saved under: the one the server gave when it is one plain name, otherwise `<slug>.urdf`. */

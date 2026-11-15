@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { fetchModelCatalog, modelDownloadPath, parseModelCatalog, urdfDownloadName, urdfTextOf } from '../src/lib/modelCatalog';
+import { fetchModelCatalog, fetchModelDownload, parseModelCatalog, urdfDownloadName, urdfTextOf } from '../src/lib/modelCatalog';
 
-const answer = (status: number, body: unknown) => async () => new Response(typeof body === 'string' ? body : JSON.stringify(body), { status });
+const answer = (status: number, body: unknown) => async (_url?: string, _init?: RequestInit) => new Response(typeof body === 'string' ? body : JSON.stringify(body), { status });
 
 describe('the catalogue of submitted models', () => {
   it('reads the models, newest first and then by name, skipping what is not a model', () => {
@@ -39,19 +39,29 @@ describe('the catalogue of submitted models', () => {
   });
 
   it('tells a refusal that asks for a sign-in from a server error and from no answer', async () => {
-    expect(await fetchModelCatalog(answer(200, { models: [{ slug: 'a', name: 'A', category: 'c' }] }), '/api/models')).toEqual({
+    expect(await fetchModelCatalog(answer(200, { models: [{ slug: 'a', name: 'A', category: 'c' }] }))).toEqual({
       models: [{ slug: 'a', name: 'A', category: 'c', submittedAt: null, attribution: null }], error: null,
     });
-    expect((await fetchModelCatalog(answer(401, { error: 'x' }), '/api/models')).error).toBe('login_required');
-    expect((await fetchModelCatalog(answer(403, {}), '/api/models')).error).toBe('login_required');
-    expect((await fetchModelCatalog(answer(500, {}), '/api/models')).error).toBe('server');
-    expect((await fetchModelCatalog(answer(200, '<html>proxy page</html>'), '/api/models')).error).toBe('server');
-    expect((await fetchModelCatalog(async () => { throw new Error('offline'); }, '/api/models')).error).toBe('network');
+    expect((await fetchModelCatalog(answer(401, { error: 'x' }))).error).toBe('login_required');
+    expect((await fetchModelCatalog(answer(403, {}))).error).toBe('login_required');
+    expect((await fetchModelCatalog(answer(500, {}))).error).toBe('server');
+    expect((await fetchModelCatalog(answer(200, '<html>proxy page</html>'))).error).toBe('server');
+    expect((await fetchModelCatalog(async () => { throw new Error('offline'); })).error).toBe('network');
   });
 
-  it('encodes every part of the download path, so a name cannot add a segment', () => {
-    expect(modelDownloadPath({ category: 'robots', slug: 'ar3' })).toBe('/api/models/robots/ar3/download');
-    expect(modelDownloadPath({ category: 'a/b', slug: '../x?y' })).toBe('/api/models/a%2Fb/..%2Fx%3Fy/download');
+  it('encodes every part of the download path, so a name cannot add a segment', async () => {
+    const urls: string[] = [];
+    const seen = (url: string) => { urls.push(url); return Promise.resolve(new Response(JSON.stringify({ urdfXml: '<robot/>' }), { status: 200 })); };
+    expect(await fetchModelDownload({ category: 'robots', slug: 'ar3' }, seen)).toEqual({ urdfXml: '<robot/>' });
+    await fetchModelDownload({ category: 'a/b', slug: '../x?y' }, seen);
+    expect(urls[0]).toMatch(/\/api\/models\/robots\/ar3\/download$/);
+    expect(urls[1]).toMatch(/\/api\/models\/a%2Fb\/\.\.%2Fx%3Fy\/download$/);
+  });
+
+  it('gives nothing for a refusal or an answer that is not JSON, and lets a network failure through', async () => {
+    expect(await fetchModelDownload({ category: 'c', slug: 's' }, answer(404, { error: 'x' }))).toBeNull();
+    expect(await fetchModelDownload({ category: 'c', slug: 's' }, answer(200, '<html/>'))).toBeNull();
+    await expect(fetchModelDownload({ category: 'c', slug: 's' }, async () => { throw new Error('offline'); })).rejects.toThrow('offline');
   });
 
   it('saves the URDF under one plain name, never under a path the server chose', () => {
