@@ -7,9 +7,7 @@
 // change the safety limits. Every request that names a robot carries the controller id of this window in its body.
 // Each answer is turned into the same typed result as a robot command, so a refusal reads the same everywhere.
 // =============================================================================
-import { apiUrl } from './apiBase';
 import { serverClient, settle } from './serverClient';
-import { authFetch } from './session';
 import { getControllerId } from './controllerSession';
 import { interpretCommandResponse, networkFailure, type CommandResult } from './commandResult';
 import { parseClaims, type ClaimEntry } from './claims';
@@ -20,24 +18,19 @@ import { robotRevisions, revisionOf } from './revisions';
  * One POST. With `conditional`, the revision this window last saw of the robot goes along as If-Match (when the mode
  * of this window and the state of the tracker allow it) and the revision of the answer is kept for the next write.
  */
-async function post(
-  path: string,
-  body: Record<string, unknown>,
+async function post<B>(
+  body: B,
+  send: (headers: { 'If-Match'?: string }, body: B & { controllerId: string }) => Promise<unknown>,
   conditional?: { robotId: number; command: string },
 ): Promise<{ result: CommandResult; data: Record<string, unknown> }> {
   const ticket = conditional ? robotRevisions.begin(conditional.robotId, conditional.command) : null;
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const headers: { 'If-Match'?: string } = {};
   if (ticket?.ifMatch) headers['If-Match'] = ticket.ifMatch;
   try {
-    const res = await authFetch(apiUrl(path), {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ ...body, controllerId: getControllerId() }),
-    });
-    let data: unknown = null;
-    try { data = await res.json(); } catch { /* an answer without a JSON body */ }
+    // the status and the body of a refusal come back with the answer, so the result reads the same as for a command
+    const { status, data } = await settle(() => send(headers, { ...body, controllerId: getControllerId() }));
     if (conditional && ticket) robotRevisions.finish(conditional.robotId, ticket.seq, revisionOf(data));
-    return { result: interpretCommandResponse(res.status, res.ok, data), data: data && typeof data === 'object' ? (data as Record<string, unknown>) : {} };
+    return { result: interpretCommandResponse(status, status < 300, data), data: data && typeof data === 'object' ? (data as Record<string, unknown>) : {} };
   } catch (error) {
     if (conditional && ticket) robotRevisions.finish(conditional.robotId, ticket.seq, null);
     return { result: networkFailure(error instanceof Error ? error.message : undefined), data: {} };
@@ -49,11 +42,12 @@ export interface ClaimOptions { ttlMs?: number; force?: boolean; reason?: string
 
 export async function claimRobot(robotId: number, options: ClaimOptions = {}): Promise<CommandResult> {
   const { unconditional, ...body } = options;
-  return (await post(`/api/robot/${robotId}/claim`, body, unconditional || body.force ? undefined : { robotId, command: 'claim' })).result;
+  return (await post(body, (headers, payload) => serverClient.postRobotByIdClaim({ path: { id: robotId }, headers, body: payload }), unconditional || body.force ? undefined : { robotId, command: 'claim' })).result;
 }
 
 export async function releaseRobot(robotId: number, reason?: string): Promise<CommandResult> {
-  return (await post(`/api/robot/${robotId}/release`, reason ? { reason } : {}, { robotId, command: 'release' })).result;
+  const payload: { reason?: string } = reason ? { reason } : {};
+  return (await post(payload, (headers, sent) => serverClient.postRobotByIdRelease({ path: { id: robotId }, headers, body: sent }), { robotId, command: 'release' })).result;
 }
 
 export interface RobotRead { robot: Record<string, unknown>; revision: string | null; cellId: string | null }
@@ -61,9 +55,7 @@ export interface RobotRead { robot: Record<string, unknown>; revision: string | 
 /** GET /api/robot/:id: one robot with its revision (also kept for the next write); null when it could not be read or the server predates the route. */
 export async function fetchRobot(robotId: number): Promise<RobotRead | null> {
   try {
-    const res = await authFetch(apiUrl(`/api/robot/${robotId}`));
-    if (!res.ok) return null;
-    const body: unknown = await res.json();
+    const body: unknown = await serverClient.getRobotById({ path: { id: robotId } });
     if (!body || typeof body !== 'object') return null;
     const record = body as Record<string, unknown>;
     if (!record.robot || typeof record.robot !== 'object') return null;
@@ -79,7 +71,8 @@ export interface ArmResult { result: CommandResult; expiresAt: number | null }
 
 /** Arms (true) or disarms (false) the jog of a robot; `expiresAt` is when the arming ends. */
 export async function armJog(robotId: number, armed: boolean, ttlMs?: number): Promise<ArmResult> {
-  const { result, data } = await post(`/api/robot/${robotId}/jog-arm`, ttlMs ? { armed, ttlMs } : { armed });
+  const payload: { armed: boolean; ttlMs?: number } = ttlMs ? { armed, ttlMs } : { armed };
+  const { result, data } = await post(payload, (_headers, sent) => serverClient.postRobotByIdJogArm({ path: { id: robotId }, body: sent }));
   return { result, expiresAt: typeof data.expiresAt === 'number' ? data.expiresAt : null };
 }
 

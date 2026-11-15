@@ -21,11 +21,6 @@
   "/api/ops-agent/proposals",
   "/api/ops-agent/proposals/decide",
   "/api/refresh",
-  "/api/robot/{p}",
-  "/api/robot/{p}/claim",
-  "/api/robot/{p}/command",
-  "/api/robot/{p}/jog-arm",
-  "/api/robot/{p}/release",
   "/api/settings",
   "/api/stop-all"
 ]
