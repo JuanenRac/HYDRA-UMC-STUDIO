@@ -7,7 +7,7 @@
 // the RTSP path of an IP camera and the scan for USB cameras. The state lives in the dialog, not in the tab, so it survives a change of tab.
 // =============================================================================
 import { useEffect, useState } from 'react';
-import { apiUrl } from '../lib/apiBase';
+import { makeTokenClient, settle } from '../lib/serverClient';
 import type { useFleet, useSession } from '../storeContexts';
 
 export type CameraStreamStatus = Record<string, { status: string; lastError: string | null }>;
@@ -27,11 +27,9 @@ export function useCameraTools(camerasTabOpen: boolean, authToken: AuthToken, up
     let cancelled = false;
     const poll = async () => {
       try {
-        const headers: Record<string, string> = {};
-        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-        const res = await fetch(apiUrl('/api/cameras/status'), { headers });
-        if (cancelled || !res.ok) return;
-        setCameraStatus(await res.json());
+        const { status, data } = await settle(() => makeTokenClient(authToken).getCamerasStatus());
+        if (cancelled || status !== 200 || data === null) return;
+        setCameraStatus(data as CameraStreamStatus);
       } catch {
         // A network hiccup - the next poll tick retries; one missed poll does not clear the status already shown.
       }
@@ -48,14 +46,11 @@ export function useCameraTools(camerasTabOpen: boolean, authToken: AuthToken, up
     if (!host.trim()) return;
     setRtspDiscoverStates((prev) => ({ ...prev, [cameraId]: { phase: 'discovering' } }));
     try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-      const res = await fetch(apiUrl('/api/camera/discover-rtsp-path'), {
-        method: 'POST', headers, body: JSON.stringify({ host, port, username, password }),
-      });
-      const body = await res.json();
+      const { status, data } = await settle(() => makeTokenClient(authToken).postCameraDiscoverRtspPath({ body: { host, port, username, password } }));
+      if (data === null) throw new Error('no JSON');
+      const body = data as { ok?: boolean; paths?: unknown; triedPaths?: string[] };
       const foundPaths: string[] = Array.isArray(body.paths) ? body.paths : [];
-      if (res.ok && body.ok && foundPaths.length > 0) {
+      if (status === 200 && body.ok && foundPaths.length > 0) {
         // Real streams found - never just the one: a camera can expose more than one at once (see ipStreamLabels()). The slot defaults to
         // the first (main) one; the type combobox now offers exactly as many as were found, and picking another re-points rtspPath.
         updateCamera(cameraId, { rtspPath: foundPaths[0], discoveredStreamPaths: foundPaths, type: 'IP Vision Camera Main Stream' });
@@ -75,11 +70,10 @@ export function useCameraTools(camerasTabOpen: boolean, authToken: AuthToken, up
   const discoverUsbDevices = async () => {
     setUsbDiscoverPhase('discovering');
     try {
-      const headers: Record<string, string> = {};
-      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-      const res = await fetch(apiUrl('/api/camera/discover-usb-devices'), { headers });
-      const body = await res.json();
-      if (res.ok) {
+      const { status, data } = await settle(() => makeTokenClient(authToken).getCameraDiscoverUsbDevices());
+      if (data === null) throw new Error('no JSON');
+      const body = data as { devices?: UsbDevice[] };
+      if (status === 200) {
         setUsbDevices(body.devices || []);
         setUsbDiscoverPhase('done');
       } else {

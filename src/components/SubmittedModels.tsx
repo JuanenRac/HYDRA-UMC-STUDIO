@@ -8,9 +8,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Download, RefreshCw } from 'lucide-react';
-import { apiUrl } from '../lib/apiBase';
-import { authFetch } from '../lib/session';
-import { fetchModelCatalog, modelDownloadPath, urdfDownloadName, urdfTextOf, type CatalogError, type SubmittedModel } from '../lib/modelCatalog';
+import { fetchModelCatalog, fetchModelDownload, urdfDownloadName, urdfTextOf, type CatalogError, type SubmittedModel } from '../lib/modelCatalog';
 
 export function SubmittedModels() {
   const { t } = useTranslation();
@@ -21,7 +19,7 @@ export function SubmittedModels() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const result = await fetchModelCatalog((url) => authFetch(url), apiUrl('/api/models'));
+    const result = await fetchModelCatalog();
     setModels(result.models);
     setError(result.error);
     setLoading(false);
@@ -33,9 +31,8 @@ export function SubmittedModels() {
   const download = async (model: SubmittedModel) => {
     setNotice('');
     try {
-      const response = await authFetch(apiUrl(modelDownloadPath(model)));
-      const answer: unknown = await response.json().catch(() => null);
-      const xml = response.ok ? urdfTextOf(answer) : null;
+      const answer = await fetchModelDownload(model);
+      const xml = urdfTextOf(answer);
       if (xml === null) {
         setNotice(t('config.submitted_models_download_failed', { name: model.name }));
         return;
