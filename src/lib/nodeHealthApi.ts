@@ -5,8 +5,7 @@
 // =============================================================================
 // The last health frame that the kinematic brain heard from each controller board (SERVER route GET /api/ecosystem/node-health?slot=N), read defensively: a server that
 // predates the route, or one where an administrator did not turn it on, answers 404 and the panel stays out of the way. Read only.
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+import { ServerHttpError, serverClient } from './serverClient';
 
 export const NODE_HEALTH_SLOTS = [0, 1, 2, 3, 4, 5, 6, 7] as const;
 export const NODE_HEALTH_FLAGS = ['estop_latched', 'bus_off_seen', 'watchdog_reset_at_start', 'setup_failed_at_start', 'application_confirmed', 'drivers_enabled', 'setup_failed_safe_state'] as const;
@@ -52,14 +51,13 @@ export function slotState(health: NodeHealth): SlotState {
 
 export async function loadNodeHealth(slot: number): Promise<NodeHealthResult> {
   try {
-    const res = await authFetch(apiUrl(`/api/ecosystem/node-health?slot=${slot}`));
-    if (res.status === 404) return { ok: false, failure: 'unsupported' };
-    if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
-    if (!res.ok) return { ok: false, failure: 'http', status: res.status };
-    const value = parseNodeHealth(await res.json().catch(() => null), slot);
+    const value = parseNodeHealth(await serverClient.getEcosystemNodeHealth({ query: { slot: String(slot) } }), slot);
     return value ? { ok: true, value } : { ok: false, failure: 'malformed' };
-  } catch {
-    return { ok: false, failure: 'network' };
+  } catch (error) {
+    if (!(error instanceof ServerHttpError)) return { ok: false, failure: 'network' };
+    if (error.status === 404) return { ok: false, failure: 'unsupported' };
+    if (error.status === 401 || error.status === 403) return { ok: false, failure: 'forbidden', status: error.status };
+    return { ok: false, failure: 'http', status: error.status };
   }
 }
 
