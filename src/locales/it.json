@@ -1854,6 +1854,16 @@
     "confirm_title": "Approvare questa proposta?",
     "confirm_message": "Approvare {{id}} la apre come incidente di manutenzione. La decisione viene registrata a tuo nome."
   },
+  "ros2Security": {
+    "title": "Bridge ROS 2: sicurezza (SROS2)",
+    "desc": "Il bridge ROS 2 può rifiutarsi di avviarsi se la sicurezza ROS 2 (SROS2) non è completamente attiva nel suo ambiente. L'interruttore si trova nel file di configurazione del bridge (security.require_sros2) ed è spento per impostazione predefinita, così una macchina senza archivio di chiavi continua ad avviarsi.",
+    "not_reported": "Il bridge non comunica questo interruttore al server, quindi STUDIO non può leggerlo né modificarlo da qui. Questa schermata non modifica il bridge e non afferma che sia protetto.",
+    "label": "Prepara il requisito SROS2 per il bridge ROS 2",
+    "state_off": "Spento (predefinito): non c'è nulla da aggiungere al file del bridge.",
+    "state_on": "Preparato: aggiungi queste righe al file di configurazione del bridge e riavvialo. Fino ad allora il bridge mantiene l'impostazione attuale.",
+    "config_title": "Sezione del file di configurazione del bridge",
+    "env_title": "Ambiente che il bridge controlla all'avvio (l'archivio di chiavi e l'enclave si creano con gli strumenti SROS2 di ROS 2; il bridge non crea mai chiavi)"
+  },
   "hilBridge": {
     "title": "Ponte HIL: verdetto «pass» del gemello",
     "desc": "Se è acceso, il ponte HIL muove il robot reale solo per un comando la cui traiettoria il gemello ha superato in simulazione (un verdetto firmato, verificato sui punti esatti). È spento di default; solo un amministratore può cambiarlo, serve una conferma in entrambe le direzioni e ogni modifica viene registrata.",

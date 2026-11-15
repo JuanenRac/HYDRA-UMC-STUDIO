@@ -1854,6 +1854,16 @@
     "confirm_title": "Approuver cette proposition ?",
     "confirm_message": "Approuver {{id}} l'ouvre comme incident de maintenance. La décision est consignée sous votre nom."
   },
+  "ros2Security": {
+    "title": "Passerelle ROS 2 : sécurité (SROS2)",
+    "desc": "La passerelle ROS 2 peut refuser de démarrer si la sécurité ROS 2 (SROS2) n'est pas entièrement active dans son environnement. L'interrupteur se trouve dans le fichier de configuration de la passerelle (security.require_sros2) et est désactivé par défaut, afin qu'une machine sans magasin de clés continue de démarrer.",
+    "not_reported": "La passerelle ne communique pas cet interrupteur au serveur : STUDIO ne peut donc ni le lire ni le modifier d'ici. Cet écran ne modifie pas la passerelle et n'affirme pas qu'elle est sécurisée.",
+    "label": "Préparer l'exigence SROS2 pour la passerelle ROS 2",
+    "state_off": "Désactivé (par défaut) : rien à ajouter au fichier de la passerelle.",
+    "state_on": "Préparé : ajoutez ces lignes au fichier de configuration de la passerelle et redémarrez-la. D'ici là, la passerelle garde son réglage actuel.",
+    "config_title": "Section du fichier de configuration de la passerelle",
+    "env_title": "Environnement que la passerelle vérifie au démarrage (le magasin de clés et l'enclave se créent avec les outils SROS2 de ROS 2 ; la passerelle ne crée jamais de clés)"
+  },
   "hilBridge": {
     "title": "Pont HIL : verdict « pass » du jumeau",
     "desc": "Activé, le pont HIL ne déplace le robot réel que pour un ordre dont le jumeau a validé la trajectoire en simulation (un verdict signé, vérifié sur les points exacts). Désactivé par défaut ; seul un administrateur peut le changer, une confirmation est demandée dans les deux sens et chaque changement est consigné.",

@@ -29,6 +29,7 @@ import { ConnectorHubGatePanel } from './ConnectorHubGatePanel';
 import { PlannerIdentityPanel } from './PlannerIdentityPanel';
 import { OpsProposalsPanel } from './OpsProposalsPanel';
 import { HilBridgePanel } from './HilBridgePanel';
+import { Ros2SecurityPanel } from './Ros2SecurityPanel';
 import { TwinLivePanel } from './TwinLivePanel';
 import { ServiceIdentityPanel } from './ServiceIdentityPanel';
 import { IngestSwitchesPanel } from './IngestSwitchesPanel';
@@ -977,6 +978,7 @@ export function AdminServer() {
           <OpsProposalsPanel />
 
           <HilBridgePanel />
+          <Ros2SecurityPanel />
           <TwinLivePanel />
           <ServiceIdentityPanel />
           <IngestSwitchesPanel onChanged={() => setIngestVersion(v => v + 1)} />

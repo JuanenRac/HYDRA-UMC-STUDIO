@@ -1854,6 +1854,16 @@
     "confirm_title": "Approve this proposal?",
     "confirm_message": "Approving {{id}} opens it as a maintenance incident. The decision is recorded under your name."
   },
+  "ros2Security": {
+    "title": "ROS 2 bridge: security (SROS2)",
+    "desc": "The ROS 2 bridge can refuse to start unless the ROS 2 security (SROS2) is fully on in its environment. The switch lives in the configuration file of the bridge (security.require_sros2) and is off by default, so a machine without a keystore keeps starting.",
+    "not_reported": "The bridge does not report this switch to the server, so STUDIO cannot read or change it from here. This screen does not change the bridge and does not say that it is secured.",
+    "label": "Prepare the SROS2 requirement for the ROS 2 bridge",
+    "state_off": "Off (the default): nothing to add to the file of the bridge.",
+    "state_on": "Prepared: add these lines to the configuration file of the bridge and restart it. Until then the bridge keeps its current setting.",
+    "config_title": "Section of the configuration file of the bridge",
+    "env_title": "Environment the bridge checks at start (the keystore and the enclave are made with the SROS2 tools of ROS 2; the bridge never creates keys)"
+  },
   "hilBridge": {
     "title": "HIL bridge: pass verdict of the twin",
     "desc": "When this is on, the HIL bridge moves the real robot only for a command whose trajectory the twin passed in simulation (a signed verdict, checked against the exact points). It is off by default; only an administrator can change it, a confirmation is needed in both directions and every change is recorded.",

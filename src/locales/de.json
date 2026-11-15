@@ -1854,6 +1854,16 @@
     "confirm_title": "Diesen Vorschlag genehmigen?",
     "confirm_message": "Das Genehmigen von {{id}} öffnet ihn als Wartungsvorfall. Die Entscheidung wird unter deinem Namen festgehalten."
   },
+  "ros2Security": {
+    "title": "ROS-2-Bridge: Sicherheit (SROS2)",
+    "desc": "Die ROS-2-Bridge kann den Start verweigern, wenn die ROS-2-Sicherheit (SROS2) in ihrer Umgebung nicht vollständig aktiv ist. Der Schalter steht in der Konfigurationsdatei der Bridge (security.require_sros2) und ist standardmäßig aus, damit eine Maschine ohne Schlüsselspeicher weiter startet.",
+    "not_reported": "Die Bridge meldet diesen Schalter nicht an den Server, deshalb kann STUDIO ihn von hier aus weder lesen noch ändern. Dieser Bildschirm ändert die Bridge nicht und behauptet nicht, dass sie abgesichert ist.",
+    "label": "SROS2-Anforderung für die ROS-2-Bridge vorbereiten",
+    "state_off": "Aus (Standard): In der Datei der Bridge ist nichts zu ergänzen.",
+    "state_on": "Vorbereitet: Fügen Sie diese Zeilen in die Konfigurationsdatei der Bridge ein und starten Sie sie neu. Bis dahin behält die Bridge ihre aktuelle Einstellung.",
+    "config_title": "Abschnitt der Konfigurationsdatei der Bridge",
+    "env_title": "Umgebung, die die Bridge beim Start prüft (Schlüsselspeicher und Enclave entstehen mit den SROS2-Werkzeugen von ROS 2; die Bridge erzeugt nie Schlüssel)"
+  },
   "hilBridge": {
     "title": "HIL-Brücke: Pass-Urteil des Zwillings",
     "desc": "Ist dies eingeschaltet, bewegt die HIL-Brücke den echten Roboter nur für einen Befehl, dessen Trajektorie der Zwilling in der Simulation bestanden hat (ein signiertes Urteil, gegen die genauen Punkte geprüft). Standardmäßig aus; nur ein Administrator kann es ändern, in beide Richtungen ist eine Bestätigung nötig, und jede Änderung wird festgehalten.",

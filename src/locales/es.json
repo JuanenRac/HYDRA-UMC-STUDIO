@@ -1854,6 +1854,16 @@
     "confirm_title": "¿Aprobar esta propuesta?",
     "confirm_message": "Aprobar {{id}} la abre como incidente de mantenimiento. La decisión queda registrada con tu nombre."
   },
+  "ros2Security": {
+    "title": "Puente ROS 2: seguridad (SROS2)",
+    "desc": "El puente ROS 2 puede negarse a arrancar si la seguridad de ROS 2 (SROS2) no está completamente activa en su entorno. El interruptor está en el fichero de configuración del puente (security.require_sros2) y viene apagado, de modo que una máquina sin almacén de claves sigue arrancando.",
+    "not_reported": "El puente no comunica este interruptor al servidor, así que STUDIO no puede leerlo ni cambiarlo desde aquí. Esta pantalla no modifica el puente y no afirma que esté protegido.",
+    "label": "Preparar el requisito de SROS2 para el puente ROS 2",
+    "state_off": "Apagado (por defecto): no hay nada que añadir al fichero del puente.",
+    "state_on": "Preparado: añade estas líneas al fichero de configuración del puente y reinícialo. Hasta entonces el puente mantiene su ajuste actual.",
+    "config_title": "Sección del fichero de configuración del puente",
+    "env_title": "Entorno que el puente comprueba al arrancar (el almacén de claves y el enclave se crean con las herramientas SROS2 de ROS 2; el puente nunca crea claves)"
+  },
   "hilBridge": {
     "title": "Puente HIL: veredicto «pass» del gemelo",
     "desc": "Con esto encendido, el puente HIL solo mueve el robot real para una orden cuya trayectoria el gemelo haya pasado en simulación (un veredicto firmado, comprobado contra los puntos exactos). Está apagado por defecto; solo un administrador puede cambiarlo, hace falta una confirmación en ambos sentidos y cada cambio queda registrado.",

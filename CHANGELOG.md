@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- **Server Admin > Security has a section for the SROS2 requirement of the ROS 2 bridge, off by default and honest about what it can do:** the bridge keeps `security.require_sros2` in its own configuration file and does not report it to the server, so the section says plainly that STUDIO can neither read nor change it and never says the bridge is secured. Switching it on only shows the section to add to the file of the bridge and the three environment variables the bridge checks at start (`ROS_SECURITY_ENABLE`, `ROS_SECURITY_STRATEGY`, `ROS_SECURITY_KEYSTORE`); nothing is sent to the server. All the sentences are in the eight languages and `tests/ros2Security.test.tsx` covers the lines and the screen. Reading and changing it from here needs a route that the bridge and the server do not offer yet.
+
+- **The status of the developer server is read from `GET /api/dev-server/status`:** the panel in Server Admin > Security asks the route that the SDK declares and the server registers, and the route list of the tests follows it; the server still serves the old `developer-node` route as an alias.
+
 - **The digest of a downloaded release asset is read with the same rule as the Android app and the shared app package of the SDK:** the `sha256:` prefix is accepted in any case (`SHA256:...`), a digest of another length or with characters that are not hexadecimal counts as not published, and the SDK is pinned to its newest release for the route tests.
 
 - **A short guide to updating the machine from here, with the way to recover, in the eight languages:** the assistant answers "how do I update the programs of the machine" with the steps (look at the device, read the table, allow applying, update, what each program shows, the restart of the server) and the recovery (a program that failed is put back and the run stops: read the reason and take it up again; a cut run shows as interrupted; "look again" after a long silence; unit files not restored; the last resort by hand). The table also says, in the eight languages, why a program that runs from its release link is left alone or comes in its own signed package.
