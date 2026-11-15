@@ -19,8 +19,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Cpu, MemoryStick, HardDrive, Thermometer, ListTree, Gauge, Wifi, Bluetooth, Cable, WifiOff, ArrowDownUp } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { apiUrl } from '../lib/apiBase';
-import { authFetch } from '../lib/session';
+import { serverClient } from '../lib/serverClient';
 
 interface Supervisor {
   timestamp: number;
@@ -141,7 +140,8 @@ export function SystemSupervisor() {
   useEffect(() => {
     let cancelled = false;
     const poll = () => {
-      authFetch(apiUrl('/api/system/supervisor')).then(r => r.ok ? r.json() : null).then((data: Supervisor | null) => {
+      serverClient.getSystemSupervisor().then(answer => {
+        const data = (answer ?? null) as unknown as Supervisor | null;
         if (cancelled) return;
         if (!data) { setUnreachable(true); return; }
         setUnreachable(false);

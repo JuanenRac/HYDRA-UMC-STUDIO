@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCw, ShieldCheck, Undo2, Download } from 'lucide-react';
-import { failureKey as panelFailureKey, panelRead, type PanelFailure } from '../../lib/panelApi';
+import { failureKey as panelFailureKey, panelCall, type PanelFailure } from '../../lib/panelApi';
 import { setStudioPrefs, useStudioPrefs } from '../../lib/studioPrefs';
 import {
   PROGRESS_STEPS, failureKey, followJob, jobRunning, parseSelfUpdateStatus, progressIndex, readJob, startSelfUpdate,
@@ -39,7 +39,7 @@ export function SelfUpdatePanel() {
 
   const load = useCallback(async (refresh: boolean) => {
     setBusy(true);
-    const result = await panelRead(`/api/admin/self-update${refresh ? '?refresh=1' : ''}`, parseSelfUpdateStatus);
+    const result = await panelCall(client => client.getAdminSelfUpdate(refresh ? { query: { refresh: '1' } } : undefined), parseSelfUpdateStatus);
     if (!alive.current) return;
     if (result.ok) { setStatus(result.value); setFailure(null); } else { setStatus(null); setFailure(result.failure); }
     setBusy(false);

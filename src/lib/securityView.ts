@@ -6,9 +6,9 @@
 // The security summary of the server: the signing keys of the sign-in tokens (SERVER routes GET /api/admin/jwt-keys and
 // POST /api/admin/jwt-keys/rotate) and the checks drawn from them and from the second factor of the signed-in account. Only the
 // public state of a key is ever read (its id and dates); the private part never leaves the server.
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
 import { asObject, asText } from './panelApi';
+import { makeClient, ServerHttpError } from './serverClient';
+import type { authFetch } from './session';
 
 export interface KeyInfo { kid: string; createdAt: number; retiredAt: number | null; active: boolean; acceptedUntil: number | null }
 export interface KeysState { algorithm: string | null; keys: KeyInfo[] }
@@ -29,18 +29,17 @@ export function parseKeys(data: unknown): KeysState {
 export type RotateFailure = 'asymmetric_off' | 'file' | 'forbidden' | 'unsupported' | 'http' | 'network';
 export type RotateResult = { ok: true; kid: string; state: KeysState } | { ok: false; failure: RotateFailure };
 
-export async function rotateKey(fetcher: typeof authFetch = authFetch): Promise<RotateResult> {
+export async function rotateKey(fetcher?: typeof authFetch): Promise<RotateResult> {
   try {
-    const res = await fetcher(apiUrl('/api/admin/jwt-keys/rotate'), { method: 'POST' });
-    const body = asObject(await res.json().catch(() => ({})));
-    if (res.status === 404) return { ok: false, failure: 'unsupported' };
-    if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden' };
-    if (res.status === 409) return { ok: false, failure: 'asymmetric_off' };
-    if (res.status === 500) return { ok: false, failure: 'file' };
-    if (!res.ok) return { ok: false, failure: 'http' };
+    const body = asObject(await makeClient(fetcher).postAdminJwtKeysRotate());
     return { ok: true, kid: asText(body.kid) ?? '', state: parseKeys(body) };
-  } catch {
-    return { ok: false, failure: 'network' };
+  } catch (error) {
+    if (!(error instanceof ServerHttpError)) return { ok: false, failure: 'network' };
+    if (error.status === 404) return { ok: false, failure: 'unsupported' };
+    if (error.status === 401 || error.status === 403) return { ok: false, failure: 'forbidden' };
+    if (error.status === 409) return { ok: false, failure: 'asymmetric_off' };
+    if (error.status === 500) return { ok: false, failure: 'file' };
+    return { ok: false, failure: 'http' };
   }
 }
 

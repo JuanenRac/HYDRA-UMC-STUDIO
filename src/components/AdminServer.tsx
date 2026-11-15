@@ -22,7 +22,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Power, Save, Server as ServerIcon, Settings } from 'lucide-react';
 import { apiUrl } from '../lib/apiBase';
-import { serverClient } from '../lib/serverClient';
+import { ServerHttpError, serverClient } from '../lib/serverClient';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
 import { ConnectorHubGatePanel } from './ConnectorHubGatePanel';
@@ -149,6 +149,11 @@ export function AdminServer() {
   const [pendingMavlink, setPendingMavlink] = useState<MavlinkPatchBody | null>(null);
   const [pendingBle, setPendingBle] = useState<{ mode: BleMode; requireEncryption: boolean } | null>(null);
 
+  // the server's own refusal text, when it sent one
+  const reasonOf = (error: ServerHttpError): string | undefined => {
+    const text = (error.body as { error?: unknown } | null)?.error;
+    return typeof text === 'string' && text !== '' ? text : undefined;
+  };
   const authHeaders = () => ({ 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) });
 
   const applySecurity = (state: SecurityState | null) => {
@@ -346,12 +351,10 @@ export function AdminServer() {
   const rotateAuthKey = async () => {
     setSaving(true); setError(''); setNotice(''); setWarning('');
     try {
-      const res = await fetch(apiUrl('/api/admin/jwt-keys/rotate'), { method: 'POST', headers: authHeaders() });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
+      await serverClient.postAdminJwtKeysRotate();
       setNotice(t('ecosystem.admin_security_auth_rotated'));
-    } catch {
-      setError(t('ecosystem.admin_security_auth_rotate_error'));
+    } catch (error) {
+      setError(error instanceof ServerHttpError ? reasonOf(error) || `HTTP ${error.status}` : t('ecosystem.admin_security_auth_rotate_error'));
     } finally {
       setSaving(false);
     }
@@ -483,12 +486,10 @@ export function AdminServer() {
   const restartNow = async () => {
     setConfirmRestart(false);
     try {
-      const res = await fetch(apiUrl('/api/admin/restart'), { method: 'POST', headers: authHeaders() });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
+      await serverClient.postAdminRestart();
       setNotice(t('ecosystem.admin_server_restart_requested'));
-    } catch {
-      setError(t('ecosystem.admin_server_load_error'));
+    } catch (error) {
+      setError(error instanceof ServerHttpError ? reasonOf(error) || `HTTP ${error.status}` : t('ecosystem.admin_server_load_error'));
     }
   };
 

@@ -7,8 +7,7 @@
 // and the following of the job until it ends. The server restarts in the middle of its own update, so the answers fail for a while: the follower keeps
 // asking (a short interval, a limit of time with a message, never a screen that waits for ever) and ends when the job ends, whatever it says.
 import { asObject, asText } from './panelApi';
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+import { ServerHttpError, serverClient } from './serverClient';
 
 export const SELF_UPDATE_COMPONENTS = ['server', 'studio', 'os-agent'] as const;
 export type SelfUpdateComponent = (typeof SELF_UPDATE_COMPONENTS)[number];
@@ -76,15 +75,17 @@ export type StartResult = { ok: true; job: SelfUpdateJob } | { ok: false; status
 /** Asks the server to start an update (or a way back) of one program. The confirmation travels with it; Studio asks the person before it calls this. */
 export async function startSelfUpdate(action: 'apply' | 'rollback', component: SelfUpdateComponent): Promise<StartResult> {
   try {
-    const res = await authFetch(apiUrl(`/api/admin/self-update/${action}`), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ component, confirm: true }) });
-    if (res.status === 404) return { ok: false, status: 404, reason: 'disabled' };
-    if (res.status === 401 || res.status === 403) return { ok: false, status: res.status, reason: 'forbidden' };
-    if (res.status === 409) return { ok: false, status: 409, reason: 'busy' };
-    if (!res.ok) return { ok: false, status: res.status, reason: 'refused' };
-    const job = parseSelfUpdateJob(await res.json().catch(() => ({})));
-    return job ? { ok: true, job } : { ok: false, status: res.status, reason: 'refused' };
-  } catch {
-    return { ok: false, status: 0, reason: 'network' };
+    const body = { component, confirm: true } as const;
+    const answer = await (action === 'apply' ? serverClient.postAdminSelfUpdateApply({ body }) : serverClient.postAdminSelfUpdateRollback({ body }));
+    const job = parseSelfUpdateJob(answer ?? {});
+    return job ? { ok: true, job } : { ok: false, status: 200, reason: 'refused' };
+  } catch (error) {
+    if (!(error instanceof ServerHttpError)) return { ok: false, status: 0, reason: 'network' };
+    const status = error.status;
+    if (status === 404) return { ok: false, status: 404, reason: 'disabled' };
+    if (status === 401 || status === 403) return { ok: false, status, reason: 'forbidden' };
+    if (status === 409) return { ok: false, status: 409, reason: 'busy' };
+    return { ok: false, status, reason: 'refused' };
   }
 }
 
@@ -93,13 +94,10 @@ export type PollRead = { kind: 'job'; job: SelfUpdateJob } | { kind: 'wait' } | 
 /** One look at the job. A refused connection, a proxy that answers 502 to 504 while the server restarts and a body that is not a job all mean "wait": none of them says the update failed. */
 export async function readJob(id: string): Promise<PollRead> {
   try {
-    const res = await authFetch(apiUrl(`/api/admin/self-update/jobs/${encodeURIComponent(id)}`));
-    if (res.status === 401 || res.status === 403) return { kind: 'stop', reason: 'forbidden' };
-    if (!res.ok) return { kind: 'wait' };
-    const job = parseSelfUpdateJob(await res.json().catch(() => ({})));
+    const job = parseSelfUpdateJob((await serverClient.getAdminSelfUpdateJobsById({ path: { id } })) ?? {});
     return job && job.id === id ? { kind: 'job', job } : { kind: 'wait' };
-  } catch {
-    return { kind: 'wait' };
+  } catch (error) {
+    return error instanceof ServerHttpError && (error.status === 401 || error.status === 403) ? { kind: 'stop', reason: 'forbidden' } : { kind: 'wait' };
   }
 }
 
