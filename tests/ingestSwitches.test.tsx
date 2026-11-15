@@ -187,8 +187,8 @@ describe('the status of the developer node', () => {
     const spy = serve(() => ({ status: 200, body: status }));
     await developerNodeApi.read(false);
     await developerNodeApi.read(true);
-    expect(String(spy.mock.calls[0][0])).toMatch(/\/api\/developer-node\/status$/);
-    expect(String(spy.mock.calls[1][0])).toMatch(/\/api\/developer-node\/status\?verify=1$/);
+    expect(String(spy.mock.calls[0][0])).toMatch(/\/api\/dev-server\/status$/);
+    expect(String(spy.mock.calls[1][0])).toMatch(/\/api\/dev-server\/status\?verify=1$/);
     serve(() => ({ status: 404, body: {} }));
     expect(await developerNodeApi.read()).toMatchObject({ ok: false, failure: 'unsupported' });
   });
