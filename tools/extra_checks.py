@@ -16,6 +16,7 @@ PICTURE_CHECKS = (
     ("make_architecture.py", "architecture.json", ["--check"]),
     ("make_structure.py", "structure.json", ["--check", "--readmes"]),
     ("sync_sdk_answers.py", "architecture.json", ["--check"]),
+    ("sync_sdk_client.py", "architecture.json", ["--check"]),
 )
 
 

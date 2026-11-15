@@ -7,8 +7,7 @@
 // route, or one where an administrator did not turn it on, answers 404 and the screen says so instead of breaking. The route is for
 // operators and administrators; the port, health path and unit of a service only come for an administrator, and nothing here
 // asks for them.
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+import { ServerHttpError, serverClient } from './serverClient';
 
 export const SERVICE_STATES = ['ok', 'degraded', 'down', 'unknown'] as const;
 export type ServiceState = (typeof SERVICE_STATES)[number];
@@ -146,13 +145,12 @@ export function ago(iso: string | null, now: number): string | null {
 
 export async function loadEcosystemHealth(): Promise<HealthResult> {
   try {
-    const res = await authFetch(apiUrl('/api/ecosystem/health'));
-    if (res.status === 404) return { ok: false, failure: 'unsupported' };
-    if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
-    if (!res.ok) return { ok: false, failure: 'http', status: res.status };
-    const value = parseHealth(await res.json().catch(() => null));
+    const value = parseHealth(await serverClient.getEcosystemHealth());
     return value ? { ok: true, value } : { ok: false, failure: 'malformed' };
-  } catch {
-    return { ok: false, failure: 'network' };
+  } catch (error) {
+    if (!(error instanceof ServerHttpError)) return { ok: false, failure: 'network' };
+    if (error.status === 404) return { ok: false, failure: 'unsupported' };
+    if (error.status === 401 || error.status === 403) return { ok: false, failure: 'forbidden', status: error.status };
+    return { ok: false, failure: 'http', status: error.status };
   }
 }
