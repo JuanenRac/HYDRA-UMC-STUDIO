@@ -7,8 +7,7 @@
 // session renewed, and a refused or missing route falls back to the stop robot by robot.
 // =============================================================================
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { apiUrl } from '../lib/apiBase';
-import { authHeaders } from '../lib/session';
+import { readSettings } from '../lib/serverClient';
 import { type CommandIssue } from '../lib/commandResult';
 import { type StopAllReport, requestStopAllWithRetry, stopRobotByRobot } from '../lib/stopAll';
 import type { PostRobotCommand } from '../lib/robotCommandPost';
@@ -66,10 +65,8 @@ export function useEmergencyStop({
       setCommandIssue((current) => (current?.code === 'estop_failed' ? null : current));
       setStopAllReport(report);
       // The socket's per-robot deltas usually arrive first; the settings are read again to be sure.
-      const refreshHeaders = authHeaders();
-      fetch(apiUrl('/api/settings'), { headers: refreshHeaders })
-        .then((r) => { rememberSettingsEtag(settingsEtagRef, r); return r.ok ? r.json() : null; })
-        .then((data) => { if (data) applyServerData(data); })
+      readSettings()
+        .then((r) => { rememberSettingsEtag(settingsEtagRef, r.etag); if (r.status === 200 && r.data) applyServerData(r.data); })
         .catch(() => {});
     } finally {
       setStopAllInFlight((n) => n - 1);

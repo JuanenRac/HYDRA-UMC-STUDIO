@@ -8,9 +8,7 @@
 // last word. Approving carries `confirm: true`, rejecting does not; the person who decides is the signed-in account, which the SERVER
 // names, so no name is sent from here. The reading is defensive: a server without the route (404) or without the channel set up (503,
 // available false) is told apart from an account that may not use it (401/403).
-import { apiUrl } from './apiBase';
 import { serverClient, settle } from './serverClient';
-import { authFetch } from './session';
 
 export interface PendingProposal {
   incidentId: string;
@@ -92,14 +90,12 @@ async function call<T>(request: () => Promise<Answer>, read: (data: unknown) => 
   }
 }
 
-/** The reading goes through the typed client. The decision still goes by hand: the contract of the SDK declares no body for it yet (the move waits for the next tag). */
+/** Both the reading and the decision go through the typed client. */
 export const opsProposalsApi = {
   list: () => call(async () => { const r = await settle(() => serverClient.getOpsAgentProposals()); return { ...r, ok: r.status === 200 }; }, parseProposals),
   decide: (incidentId: string, decision: 'approved' | 'rejected') =>
     call(async () => {
-      const res = await authFetch(apiUrl('/api/ops-agent/proposals/decide'), {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(decisionBody(incidentId, decision)),
-      });
-      return { status: res.status, ok: res.ok, data: await res.json().catch(() => null) };
+      const r = await settle(() => serverClient.postOpsAgentProposalsDecide({ body: decisionBody(incidentId, decision) }));
+      return { ...r, ok: r.status === 200 };
     }, (data) => (object(data).decision === decision ? object(data) : null)),
 };
