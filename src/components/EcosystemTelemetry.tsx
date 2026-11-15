@@ -19,7 +19,7 @@ import { LineChart as LineChartIcon, TableProperties, Play, Clock } from 'lucide
 import {
   ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts';
-import { apiUrl } from '../lib/apiBase';
+import { makeTokenClient, settle } from '../lib/serverClient';
 import { useSession } from '../storeContexts';
 import { DownsamplePlanEditor } from './DownsamplePlanEditor';
 
@@ -82,31 +82,32 @@ export function EcosystemTelemetry() {
   const run = async () => {
     setLoading(true); setError(''); setNotConfigured(false); setPoints(null); setBuckets(null);
     try {
-      const params = new URLSearchParams();
-      if (sourceId) params.set('sourceId', sourceId);
-      if (kind) params.set('kind', kind);
-      if (field) params.set('field', field);
-      if (start) params.set('start', start);
-      if (end) params.set('end', end);
-      let url: string;
+      // the filters that were left empty are not sent
+      const filters: Record<string, string> = {};
+      if (sourceId) filters.sourceId = sourceId;
+      if (kind) filters.kind = kind;
+      if (field) filters.field = field;
+      if (start) filters.start = start;
+      if (end) filters.end = end;
+      const client = makeTokenClient(authToken);
+      let answer: { status: number; data: unknown };
       if (mode === 'query') {
-        url = apiUrl(`/api/telemetry/query?${params.toString()}`);
+        answer = await settle(() => client.getTelemetryQuery({ query: filters }));
       } else {
         if (!kind || !field || !start || !end) {
           setError(t('ecosystem.telemetry_aggregate_missing_fields'));
           setLoading(false);
           return;
         }
-        params.set('bucketMs', bucketMs);
-        params.set('agg', agg);
-        url = apiUrl(`/api/telemetry/aggregate?${params.toString()}`);
+        answer = await settle(() => client.getTelemetryAggregate({ query: { ...filters, bucketMs, agg } }));
       }
-      const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
-      const res = await fetch(url, { headers });
-      const data = await res.json();
-      if (res.status === 503 && data.available === false) { setNotConfigured(true); return; }
-      if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
-      if (mode === 'query') setPoints(data); else setBuckets(data);
+      const { status } = answer;
+      const data = (answer.data ?? {}) as { available?: boolean; error?: string };
+      if (status === 503 && data.available === false) { setNotConfigured(true); return; }
+      if (!(status < 300)) { setError(data.error || `HTTP ${status}`); return; }
+      // an answer that is not the list the screen draws is a failed load
+      if (!Array.isArray(answer.data)) throw new Error('not a list');
+      if (mode === 'query') setPoints(answer.data as Point[]); else setBuckets(answer.data as Bucket[]);
     } catch {
       setError(t('ecosystem.telemetry_load_error'));
     } finally {

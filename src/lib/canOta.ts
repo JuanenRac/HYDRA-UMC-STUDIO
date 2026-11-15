@@ -38,6 +38,7 @@
 // =============================================================================
 
 import { apiUrl } from './apiBase';
+import { makeTokenClient, settle } from './serverClient';
 import { sha256Hex } from './sha256';
 
 export type CanOtaTier = 'kinematicBrain' | 'controllerBoard' | 'urtcHead' | 'urtcExpansion';
@@ -622,6 +623,9 @@ export function resolveHardwareTarget(target: CanOtaTarget): HardwareTargetResol
   return null;
 }
 
+/** What the answers of the bridge routes are read for (each field is checked where it is used). */
+interface BridgeAnswer { online?: boolean; firmware_major?: number; firmware_minor?: number; hardware_id?: number; capabilities?: { fram_erase?: unknown }; code?: string; status?: unknown; ok?: unknown; value?: unknown }
+
 function authHeaders(authToken: string | null): Record<string, string> {
   return authToken ? { Authorization: `Bearer ${authToken}` } : {};
 }
@@ -633,12 +637,11 @@ export async function hardwareQueryVersion(target: CanOtaTarget, authToken: stri
   const resolved = resolveHardwareTarget(target);
   if (!resolved) return { online: false };
   try {
-    const res = await fetch(
-      apiUrl(`/api/hardware/canota/version?tier=${resolved.targetTier}&slot=${resolved.targetSlot}&relay=${resolved.relay ? '1' : '0'}`),
-      { headers: authHeaders(authToken) },
-    );
-    if (!res.ok) return { online: false };
-    const body = await res.json();
+    const { status, data } = await settle(() => makeTokenClient(authToken).getHardwareCanotaVersion({
+      query: { tier: String(resolved.targetTier), slot: String(resolved.targetSlot), relay: resolved.relay ? '1' : '0' },
+    }));
+    if (!(status < 300)) return { online: false };
+    const body = (data ?? {}) as BridgeAnswer;
     if (!body.online) return { online: false };
     return {
       online: true,
@@ -675,14 +678,11 @@ export interface FramOperationResult {
 export async function hardwareFramOperation(operation: FramOperation, authToken: string | null, typedWord = ''): Promise<FramOperationResult> {
   if (operation === 'erase' && !framEraseWordMatches(typedWord)) return { reachable: true, ok: false, status: 'unknown', value: 0 };
   try {
-    const res = await fetch(apiUrl(`/api/hardware/fram/${operation}`), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeaders(authToken) },
-      body: JSON.stringify(operation === 'erase' ? { confirm: FRAM_ERASE_WORD } : {}),
-    });
-    const body = await res.json().catch(() => ({}));
-    if (res.status === 403 && body.code === 'FRAM_ERASE_DISABLED') return { reachable: true, ok: false, status: 'server_disabled', value: 0 };
-    if (!res.ok && typeof body.status !== 'string') return { reachable: true, ok: false, status: res.status === 503 || res.status === 504 ? 'unreachable' : 'unknown', value: 0 };
+    const client = makeTokenClient(authToken);
+    const { status, data } = await settle(() => (operation === 'erase' ? client.postHardwareFramErase({ body: { confirm: FRAM_ERASE_WORD } }) : client.postHardwareFramSelftest()));
+    const body = (data ?? {}) as BridgeAnswer;
+    if (status === 403 && body.code === 'FRAM_ERASE_DISABLED') return { reachable: true, ok: false, status: 'server_disabled', value: 0 };
+    if (!(status < 300) && typeof body.status !== 'string') return { reachable: true, ok: false, status: status === 503 || status === 504 ? 'unreachable' : 'unknown', value: 0 };
     return { reachable: true, ok: body.ok === true, status: typeof body.status === 'string' ? body.status : 'unknown', value: Number(body.value) || 0 };
   } catch {
     return { reachable: false, ok: false, status: 'unreachable', value: 0 };

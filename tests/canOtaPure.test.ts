@@ -291,7 +291,8 @@ describe('hardwareFramOperation', () => {
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, { headers: Record<string, string>; body: string }];
     expect(url).toBe('/api/hardware/fram/selftest');
     expect(init.headers.Authorization).toBeUndefined();
-    expect(JSON.parse(init.body)).toEqual({});
+    // the self-test route takes no body
+    expect(init.body).toBeUndefined();
   });
 
   it('reports what the brain refused, by name, and never as done', async () => {
