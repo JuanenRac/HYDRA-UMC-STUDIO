@@ -8,8 +8,7 @@
 // administrator's own token to the bridge; the bridge keeps the switch, checks who asked and may refuse (locked on, no twin key or robot,
 // no file to keep it). A change in either direction carries `confirm: true`. The reading is defensive: a server without the route (404) or
 // without the bridge configured (503, available false) is told apart from an account that may not use it (401/403).
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+import { ServerHttpError, serverClient } from './serverClient';
 
 export interface HilBridgeSettings {
   /** Whether a real command needs a pass verdict of the twin (off by default). */
@@ -51,25 +50,31 @@ export function hilBridgeBlockedReason(current: HilBridgeSettings, wanted: boole
   return '';
 }
 
-async function call(method: 'GET' | 'POST', body?: unknown): Promise<HilBridgeResult<HilBridgeSettings>> {
+async function call(run: () => Promise<unknown>): Promise<HilBridgeResult<HilBridgeSettings>> {
   try {
-    const res = await authFetch(apiUrl('/api/hil-bridge/settings'), method === 'GET' ? undefined : {
-      method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (res.status === 404) return { ok: false, failure: 'unsupported' };
-    if (res.status === 503 && object(data).available === false) return { ok: false, failure: 'not_configured' };
-    if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
+    // the typed client throws the refusal of the server with its status and the body it sent
+    let data: unknown = {};
+    let status = 200;
+    try {
+      data = (await run()) ?? {};
+    } catch (error) {
+      if (!(error instanceof ServerHttpError)) throw error;
+      data = error.body ?? {};
+      status = error.status;
+    }
+    if (status === 404) return { ok: false, failure: 'unsupported' };
+    if (status === 503 && object(data).available === false) return { ok: false, failure: 'not_configured' };
+    if (status === 401 || status === 403) return { ok: false, failure: 'forbidden', status };
     const reason = typeof object(data).error === 'string' ? (object(data).error as string).slice(0, 300) : undefined;
-    if (!res.ok) return { ok: false, failure: 'http', status: res.status, ...(reason ? { reason } : {}) };
+    if (status >= 300) return { ok: false, failure: 'http', status, ...(reason ? { reason } : {}) };
     const settings = parseHilBridge(data);
-    return settings ? { ok: true, value: settings } : { ok: false, failure: 'http', status: res.status };
+    return settings ? { ok: true, value: settings } : { ok: false, failure: 'http', status };
   } catch {
     return { ok: false, failure: 'network' };
   }
 }
 
 export const hilBridgeApi = {
-  read: () => call('GET'),
-  write: (require: boolean) => call('POST', hilBridgeBody(require)),
+  read: () => call(() => serverClient.getHilBridgeSettings()),
+  write: (require: boolean) => call(() => serverClient.postHilBridgeSettings({ body: hilBridgeBody(require) })),
 };

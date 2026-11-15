@@ -8,8 +8,7 @@
 // /api/ros2-bridge/settings), which carries the administrator's own token to the bridge; the bridge checks who asked and may refuse (started without
 // allowing the change). A change in either direction carries `confirm: true`. When the server has no connection to the bridge the screen falls back to
 // preparing the lines to add to the file of the bridge by hand; nothing is sent in that case.
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+import { ServerHttpError, serverClient } from './serverClient';
 
 export interface Ros2SecuritySettings {
   /** The value in the configuration file of the bridge (what applies at its next start). */
@@ -79,25 +78,31 @@ const reasonOf = (data: unknown): string | undefined => {
   return typeof error === 'string' ? error.slice(0, 300) : undefined;
 };
 
-async function call(method: 'GET' | 'POST', body?: unknown): Promise<Ros2SecurityResult<Ros2SecuritySettings>> {
+async function call(run: () => Promise<unknown>): Promise<Ros2SecurityResult<Ros2SecuritySettings>> {
   try {
-    const res = await authFetch(apiUrl('/api/ros2-bridge/settings'), method === 'GET' ? undefined : {
-      method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    });
-    const data = await res.json().catch(() => ({}));
+    // the typed client throws the refusal of the server with its status and the body it sent
+    let data: unknown = {};
+    let status = 200;
+    try {
+      data = (await run()) ?? {};
+    } catch (error) {
+      if (!(error instanceof ServerHttpError)) throw error;
+      data = error.body ?? {};
+      status = error.status;
+    }
     const reason = reasonOf(data);
-    if (res.status === 404) return { ok: false, failure: 'unsupported' };
-    if (res.status === 503) return { ok: false, failure: object(data).available === false ? 'not_configured' : 'unreachable' };
-    if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status, ...(reason ? { reason } : {}) };
-    if (!res.ok) return { ok: false, failure: 'http', status: res.status, ...(reason ? { reason } : {}) };
+    if (status === 404) return { ok: false, failure: 'unsupported' };
+    if (status === 503) return { ok: false, failure: object(data).available === false ? 'not_configured' : 'unreachable' };
+    if (status === 401 || status === 403) return { ok: false, failure: 'forbidden', status, ...(reason ? { reason } : {}) };
+    if (status >= 300) return { ok: false, failure: 'http', status, ...(reason ? { reason } : {}) };
     const settings = parseRos2Security(data);
-    return settings ? { ok: true, value: settings } : { ok: false, failure: 'http', status: res.status };
+    return settings ? { ok: true, value: settings } : { ok: false, failure: 'http', status };
   } catch {
     return { ok: false, failure: 'network' };
   }
 }
 
 export const ros2SecurityApi = {
-  read: () => call('GET'),
-  write: (require: boolean) => call('POST', ros2SecurityBody(require)),
+  read: () => call(() => serverClient.getRos2BridgeSettings()),
+  write: (require: boolean) => call(() => serverClient.postRos2BridgeSettings({ body: ros2SecurityBody(require) })),
 };

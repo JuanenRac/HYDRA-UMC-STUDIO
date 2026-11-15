@@ -14,7 +14,7 @@ const ROOT = join(__dirname, '..');
 
 // Routes that the contract of the SDK declares in its unreleased part and the pinned tag of the continuous integration does not hold yet. Drop an entry when
 // the pin moves to a tag that has it.
-const UNRELEASED = new Set(['/api/ros2-bridge/settings']);
+const UNRELEASED = new Set<string>();
 
 function sources(dir: string): string[] {
   const out: string[] = [];

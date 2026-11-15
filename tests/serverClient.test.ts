@@ -36,8 +36,16 @@ describe('the transport of the app', () => {
 
   it('sends a body as JSON', async () => {
     const send = reply(200, {});
-    await makeTransport(send)({ method: 'POST', path: '/api/p', query: {}, body: { a: 1 }, access: 'admin' });
+    await makeTransport(send)({ method: 'POST', path: '/api/p', query: {}, headers: {}, body: { a: 1 }, access: 'admin' });
     expect(send).toHaveBeenCalledWith('/api/p', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"a":1}' });
+  });
+
+  it('sends the headers of the route next to the body', async () => {
+    const send = reply(200, {});
+    await makeTransport(send)({ method: 'POST', path: '/api/p', query: {}, headers: { 'If-Match': '"3"', 'X-Controller-Id': 'c1' }, body: { a: 1 }, access: 'user' });
+    expect(send).toHaveBeenCalledWith('/api/p', { method: 'POST', headers: { 'If-Match': '"3"', 'X-Controller-Id': 'c1', 'Content-Type': 'application/json' }, body: '{"a":1}' });
+    await makeTransport(send)({ method: 'GET', path: '/api/q', query: {}, headers: { 'X-Correlation-Id': 'k' }, body: undefined, access: 'user' });
+    expect(send).toHaveBeenLastCalledWith('/api/q', { method: 'GET', headers: { 'X-Correlation-Id': 'k' } });
   });
 
   it('throws the status of a refusal and delivers null for an answer that is not JSON', async () => {
