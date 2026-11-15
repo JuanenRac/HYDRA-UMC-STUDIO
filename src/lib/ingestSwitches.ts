@@ -10,6 +10,7 @@
 // switch that comes from the environment of the SERVER is locked. The reading is defensive: an answer without the block means a SERVER
 // that predates it.
 import { apiUrl } from './apiBase';
+import { ServerHttpError, serverClient } from './serverClient';
 import { authFetch } from './session';
 
 export const INGEST_KEYS = ['faultFeed', 'scenario', 'developerNode', 'anomalyFeed', 'anomalyVoiceRelay', 'voiceChain', 'proposalVerify'] as const;
@@ -79,14 +80,19 @@ export function changedSwitches(current: IngestState, wanted: Record<IngestKey, 
 /** The name of a keys file that the SERVER accepts (the same rule as the SERVER): a plain file name, or empty. */
 export const validKeysFileName = (name: string): boolean => name === '' || (/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(name) && !name.includes('..'));
 
-function failure(res: Response, data: unknown): IngestResult<never> | null {
-  if (res.status === 404) return { ok: false, failure: 'unsupported' };
-  if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
-  if (!res.ok) {
+/** The failure for an answer of this status (a status below 300 is no failure). */
+function failureOfStatus(status: number, data: unknown): IngestResult<never> | null {
+  if (status === 404) return { ok: false, failure: 'unsupported' };
+  if (status === 401 || status === 403) return { ok: false, failure: 'forbidden', status };
+  if (status >= 300) {
     const reason = typeof object(data).error === 'string' ? (object(data).error as string).slice(0, 300) : undefined;
-    return { ok: false, failure: 'http', status: res.status, ...(reason ? { reason } : {}) };
+    return { ok: false, failure: 'http', status, ...(reason ? { reason } : {}) };
   }
   return null;
+}
+
+function failure(res: Response, data: unknown): IngestResult<never> | null {
+  return res.ok ? null : failureOfStatus(res.status, data);
 }
 
 async function read(): Promise<IngestResult<IngestState>> {
@@ -161,13 +167,10 @@ export function parseDeveloperNodeStatus(data: unknown): DeveloperNodeStatus | n
 
 async function readDeveloperNodes(verify = false): Promise<IngestResult<DeveloperNodeStatus>> {
   try {
-    const res = await authFetch(apiUrl(`/api/dev-server/status${verify ? '?verify=1' : ''}`));
-    const data = await res.json().catch(() => ({}));
-    const bad = failure(res, data);
-    if (bad) return bad;
-    const status = parseDeveloperNodeStatus(data);
-    return status ? { ok: true, value: status } : { ok: false, failure: 'http', status: res.status };
-  } catch {
+    const status = parseDeveloperNodeStatus((await serverClient.getDevServerStatus(verify ? { query: { verify: '1' } } : undefined)) ?? {});
+    return status ? { ok: true, value: status } : { ok: false, failure: 'http', status: 200 };
+  } catch (error) {
+    if (error instanceof ServerHttpError) return failureOfStatus(error.status, error.body ?? {}) ?? { ok: false, failure: 'http', status: error.status };
     return { ok: false, failure: 'network' };
   }
 }

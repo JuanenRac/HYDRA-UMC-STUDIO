@@ -10,7 +10,7 @@
 // =============================================================================
 
 import { useEffect, useState } from 'react';
-import { apiUrl } from './apiBase';
+import { serverClient } from './serverClient';
 
 /** Tickets live five minutes on the server; ask for a new one a little before. */
 const REFRESH_MS = 4 * 60 * 1000;
@@ -30,11 +30,8 @@ export function useMediaTicket(authToken: string | null): string | null {
     const ask = async () => {
       let next: string | null = null;
       try {
-        const res = await fetch(apiUrl('/api/camera/ticket'), { method: 'POST', headers: { Authorization: `Bearer ${authToken}` } });
-        if (res.ok) {
-          const body = await res.json();
-          if (typeof body.ticket === 'string') next = body.ticket;
-        }
+        const body = (await serverClient.postCameraTicket()) as unknown as { ticket?: unknown } | null;
+        if (typeof body?.ticket === 'string') next = body.ticket;
       } catch { /* the server is unreachable: the pictures fail on their own */ }
       if (cancelled) return;
       setTicket(next);

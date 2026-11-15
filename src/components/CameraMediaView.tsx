@@ -13,6 +13,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { apiUrl } from '../lib/apiBase';
+import { serverClient } from '../lib/serverClient';
 import { useMediaTicket, withTicket } from '../lib/mediaTicket';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useTranslation } from 'react-i18next';
@@ -60,12 +61,8 @@ export function CameraMediaView() {
     setLoading(true);
     setError(null);
     try {
-      const headers: Record<string, string> = {};
-      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-      const res = await fetch(apiUrl('/api/camera/media'), { headers });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const body = await res.json();
-      setItems(body.items || []);
+      const body = await serverClient.getCameraMedia();
+      setItems((body?.items || []) as MediaItem[]);
     } catch {
       setError(t('cameraMedia.load_failed', "Couldn't load camera media from the server."));
     } finally {

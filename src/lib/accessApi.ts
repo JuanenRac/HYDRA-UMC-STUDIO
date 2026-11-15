@@ -8,6 +8,7 @@
 // Each answer is turned into the same typed result as a robot command, so a refusal reads the same everywhere.
 // =============================================================================
 import { apiUrl } from './apiBase';
+import { serverClient } from './serverClient';
 import { authFetch } from './session';
 import { getControllerId } from './controllerSession';
 import { interpretCommandResponse, networkFailure, type CommandResult } from './commandResult';
@@ -85,9 +86,7 @@ export async function armJog(robotId: number, armed: boolean, ttlMs?: number): P
 /** GET /api/claims; null when the server could not be read or predates the route. */
 export async function fetchClaims(): Promise<ClaimEntry[] | null> {
   try {
-    const res = await authFetch(apiUrl('/api/claims'));
-    if (!res.ok) return null;
-    return parseClaims(await res.json());
+    return parseClaims(await serverClient.getClaims());
   } catch {
     return null;
   }
@@ -98,9 +97,7 @@ export interface SafetyRead { state: SafetyLimitsState; jogArmedUntil: number | 
 /** GET /api/safety-limits (with the robot, also when its jog is armed); null when the server could not be read or predates the route. */
 export async function fetchSafetyLimits(robotId?: number): Promise<SafetyRead | null> {
   try {
-    const res = await authFetch(apiUrl(robotId === undefined ? '/api/safety-limits' : `/api/safety-limits?robotId=${robotId}`));
-    if (!res.ok) return null;
-    const body: unknown = await res.json();
+    const body: unknown = await serverClient.getSafetyLimits(robotId === undefined ? undefined : { query: { robotId: String(robotId) } });
     const robot = body && typeof body === 'object' ? (body as Record<string, unknown>).robot : null;
     const until = robot && typeof robot === 'object' ? (robot as Record<string, unknown>).jogArmedUntil : null;
     return { state: parseSafetyLimits(body), jogArmedUntil: typeof until === 'number' ? until : null };
