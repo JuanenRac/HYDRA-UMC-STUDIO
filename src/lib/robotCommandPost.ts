@@ -6,10 +6,9 @@
 // One POST of a robot command answered as a typed result, and the table move sent as the jogs of a server that has no
 // table command. Moved out of the provider unchanged; what it needs from the provider is passed in.
 // =============================================================================
-import { apiUrl } from './apiBase';
+import { serverClient, settle } from './serverClient';
 import { type CommandResult, interpretCommandResponse, networkFailure } from './commandResult';
 import { isNumberedCommand } from './commandSequence';
-import { authHeaders } from './session';
 import { getControllerId } from './controllerSession';
 import { revisionOf, robotRevisions } from './revisions';
 import { tableAsJogs } from './tableMove';
@@ -37,18 +36,17 @@ export async function postRobotCommand(
     // The revision this window last saw of the robot goes along as If-Match (never for STOP): when the robot changed
     // in between, the server answers 412 instead of overwriting what someone else did.
     const ticket = robotRevisions.begin(id, command);
-    const headers = authHeaders({ 'Content-Type': 'application/json' });
+    const headers: { 'If-Match'?: string } = {};
     if (ticket.ifMatch) headers['If-Match'] = ticket.ifMatch;
     try {
-      const res = await fetch(apiUrl(`/api/robot/${id}/command`), {
-        method: 'POST',
+      // the status and the body of a refusal come back with the answer, so a 412 or a 403 reads as it did
+      const { status, data: body } = await settle(() => serverClient.postRobotByIdCommand({
+        path: { id },
         headers,
-        body: JSON.stringify(isNumberedCommand(command) ? { command, params, controllerId: getControllerId(), seq: deps.commandSequence.next() } : { command, params, controllerId: getControllerId() }),
-      });
-      let body: unknown = null;
-      try { body = await res.json(); } catch { /* an answer without a JSON body */ }
+        body: isNumberedCommand(command) ? { command, params, controllerId: getControllerId(), seq: deps.commandSequence.next() } : { command, params, controllerId: getControllerId() },
+      }));
       robotRevisions.finish(id, ticket.seq, revisionOf(body));
-      return interpretCommandResponse(res.status, res.ok, body);
+      return interpretCommandResponse(status, status < 300, body);
     } catch (error) {
       robotRevisions.finish(id, ticket.seq, null);
       return networkFailure(error instanceof Error ? error.message : undefined);
