@@ -52,6 +52,17 @@ export function makeTransport(send: (url: string, init: RequestInit) => Promise<
   };
 }
 
+/** Runs a call of the client and hands back the status and the body of the answer: a refusal of the server (a ServerHttpError) becomes its status and the body it sent, a success is 200,
+ *  and anything else (the network) is thrown for the caller to treat as a lost connection. The body is null when the answer was not JSON. */
+export async function settle(run: () => Promise<unknown>): Promise<{ status: number; data: unknown }> {
+  try {
+    return { status: 200, data: (await run()) ?? null };
+  } catch (error) {
+    if (error instanceof ServerHttpError) return { status: error.status, data: error.body ?? null };
+    throw error;
+  }
+}
+
 /** A client over the given fetch function (the session one when none is given); the tests of the readers hand in their own. */
 export function makeClient(send?: (url: string, init: RequestInit) => Promise<Response>): HydraServerClient {
   return send ? new HydraServerClient(makeTransport(send)) : serverClient;

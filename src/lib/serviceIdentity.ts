@@ -7,9 +7,7 @@
 // of PUT /api/admin/server-config, OFF by default). Giving each service the key to verify that token is done by the operator of the machine
 // (provisioning/service_identity.py of HYDRA-UMC-OS, as root); this screen only shows the state and changes the switch of the SERVER. The
 // reading is defensive: a server without the route (404) and an account that may not use it (401/403) are told apart from a failure.
-import { apiUrl } from './apiBase';
-import { ServerHttpError, serverClient } from './serverClient';
-import { authFetch } from './session';
+import { ServerHttpError, serverClient, settle } from './serverClient';
 
 export type IdentitySupport = 'accepts' | 'own_verifier' | 'not_yet';
 export type IdentityState = 'presenting' | 'idle_no_key' | 'off';
@@ -76,8 +74,8 @@ function failureOfStatus(status: number, data: unknown): IdentityResult<never> |
   return null;
 }
 
-function failure(res: Response, data: unknown): IdentityResult<never> | null {
-  return res.ok ? null : failureOfStatus(res.status, data);
+function failure(status: number, data: unknown): IdentityResult<never> | null {
+  return status < 300 ? null : failureOfStatus(status, data);
 }
 
 async function read(): Promise<IdentityResult<ServiceIdentityStatus>> {
@@ -92,9 +90,8 @@ async function read(): Promise<IdentityResult<ServiceIdentityStatus>> {
 
 async function write(enabled: boolean): Promise<IdentityResult<ServiceIdentityStatus>> {
   try {
-    const res = await authFetch(apiUrl('/api/admin/server-config'), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(serviceIdentityBody(enabled)) });
-    const data = await res.json().catch(() => ({}));
-    const bad = failure(res, data);
+    const { status, data } = await settle(() => serverClient.putAdminServerConfig({ body: serviceIdentityBody(enabled) }));
+    const bad = failure(status, data);
     if (bad) return bad;
     return read();
   } catch {

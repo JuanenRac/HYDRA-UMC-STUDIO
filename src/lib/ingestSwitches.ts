@@ -9,9 +9,7 @@
 // GET/PUT /api/admin/server-config. Turning one on (or changing the keys file) carries `confirm: true`; turning one off never does. A
 // switch that comes from the environment of the SERVER is locked. The reading is defensive: an answer without the block means a SERVER
 // that predates it.
-import { apiUrl } from './apiBase';
-import { ServerHttpError, serverClient } from './serverClient';
-import { authFetch } from './session';
+import { ServerHttpError, serverClient, settle } from './serverClient';
 
 export const INGEST_KEYS = ['faultFeed', 'scenario', 'developerNode', 'anomalyFeed', 'anomalyVoiceRelay', 'voiceChain', 'proposalVerify'] as const;
 export type IngestKey = (typeof INGEST_KEYS)[number];
@@ -91,19 +89,18 @@ function failureOfStatus(status: number, data: unknown): IngestResult<never> | n
   return null;
 }
 
-function failure(res: Response, data: unknown): IngestResult<never> | null {
-  return res.ok ? null : failureOfStatus(res.status, data);
+function failure(status: number, data: unknown): IngestResult<never> | null {
+  return status < 300 ? null : failureOfStatus(status, data);
 }
 
 async function read(): Promise<IngestResult<IngestState>> {
   try {
-    const res = await authFetch(apiUrl('/api/admin/server-config'));
-    const data = await res.json().catch(() => ({}));
-    const bad = failure(res, data);
+    const { status, data } = await settle(() => serverClient.getAdminServerConfig());
+    const bad = failure(status, data);
     if (bad) return bad;
     const state = parseIngestState(data);
     // an answer without the block is a SERVER that predates it: the section stays out of the way
-    return state ? { ok: true, value: state } : { ok: false, failure: 'unsupported', status: res.status };
+    return state ? { ok: true, value: state } : { ok: false, failure: 'unsupported', status };
   } catch {
     return { ok: false, failure: 'network' };
   }
@@ -113,15 +110,17 @@ async function write(current: IngestState, change: IngestChange): Promise<Ingest
   try {
     const body = ingestPatchBody(current, change);
     if (Object.keys(body.ingest).length === 0) return { ok: true, value: current };
-    const res = await authFetch(apiUrl('/api/admin/server-config'), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    const data = await res.json().catch(() => ({}));
-    const bad = failure(res, data);
+    const { status, data } = await settle(() => serverClient.putAdminServerConfig({ body: body as IngestServerConfigBody }));
+    const bad = failure(status, data);
     if (bad) return bad;
     return read();
   } catch {
     return { ok: false, failure: 'network' };
   }
 }
+
+// The `ingest` block is accepted by the server but the contract of the SDK does not list it among the sections of the body yet, so the body is given to the client as it is.
+type IngestServerConfigBody = NonNullable<Parameters<typeof serverClient.putAdminServerConfig>[0]>['body'];
 
 export const ingestApi = { read, write };
 

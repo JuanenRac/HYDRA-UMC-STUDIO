@@ -7,8 +7,8 @@
 // the level is what the card may show: only the state of the robot (the default), the state and the progress, or everything of the panel. `full` is the most there
 // is; the SERVER applies the level before anything leaves it. Turning the card on or raising the level shows more to whoever holds the phone, so the request
 // carries `confirm: true` then; turning it off or lowering the level never does. The reading is defensive: an answer without the block is a SERVER that predates it.
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+
+import { serverClient, settle } from './serverClient';
 
 export const LIVE_LEVELS = ['status', 'progress', 'full'] as const;
 export type LiveLevel = (typeof LIVE_LEVELS)[number];
@@ -74,24 +74,23 @@ export function liveChange(current: LiveActivityState, wanted: { enabled: boolea
   return change;
 }
 
-function failure(res: Response, data: unknown): LiveResult<never> | null {
-  if (res.status === 404) return { ok: false, failure: 'unsupported' };
-  if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
-  if (!res.ok) {
+function failure(status: number, data: unknown): LiveResult<never> | null {
+  if (status === 404) return { ok: false, failure: 'unsupported' };
+  if (status === 401 || status === 403) return { ok: false, failure: 'forbidden', status };
+  if (status >= 300) {
     const reason = typeof object(data).error === 'string' ? (object(data).error as string).slice(0, 300) : undefined;
-    return { ok: false, failure: 'http', status: res.status, ...(reason ? { reason } : {}) };
+    return { ok: false, failure: 'http', status, ...(reason ? { reason } : {}) };
   }
   return null;
 }
 
 async function read(): Promise<LiveResult<LiveActivityState>> {
   try {
-    const res = await authFetch(apiUrl('/api/admin/server-config'));
-    const data = await res.json().catch(() => ({}));
-    const bad = failure(res, data);
+    const { status, data } = await settle(() => serverClient.getAdminServerConfig());
+    const bad = failure(status, data);
     if (bad) return bad;
     const state = parseLiveActivity(data);
-    return state ? { ok: true, value: state } : { ok: false, failure: 'unsupported', status: res.status };
+    return state ? { ok: true, value: state } : { ok: false, failure: 'unsupported', status };
   } catch {
     return { ok: false, failure: 'network' };
   }
@@ -101,9 +100,8 @@ async function write(current: LiveActivityState, change: LiveActivityChange): Pr
   try {
     const body = liveBody(current, change);
     if (Object.keys(body.push.liveActivity).length === 0) return { ok: true, value: current };
-    const res = await authFetch(apiUrl('/api/admin/server-config'), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    const data = await res.json().catch(() => ({}));
-    const bad = failure(res, data);
+    const { status, data } = await settle(() => serverClient.putAdminServerConfig({ body }));
+    const bad = failure(status, data);
     if (bad) return bad;
     return read();
   } catch {
