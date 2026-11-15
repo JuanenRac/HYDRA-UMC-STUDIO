@@ -12,6 +12,10 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = join(__dirname, '..');
 
+// Routes that the contract of the SDK declares in its unreleased part and the pinned tag of the continuous integration does not hold yet. Drop an entry when
+// the pin moves to a tag that has it.
+const UNRELEASED = new Set(['/api/ros2-bridge/settings']);
+
 function sources(dir: string): string[] {
   const out: string[] = [];
   for (const name of readdirSync(dir)) {
@@ -50,7 +54,7 @@ describe('server routes called by the app', () => {
     const matches = (route: string, path: string): boolean =>
       new RegExp('^' + route.replace(/\{p\}/g, '[^/]+') + '$').test(path.replace(/\{[^}]+\}/g, 'x'));
     // the relay of the server to the local services (/api/ai/<service>/...) is one wildcard route that the inventory does not list path by path
-    const unknown = calledRoutes().filter((r) => !r.startsWith('/api/ai/') && !paths.some((p) => matches(r, p)));
+    const unknown = calledRoutes().filter((r) => !r.startsWith('/api/ai/') && !UNRELEASED.has(r) && !paths.some((p) => matches(r, p)));
     expect(unknown).toEqual([]);
   });
 
@@ -60,7 +64,7 @@ describe('server routes called by the app', () => {
     const routes = (JSON.parse(readFileSync(table, 'utf8')) as { routes: { path: string }[] }).routes;
     const matches = (route: string, path: string): boolean =>
       new RegExp('^' + route.replace(/\{p\}/g, '[^/]+') + '$').test(path.replace(/\{[^}]+\}/g, 'x'));
-    const unknown = calledRoutes().filter((r) => !r.startsWith('/api/ai/') && !routes.some((p) => matches(r, p.path)));
+    const unknown = calledRoutes().filter((r) => !r.startsWith('/api/ai/') && !UNRELEASED.has(r) && !routes.some((p) => matches(r, p.path)));
     expect(unknown).toEqual([]);
   });
 });
