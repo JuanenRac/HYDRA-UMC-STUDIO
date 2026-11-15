@@ -28,16 +28,16 @@ beforeEach(() => { calls = []; robotRevisions.setMode('standard'); robotRevision
 afterEach(() => { vi.unstubAllGlobals(); robotRevisions.forget(); });
 
 describe('the robot command through the typed client', () => {
-  it('posts to the route of the robot with the body and the revision it last saw as If-Match', async () => {
+  it('posts to the route of the robot with the body and the revision it last saw as If-Match (a discrete command; the jog and the speed go without)', async () => {
     robotRevisions.learn(3, 'r1');
     serve(200, { success: true, revision: 'r2' });
-    const result = await postRobotCommand(deps, 3, 'jog', { axis: 'x' });
+    const result = await postRobotCommand(deps, 3, 'home', { axis: 'x' });
     expect(result).toMatchObject({ ok: true, status: 200, revision: 'r2' });
     expect(calls[0].url).toBe('/api/robot/3/command');
     expect(calls[0].init.method).toBe('POST');
     expect(header(calls[0], 'If-Match')).toBe('"r1"');
     expect(header(calls[0], 'Content-Type')).toBe('application/json');
-    expect(JSON.parse(String(calls[0].init.body))).toMatchObject({ command: 'jog', params: { axis: 'x' } });
+    expect(JSON.parse(String(calls[0].init.body))).toMatchObject({ command: 'home', params: { axis: 'x' } });
     expect(robotRevisions.known(3)).toBe('r2');
   });
 
