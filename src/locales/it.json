@@ -1954,6 +1954,27 @@
     "confirm_off_message": "Il ponte HIL inoltrerà i comandi reali con il solo certificato di rischio, senza un verdetto «pass» del gemello per la traiettoria.",
     "confirm_off_button": "Non richiedere più"
   },
+  "droidEstop": {
+    "title": "Arresto di emergenza dei droidi nelle zone di sicurezza",
+    "desc": "Se è attivo, il servizio delle zone di sicurezza ascolta il ponte dei droidi: un droide tagliato, un collegamento perso o un ponte silenzioso impediscono l'avvio di nuovi lavori nella cella. Una macchina in funzione non viene mai fermata. È disattivato per impostazione predefinita; solo un amministratore può cambiarlo, serve una conferma in entrambe le direzioni e ogni modifica viene registrata.",
+    "label": "Trattenere i nuovi avvii finché un droide è tagliato",
+    "state_on": "Attivo: un droide tagliato inibisce i nuovi avvii della cella.",
+    "state_off": "Disattivo: il servizio delle zone di sicurezza non legge l'arresto di emergenza dei droidi (predefinito).",
+    "unsupported": "Questo servizio delle zone di sicurezza non può essere cambiato da qui (non ha un file di stato per l'impostazione).",
+    "not_configured": "Il servizio delle zone di sicurezza non è configurato su questo server.",
+    "forbidden": "Solo un amministratore può cambiare questo interruttore.",
+    "load_error": "Impossibile leggere l'interruttore dell'arresto di emergenza dei droidi.",
+    "running": "Il collegamento con il ponte dei droidi è attivo.",
+    "not_running": "Il collegamento con il ponte dei droidi è interrotto.",
+    "saved": "Salvato.",
+    "save_error": "La modifica è stata rifiutata: {{reason}}",
+    "confirm_on_title": "Leggere l'arresto di emergenza dei droidi?",
+    "confirm_on_message": "D'ora in poi il servizio delle zone di sicurezza inibirà i nuovi avvii della cella finché un droide è tagliato, perde il collegamento o il suo ponte tace. Una macchina in funzione non viene fermata.",
+    "confirm_on_button": "Leggilo",
+    "confirm_off_title": "Smettere di leggere l'arresto di emergenza dei droidi?",
+    "confirm_off_message": "Un droide tagliato non impedirà più l'avvio di nuovi lavori nella cella.",
+    "confirm_off_button": "Smetti di leggerlo"
+  },
   "hubGate": {
     "title": "Hub dei connettori: chiamanti senza identità",
     "desc": "Il gate decisionale dell'hub dei connettori risponde solo ai chiamanti che presentano un token firmato di questo server. Questo interruttore permette di rispondere senza token a un chiamante sulla macchina stessa dell'hub. È spento per impostazione predefinita; solo un amministratore può cambiarlo, accenderlo richiede una conferma e ogni modifica viene registrata.",

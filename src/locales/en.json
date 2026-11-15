@@ -1954,6 +1954,27 @@
     "confirm_off_message": "The HIL bridge will forward real commands with only their risk certificate, without a pass verdict of the twin for the trajectory.",
     "confirm_off_button": "Stop requiring"
   },
+  "droidEstop": {
+    "title": "Droid emergency stop in the safety zones",
+    "desc": "When this is on, the safety zones service listens to the droid bridge: a droid that has been cut, a lost link or a silent bridge keeps new starts from beginning in the cell. It never stops a machine that is running. It is off by default; only an administrator can change it, a confirmation is needed in both directions and every change is recorded.",
+    "label": "Hold new starts while a droid is cut",
+    "state_on": "On: a cut droid inhibits new starts of the cell.",
+    "state_off": "Off: the safety zones service does not read the droid emergency stop (the default).",
+    "unsupported": "This safety zones service cannot be switched from here (it has no state file for the setting).",
+    "not_configured": "The safety zones service is not configured on this server.",
+    "forbidden": "Only an administrator can change this switch.",
+    "load_error": "The switch of the droid emergency stop could not be read.",
+    "running": "The link to the droid bridge is up.",
+    "not_running": "The link to the droid bridge is down.",
+    "saved": "Saved.",
+    "save_error": "The change was refused: {{reason}}",
+    "confirm_on_title": "Read the droid emergency stop?",
+    "confirm_on_message": "From now on the safety zones service will inhibit new starts of the cell while a droid is cut, its link is lost or its bridge goes silent. A machine that is running is not stopped.",
+    "confirm_on_button": "Read it",
+    "confirm_off_title": "Stop reading the droid emergency stop?",
+    "confirm_off_message": "A cut droid will no longer keep new starts from beginning in the cell.",
+    "confirm_off_button": "Stop reading"
+  },
   "hubGate": {
     "title": "Connector hub: callers without identity",
     "desc": "The decision gate of the connector hub answers only callers that present a signed token of this server. This switch lets a caller on the hub's own machine be answered without a token. It is off by default; only an administrator can change it, turning it on asks for a confirmation, and every change is recorded.",
