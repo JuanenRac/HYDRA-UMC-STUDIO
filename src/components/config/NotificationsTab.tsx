@@ -10,7 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bell, RefreshCw } from 'lucide-react';
 import { useSession } from '../../storeContexts';
-import { failureKey, panelRead, type PanelFailure } from '../../lib/panelApi';
+import { failureKey, panelCall, type PanelFailure } from '../../lib/panelApi';
 import { isKnownEvent, parsePush, pushVerdict, type PushState } from '../../lib/notificationsView';
 
 export function NotificationsTab() {
@@ -21,7 +21,7 @@ export function NotificationsTab() {
 
   const load = useCallback(async () => {
     if (!isAdmin) return;
-    const result = await panelRead('/api/admin/push', parsePush);
+    const result = await panelCall(client => client.getAdminPush(), parsePush);
     setState(result.ok ? result.value : null);
     setFailure(result.ok ? null : result.failure);
   }, [isAdmin]);

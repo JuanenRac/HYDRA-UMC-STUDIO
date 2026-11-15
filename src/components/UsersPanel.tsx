@@ -17,7 +17,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Users as UsersIcon, Trash2, KeyRound, UserPlus, ShieldCheck, ShieldOff } from 'lucide-react';
-import { apiUrl } from '../lib/apiBase';
+import { ServerHttpError, serverClient } from '../lib/serverClient';
 import { ConfirmDialog } from './ConfirmDialog';
 import { totpApi } from '../lib/totpApi';
 import { useSession } from '../storeContexts';
@@ -46,7 +46,11 @@ export function UsersPanel() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [totpResetTarget, setTotpResetTarget] = useState<string | null>(null);
 
-  const authHeaders = () => ({ 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) });
+  // the server's own refusal text, when it sent one
+  const reasonOf = (error: unknown): string | undefined => {
+    const text = error instanceof ServerHttpError ? (error.body as { error?: unknown } | null)?.error : undefined;
+    return typeof text === 'string' && text !== '' ? text : undefined;
+  };
 
   // Wrapped in useCallback so its identity only changes when something it
   // actually reads (authToken, t) does - otherwise a fresh function on
@@ -54,19 +58,13 @@ export function UsersPanel() {
   // unrelated re-render too, once it's a real, honest dependency.
   const loadUsers = useCallback(async () => {
     try {
-      const res = await fetch(apiUrl('/api/users'), { headers: authHeaders() });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || `HTTP ${res.status}`);
-        return;
-      }
-      const data = await res.json();
-      setUsers(data.users || []);
+      const data = await serverClient.getUsers();
+      setUsers((data?.users || []) as unknown as StoredUserSummary[]);
       setError('');
-    } catch {
-      setError(t('config.users_load_error'));
+    } catch (error) {
+      setError(error instanceof ServerHttpError ? reasonOf(error) || `HTTP ${error.status}` : t('config.users_load_error'));
     }
-  }, [authToken, t]); // eslint-disable-line -- authHeaders() only ever reads authToken, already listed
+  }, [authToken, t]); // eslint-disable-line -- the session sends its own token; the list is read again when it changes
 
   // Genuine "synchronize with an external system" effect (a real server
   // fetch on mount / whenever loadUsers's own identity changes, i.e. when
@@ -78,18 +76,12 @@ export function UsersPanel() {
     e.preventDefault();
     setError(''); setNotice('');
     try {
-      const res = await fetch(apiUrl('/api/users'), {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({ username: newUsername, password: newPassword, role: newRole }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || t('config.users_create_error')); return; }
+      await serverClient.postUsers({ body: { username: newUsername, password: newPassword, role: newRole } });
       setNewUsername(''); setNewPassword(''); setNewRole('operator');
       setNotice(t('config.users_create_success'));
       loadUsers();
-    } catch {
-      setError(t('config.users_create_error'));
+    } catch (error) {
+      setError(reasonOf(error) || t('config.users_create_error'));
     }
   };
 
@@ -98,33 +90,25 @@ export function UsersPanel() {
     if (!renameTarget) return;
     setError(''); setNotice('');
     try {
-      const body: Record<string, string> = {};
+      const body: { newUsername?: string; password?: string } = {};
       if (renameNewName.trim()) body.newUsername = renameNewName.trim();
       if (renamePassword) body.password = renamePassword;
-      const res = await fetch(apiUrl(`/api/users/${encodeURIComponent(renameTarget)}`), {
-        method: 'PUT',
-        headers: authHeaders(),
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || t('config.users_update_error')); return; }
+      await serverClient.putUsersByUsername({ path: { username: renameTarget }, body });
       setRenameNewName(''); setRenamePassword('');
       setNotice(t('config.users_update_success'));
       loadUsers();
-    } catch {
-      setError(t('config.users_update_error'));
+    } catch (error) {
+      setError(reasonOf(error) || t('config.users_update_error'));
     }
   };
 
   const doDelete = async (username: string) => {
     setError(''); setNotice('');
     try {
-      const res = await fetch(apiUrl(`/api/users/${encodeURIComponent(username)}`), { method: 'DELETE', headers: authHeaders() });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || t('config.users_delete_error')); return; }
+      await serverClient.deleteUsersByUsername({ path: { username } });
       loadUsers();
-    } catch {
-      setError(t('config.users_delete_error'));
+    } catch (error) {
+      setError(reasonOf(error) || t('config.users_delete_error'));
     }
   };
 

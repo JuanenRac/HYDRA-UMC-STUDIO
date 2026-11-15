@@ -21,8 +21,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bot, RefreshCw, AlertTriangle, Circle } from 'lucide-react';
-import { apiUrl } from '../lib/apiBase';
-import { authFetch } from '../lib/session';
+import { serverClient } from '../lib/serverClient';
 import { useSettingsStore } from '../storeContexts';
 
 interface EcosystemProjectStatus {
@@ -52,10 +51,9 @@ export function AiFamilyStatus() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await authFetch(apiUrl('/api/ecosystem/status'));
-      const data = await res.json();
+      const data = await serverClient.getEcosystemStatus();
       setAvailable(!!data.available);
-      setProjects(((data.projects || []) as EcosystemProjectStatus[]).filter(p => p.family && AI_FAMILIES.some(f => f.key === p.family)));
+      setProjects(((data.projects || []) as unknown as EcosystemProjectStatus[]).filter(p => p.family && AI_FAMILIES.some(f => f.key === p.family)));
       setError('');
     } catch {
       setError(t('ecosystem.services_load_error'));

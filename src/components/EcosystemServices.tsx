@@ -28,8 +28,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Boxes, Loader2, Play, RefreshCw, RotateCw, Search, Square, Circle } from 'lucide-react';
-import { apiUrl } from '../lib/apiBase';
-import { authFetch } from '../lib/session';
+import { ServerHttpError, serverClient } from '../lib/serverClient';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useSession } from '../storeContexts';
 
@@ -144,7 +143,7 @@ function StatusBadge({ color, label, version }: { color: HealthColor; label: str
 
 export function EcosystemServices() {
   const { t } = useTranslation();
-  const { authToken, isAdmin } = useSession();
+  const { isAdmin } = useSession();
   const [available, setAvailable] = useState<boolean | null>(null);
   const [projects, setProjects] = useState<EcosystemProjectStatus[]>([]);
   const [scannedAt, setScannedAt] = useState<string | null>(null);
@@ -165,10 +164,9 @@ export function EcosystemServices() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await authFetch(apiUrl('/api/ecosystem/status'));
-      const data = await res.json();
+      const data = await serverClient.getEcosystemStatus();
       setAvailable(!!data.available);
-      setProjects(data.projects || []);
+      setProjects((data.projects || []) as unknown as EcosystemProjectStatus[]);
       setScannedAt(data.scannedAt || null);
       setError('');
     } catch {
@@ -190,22 +188,19 @@ export function EcosystemServices() {
     setActioningUnit(unit);
     setActionError(null);
     try {
-      const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
-      const res = await fetch(apiUrl(`/api/ecosystem/service/${encodeURIComponent(unit)}/${action}`), {
-        method: 'POST', headers,
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setActionError({ unit, message: data.error || `HTTP ${res.status}` });
-        return;
-      }
+      await serverClient.postEcosystemServiceByUnitByAction({ path: { unit, action } });
       await load();
-    } catch {
-      setActionError({ unit, message: t('ecosystem.services_action_error') });
+    } catch (error) {
+      if (error instanceof ServerHttpError) {
+        const reason = (error.body as { error?: unknown } | null)?.error;
+        setActionError({ unit, message: (typeof reason === 'string' && reason) || `HTTP ${error.status}` });
+      } else {
+        setActionError({ unit, message: t('ecosystem.services_action_error') });
+      }
     } finally {
       setActioningUnit(null);
     }
-  }, [authToken, load, t]);
+  }, [load, t]);
 
   const requestAction = (p: EcosystemProjectStatus, action: 'start' | 'stop' | 'restart') => {
     if (action === 'stop' || action === 'restart') {

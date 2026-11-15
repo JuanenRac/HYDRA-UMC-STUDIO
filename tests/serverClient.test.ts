@@ -10,7 +10,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it, vi, type Mock } from 'vitest';
 import { HydraServerClient } from '../src/generated/hydra-server-client';
-import { makeTransport, requestUrl, ServerHttpError } from '../src/lib/serverClient';
+import { makeClient, makeTransport, requestUrl, ServerHttpError } from '../src/lib/serverClient';
+import { panelCall } from '../src/lib/panelApi';
 
 const ROOT = join(__dirname, '..');
 
@@ -47,6 +48,23 @@ describe('the transport of the app', () => {
     expect(await new HydraServerClient(makeTransport(reply(200, null, true))).getEcosystemHealth()).toBeNull();
   });
 
+  it('keeps the body and the Retry-After header of a refusal with the error', async () => {
+    const send = vi.fn<Send>(async () => ({ ok: false, status: 429, headers: new Headers({ 'Retry-After': '60' }), json: async () => ({ error: 'slow down' }) }) as unknown as Response);
+    const error = await new HydraServerClient(makeTransport(send)).getEcosystemHealth().catch((e: unknown) => e) as ServerHttpError;
+    expect(error.status).toBe(429);
+    expect(error.body).toEqual({ error: 'slow down' });
+    expect(error.retryAfter).toBe('60');
+    const plain = await new HydraServerClient(makeTransport(reply(500, null, true))).getEcosystemHealth().catch((e: unknown) => e) as ServerHttpError;
+    expect(plain.body).toBeNull();
+    expect(plain.retryAfter).toBeNull();
+  });
+
+  it('builds a client over the given fetch function', async () => {
+    const send = reply(200, { users: [] });
+    expect(await makeClient(send).getUsers()).toEqual({ users: [] });
+    expect(send).toHaveBeenCalledWith('/api/users', { method: 'GET' });
+  });
+
   it('lets a network failure through as it is', async () => {
     const send = vi.fn<Send>(async () => { throw new Error('down'); });
     await expect(new HydraServerClient(makeTransport(send)).getEcosystemHealth()).rejects.toThrow('down');
@@ -68,5 +86,21 @@ describe('the vendored client', () => {
     const field = '  private readonly transport: HydraTransport;\n  constructor(transport: HydraTransport) {\n    this.transport = transport;\n  }';
     expect(vendored).toBe(original.replace('  constructor(private readonly transport: HydraTransport) {}', field));
     expect(vendored).not.toContain('constructor(private');
+  });
+});
+
+describe('the defensive read of the panels', () => {
+  const failure = (status: number) => ({ ok: false, failure: status === 404 ? 'unsupported' : status === 403 ? 'forbidden' : 'http', status });
+  it('tells a missing route, a refused account, a server error and a dead network apart', async () => {
+    const parse = (data: unknown): unknown => data;
+    for (const status of [404, 403, 500]) {
+      expect(await panelCall(() => Promise.reject(new ServerHttpError(status)), parse)).toEqual(failure(status));
+    }
+    expect(await panelCall(() => Promise.reject(new Error('down')), parse)).toEqual({ ok: false, failure: 'network' });
+  });
+
+  it('reads an answer that is not JSON as an empty object', async () => {
+    expect(await panelCall(() => Promise.resolve(null), data => data)).toEqual({ ok: true, value: {} });
+    expect(await panelCall(() => Promise.resolve({ a: 1 }), data => data)).toEqual({ ok: true, value: { a: 1 } });
   });
 });

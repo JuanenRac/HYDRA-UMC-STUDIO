@@ -7,8 +7,8 @@
 // administrator's DELETE /api/users/:username/totp) with their answers read defensively: a server that predates the
 // routes answers 404 and the screen says so instead of showing a broken form. Nothing here stores a secret: the key and
 // the recovery codes only live in the component that shows them, until the operator closes it.
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+import type { HydraServerClient } from '../generated/hydra-server-client';
+import { makeClient, ServerHttpError } from './serverClient';
 
 export interface TotpStatus { enabled: boolean; recoveryLeft: number }
 export interface TotpEnrolment { secret: string; uri: string }
@@ -74,35 +74,29 @@ export function failureOf(status: number, data: unknown, headers?: { get(name: s
   return { kind: 'http', status };
 }
 
-async function call<T>(method: string, path: string, body: Record<string, unknown> | null, read: (data: unknown) => T | null, fetcher: typeof fetch = authFetch): Promise<TotpResult<T>> {
+type Run = (client: HydraServerClient) => Promise<unknown>;
+
+async function call<T>(run: Run, read: (data: unknown) => T | null, fetcher?: typeof fetch, isDisable = false): Promise<TotpResult<T>> {
   try {
-    const res = await fetcher(apiUrl(path), {
-      method,
-      headers: body ? { 'Content-Type': 'application/json' } : undefined,
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    let data: unknown = null;
-    try { data = await res.json(); } catch { /* an answer without a JSON body */ }
-    if (!res.ok) {
-      // A wrong code on /disable answers 401 without totpRequired: the password was already checked first, so it is the code.
-      const failure = failureOf(res.status, data, res.headers);
-      return { ok: false, failure: path.endsWith('/disable') && failure.kind === 'password' && /code/i.test(String(object(data).error ?? '')) ? { kind: 'code' } : failure };
-    }
+    const data = await run(makeClient(fetcher));
     const value = read(data);
-    return value === null ? { ok: false, failure: { kind: 'http', status: res.status } } : { ok: true, value };
-  } catch {
-    return { ok: false, failure: { kind: 'network' } };
+    return value === null ? { ok: false, failure: { kind: 'http', status: 200 } } : { ok: true, value };
+  } catch (error) {
+    if (!(error instanceof ServerHttpError)) return { ok: false, failure: { kind: 'network' } };
+    // A wrong code on /disable answers 401 without totpRequired: the password was already checked first, so it is the code.
+    const failure = failureOf(error.status, error.body, { get: () => error.retryAfter });
+    return { ok: false, failure: isDisable && failure.kind === 'password' && /code/i.test(String(object(error.body).error ?? '')) ? { kind: 'code' } : failure };
   }
 }
 
 const done = (): true => true;
 
 export const totpApi = {
-  status: (fetcher?: typeof fetch) => call('GET', '/api/totp/status', null, parseStatus, fetcher),
-  begin: (password: string, fetcher?: typeof fetch) => call('POST', '/api/totp/begin', { password }, parseEnrolment, fetcher),
-  confirm: (code: string, fetcher?: typeof fetch) => call('POST', '/api/totp/confirm', { code: normalizeCode(code) }, parseRecoveryCodes, fetcher),
-  disable: (password: string, code: string, fetcher?: typeof fetch) => call('POST', '/api/totp/disable', { password, code: normalizeCode(code) }, done, fetcher),
-  reset: (username: string, fetcher?: typeof fetch) => call('DELETE', `/api/users/${encodeURIComponent(username)}/totp`, null, done, fetcher),
+  status: (fetcher?: typeof fetch) => call(client => client.getTotpStatus(), parseStatus, fetcher),
+  begin: (password: string, fetcher?: typeof fetch) => call(client => client.postTotpBegin({ body: { password } }), parseEnrolment, fetcher),
+  confirm: (code: string, fetcher?: typeof fetch) => call(client => client.postTotpConfirm({ body: { code: normalizeCode(code) } }), parseRecoveryCodes, fetcher),
+  disable: (password: string, code: string, fetcher?: typeof fetch) => call(client => client.postTotpDisable({ body: { password, code: normalizeCode(code) } }), done, fetcher, true),
+  reset: (username: string, fetcher?: typeof fetch) => call(client => client.deleteUsersByUsernameTotp({ path: { username } }), done, fetcher),
 };
 
 /** What the sign-in answered when it wants the second step: 401 with totpRequired, or the wait (429) that comes with it. */

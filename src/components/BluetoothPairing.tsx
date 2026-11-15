@@ -20,7 +20,7 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bluetooth, BluetoothConnected, Loader2, RefreshCw, Trash2 } from 'lucide-react';
-import { apiUrl } from '../lib/apiBase';
+import { ServerHttpError, serverClient } from '../lib/serverClient';
 import { useSession } from '../storeContexts';
 
 interface BluetoothDeviceInfo {
@@ -37,7 +37,7 @@ type PanelStatus = 'idle' | 'scanning' | 'pairing';
 
 export function BluetoothPairing() {
   const { t } = useTranslation();
-  const { authToken, isAdmin } = useSession();
+  const { isAdmin } = useSession();
 
   const [devices, setDevices] = useState<BluetoothDeviceInfo[]>([]);
   const [status, setStatus] = useState<PanelStatus>('idle');
@@ -45,9 +45,11 @@ export function BluetoothPairing() {
   const [error, setError] = useState<string | null>(null);
   const [hasScanned, setHasScanned] = useState(false);
 
-  const authHeaders = useCallback((): Record<string, string> => {
-    return authToken ? { Authorization: `Bearer ${authToken}` } : {};
-  }, [authToken]);
+  // the server's own refusal text, when it sent one
+  const reasonOf = (error: unknown): string | undefined => {
+    const text = error instanceof ServerHttpError ? (error.body as { error?: unknown } | null)?.error : undefined;
+    return typeof text === 'string' && text !== '' ? text : undefined;
+  };
 
   // Real POST /scan: powers the adapter on first (a device that never
   // asked to be discoverable answers nothing either way, so this is
@@ -58,25 +60,17 @@ export function BluetoothPairing() {
     setStatus('scanning');
     setError(null);
     try {
-      await fetch(apiUrl('/api/system/bluetooth/power'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ on: true }),
-      });
-      const res = await fetch(apiUrl('/api/system/bluetooth/scan'), { method: 'POST', headers: authHeaders() });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data.error || t('bluetooth_pairing.scan_error', 'Bluetooth scan failed.'));
-        return;
-      }
-      setDevices(data.devices || []);
+      // powering the adapter on is a courtesy: a refusal here does not stop the scan
+      await serverClient.postSystemBluetoothPower({ body: { on: true } }).catch(() => undefined);
+      const data = await serverClient.postSystemBluetoothScan();
+      setDevices((data?.devices || []) as unknown as BluetoothDeviceInfo[]);
       setHasScanned(true);
-    } catch {
-      setError(t('bluetooth_pairing.scan_error', 'Bluetooth scan failed.'));
+    } catch (error) {
+      setError(reasonOf(error) || t('bluetooth_pairing.scan_error', 'Bluetooth scan failed.'));
     } finally {
       setStatus('idle');
     }
-  }, [authHeaders, t]);
+  }, [t]);
 
   // Real POST /pair: pair + trust + connect, all on the CM5 itself - see
   // server.ts's own header comment for the real handshake order and the
@@ -87,45 +81,27 @@ export function BluetoothPairing() {
     setActioningMac(mac);
     setError(null);
     try {
-      const res = await fetch(apiUrl('/api/system/bluetooth/pair'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ mac }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data.error || t('bluetooth_pairing.pair_error', 'Could not pair with {{name}}.', { name: mac }));
-        return;
-      }
+      await serverClient.postSystemBluetoothPair({ body: { mac } });
       await scan();
-    } catch {
-      setError(t('bluetooth_pairing.pair_error', 'Could not pair with {{name}}.', { name: mac }));
+    } catch (error) {
+      setError(reasonOf(error) || t('bluetooth_pairing.pair_error', 'Could not pair with {{name}}.', { name: mac }));
     } finally {
       setActioningMac(null);
     }
-  }, [authHeaders, scan, t]);
+  }, [scan, t]);
 
   const forget = useCallback(async (mac: string) => {
     setActioningMac(mac);
     setError(null);
     try {
-      const res = await fetch(apiUrl('/api/system/bluetooth/remove'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ mac }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data.error || t('bluetooth_pairing.forget_error', 'Could not remove {{name}}.', { name: mac }));
-        return;
-      }
+      await serverClient.postSystemBluetoothRemove({ body: { mac } });
       await scan();
-    } catch {
-      setError(t('bluetooth_pairing.forget_error', 'Could not remove {{name}}.', { name: mac }));
+    } catch (error) {
+      setError(reasonOf(error) || t('bluetooth_pairing.forget_error', 'Could not remove {{name}}.', { name: mac }));
     } finally {
       setActioningMac(null);
     }
-  }, [authHeaders, scan, t]);
+  }, [scan, t]);
 
   if (!isAdmin) {
     return (

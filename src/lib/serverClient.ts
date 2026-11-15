@@ -10,14 +10,18 @@ import { HydraServerClient, type HydraRequest, type HydraTransport } from '../ge
 import { apiUrl } from './apiBase';
 import { authFetch } from './session';
 
-/** The server answered with a status that is not a success. */
+/** The server answered with a status that is not a success; the body it sent (null when it was not JSON) and its Retry-After header stay with the error. */
 export class ServerHttpError extends Error {
   readonly status: number;
+  readonly body: unknown;
+  readonly retryAfter: string | null;
 
-  constructor(status: number) {
+  constructor(status: number, body: unknown = null, retryAfter: string | null = null) {
     super(`HTTP ${status}`);
     this.name = 'ServerHttpError';
     this.status = status;
+    this.body = body;
+    this.retryAfter = retryAfter;
   }
 }
 
@@ -40,9 +44,14 @@ export function makeTransport(send: (url: string, init: RequestInit) => Promise<
       init.body = JSON.stringify(request.body);
     }
     const res = await send(requestUrl(request), init);
-    if (!res.ok) throw new ServerHttpError(res.status);
+    if (!res.ok) throw new ServerHttpError(res.status, await Promise.resolve().then(() => res.json()).catch(() => null), res.headers?.get('Retry-After') ?? null);
     return res.json().catch(() => null);
   };
+}
+
+/** A client over the given fetch function (the session one when none is given); the tests of the readers hand in their own. */
+export function makeClient(send?: (url: string, init: RequestInit) => Promise<Response>): HydraServerClient {
+  return send ? new HydraServerClient(makeTransport(send)) : serverClient;
 }
 
 /** The client every migrated call of the app uses. */
