@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- **The 44 new common words of the shared texts are in the eight catalogs:** the `common` block carries the 100 words of `contracts/i18n/common.json` of the SDK (stop, start, settings, security, sign out, username, dashboard and the rest), as `tools/i18n_common.py check-studio` expects.
 - **The SROS2 section of Server Admin > Security reads and changes the real requirement of the ROS 2 bridge when the server can reach it (`GET` and `POST /api/ros2-bridge/settings`):** it shows the value in the configuration file of the bridge apart from the value the running bridge started with, says when the two differ and that a change applies when the bridge restarts, warns when the ROS 2 security variables of the bridge are not all set (with the requirement on it would refuse to start) and does not offer a change the bridge was started without allowing. A change, in either direction, is confirmed on screen and again by the server, and the reason of a refusal is shown. When the server has no route, no bridge configured or the bridge does not answer, the section says which and falls back to the lines to add to the file of the bridge by hand. All the sentences are in the eight languages and `tests/ros2Security.test.tsx` covers the reading, the body, the confirmations and both modes.
 
 
