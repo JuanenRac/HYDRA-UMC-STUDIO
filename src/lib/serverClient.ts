@@ -45,7 +45,7 @@ export function makeTransport(send: (url: string, init: RequestInit) => Promise<
     }
     const res = await send(requestUrl(request), init);
     if (!res.ok) throw new ServerHttpError(res.status, await Promise.resolve().then(() => res.json()).catch(() => null), res.headers?.get('Retry-After') ?? null);
-    return res.json().catch(() => null);
+    return Promise.resolve().then(() => res.json()).catch(() => null);
   };
 }
 

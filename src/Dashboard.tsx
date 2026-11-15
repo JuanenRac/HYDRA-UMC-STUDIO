@@ -9,12 +9,11 @@ import { useTranslation } from 'react-i18next';
 import { setLanguage } from './i18n';
 import HydraIcon from './assets/HYDRA_UMC_ICON.svg';
 import { ROBOT_MANUFACTURERS } from './store';
-import { apiUrl } from './lib/apiBase';
+import { ServerHttpError, serverClient } from './lib/serverClient';
 import { labelWithColon } from './lib/labelColon';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { CommandIssueBanner } from './components/CommandIssueBanner';
 import { StopAllButton, StopAllReportBanner, StopAllShortcut, StopStateBadge } from './components/StopAll';
-import { authFetch } from './lib/session';
 import { setSelectedRobotId, useSelectedRobotId } from './lib/selectedRobot';
 import { useGamepadSession } from './lib/gamepadSession';
 import type { CanOtaTier } from './lib/canOta';
@@ -139,17 +138,14 @@ export default function Dashboard() {
   const handlePower = async (action: 'shutdown' | 'restart') => {
     setPowerAction(action);
     try {
-      const res = await fetch(apiUrl(action === 'shutdown' ? '/api/system/shutdown' : '/api/system/reboot'), { method: 'POST' });
-      if (!res.ok) {
-        // The server refuses these two calls from anywhere but its own device (a kiosk opened by the LAN address,
-        // another computer): the buttons must recover and say why, not stay on "Shutting down..." for ever.
-        setPowerAction(null);
-        reportCommandIssue({ code: 'power_failed', command: action, robotIds: [], detail: String(res.status) });
-      }
+      await (action === 'shutdown' ? serverClient.postSystemShutdown() : serverClient.postSystemReboot());
       // On success no reset: this device is actually going down - staying disabled/labelled until the page
       // itself loses its connection is the correct, honest state.
-    } catch {
+    } catch (error) {
       setPowerAction(null);
+      // The server refuses these two calls from anywhere but its own device (a kiosk opened by the LAN address,
+      // another computer): the buttons must recover and say why, not stay on "Shutting down..." for ever.
+      if (error instanceof ServerHttpError) reportCommandIssue({ code: 'power_failed', command: action, robotIds: [], detail: String(error.status) });
     }
   };
 
@@ -668,8 +664,8 @@ function SystemMetricsBar() {
   useEffect(() => {
     let cancelled = false;
     const poll = () => {
-      authFetch(apiUrl('/api/system/metrics')).then(r => r.ok ? r.json() : null).then(data => {
-        if (!cancelled && data) setMetrics(data);
+      serverClient.getSystemMetrics().then(data => {
+        if (!cancelled && data) setMetrics(data as unknown as SystemMetrics);
       }).catch(() => { /* server unreachable - keep showing the last known reading */ });
     };
     poll();

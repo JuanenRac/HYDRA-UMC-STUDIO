@@ -16,6 +16,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Lock, User, LogIn, Power, RotateCcw, LayoutDashboard, ShieldCheck } from 'lucide-react';
 import { apiUrl } from '../lib/apiBase';
+import { ServerHttpError, serverClient } from '../lib/serverClient';
 import { ConfirmDialog } from './ConfirmDialog';
 import { CommandIssueBanner } from './CommandIssueBanner';
 import HydraIcon from '../assets/HYDRA_UMC_ICON.svg';
@@ -59,16 +60,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     setAskPower(null);
     setPowerAction(action);
     try {
-      const res = await fetch(apiUrl(action === 'shutdown' ? '/api/system/shutdown' : '/api/system/reboot'), { method: 'POST' });
+      await (action === 'shutdown' ? serverClient.postSystemShutdown() : serverClient.postSystemReboot());
+      // A successful call means the device is going down: staying disabled until the page loses its connection is the honest state.
+    } catch (error) {
       // A refusal (403: this is not the device's own kiosk, or the page was opened by the LAN address) recovers the
-      // buttons and says why. A successful call means the device is going down: staying disabled until the page loses
-      // its connection is the honest state.
-      if (!res.ok) {
-        setPowerAction(null);
-        reportCommandIssue({ code: 'power_failed', command: action, robotIds: [], detail: String(res.status) });
-      }
-    } catch {
+      // buttons and says why.
       setPowerAction(null);
+      if (error instanceof ServerHttpError) reportCommandIssue({ code: 'power_failed', command: action, robotIds: [], detail: String(error.status) });
     }
   };
 

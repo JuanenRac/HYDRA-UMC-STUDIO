@@ -7,9 +7,8 @@
 // look (plan), the start of the update of the programs asked and the taking up of one that was cut. The server restarts at the end of its own update, so the answers fail
 // for a while: the follower keeps asking, says how long it has waited, ends when the run ends and, after a limit of silence, says so and offers to look again instead of
 // staying stuck.
-import { apiUrl } from './apiBase';
 import { asObject, asText } from './panelApi';
-import { authFetch } from './session';
+import { ServerHttpError, serverClient } from './serverClient';
 
 export const FLEET_STATES = ['planned', 'running', 'done', 'failed', 'blocked', 'interrupted'] as const;
 export type FleetState = (typeof FLEET_STATES)[number];
@@ -81,35 +80,32 @@ export const diskLowForServer = (report: FleetReport | null): boolean => {
 
 export type Outcome = { ok: true; status: FleetStatus } | { ok: false; status: number; reason: 'disabled' | 'forbidden' | 'busy' | 'refused' | 'network' };
 
-async function send(route: string, body?: unknown): Promise<Outcome> {
+async function send(run: () => Promise<unknown>): Promise<Outcome> {
   try {
-    const res = await authFetch(apiUrl(route), body === undefined ? { method: 'POST' } : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (res.status === 404) return { ok: false, status: 404, reason: 'disabled' };
-    if (res.status === 401 || res.status === 403) return { ok: false, status: res.status, reason: 'forbidden' };
-    if (res.status === 409) return { ok: false, status: 409, reason: 'busy' };
-    if (!res.ok) return { ok: false, status: res.status, reason: 'refused' };
-    return { ok: true, status: parseFleetStatus(await res.json().catch(() => ({}))) };
-  } catch {
-    return { ok: false, status: 0, reason: 'network' };
+    return { ok: true, status: parseFleetStatus((await run()) ?? {}) };
+  } catch (error) {
+    if (!(error instanceof ServerHttpError)) return { ok: false, status: 0, reason: 'network' };
+    const status = error.status;
+    if (status === 404) return { ok: false, status: 404, reason: 'disabled' };
+    if (status === 401 || status === 403) return { ok: false, status, reason: 'forbidden' };
+    if (status === 409) return { ok: false, status: 409, reason: 'busy' };
+    return { ok: false, status, reason: 'refused' };
   }
 }
 
-export const planFleet = (): Promise<Outcome> => send('/api/admin/fleet-update/plan', {});
-export const applyFleet = (services: string[]): Promise<Outcome> => send('/api/admin/fleet-update/apply', { services, confirm: true });
-export const resumeFleet = (service: string): Promise<Outcome> => send('/api/admin/fleet-update/resume', { service, confirm: true });
+export const planFleet = (): Promise<Outcome> => send(() => serverClient.postAdminFleetUpdatePlan());
+export const applyFleet = (services: string[]): Promise<Outcome> => send(() => serverClient.postAdminFleetUpdateApply({ body: { services, confirm: true } }));
+export const resumeFleet = (service: string): Promise<Outcome> => send(() => serverClient.postAdminFleetUpdateResume({ body: { service, confirm: true } }));
 
 export type FleetRead = { kind: 'status'; status: FleetStatus } | { kind: 'wait' } | { kind: 'stop' };
 
 /** One look at the progress. A refused connection, a proxy that answers 502 to 504 while the server restarts and a body that is not the file all mean "wait". */
 export async function readFleet(): Promise<FleetRead> {
   try {
-    const res = await authFetch(apiUrl('/api/admin/fleet-update'));
-    if (res.status === 401 || res.status === 403) return { kind: 'stop' };
-    if (!res.ok) return { kind: 'wait' };
-    const body = asObject(await res.json().catch(() => ({})));
+    const body = asObject(await serverClient.getAdminFleetUpdate());
     return 'report' in body ? { kind: 'status', status: parseFleetStatus(body) } : { kind: 'wait' };
-  } catch {
-    return { kind: 'wait' };
+  } catch (error) {
+    return error instanceof ServerHttpError && (error.status === 401 || error.status === 403) ? { kind: 'stop' } : { kind: 'wait' };
   }
 }
 

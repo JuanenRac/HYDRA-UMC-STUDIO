@@ -6,9 +6,7 @@
 // One defensive read of a SERVER route for the settings panels (updates, security, installation, notifications): a server that
 // predates the route answers 404 and the panel says so, a refused session or role is told apart from a broken connection, and an
 // answer that is not JSON is read as an empty object instead of breaking the screen.
-import { apiUrl } from './apiBase';
 import { ServerHttpError, serverClient } from './serverClient';
-import { authFetch } from './session';
 
 export type PanelFailure = 'unsupported' | 'forbidden' | 'http' | 'network';
 export type PanelResult<T> = { ok: true; value: T } | { ok: false; failure: PanelFailure; status?: number };
@@ -16,19 +14,6 @@ export type PanelResult<T> = { ok: true; value: T } | { ok: false; failure: Pane
 export const asObject = (value: unknown): Record<string, unknown> => (value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {});
 export const asText = (value: unknown): string | null => (typeof value === 'string' && value.trim() !== '' ? value : null);
 export const asCount = (value: unknown): number => (typeof value === 'number' && Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0);
-
-/** Reads `route` (or sends `init`) and hands the JSON answer to `parse`. */
-export async function panelRead<T>(route: string, parse: (data: unknown) => T, init?: RequestInit): Promise<PanelResult<T>> {
-  try {
-    const res = await authFetch(apiUrl(route), init);
-    if (res.status === 404) return { ok: false, failure: 'unsupported', status: 404 };
-    if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
-    if (!res.ok) return { ok: false, failure: 'http', status: res.status };
-    return { ok: true, value: parse(await res.json().catch(() => ({}))) };
-  } catch {
-    return { ok: false, failure: 'network' };
-  }
-}
 
 /** The same defensive read through a call of the typed client: `call` makes the request, `parse` reads the JSON answer (an empty object when there is none). */
 export async function panelCall<T>(call: (client: typeof serverClient) => Promise<unknown>, parse: (data: unknown) => T): Promise<PanelResult<T>> {
