@@ -1,8 +1,6 @@
 [
   "/api/admin/clients",
   "/api/admin/logs",
-  "/api/admin/safety-limits",
-  "/api/admin/server-config",
   "/api/ai/anomaly-detector/rul",
   "/api/ai/datalake/windows",
   "/api/ai/job-dispatcher/dispatch/eta",
@@ -33,7 +31,6 @@
   "/api/settings",
   "/api/stop-all",
   "/api/telemetry/aggregate",
-  "/api/telemetry/downsample-plan",
   "/api/telemetry/query",
   "/api/upload-work"
 ]

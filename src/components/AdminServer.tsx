@@ -21,8 +21,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Power, Save, Server as ServerIcon, Settings } from 'lucide-react';
-import { apiUrl } from '../lib/apiBase';
-import { ServerHttpError, serverClient } from '../lib/serverClient';
+import { ServerHttpError, serverClient, settle } from '../lib/serverClient';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TotpPanel } from './TotpPanel';
 import { ConnectorHubGatePanel } from './ConnectorHubGatePanel';
@@ -39,6 +38,10 @@ import { LiveActivityPanel } from './LiveActivityPanel';
 import { DeveloperNodeStatusPanel } from './DeveloperNodeStatusPanel';
 import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, readOnlyPatch, readOnlyChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, nodeHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
+
+type ServerConfigPatch = NonNullable<Parameters<typeof serverClient.putAdminServerConfig>[0]>['body'];
+/** What the answers of the configuration route are read for: the refusal text, the port and the warnings. */
+interface ConfigAnswer { error?: string; warnings?: unknown; port?: number; pendingPort?: unknown }
 
 interface HydraInfo {
   product?: string;
@@ -80,7 +83,7 @@ const RELOAD_CHIP_STYLE: Record<'pending' | 'applied' | 'failed' | 'not_configur
 
 export function AdminServer() {
   const { t } = useTranslation();
-  const { authToken, isAdmin } = useSession();
+  const { isAdmin } = useSession();
   const [currentPort, setCurrentPort] = useState<number | null>(null);
   const [pendingPort, setPendingPort] = useState('');
   const [saving, setSaving] = useState(false);
@@ -154,7 +157,6 @@ export function AdminServer() {
     const text = (error.body as { error?: unknown } | null)?.error;
     return typeof text === 'string' && text !== '' ? text : undefined;
   };
-  const authHeaders = () => ({ 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) });
 
   const applySecurity = (state: SecurityState | null) => {
     setSecurity(state);
@@ -233,9 +235,9 @@ export function AdminServer() {
   const saveSecurity = async (patch: Record<string, unknown>) => {
     setSaving(true); setError(''); setNotice(''); setWarning('');
     try {
-      const res = await fetch(apiUrl('/api/admin/server-config'), { method: 'PUT', headers: authHeaders(), body: JSON.stringify(patch) });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
+      const { status, data: answer } = await settle(() => serverClient.putAdminServerConfig({ body: patch as ServerConfigPatch }));
+      const data = (answer ?? {}) as ConfigAnswer;
+      if (status >= 300) { setError(data.error || `HTTP ${status}`); return; }
       applySecurity(parseSecurityState(data));
       if (knownWarnings(data.warnings).includes('info_auth_off')) setWarning(t('ecosystem.admin_security_info_off_warning'));
       if (knownWarnings(data.warnings).includes('ble_commands_unencrypted')) setWarning(t('ecosystem.admin_security_ble_unencrypted_warning'));
@@ -430,11 +432,11 @@ export function AdminServer() {
 
   const load = async () => {
     try {
-      const res = await fetch(apiUrl('/api/admin/server-config'), { headers: authHeaders() });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
-      setCurrentPort(data.port);
-      setPendingPort(String(data.pendingPort ?? data.port));
+      const { status, data: answer } = await settle(() => serverClient.getAdminServerConfig());
+      const data = (answer ?? {}) as ConfigAnswer;
+      if (status >= 300) { setError(data.error || `HTTP ${status}`); return; }
+      setCurrentPort(data.port ?? null);
+      setPendingPort(String(data.pendingPort ?? data.port ?? ''));
       applySecurity(parseSecurityState(data));
     } catch {
       setError(t('ecosystem.admin_server_load_error'));
@@ -455,8 +457,8 @@ export function AdminServer() {
     if (!isAdmin || !reloadPending) return undefined;
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(apiUrl('/api/admin/server-config'), { headers: authHeaders() });
-        if (res.ok) setSecurity(parseSecurityState(await res.json()));
+        const { status, data } = await settle(() => serverClient.getAdminServerConfig());
+        if (status < 300) setSecurity(parseSecurityState(data));
       } catch {
         // The next change of the page asks again.
       }
@@ -472,9 +474,9 @@ export function AdminServer() {
     }
     setSaving(true); setError(''); setNotice('');
     try {
-      const res = await fetch(apiUrl('/api/admin/server-config'), { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ port: portNum }) });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || `HTTP ${res.status}`); return; }
+      const { status, data: answer } = await settle(() => serverClient.putAdminServerConfig({ body: { port: portNum } }));
+      const data = (answer ?? {}) as ConfigAnswer;
+      if (status >= 300) { setError(data.error || `HTTP ${status}`); return; }
       setNotice(t('ecosystem.admin_server_port_saved'));
     } catch {
       setError(t('ecosystem.admin_server_load_error'));

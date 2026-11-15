@@ -6,8 +6,8 @@
 // The switch of the loaded-model reports of the DETECTION-HEF service (the `detectionHef` block of GET/PUT /api/admin/server-config), OFF by
 // default. The SERVER writes a settings file that the service re-reads while it runs; this screen only changes the switch. Turning it on
 // carries `confirm: true`; turning it off never does. The reading is defensive: an answer without the block means a SERVER that predates it.
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+
+import { serverClient, settle } from './serverClient';
 
 export type DetectionHefSource = 'env' | 'config' | 'default';
 export interface DetectionHefState {
@@ -33,24 +33,23 @@ export function detectionHefBody(enabled: boolean): { detectionHef: { acceptLoad
 /** Turning the switch on is the change that needs the operator's confirmation on screen. */
 export const detectionHefNeedsConfirmation = (current: boolean, wanted: boolean): boolean => wanted && !current;
 
-function failure(res: Response, data: unknown): DetectionHefResult<never> | null {
-  if (res.status === 404) return { ok: false, failure: 'unsupported' };
-  if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
-  if (!res.ok) {
+function failure(status: number, data: unknown): DetectionHefResult<never> | null {
+  if (status === 404) return { ok: false, failure: 'unsupported' };
+  if (status === 401 || status === 403) return { ok: false, failure: 'forbidden', status };
+  if (status >= 300) {
     const reason = typeof object(data).error === 'string' ? (object(data).error as string).slice(0, 300) : undefined;
-    return { ok: false, failure: 'http', status: res.status, ...(reason ? { reason } : {}) };
+    return { ok: false, failure: 'http', status, ...(reason ? { reason } : {}) };
   }
   return null;
 }
 
 async function read(): Promise<DetectionHefResult<DetectionHefState>> {
   try {
-    const res = await authFetch(apiUrl('/api/admin/server-config'));
-    const data = await res.json().catch(() => ({}));
-    const bad = failure(res, data);
+    const { status, data } = await settle(() => serverClient.getAdminServerConfig());
+    const bad = failure(status, data);
     if (bad) return bad;
     const state = parseDetectionHef(data);
-    return state ? { ok: true, value: state } : { ok: false, failure: 'unsupported', status: res.status };
+    return state ? { ok: true, value: state } : { ok: false, failure: 'unsupported', status };
   } catch {
     return { ok: false, failure: 'network' };
   }
@@ -58,9 +57,8 @@ async function read(): Promise<DetectionHefResult<DetectionHefState>> {
 
 async function write(enabled: boolean): Promise<DetectionHefResult<DetectionHefState>> {
   try {
-    const res = await authFetch(apiUrl('/api/admin/server-config'), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(detectionHefBody(enabled)) });
-    const data = await res.json().catch(() => ({}));
-    const bad = failure(res, data);
+    const { status, data } = await settle(() => serverClient.putAdminServerConfig({ body: detectionHefBody(enabled) }));
+    const bad = failure(status, data);
     if (bad) return bad;
     return read();
   } catch {

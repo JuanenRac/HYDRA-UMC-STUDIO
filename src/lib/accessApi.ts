@@ -8,7 +8,7 @@
 // Each answer is turned into the same typed result as a robot command, so a refusal reads the same everywhere.
 // =============================================================================
 import { apiUrl } from './apiBase';
-import { serverClient } from './serverClient';
+import { serverClient, settle } from './serverClient';
 import { authFetch } from './session';
 import { getControllerId } from './controllerSession';
 import { interpretCommandResponse, networkFailure, type CommandResult } from './commandResult';
@@ -106,20 +106,16 @@ export async function fetchSafetyLimits(robotId?: number): Promise<SafetyRead | 
   }
 }
 
+type SafetyLimitsPatch = Parameters<typeof serverClient.putAdminSafetyLimits>[0]['body'];
+
 export interface SaveLimitsResult { result: CommandResult; state: SafetyLimitsState | null }
 
 /** PUT /api/admin/safety-limits (administrators only). */
 export async function putSafetyLimits(patch: Record<string, unknown>): Promise<SaveLimitsResult> {
   try {
-    const res = await authFetch(apiUrl('/api/admin/safety-limits'), {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(patch),
-    });
-    let data: unknown = null;
-    try { data = await res.json(); } catch { /* an answer without a JSON body */ }
-    const result = interpretCommandResponse(res.status, res.ok, data);
-    return { result, state: res.ok ? parseSafetyLimits(data) : null };
+    const { status, data } = await settle(() => serverClient.putAdminSafetyLimits({ body: patch as SafetyLimitsPatch }));
+    const result = interpretCommandResponse(status, status < 300, data);
+    return { result, state: status < 300 ? parseSafetyLimits(data) : null };
   } catch (error) {
     return { result: networkFailure(error instanceof Error ? error.message : undefined), state: null };
   }

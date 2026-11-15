@@ -12,8 +12,7 @@
 //
 // Everything goes through the server (/api/telemetry/downsample-plan, administrators only). Every reading is defensive and nothing
 // here throws.
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+import { serverClient, settle } from './serverClient';
 
 export const MAX_TIERS = 1000;
 export const MAX_FINE_PER_COARSE = 1440;
@@ -171,9 +170,10 @@ export function validatePlan(draft: PlanDraft, knownKinds: readonly string[] | n
 // ------------------------------------------------------------------ the document the data lake takes
 
 type WireTier = Record<string, string | number>;
+type NamedTier = WireTier & { kind: string; field: string };
 
 /** The document of the data lake for a draft: whole numbers of milliseconds stay numbers, a duration with a unit is sent as typed. */
-export function draftToPlan(draft: PlanDraft): { tiers: WireTier[]; delete: boolean } {
+export function draftToPlan(draft: PlanDraft): { tiers: NamedTier[]; delete: boolean } {
   const tiers = draft.tiers.map((row) => {
     const out: WireTier = { kind: row.kind.trim(), field: row.field.trim() };
     for (const key of TIER_KEYS.slice(2)) {
@@ -182,7 +182,7 @@ export function draftToPlan(draft: PlanDraft): { tiers: WireTier[]; delete: bool
     }
     return out;
   });
-  return { tiers, delete: draft.delete };
+  return { tiers: tiers as NamedTier[], delete: draft.delete };
 }
 
 /** A draft from a plan document as the data lake stores it (durations as numbers or as text). */
@@ -265,7 +265,6 @@ export type Failure =
 
 export type Result<T> = { ok: true; value: T } | { ok: false; failure: Failure; status?: number; details?: string[] };
 
-const PLAN_PATH = '/api/telemetry/downsample-plan';
 const num = (value: unknown): number => (typeof value === 'number' && Number.isFinite(value) ? value : 0);
 
 /** The failure for an answer that is not a success: chosen by the `code` of the data lake, never by its English text. */
@@ -281,16 +280,10 @@ export function failureFor(status: number, body: unknown): Result<never> {
   return { ok: false, failure: 'http', status };
 }
 
-async function call(init?: RequestInit, query = ''): Promise<{ status: number; body: unknown } | null> {
+async function call(run: () => Promise<unknown>): Promise<{ status: number; body: unknown } | null> {
   try {
-    const res = await authFetch(apiUrl(PLAN_PATH + query), init);
-    let body: unknown = null;
-    try {
-      body = await res.json();
-    } catch {
-      body = null;
-    }
-    return { status: res.status, body };
+    const { status, data } = await settle(run);
+    return { status, body: data };
   } catch {
     return null;
   }
@@ -304,7 +297,7 @@ function parseEffects(value: unknown): Effects | null {
 
 /** Reads the plan the data lake is using now. */
 export async function loadPlan(): Promise<Result<PlanState>> {
-  const answer = await call();
+  const answer = await call(() => serverClient.getTelemetryDownsamplePlan());
   if (!answer) return { ok: false, failure: 'network' };
   if (answer.status !== 200) return failureFor(answer.status, answer.body);
   const body = answer.body;
@@ -329,7 +322,7 @@ export async function loadPlan(): Promise<Result<PlanState>> {
 /** Asks the data lake what saving `draft` would do (`preview`), or saves it. Only a draft that passed validatePlan should come here. */
 export async function putPlan(draft: PlanDraft, hash: string, options: { preview: boolean; confirmDelete?: boolean }): Promise<Result<SaveAnswer>> {
   const request = { plan: draftToPlan(draft), expectedHash: hash, confirmDelete: options.confirmDelete === true };
-  const answer = await call({ method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(request) }, options.preview ? '?preview=1' : '');
+  const answer = await call(() => serverClient.putTelemetryDownsamplePlan({ ...(options.preview ? { query: { preview: '1' } } : {}), body: request }));
   if (!answer) return { ok: false, failure: 'network' };
   if (answer.status !== 200) return failureFor(answer.status, answer.body);
   const body = answer.body;
