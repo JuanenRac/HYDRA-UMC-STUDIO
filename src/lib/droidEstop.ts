@@ -9,8 +9,7 @@
 // the switch, checks who asked and may refuse (no state file, the broker link cannot start). A change in either direction carries
 // `confirm: true`. The reading is defensive: a server without the route (404) or without the service configured (503, available false) is
 // told apart from an account that may not use it (401/403).
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+import { ServerHttpError, serverClient } from './serverClient';
 
 export interface DroidEstopSettings {
   /** Whether the safety zones service reads the droid emergency stop (off by default). */
@@ -37,25 +36,31 @@ export const droidEstopBody = (enabled: boolean): { enabled: boolean; confirm: t
 /** Every change is confirmed on screen. */
 export const droidEstopChangeNeedsConfirmation = (current: boolean, wanted: boolean): boolean => current !== wanted;
 
-async function call(method: 'GET' | 'POST', body?: unknown): Promise<DroidEstopResult<DroidEstopSettings>> {
+async function call(run: () => Promise<unknown>): Promise<DroidEstopResult<DroidEstopSettings>> {
   try {
-    const res = await authFetch(apiUrl('/api/droid-estop/settings'), method === 'GET' ? undefined : {
-      method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (res.status === 404) return { ok: false, failure: 'unsupported' };
-    if (res.status === 503 && object(data).available === false) return { ok: false, failure: 'not_configured' };
-    if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
+    // the typed client throws the refusal of the server with its status and the body it sent
+    let data: unknown = {};
+    let status = 200;
+    try {
+      data = (await run()) ?? {};
+    } catch (error) {
+      if (!(error instanceof ServerHttpError)) throw error;
+      data = error.body ?? {};
+      status = error.status;
+    }
+    if (status === 404) return { ok: false, failure: 'unsupported' };
+    if (status === 503 && object(data).available === false) return { ok: false, failure: 'not_configured' };
+    if (status === 401 || status === 403) return { ok: false, failure: 'forbidden', status };
     const reason = typeof object(data).error === 'string' ? (object(data).error as string).slice(0, 300) : undefined;
-    if (!res.ok) return { ok: false, failure: 'http', status: res.status, ...(reason ? { reason } : {}) };
+    if (status >= 300) return { ok: false, failure: 'http', status, ...(reason ? { reason } : {}) };
     const settings = parseDroidEstop(data);
-    return settings ? { ok: true, value: settings } : { ok: false, failure: 'http', status: res.status };
+    return settings ? { ok: true, value: settings } : { ok: false, failure: 'http', status };
   } catch {
     return { ok: false, failure: 'network' };
   }
 }
 
 export const droidEstopApi = {
-  read: () => call('GET'),
-  write: (enabled: boolean) => call('POST', droidEstopBody(enabled)),
+  read: () => call(() => serverClient.getDroidEstopSettings()),
+  write: (enabled: boolean) => call(() => serverClient.postDroidEstopSettings({ body: droidEstopBody(enabled) })),
 };

@@ -39,10 +39,13 @@ export function requestUrl(request: Pick<HydraRequest, 'path' | 'query'>): strin
 export function makeTransport(send: (url: string, init: RequestInit) => Promise<Response> = (url, init) => authFetch(url, init)): HydraTransport {
   return async (request) => {
     const init: RequestInit = { method: request.method };
+    // the headers the contract declares for the route (If-Match, X-Controller-Id, X-Correlation-Id) go out with the request
+    const headers: Record<string, string> = { ...request.headers };
     if (request.body !== undefined) {
-      init.headers = { 'Content-Type': 'application/json' };
+      headers['Content-Type'] = 'application/json';
       init.body = JSON.stringify(request.body);
     }
+    if (Object.keys(headers).length > 0) init.headers = headers;
     const res = await send(requestUrl(request), init);
     if (!res.ok) throw new ServerHttpError(res.status, await Promise.resolve().then(() => res.json()).catch(() => null), res.headers?.get('Retry-After') ?? null);
     return Promise.resolve().then(() => res.json()).catch(() => null);

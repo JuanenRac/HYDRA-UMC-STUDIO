@@ -8,8 +8,7 @@
 // carries the administrator's own token to the planner; the planner keeps the switch, writes it to its configuration file and prints who
 // changed it. The reading is defensive: a server without the route (404) or without the planner configured (503, available false) is told
 // apart from an account that may not use it (401/403), and the screen says so instead of breaking.
-import { apiUrl } from './apiBase';
-import { authFetch } from './session';
+import { ServerHttpError, serverClient } from './serverClient';
 
 export interface PlannerIdentitySettings {
   /** Whether the approval of a plan needs the person who is signed in (the default). */
@@ -43,25 +42,31 @@ export const plannerChangeNeedsConfirmation = (current: boolean, wanted: boolean
 /** Whether the switch may be changed in the state the planner reported (without the identity key the planner refuses any change). */
 export const plannerChangeAllowed = (current: PlannerIdentitySettings, wanted: boolean): boolean => wanted === current.requireIdentity || current.verifiesTokens;
 
-async function call(method: 'GET' | 'POST', body?: unknown): Promise<PlannerResult<PlannerIdentitySettings>> {
+async function call(run: () => Promise<unknown>): Promise<PlannerResult<PlannerIdentitySettings>> {
   try {
-    const res = await authFetch(apiUrl('/api/semantic-planner/settings'), method === 'GET' ? undefined : {
-      method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (res.status === 404) return { ok: false, failure: 'unsupported' };
-    if (res.status === 503 && object(data).available === false) return { ok: false, failure: 'not_configured' };
-    if (res.status === 401 || res.status === 403) return { ok: false, failure: 'forbidden', status: res.status };
+    // the typed client throws the refusal of the server with its status and the body it sent
+    let data: unknown = {};
+    let status = 200;
+    try {
+      data = (await run()) ?? {};
+    } catch (error) {
+      if (!(error instanceof ServerHttpError)) throw error;
+      data = error.body ?? {};
+      status = error.status;
+    }
+    if (status === 404) return { ok: false, failure: 'unsupported' };
+    if (status === 503 && object(data).available === false) return { ok: false, failure: 'not_configured' };
+    if (status === 401 || status === 403) return { ok: false, failure: 'forbidden', status };
     const reason = typeof object(data).error === 'string' ? (object(data).error as string).slice(0, 300) : undefined;
-    if (!res.ok) return { ok: false, failure: 'http', status: res.status, ...(reason ? { reason } : {}) };
+    if (status >= 300) return { ok: false, failure: 'http', status, ...(reason ? { reason } : {}) };
     const settings = parsePlannerIdentity(data);
-    return settings ? { ok: true, value: settings } : { ok: false, failure: 'http', status: res.status };
+    return settings ? { ok: true, value: settings } : { ok: false, failure: 'http', status };
   } catch {
     return { ok: false, failure: 'network' };
   }
 }
 
 export const plannerIdentityApi = {
-  read: () => call('GET'),
-  write: (require: boolean) => call('POST', plannerIdentityBody(require)),
+  read: () => call(() => serverClient.getSemanticPlannerSettings()),
+  write: (require: boolean) => call(() => serverClient.postSemanticPlannerSettings({ body: plannerIdentityBody(require) })),
 };
