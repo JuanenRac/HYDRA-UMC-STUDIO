@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **A server error on the global STOP no longer ends the attempt:** when `POST /api/stop-all` answers with a 5xx status the app stops every robot one by one (and switches their valves and pumps off), as it already did for a rate limit or a missing route, and from the first moment it shows "STOP sent, no reply yet" (eight languages) until an answer arrives.
+- **The gamepad STOP is read even when the tab has no focus:** only the STOP button is read then (once per press); every other input still waits for the focus. Many browsers give no gamepad state to a tab without focus, so this helps only where the browser does.
 - **Studio tells when the server is stopped only because it restarted while stopped:** when the server comes back with the global stop still on, an amber notice next to the stop badge says that an administrator must release it (in all eight languages). The Security tab of Server Admin gets the new switch "While the global stop is on, refuse every command that moves a robot" (off by default; stop and disable still work), and the two limits of the global stop (`stopAllMax`, `stopAllWindowSeconds`) are gone because the global stop is never rate limited now.
 
 - **The camera pan, tilt and zoom stop when the control is released wherever the pointer is, and the stop is sent again if it did not arrive:** the controls use pointer events with capture (touch and pen included), work with Space and Enter, and end the move when the window loses focus, the tab is hidden or the view closes; only a camera that is held gets a stop. A unit test covers the hold.

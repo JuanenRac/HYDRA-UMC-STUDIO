@@ -125,6 +125,7 @@
     "flag_setup_failed_safe_state": "Échec de l'initialisation, état sûr"
   },
   "stop_all": {
+    "sent_no_reply": "STOP envoyé, pas encore de réponse",
     "label": "STOP",
     "tooltip": "STOP : arrêter tous les robots maintenant - un clic, sans confirmation ({{shortcut}})",
     "summary": "STOP : {{stopped}} arrêtés, {{failed}} en échec",
@@ -1616,7 +1617,7 @@
       "max_unanswered": "Maximum de commandes sans réponse",
       "require_claim": "Ne déplacer qu'un robot réservé par cette fenêtre",
       "stop_on_disconnect": "Arrêter tous les robots si la manette se déconnecte",
-      "require_focus": "Lire la manette seulement quand cet onglet a le focus",
+      "require_focus": "Lire la manette seulement quand cet onglet a le focus (sans focus, seul STOP est lu)",
       "preview": "Entrées en direct",
       "preview_empty": "Rien n'est actionné.",
       "confirm_title": "Armer la manette ?",

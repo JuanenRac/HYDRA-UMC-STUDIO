@@ -9,7 +9,8 @@
 // - STOP always wins: in the frame it is pressed it is the only event, while it is held nothing moves, and what was queued is forgotten.
 // - A stick has a dead zone (configurable) and its push scales the step; a speed limit (configurable) caps every step.
 // - A pad that disappears is a dead-man stop: one `lost` event, and nothing else until the operator arms the mode again.
-// - Nothing is read while the tab has no focus or is hidden.
+// - While the tab has no focus or is hidden only the STOP is read (a browser often gives no pad state to a tab without
+//   focus, so this helps only where it does); nothing else is read or sent.
 // The mapping of inputs to actions is the one saved in the settings (gamepadMapping); the numbers are in settings.gamepadMode.
 // =============================================================================
 import { createRateLimiter } from './inputThrottle';
@@ -175,9 +176,15 @@ export function createGamepadModeEngine(config: GamepadModeConfig): GamepadModeE
       hadPad = true;
 
       if (config.requireFocus && !frame.focused) {
-        // No events; what was held is forgotten, so a button still down when the tab comes back is not a new press.
-        previous = new Set(); stopHeld = false; awaitNeutral = true; limiter.reset();
-        return { events: [], status: 'unfocused' };
+        // Only the STOP is read, once per press; what else was held is forgotten, so a button still down when the tab
+        // comes back is not a new press.
+        const stopWhileAway = [...readInputs(frame.pad, config.deadzone).keys()].find((id) => isStopAction(frame.mapping[id]));
+        const pressedNow = stopWhileAway !== undefined && !stopHeld;
+        stopHeld = stopWhileAway !== undefined;
+        previous = new Set(); awaitNeutral = true; limiter.reset();
+        return pressedNow
+          ? { events: [{ type: 'stop', input: stopWhileAway }], status: 'unfocused' }
+          : { events: [], status: 'unfocused' };
       }
 
       const inputs = readInputs(frame.pad, config.deadzone);

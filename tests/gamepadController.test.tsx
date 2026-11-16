@@ -217,18 +217,21 @@ describe('when armed', () => {
     expect(screen.queryByTestId('gamepad-notice')).toBeNull();
   });
 
-  it('sends no event while the tab has no focus, or is hidden', () => {
+  it('sends only the STOP while the tab has no focus, or is hidden', () => {
     const { sendRobotCommand, emergencyStop } = mount();
     armAndSettle();
     hasFocus = false;
-    frame(makePad([6, 0]));
-    frame(makePad([6, 0]));
+    frame(makePad([6]));
+    frame(makePad([6]));
     expect(sendRobotCommand).not.toHaveBeenCalled();
     expect(emergencyStop).not.toHaveBeenCalled();
+    frame(makePad([6, 0]));
+    frame(makePad([6, 0]));
+    expect(emergencyStop).toHaveBeenCalledTimes(1);
     hasFocus = true; hidden = true;
     frame(makePad([6, 0]));
     expect(sendRobotCommand).not.toHaveBeenCalled();
-    expect(emergencyStop).not.toHaveBeenCalled();
+    expect(emergencyStop).toHaveBeenCalledTimes(1);
   });
 
   it('after the focus returns, a button still down moves nothing until it is let go', () => {

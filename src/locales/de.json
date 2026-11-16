@@ -125,6 +125,7 @@
     "flag_setup_failed_safe_state": "Initialisierung fehlgeschlagen, sicherer Zustand"
   },
   "stop_all": {
+    "sent_no_reply": "STOP gesendet, noch keine Antwort",
     "label": "STOP",
     "tooltip": "STOP: alle Roboter jetzt anhalten - ein Klick, ohne Bestätigung ({{shortcut}})",
     "summary": "STOP: {{stopped}} angehalten, {{failed}} fehlgeschlagen",
@@ -1616,7 +1617,7 @@
       "max_unanswered": "Höchstzahl unbeantworteter Befehle",
       "require_claim": "Nur einen Roboter bewegen, den dieses Fenster reserviert hat",
       "stop_on_disconnect": "Alle Roboter stoppen, wenn das Gamepad getrennt wird",
-      "require_focus": "Gamepad nur lesen, solange dieser Tab den Fokus hat",
+      "require_focus": "Gamepad nur lesen, solange dieser Tab den Fokus hat (nur STOP wird auch ohne Fokus gelesen)",
       "preview": "Live-Eingaben",
       "preview_empty": "Nichts ist gedrückt.",
       "confirm_title": "Gamepad aktivieren?",

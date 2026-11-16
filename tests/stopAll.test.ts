@@ -77,12 +77,14 @@ describe('interpretStopAllResponse', () => {
     expect(attempt.kind).toBe('report');
   });
 
-  it('falls back to the per-robot stop on 429 (rate limit) and 404 (older server), and on nothing else', () => {
+  it('falls back to the per-robot stop on 429 (rate limit), 404 (older server) and any 5xx, and on nothing else', () => {
     expect(interpretStopAllResponse(429, false, { error: 'Too many requests' })).toEqual({ kind: 'fallback', status: 429 });
     expect(interpretStopAllResponse(404, false, null)).toEqual({ kind: 'fallback', status: 404 });
-    expect(shouldFallBackToPerRobot(500)).toBe(false);
+    expect(shouldFallBackToPerRobot(500)).toBe(true);
+    expect(shouldFallBackToPerRobot(503)).toBe(true);
     expect(shouldFallBackToPerRobot(403)).toBe(false);
-    expect(interpretStopAllResponse(500, false, null).kind).toBe('failed');
+    expect(interpretStopAllResponse(500, false, null)).toEqual({ kind: 'fallback', status: 500 });
+    expect(interpretStopAllResponse(401, false, null).kind).toBe('failed');
   });
 
   it('marks a 401 and an expired-token 403 as a session to renew, but not a role 403', () => {

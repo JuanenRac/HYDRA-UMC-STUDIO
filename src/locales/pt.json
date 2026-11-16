@@ -125,6 +125,7 @@
     "flag_setup_failed_safe_state": "Falha de arranque, estado seguro"
   },
   "stop_all": {
+    "sent_no_reply": "STOP enviado, sem resposta",
     "label": "STOP",
     "tooltip": "STOP: parar todos os robôs agora - um clique, sem confirmação ({{shortcut}})",
     "summary": "STOP: {{stopped}} parados, {{failed}} com falha",
@@ -1616,7 +1617,7 @@
       "max_unanswered": "Máximo de comandos sem resposta",
       "require_claim": "Mover só um robô que esta janela tenha reservado",
       "stop_on_disconnect": "Parar todos os robôs se o comando se desligar",
-      "require_focus": "Ler o comando só enquanto este separador tem o foco",
+      "require_focus": "Ler o comando só enquanto este separador tem o foco (sem foco só se lê o STOP)",
       "preview": "Entradas em direto",
       "preview_empty": "Nada está premido.",
       "confirm_title": "Ativar o comando?",
