@@ -1755,6 +1755,7 @@
     "restore_defaults": "Carregar as predefinições",
     "saved": "Limites guardados no servidor.",
     "save_failed": "O servidor não aceitou os limites: {{detail}}",
+    "not_loaded": "Os limites não foram lidos do servidor, por isso os valores apresentados são apenas os predefinidos prudentes. A gravação está desativada até serem lidos.",
     "problem_number": "Não é um número: {{field}}",
     "problem_range": "Fora do intervalo (acima de 0 e no máximo o teto do servidor): {{field}}",
     "problem_model": "Uma linha não tem nome de modelo.",

@@ -1755,6 +1755,7 @@
     "restore_defaults": "Carica i valori predefiniti",
     "saved": "Limiti salvati nel server.",
     "save_failed": "Il server non ha accettato i limiti: {{detail}}",
+    "not_loaded": "I limiti non sono stati letti dal server, quindi i valori mostrati sono solo quelli prudenti predefiniti. Il salvataggio è disattivato finché non vengono letti.",
     "problem_number": "Non è un numero: {{field}}",
     "problem_range": "Fuori intervallo (maggiore di 0 e al massimo il massimale del server): {{field}}",
     "problem_model": "Una riga non ha il nome del modello.",

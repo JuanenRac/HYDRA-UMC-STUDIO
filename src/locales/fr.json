@@ -1755,6 +1755,7 @@
     "restore_defaults": "Charger les valeurs par défaut",
     "saved": "Limites enregistrées dans le serveur.",
     "save_failed": "Le serveur n'a pas accepté les limites : {{detail}}",
+    "not_loaded": "Les limites n'ont pas été lues sur le serveur : les valeurs affichées ne sont que les valeurs prudentes par défaut. L'enregistrement est désactivé tant qu'elles ne sont pas lues.",
     "problem_number": "Pas un nombre : {{field}}",
     "problem_range": "Hors plage (supérieur à 0 et au plus le plafond du serveur) : {{field}}",
     "problem_model": "Une ligne n'a pas de nom de modèle.",

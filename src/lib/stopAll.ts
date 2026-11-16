@@ -208,10 +208,11 @@ export async function stopRobotByRobot(
   }));
   const stoppedCount = robots.filter((r) => r.stopped).length;
   return {
-    success: stoppedCount === robots.length,
+    // With no robot to stop nothing was stopped: that is never a success.
+    success: robots.length > 0 && stoppedCount === robots.length,
     stoppedCount,
     failedCount: robots.length - stoppedCount,
-    persisted: true,
+    persisted: robots.length > 0,
     robots,
     viaFallback: true,
   };

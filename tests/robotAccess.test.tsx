@@ -180,6 +180,7 @@ describe('the safety limits screen', () => {
     const { wrapper } = context({ isAdmin: true, authToken: token('root', 'admin') });
     render(<AdminSafety />, { wrapper });
     await waitFor(() => expect((screen.getByTestId('default-amount') as HTMLInputElement).value).toBe('100'));
+    await waitFor(() => expect(screen.queryByTestId('safety-not-loaded')).toBeNull());
 
     fireEvent.change(screen.getByTestId('default-amount'), { target: { value: '5000' } });
     fireEvent.click(screen.getByTestId('safety-save'));
@@ -197,6 +198,19 @@ describe('the safety limits screen', () => {
     expect(put?.body.claims.requireControllerId).toBe(true);
     await waitFor(() => expect(screen.getByRole('status').textContent).toMatch(/saved/i));
     expect(getSafetyState().limits.claims.requireControllerId).toBe(true);
+  });
+
+  it('does not offer to save before the limits were read from the server', async () => {
+    const server = startServer();
+    server.reply.set('GET /api/safety-limits', { status: 500, body: { error: 'down' } });
+    const { wrapper } = context({ isAdmin: true, authToken: token('root', 'admin') });
+    render(<AdminSafety />, { wrapper });
+    await waitFor(() => expect(server.calls.some((c) => c.url.includes('/api/safety-limits'))).toBe(true));
+    expect(screen.getByTestId('safety-not-loaded')).toBeTruthy();
+    fireEvent.change(screen.getByTestId('default-amount'), { target: { value: '50' } });
+    expect((screen.getByTestId('safety-save') as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByTestId('safety-save'));
+    expect(server.calls.some((c) => c.method === 'PUT')).toBe(false);
   });
 
   it('adds a model row, and the server refuses a duplicate row locally', async () => {

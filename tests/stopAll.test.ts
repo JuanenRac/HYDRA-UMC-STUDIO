@@ -184,6 +184,11 @@ describe('stopRobotByRobot', () => {
     expect(sent.sort()).toEqual(['1:pump{"index":0,"state":false}', '1:stop', '1:valve{"index":0,"state":false}', '2:stop']);
   });
 
+  it('reports nothing stopped and nothing persisted when there is no robot to stop', async () => {
+    const report = await stopRobotByRobot([], vi.fn(async () => ok), 0);
+    expect(report).toMatchObject({ success: false, stoppedCount: 0, persisted: false, viaFallback: true });
+  });
+
   it('retries a network failure once and reports a robot that still did not stop', async () => {
     const post = vi.fn(async (id: number, _command: string) => (id === 1 ? net : ok));
     const report = await stopRobotByRobot(targets, post, 0);

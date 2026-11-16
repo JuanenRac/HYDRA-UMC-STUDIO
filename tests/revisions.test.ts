@@ -16,6 +16,7 @@ import { interpretCommandResponse } from '../src/lib/commandResult';
 describe('which commands carry If-Match', () => {
   it('STOP never does, whatever the mode', () => {
     for (const mode of ['off', 'standard', 'strict'] as const) expect(isConditional(mode, 'stop')).toBe(false);
+    for (const mode of ['off', 'standard', 'strict'] as const) expect(isConditional(mode, 'pause')).toBe(false);
   });
 
   it('standard leaves out the commands that repeat many times a second', () => {
