@@ -1755,6 +1755,7 @@
     "restore_defaults": "载入默认值",
     "saved": "限制已保存到服务器。",
     "save_failed": "服务器未接受这些限制：{{detail}}",
+    "not_loaded": "尚未从服务器读取这些限制，显示的只是保守的默认值。读取成功之前无法保存。",
     "problem_number": "不是数字：{{field}}",
     "problem_range": "超出范围（大于 0 且不超过服务器上限）：{{field}}",
     "problem_model": "有一行没有型号名称。",

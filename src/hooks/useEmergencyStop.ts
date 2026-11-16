@@ -52,7 +52,8 @@ export function useEmergencyStop({
         : attempt.kind === 'fallback'
           ? await stopEachRobot()
           : null;
-      if (!report) {
+      // A per-robot stop of an empty list stopped nothing: it is "not confirmed", never a green banner.
+      if (!report || (attempt.kind === 'fallback' && report.robots.length === 0)) {
         const everyId = [...new Set(controllersRef.current.flatMap((c) => c.robots.map((r) => r.id)))];
         reportCommandIssue({
           code: 'estop_failed',

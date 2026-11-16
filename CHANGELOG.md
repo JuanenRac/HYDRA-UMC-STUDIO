@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- **PAUSE is sent without `If-Match`, like STOP:** a running playback changes the pose of the robot at every step, so a pause that carried the revision of the play was refused with a 412 almost every time. The mode chosen in this browser (off, standard, strict) no longer applies to it.
+- **The per-robot emergency stop no longer reports success when there is no robot to stop:** with an empty list the fallback answered "stopped" with a green banner; it is now reported as not confirmed.
+- **The safety limits screen does not offer to save before the limits were read from the server:** while the read has not succeeded, the form shows the prudent fallback values with a notice (in the eight languages) and Save is off, so an administrator can not write those fallback values over the real ones after a network cut.
 - **The README states the URTC bootloader check correctly and points to its own honesty check:** the shared safety notice no longer says that the URTC bootloaders behind the relay take a shared-key HMAC-SHA256 (the main board verifies an Ed25519 record and an expansion board installs only an image the main board confirmed), and the status lines no longer send the reader to a check "above" that is further down. README and its seven translations regenerated.
 - **The manual production-files build no longer refuses a four-component version:** `package.json` and `package-lock.json` must equal the first three components of the manifest version (npm has no fourth component) and agree with each other, and the archive keeps the name of the manifest version. The rule lives in `tools/extra_checks.py` (`dist-version`), the workflow runs it, and the validator tries it on made-up folders (three components equal, four components with a three-component `package.json`, and a different `package.json` or lock failing).
 

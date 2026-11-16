@@ -10,7 +10,8 @@
 //   - never when none is known (the first write learns it), when another write to the same robot is still on its way
 //     (its answer is what makes the revision stale, not a change by someone else), or after this window saved the
 //     whole settings tree (that save changes the robot too);
-//   - never for STOP, which is never conditional;
+//   - never for STOP or PAUSE, which are never conditional (a running playback changes the pose of the robot at every
+//     step, so a pause sent with the revision of the play would always be refused);
 //   - by the mode chosen in this browser: off, standard (reservations, the table and the discrete commands; the
 //     continuous ones - jog and speed - go unconditional) or strict (everything but STOP).
 // The default is standard. No React in here.
@@ -40,9 +41,9 @@ export function saveConditionalMode(storage: StorageLike | null | undefined, mod
   return mode;
 }
 
-/** Whether a command carries If-Match in a mode. Reservations are "claim" and "release". STOP never does. */
+/** Whether a command carries If-Match in a mode. Reservations are "claim" and "release". STOP and PAUSE never do. */
 export function isConditional(mode: ConditionalMode, command: string): boolean {
-  if (command === 'stop' || mode === 'off') return false;
+  if (command === 'stop' || command === 'pause' || mode === 'off') return false;
   if (mode === 'strict') return true;
   return !CONTINUOUS_COMMANDS.has(command);
 }

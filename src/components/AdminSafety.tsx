@@ -30,6 +30,8 @@ export function AdminSafety() {
   const [notice, setNotice] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [busy, setBusy] = useState(false);
+  // Whether the values on the screen are the ones the server reported (and not the prudent fallback of the store).
+  const [loaded, setLoaded] = useState(false);
   const [newModel, setNewModel] = useState('');
 
   // The values the server reports fill the form, unless the administrator has started to edit.
@@ -38,6 +40,7 @@ export function AdminSafety() {
     void fetchSafetyLimits().then((read) => {
       if (cancelled || !read) return;
       setSafetyState(read.state);
+      setLoaded(true);
     });
     return () => { cancelled = true; };
   }, []);
@@ -55,6 +58,7 @@ export function AdminSafety() {
   const problemText = (problem: FormProblem, field: string | undefined) => t(`safety.problem_${problem}`, { field: field ?? '' });
 
   const save = async () => {
+    if (!loaded) return;
     const built = buildPatch(form, state.hardLimits);
     if (!built.ok || !built.patch) { setError(problemText(built.problem ?? 'number', built.field)); return; }
     setBusy(true); setError(''); setNotice('');
@@ -90,6 +94,7 @@ export function AdminSafety() {
       <div>
         <h2 className="text-lg font-black text-slate-100 flex items-center gap-2"><ShieldAlert size={20} className="text-amber-400" />{t('safety.title')}</h2>
         <p className="text-xs text-slate-400 max-w-3xl">{t('safety.intro')}</p>
+        {!loaded && <p role="alert" data-testid="safety-not-loaded" className="text-xs text-amber-400 max-w-3xl mt-1">{t('safety.not_loaded')}</p>}
       </div>
 
       <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col gap-3">
@@ -171,7 +176,7 @@ export function AdminSafety() {
       </section>
 
       <div className="flex items-center gap-3 flex-wrap">
-        <button type="button" disabled={busy || !dirty} onClick={() => { void save(); }} data-testid="safety-save" className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-950 bg-sky-500 hover:bg-sky-400 disabled:opacity-40"><Save size={14} />{t('safety.save')}</button>
+        <button type="button" disabled={busy || !dirty || !loaded} onClick={() => { void save(); }} data-testid="safety-save" className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-950 bg-sky-500 hover:bg-sky-400 disabled:opacity-40"><Save size={14} />{t('safety.save')}</button>
         <button type="button" disabled={busy} onClick={restoreDefaults} className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-300 bg-slate-800 hover:bg-slate-700 disabled:opacity-40"><Undo2 size={14} />{t('safety.restore_defaults')}</button>
         {notice && <span role="status" className="text-xs font-bold text-emerald-400">{notice}</span>}
         {error && <span role="alert" className="text-xs font-bold text-rose-400">{error}</span>}

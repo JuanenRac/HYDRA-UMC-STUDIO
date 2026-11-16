@@ -1755,6 +1755,7 @@
     "restore_defaults": "Standardwerte laden",
     "saved": "Grenzen im Server gespeichert.",
     "save_failed": "Der Server hat die Grenzen nicht akzeptiert: {{detail}}",
+    "not_loaded": "Die Grenzen wurden nicht vom Server gelesen; die angezeigten Werte sind nur die vorsichtigen Standardwerte. Speichern ist gesperrt, bis sie gelesen sind.",
     "problem_number": "Keine Zahl: {{field}}",
     "problem_range": "Außerhalb des Bereichs (über 0 und höchstens die Obergrenze des Servers): {{field}}",
     "problem_model": "Eine Zeile hat keinen Modellnamen.",

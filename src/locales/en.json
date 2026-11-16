@@ -1755,6 +1755,7 @@
     "restore_defaults": "Load the defaults",
     "saved": "Limits saved in the server.",
     "save_failed": "The server did not accept the limits: {{detail}}",
+    "not_loaded": "The limits have not been read from the server, so the values shown are only the prudent defaults. Saving is off until they are read.",
     "problem_number": "Not a number: {{field}}",
     "problem_range": "Out of range (above 0 and at most the ceiling of the server): {{field}}",
     "problem_model": "A row has no model name.",
