@@ -45,14 +45,17 @@ export function reportNeedsAttention(report: StopAllReport): boolean {
 /** The answer of one attempt at POST /api/stop-all. */
 export type StopAllAttempt =
   | { kind: 'report'; report: StopAllReport }
-  /** 429 or 404: use the per-robot stop instead. */
+  /** 429, 404 or 5xx: use the per-robot stop instead. */
   | { kind: 'fallback'; status: number }
   /** No usable answer: the stop is NOT confirmed. */
   | { kind: 'failed'; status: number; code: CommandFailureCode; detail: string | null; sessionExpired: boolean };
 
-/** True for the answers that mean "the global route is not usable right now, stop robot by robot". */
+/**
+ * True for the answers that mean "the global route is not usable right now, stop robot by robot": the rate limit (429), a
+ * server without the route (404) and a server that failed (5xx), which says nothing about the robots themselves.
+ */
 export function shouldFallBackToPerRobot(status: number): boolean {
-  return status === 429 || status === 404;
+  return status === 429 || status === 404 || (status >= 500 && status <= 599);
 }
 
 function text(value: unknown): string | null {

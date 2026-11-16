@@ -210,10 +210,12 @@ describe('a lost pad is a dead-man stop', () => {
 });
 
 describe('the focus', () => {
-  it('produces no event while the tab has no focus, not even STOP, and a held button is not a new press when the focus returns', () => {
+  it('reads only STOP while the tab has no focus, once per press, and a held button is not a new press when the focus returns', () => {
     const engine = readyEngine();
     const unfocused = engine.step(frame({ pad: pad([0, 1, 6]), nowMs: 100, focused: false }));
-    expect(unfocused).toEqual({ events: [], status: 'unfocused' });
+    expect(unfocused).toEqual({ events: [{ type: 'stop', input: 'B0' }], status: 'unfocused' });
+    expect(engine.step(frame({ pad: pad([0, 1, 6]), nowMs: 150, focused: false }))).toEqual({ events: [], status: 'unfocused' });
+    expect(engine.step(frame({ pad: pad([1, 6]), nowMs: 160, focused: false })).events).toEqual([]);
     expect(engine.step(frame({ pad: pad([1, 6]), nowMs: 200 })).events).toEqual([]);
     engine.step(frame({ pad: pad(), nowMs: 300 }));
     expect(engine.step(frame({ pad: pad([6]), nowMs: 400 })).events).toHaveLength(1);
@@ -221,6 +223,10 @@ describe('the focus', () => {
   it('reads regardless of the focus when that safety switch is off', () => {
     const engine = readyEngine({ ...cfg, requireFocus: false });
     expect(engine.step(frame({ pad: pad([6]), nowMs: 100, focused: false })).events).toHaveLength(1);
+  });
+  it('sends nothing but the STOP while the tab has no focus: a move or a start is ignored', () => {
+    const engine = readyEngine();
+    expect(engine.step(frame({ pad: pad([1, 6]), nowMs: 100, focused: false })).events).toEqual([]);
   });
   it('a pad lost while the tab has no focus still stops everything, once', () => {
     const engine = readyEngine();

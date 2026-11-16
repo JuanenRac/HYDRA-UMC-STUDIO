@@ -125,6 +125,7 @@
     "flag_setup_failed_safe_state": "初始化失败，处于安全状态"
   },
   "stop_all": {
+    "sent_no_reply": "已发送停止指令，尚无响应",
     "label": "STOP",
     "tooltip": "STOP：立即停止所有机器人 - 单击即可，无需确认（{{shortcut}}）",
     "summary": "STOP：已停止 {{stopped}} 台，失败 {{failed}} 台",
@@ -1616,7 +1617,7 @@
       "max_unanswered": "未应答命令的上限",
       "require_claim": "只移动此窗口已预约的机器人",
       "stop_on_disconnect": "手柄断开时停止所有机器人",
-      "require_focus": "仅在此标签页有焦点时读取手柄",
+      "require_focus": "仅在此标签页有焦点时读取手柄（无焦点时仅读取停止键）",
       "preview": "实时输入",
       "preview_empty": "没有任何输入被按下。",
       "confirm_title": "启用手柄？",

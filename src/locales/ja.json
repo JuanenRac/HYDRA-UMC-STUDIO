@@ -125,6 +125,7 @@
     "flag_setup_failed_safe_state": "初期化失敗（安全状態）"
   },
   "stop_all": {
+    "sent_no_reply": "STOP を送信しました。応答待ちです",
     "label": "STOP",
     "tooltip": "STOP：全ロボットを今すぐ停止 - ワンクリック、確認なし（{{shortcut}}）",
     "summary": "STOP：{{stopped}}台停止、{{failed}}台失敗",
@@ -1616,7 +1617,7 @@
       "max_unanswered": "未応答コマンドの上限",
       "require_claim": "このウィンドウが予約したロボットだけを動かす",
       "stop_on_disconnect": "ゲームパッドが切断されたら全ロボットを停止する",
-      "require_focus": "このタブにフォーカスがある間だけゲームパッドを読む",
+      "require_focus": "このタブにフォーカスがある間だけゲームパッドを読む（フォーカスがなくても STOP だけは読む）",
       "preview": "入力のリアルタイム表示",
       "preview_empty": "何も押されていません。",
       "confirm_title": "ゲームパッドを有効にしますか？",

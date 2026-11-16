@@ -111,7 +111,7 @@ export function StopAllShortcut() {
 
 export function StopAllReportBanner({ compact = false }: { compact?: boolean }) {
   const { t } = useTranslation();
-  const { stopAllReport, dismissStopAllReport, emergencyStop } = useCommandFeedback();
+  const { stopAllReport, dismissStopAllReport, emergencyStop, stopAllPending } = useCommandFeedback();
   const attention = stopAllReport ? reportNeedsAttention(stopAllReport) : false;
 
   // A clean result is information: it fades. A warning stays until it is dismissed.
@@ -121,6 +121,20 @@ export function StopAllReportBanner({ compact = false }: { compact?: boolean }) 
     return () => clearTimeout(timer);
   }, [stopAllReport, attention, dismissStopAllReport]);
 
+  // From the first moment the stop is on the wire it says so, and keeps saying it until an answer arrives.
+  if (!stopAllReport && stopAllPending) {
+    return (
+      <div className={cn('fixed inset-x-0 z-[95] flex justify-center p-2 pointer-events-none', compact ? 'bottom-0' : 'bottom-12')}>
+        <div
+          role="status"
+          data-testid="stop-all-sent"
+          className="pointer-events-auto max-w-2xl w-full rounded-lg border border-amber-400 bg-amber-950/95 px-4 py-3 text-xs font-black uppercase tracking-widest text-amber-100 shadow-2xl"
+        >
+          {t('stop_all.sent_no_reply')}
+        </div>
+      </div>
+    );
+  }
   if (!stopAllReport) return null;
   return (
     <div className={cn('fixed inset-x-0 z-[95] flex justify-center p-2 pointer-events-none', compact ? 'bottom-0' : 'bottom-12')}>

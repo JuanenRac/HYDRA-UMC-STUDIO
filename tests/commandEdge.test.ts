@@ -143,9 +143,9 @@ describe('reportNeedsAttention', () => {
 });
 
 describe('interpretStopAllResponse edge cases', () => {
-  it('falls back on 404 and 429 whatever the body says, and on no other refusal', () => {
-    for (const status of [404, 429]) expect(interpretStopAllResponse(status, false, { error: 'x' })).toEqual({ kind: 'fallback', status });
-    for (const status of [400, 401, 403, 405, 409, 500, 502, 503]) expect(interpretStopAllResponse(status, false, null).kind, String(status)).toBe('failed');
+  it('falls back on 404, 429 and any 5xx whatever the body says, and on no other refusal', () => {
+    for (const status of [404, 429, 500, 502, 503]) expect(interpretStopAllResponse(status, false, { error: 'x' })).toEqual({ kind: 'fallback', status });
+    for (const status of [400, 401, 403, 405, 409]) expect(interpretStopAllResponse(status, false, null).kind, String(status)).toBe('failed');
   });
 
   it('asks for a new session on a 401 and on a 403 that says the token is bad, not on a plain 403', () => {
@@ -153,7 +153,7 @@ describe('interpretStopAllResponse edge cases', () => {
     expect(interpretStopAllResponse(403, false, { code: 'TOKEN_EXPIRED' })).toMatchObject({ sessionExpired: true });
     expect(interpretStopAllResponse(403, false, { code: 'TOKEN_INVALID' })).toMatchObject({ sessionExpired: true });
     expect(interpretStopAllResponse(403, false, { code: 'ROLE' })).toMatchObject({ sessionExpired: false });
-    expect(interpretStopAllResponse(500, false, { code: 'TOKEN_EXPIRED' })).toMatchObject({ sessionExpired: false });
+    expect(interpretStopAllResponse(500, false, { code: 'TOKEN_EXPIRED' })).toEqual({ kind: 'fallback', status: 500 });
   });
 
   it('is not confirmed when an ok answer has no usable body, even with a success flag', () => {
@@ -165,10 +165,10 @@ describe('interpretStopAllResponse edge cases', () => {
 describe('requestStopAll', () => {
   afterEach(() => { vi.useRealTimers(); });
 
-  it('reads an answer that has no JSON body as a refusal of that status, not as a crash', async () => {
+  it('reads an answer that has no JSON body as a server failure that falls back to the per-robot stop, not as a crash', async () => {
     const fetchImpl = vi.fn(async () => new Response('bad gateway', { status: 502 })) as unknown as typeof fetch;
     const attempt = await requestStopAll({ fetchImpl, headers: () => ({}) });
-    expect(attempt).toMatchObject({ kind: 'failed', status: 502, code: 'server', detail: null });
+    expect(attempt).toEqual({ kind: 'fallback', status: 502 });
   });
 
   it('does not retry a refusal and does not retry a timeout answer twice', async () => {

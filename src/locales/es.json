@@ -125,6 +125,7 @@
     "flag_setup_failed_safe_state": "Fallo de arranque, estado seguro"
   },
   "stop_all": {
+    "sent_no_reply": "STOP enviado, sin respuesta",
     "label": "STOP",
     "tooltip": "STOP: parar todos los robots ahora - un clic, sin confirmación ({{shortcut}})",
     "summary": "STOP: {{stopped}} parados, {{failed}} con fallo",
@@ -1616,7 +1617,7 @@
       "max_unanswered": "Máximo de órdenes sin respuesta",
       "require_claim": "Mover solo un robot que esta ventana ha reservado",
       "stop_on_disconnect": "Parar todos los robots si el mando se desconecta",
-      "require_focus": "Leer el mando solo mientras esta pestaña tiene el foco",
+      "require_focus": "Leer el mando solo mientras esta pestaña tiene el foco (sin foco solo se lee STOP)",
       "preview": "Entradas en vivo",
       "preview_empty": "No hay nada pulsado.",
       "confirm_title": "¿Activar el mando?",

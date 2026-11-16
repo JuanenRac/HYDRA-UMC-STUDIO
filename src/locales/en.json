@@ -125,6 +125,7 @@
     "flag_setup_failed_safe_state": "Set-up failed, safe state"
   },
   "stop_all": {
+    "sent_no_reply": "STOP sent, no reply yet",
     "label": "STOP",
     "tooltip": "STOP all robots now - one click, no confirmation ({{shortcut}})",
     "summary": "STOP: {{stopped}} stopped, {{failed}} failed",
@@ -1616,7 +1617,7 @@
       "max_unanswered": "Most unanswered commands",
       "require_claim": "Move only a robot this window has reserved",
       "stop_on_disconnect": "Stop every robot when the gamepad disconnects",
-      "require_focus": "Read the gamepad only while this tab has focus",
+      "require_focus": "Read the gamepad only while this tab has focus (only STOP is read without focus)",
       "preview": "Live inputs",
       "preview_empty": "Nothing is pushed.",
       "confirm_title": "Arm the gamepad?",
