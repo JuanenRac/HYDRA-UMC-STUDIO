@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **The camera pan, tilt and zoom stop when the control is released wherever the pointer is, and the stop is sent again if it did not arrive:** the controls use pointer events with capture (touch and pen included), work with Space and Enter, and end the move when the window loses focus, the tab is hidden or the view closes; only a camera that is held gets a stop. A unit test covers the hold.
+
 - **PAUSE is sent without `If-Match`, like STOP:** a running playback changes the pose of the robot at every step, so a pause that carried the revision of the play was refused with a 412 almost every time. The mode chosen in this browser (off, standard, strict) no longer applies to it.
 - **The per-robot emergency stop no longer reports success when there is no robot to stop:** with an empty list the fallback answered "stopped" with a green banner; it is now reported as not confirmed.
 - **The safety limits screen does not offer to save before the limits were read from the server:** while the read has not succeeded, the form shows the prudent fallback values with a notice (in the eight languages) and Save is off, so an administrator can not write those fallback values over the real ones after a network cut.

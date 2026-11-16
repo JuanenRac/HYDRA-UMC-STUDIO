@@ -4,11 +4,12 @@
 // GPL-3.0 - see LICENSE
 // =============================================================================
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { ipStreamLabels } from '../store';
 import { apiUrl } from '../lib/apiBase';
 import { ServerHttpError, serverClient } from '../lib/serverClient';
 import { useMediaTicket, withTicket } from '../lib/mediaTicket';
+import { createPtzHold } from '../lib/ptzHold';
 import { useTranslation } from 'react-i18next';
 import { Video, Maximize2, Minimize2, Camera as CameraIcon, Power, ScanLine, CircleDot, RefreshCw, Move, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -168,19 +169,53 @@ export function CamerasView() {
       return next;
     });
   };
-  const sendPtz = async (cam: typeof cameras[number], pan: number, tilt: number, zoom: number) => {
-    if (!cam.ipHost) return;
+  // Returns whether the command arrived (a stop that did not is sent once more by ptzHold).
+  const sendPtz = async (cam: typeof cameras[number], pan: number, tilt: number, zoom: number): Promise<boolean> => {
+    if (!cam.ipHost) return true;
     try {
       const body = await serverClient.postCameraByIdPtz({ path: { id: cam.id }, body: { host: cam.ipHost, username: cam.ipUsername || '', password: cam.ipPassword || '', pan, tilt, zoom } });
       if (!body?.ok) {
         setPtzErrors(prev => ({ ...prev, [cam.id]: ((body as unknown as { error?: string } | null)?.error) || t('cameras.ptz_failed', 'PTZ command failed') }));
+        return false;
       } else if (ptzErrors[cam.id]) {
         setPtzErrors(prev => { const next = { ...prev }; delete next[cam.id]; return next; });
       }
+      return true;
     } catch (error) {
       const reason = error instanceof ServerHttpError ? (error.body as { error?: unknown } | null)?.error : undefined;
       setPtzErrors(prev => ({ ...prev, [cam.id]: (typeof reason === 'string' && reason) || t('cameras.ptz_failed', 'PTZ command failed') }));
+      return false;
     }
+  };
+  // A move lasts while the control is held (pointer, or Space/Enter): the release ends it wherever the pointer is, and it also ends when
+  // the window loses focus, the tab is hidden or the view goes away, because the release cannot be seen then.
+  const ptzHold = useRef(createPtzHold()).current;
+  useEffect(() => {
+    const letGo = () => ptzHold.releaseAll();
+    const onHidden = () => { if (document.hidden) letGo(); };
+    window.addEventListener('blur', letGo);
+    document.addEventListener('visibilitychange', onHidden);
+    return () => {
+      window.removeEventListener('blur', letGo);
+      document.removeEventListener('visibilitychange', onHidden);
+      letGo();
+    };
+  }, [ptzHold]);
+  const ptzHoldProps = (cam: typeof cameras[number], pan: number, tilt: number, zoom: number) => {
+    const press = () => ptzHold.start(cam.id, () => sendPtz(cam, pan, tilt, zoom), () => sendPtz(cam, 0, 0, 0));
+    const letGo = () => { void ptzHold.release(cam.id); };
+    return {
+      onPointerDown: (e: ReactPointerEvent<HTMLButtonElement>) => {
+        try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* the release is then seen by pointerleave */ }
+        press();
+      },
+      onPointerUp: letGo,
+      onPointerCancel: letGo,
+      onPointerLeave: letGo,
+      onKeyDown: (e: ReactKeyboardEvent<HTMLButtonElement>) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); press(); } },
+      onKeyUp: letGo,
+      onBlur: letGo,
+    };
   };
 
   return (
@@ -433,9 +468,9 @@ export function CamerasView() {
                       )}
 
                       {/* Real PTZ control - each direction/zoom button
-                          sends a real continuous-move command on
-                          mousedown and a real stop (0/0/0) on
-                          mouseup/mouseleave, mirroring how a physical PTZ
+                          sends a real continuous-move command when it is
+                          pressed and a real stop (0/0/0) when it is released
+                          (pointer, key, focus lost), mirroring how a physical PTZ
                           joystick behaves. A camera that answers with a
                           real error (most of this ecosystem's own real
                           cameras are fixed, no motor hardware) shows that
@@ -445,18 +480,18 @@ export function CamerasView() {
                         <div className="absolute bottom-2 left-2 z-30 bg-slate-950/85 backdrop-blur border border-violet-500/30 rounded-lg p-1.5 flex items-start gap-1.5">
                           <div className="grid grid-cols-3 grid-rows-3 gap-0.5 w-[78px]">
                             <div />
-                            <button onMouseDown={() => sendPtz(c, 0, 60, 0)} onMouseUp={() => sendPtz(c, 0, 0, 0)} onMouseLeave={() => sendPtz(c, 0, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 flex items-center justify-center"><ChevronUp size={12} /></button>
+                            <button {...ptzHoldProps(c, 0, 60, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 flex items-center justify-center"><ChevronUp size={12} /></button>
                             <div />
-                            <button onMouseDown={() => sendPtz(c, -60, 0, 0)} onMouseUp={() => sendPtz(c, 0, 0, 0)} onMouseLeave={() => sendPtz(c, 0, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 flex items-center justify-center"><ChevronLeft size={12} /></button>
+                            <button {...ptzHoldProps(c, -60, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 flex items-center justify-center"><ChevronLeft size={12} /></button>
                             <div className="flex items-center justify-center text-slate-700"><Move size={10} /></div>
-                            <button onMouseDown={() => sendPtz(c, 60, 0, 0)} onMouseUp={() => sendPtz(c, 0, 0, 0)} onMouseLeave={() => sendPtz(c, 0, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 flex items-center justify-center"><ChevronRight size={12} /></button>
+                            <button {...ptzHoldProps(c, 60, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 flex items-center justify-center"><ChevronRight size={12} /></button>
                             <div />
-                            <button onMouseDown={() => sendPtz(c, 0, -60, 0)} onMouseUp={() => sendPtz(c, 0, 0, 0)} onMouseLeave={() => sendPtz(c, 0, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 flex items-center justify-center"><ChevronDown size={12} /></button>
+                            <button {...ptzHoldProps(c, 0, -60, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 flex items-center justify-center"><ChevronDown size={12} /></button>
                             <div />
                           </div>
                           <div className="flex flex-col gap-0.5">
-                            <button onMouseDown={() => sendPtz(c, 0, 0, 60)} onMouseUp={() => sendPtz(c, 0, 0, 0)} onMouseLeave={() => sendPtz(c, 0, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300"><ZoomIn size={12} /></button>
-                            <button onMouseDown={() => sendPtz(c, 0, 0, -60)} onMouseUp={() => sendPtz(c, 0, 0, 0)} onMouseLeave={() => sendPtz(c, 0, 0, 0)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300"><ZoomOut size={12} /></button>
+                            <button {...ptzHoldProps(c, 0, 0, 60)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300"><ZoomIn size={12} /></button>
+                            <button {...ptzHoldProps(c, 0, 0, -60)} className="p-1 rounded bg-slate-800 hover:bg-violet-500/20 text-slate-300 hover:text-violet-300"><ZoomOut size={12} /></button>
                           </div>
                           {ptzErrors[c.id] && (
                             <span className="text-[8px] text-rose-400 font-mono max-w-[90px] leading-tight break-words">{ptzErrors[c.id]}</span>
