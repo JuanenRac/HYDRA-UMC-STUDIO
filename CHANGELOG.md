@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **Studio tells when the server is stopped only because it restarted while stopped:** when the server comes back with the global stop still on, an amber notice next to the stop badge says that an administrator must release it (in all eight languages). The Security tab of Server Admin gets the new switch "While the global stop is on, refuse every command that moves a robot" (off by default; stop and disable still work), and the two limits of the global stop (`stopAllMax`, `stopAllWindowSeconds`) are gone because the global stop is never rate limited now.
+
 - **The camera pan, tilt and zoom stop when the control is released wherever the pointer is, and the stop is sent again if it did not arrive:** the controls use pointer events with capture (touch and pen included), work with Space and Enter, and end the move when the window loses focus, the tab is hidden or the view closes; only a camera that is held gets a stop. A unit test covers the hold.
 
 - **PAUSE is sent without `If-Match`, like STOP:** a running playback changes the pose of the robot at every step, so a pause that carried the revision of the play was refused with a 412 almost every time. The mode chosen in this browser (off, standard, strict) no longer applies to it.

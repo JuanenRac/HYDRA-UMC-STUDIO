@@ -143,7 +143,8 @@
     "physical_ready": "rilasciato",
     "physical_unknown": "non monitorato",
     "software_stopped": "attivo",
-    "software_ready": "inattivo"
+    "software_ready": "inattivo",
+    "restored_after_restart": "Fermo dopo il riavvio del server: un amministratore deve rilasciarlo"
   },
   "command_issue": {
     "title": "Comando non consegnato",
@@ -1309,6 +1310,8 @@
     "admin_security_stop_title": "Annuncio dell'arresto globale",
     "admin_security_stop_label": "Annunciare un arresto globale sul bridge MQTT (SAFE_STOP trattenuto)",
     "admin_security_stop_help": "Disattivato per impostazione predefinita. Richiede il bridge MQTT attivo. Lo stato resta finché un amministratore lo rilascia.",
+    "admin_security_latch_label": "Finché l'arresto globale è attivo, rifiutare ogni comando che muove un robot",
+    "admin_security_latch_help": "Fermare e disattivare funzionano ancora. Solo un amministratore può rilasciare l'arresto. Disattivato per impostazione predefinita: l'arresto globale non trattiene allora i comandi del server.",
     "admin_security_stop_save": "Salva annuncio di arresto",
     "admin_security_jd_title": "Dispatcher dei lavori",
     "admin_security_jd_relay_label": "Consegnare ai robot le richieste di arresto del dispatcher dei lavori (spento per impostazione predefinita)",
@@ -1429,8 +1432,6 @@
     "admin_security_rl_api_max": "Richieste API consentite",
     "admin_security_rl_sensitive_max": "Richieste consentite sulle rotte di codice e di servizi",
     "admin_security_rl_api_window": "Finestra dell'API (secondi)",
-    "admin_security_rl_stopall_max": "Richieste di arresto globale consentite",
-    "admin_security_rl_stopall_window": "Finestra dell'arresto globale (secondi)",
     "admin_security_rl_save": "Salva i limiti",
     "admin_security_rl_invalid": "Ogni numero deve essere un intero nel suo intervallo.",
     "admin_bridges_title": "Bridge macchina",

@@ -19,6 +19,8 @@ export interface StopStateSnapshot {
   software: SoftwareStop;
   physicalLinkOk: boolean | null;
   changedAt: number;
+  /** True while the server is stopped only because it restarted while stopped: an administrator has to release it. */
+  restoredAfterRestart: boolean;
 }
 
 type Listener = () => void;
@@ -47,6 +49,7 @@ export function parseStopState(message: unknown): StopStateSnapshot | null {
     software: s.software as SoftwareStop,
     physicalLinkOk: typeof s.physicalLinkOk === 'boolean' ? s.physicalLinkOk : null,
     changedAt: typeof s.changedAt === 'number' && Number.isFinite(s.changedAt) ? s.changedAt : 0,
+    restoredAfterRestart: s.restoredAfterRestart === true,
   };
 }
 

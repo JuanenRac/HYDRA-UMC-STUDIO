@@ -143,7 +143,8 @@
     "physical_ready": "已释放",
     "physical_unknown": "未监控",
     "software_stopped": "开启",
-    "software_ready": "关闭"
+    "software_ready": "关闭",
+    "restored_after_restart": "服务器重启后保持停止:需要管理员解除"
   },
   "command_issue": {
     "title": "命令未送达",
@@ -1309,6 +1310,8 @@
     "admin_security_stop_title": "全局停止通告",
     "admin_security_stop_label": "在 MQTT 桥上通告全局停止(保留的 SAFE_STOP)",
     "admin_security_stop_help": "默认关闭。需要开启 MQTT 桥。该状态会一直保留,直到管理员解除。",
+    "admin_security_latch_label": "全局停止期间,拒绝一切会让机器人动作的命令",
+    "admin_security_latch_help": "停止和禁用仍可使用。只有管理员可以解除停止。默认关闭:此时全局停止不会拦截服务器的命令。",
     "admin_security_stop_save": "保存停止通告",
     "admin_security_jd_title": "作业调度器",
     "admin_security_jd_relay_label": "将作业调度器的停止请求转交给机器人（默认关闭）",
@@ -1429,8 +1432,6 @@
     "admin_security_rl_api_max": "允许的 API 请求数",
     "admin_security_rl_sensitive_max": "代码和服务路由允许的请求数",
     "admin_security_rl_api_window": "API 窗口（秒）",
-    "admin_security_rl_stopall_max": "允许的全局停止请求数",
-    "admin_security_rl_stopall_window": "全局停止窗口（秒）",
     "admin_security_rl_save": "保存限制",
     "admin_security_rl_invalid": "每个数字必须是其范围内的整数。",
     "admin_bridges_title": "机器桥接",

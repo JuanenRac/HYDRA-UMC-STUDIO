@@ -143,7 +143,8 @@
     "physical_ready": "relâché",
     "physical_unknown": "non surveillé",
     "software_stopped": "actif",
-    "software_ready": "inactif"
+    "software_ready": "inactif",
+    "restored_after_restart": "Arrêté après un redémarrage du serveur : un administrateur doit le libérer"
   },
   "command_issue": {
     "title": "Commande non livrée",
@@ -1309,6 +1310,8 @@
     "admin_security_stop_title": "Annonce de l'arrêt global",
     "admin_security_stop_label": "Annoncer un arrêt global sur le pont MQTT (SAFE_STOP retenu)",
     "admin_security_stop_help": "Désactivé par défaut. Nécessite le pont MQTT actif. L'état reste jusqu'à ce qu'un administrateur le libère.",
+    "admin_security_latch_label": "Tant que l'arrêt global est actif, refuser toute commande qui déplace un robot",
+    "admin_security_latch_help": "Arrêter et désactiver restent possibles. Seul un administrateur peut libérer l'arrêt. Désactivé par défaut : l'arrêt global ne retient alors pas les commandes du serveur.",
     "admin_security_stop_save": "Enregistrer l'annonce d'arrêt",
     "admin_security_jd_title": "Répartiteur de travaux",
     "admin_security_jd_relay_label": "Remettre aux robots les demandes d'arrêt du répartiteur de travaux (désactivé par défaut)",
@@ -1429,8 +1432,6 @@
     "admin_security_rl_api_max": "Requêtes d'API autorisées",
     "admin_security_rl_sensitive_max": "Requêtes autorisées sur les routes de code et de services",
     "admin_security_rl_api_window": "Fenêtre de l'API (secondes)",
-    "admin_security_rl_stopall_max": "Requêtes d'arrêt global autorisées",
-    "admin_security_rl_stopall_window": "Fenêtre de l'arrêt global (secondes)",
     "admin_security_rl_save": "Enregistrer les limites",
     "admin_security_rl_invalid": "Chaque nombre doit être un entier dans sa plage.",
     "admin_bridges_title": "Ponts machine",

@@ -143,7 +143,8 @@
     "physical_ready": "liberada",
     "physical_unknown": "no supervisada",
     "software_stopped": "activa",
-    "software_ready": "inactiva"
+    "software_ready": "inactiva",
+    "restored_after_restart": "Parado tras reiniciar el servidor: un administrador debe liberarlo"
   },
   "command_issue": {
     "title": "Comando no entregado",
@@ -1309,6 +1310,8 @@
     "admin_security_stop_title": "Anuncio de parada global",
     "admin_security_stop_label": "Anunciar una parada global en el puente MQTT (SAFE_STOP retenido)",
     "admin_security_stop_help": "Desactivado por defecto. Requiere el puente MQTT activo. El estado permanece hasta que un administrador lo libere.",
+    "admin_security_latch_label": "Mientras la parada global esté activa, rechazar toda orden que mueva un robot",
+    "admin_security_latch_help": "Parar y deshabilitar siguen funcionando. Solo un administrador puede liberar la parada. Desactivado por defecto: la parada global no retiene entonces las órdenes del servidor.",
     "admin_security_stop_save": "Guardar anuncio de parada",
     "admin_security_jd_title": "Despachador de trabajos",
     "admin_security_jd_relay_label": "Entregar a los robots las peticiones de parada del despachador de trabajos (apagado por defecto)",
@@ -1429,8 +1432,6 @@
     "admin_security_rl_api_max": "Peticiones de API permitidas",
     "admin_security_rl_sensitive_max": "Peticiones permitidas en rutas de código y de servicios",
     "admin_security_rl_api_window": "Ventana de la API (segundos)",
-    "admin_security_rl_stopall_max": "Peticiones de parada global permitidas",
-    "admin_security_rl_stopall_window": "Ventana de la parada global (segundos)",
     "admin_security_rl_save": "Guardar los límites",
     "admin_security_rl_invalid": "Cada número debe ser un entero dentro de su rango.",
     "admin_bridges_title": "Puentes de máquina",

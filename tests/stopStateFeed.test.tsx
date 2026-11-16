@@ -36,7 +36,7 @@ const message = (over: Record<string, unknown> = {}) => ({
 
 describe('reading the message', () => {
   it('takes a complete message', () => {
-    expect(parseStopState(message())).toEqual({ state: 'STOPPED', physical: 'latched', software: 'ready', physicalLinkOk: true, changedAt: 1234 });
+    expect(parseStopState(message())).toEqual({ state: 'STOPPED', physical: 'latched', software: 'ready', physicalLinkOk: true, changedAt: 1234, restoredAfterRestart: false });
     expect(parseStopState(message({ physicalLinkOk: undefined, changedAt: undefined }))).toMatchObject({ physicalLinkOk: null, changedAt: 0 });
   });
 
@@ -107,6 +107,18 @@ describe('the badge', () => {
     expect(screen.getByTestId('stop-state-badge').getAttribute('title')).toBe('Physical emergency stop: not monitored - global stop: on');
   });
 
+  it('tells that the server is stopped only because it restarted while stopped, until the release', () => {
+    render(<StopStateBadge />);
+    act(() => { publishStopStateEvent(message({ state: 'STOPPED', physical: 'unknown', software: 'stopped' })); });
+    expect(screen.queryByTestId('stop-restored-notice')).toBeNull();
+    act(() => { publishStopStateEvent(message({ state: 'STOPPED', physical: 'unknown', software: 'stopped', restoredAfterRestart: true })); });
+    expect(screen.getByTestId('stop-restored-notice').textContent).toBe('Stopped after a server restart: an administrator must release it');
+    expect(screen.getByTestId('stop-restored-notice').getAttribute('role')).toBe('alert');
+    act(() => { publishStopStateEvent(message({ state: 'UNKNOWN', physical: 'unknown', software: 'ready' })); });
+    expect(screen.queryByTestId('stop-restored-notice')).toBeNull();
+    expect(parseStopState(message({ restoredAfterRestart: 'yes' }))!.restoredAfterRestart).toBe(false);
+  });
+
   it('has its words in the language of the person', () => {
     expect(es.stop_all.state_stopped).toBe('PARADA');
     expect(es.stop_all.badge_tooltip).toBe('Parada de emergencia física: {{physical}} - parada global: {{software}}');
@@ -116,7 +128,7 @@ describe('the badge', () => {
 
 describe('the eight languages', () => {
   it('every language has every key, and the tooltip keeps both placeholders', () => {
-    const keys = ['state_stopped', 'state_ready', 'state_unknown', 'badge_tooltip', 'physical_latched', 'physical_ready', 'physical_unknown', 'software_stopped', 'software_ready'];
+    const keys = ['state_stopped', 'state_ready', 'state_unknown', 'badge_tooltip', 'physical_latched', 'physical_ready', 'physical_unknown', 'software_stopped', 'software_ready', 'restored_after_restart'];
     for (const [name, locale] of Object.entries({ en, es, de, fr, it: italian, ja, pt, zh })) {
       const block = (locale as unknown as { stop_all: Record<string, string> }).stop_all;
       for (const key of keys) expect(typeof block[key] === 'string' && block[key].length > 0, `${name}: ${key}`).toBe(true);

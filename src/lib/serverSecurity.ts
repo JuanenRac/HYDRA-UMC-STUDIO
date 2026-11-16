@@ -107,6 +107,8 @@ export interface SecurityState {
   } | null;
   safety: {
     publishGlobalStop: { value: boolean; source: SecuritySource };
+    /** While the global stop is on, the server refuses every robot command except stop and disable (off by default). Absent when the server predates the option. */
+    latchGlobalStop?: { value: boolean; source: SecuritySource };
     /** Absent when the server predates the F-RAM erase of the kinematic brain (off by default there). */
     framErase?: { value: boolean; source: SecuritySource };
     /** Every how many milliseconds the server reads the physical emergency stop from the SPI bridge (0: off). Absent when the server predates the option. */
@@ -265,7 +267,7 @@ function parseExposure(raw: any): SecurityState['exposure'] {
   return { cameraOpen, wsQueryToken, logRedaction, voiceSignature };
 }
 
-export const RATE_LIMIT_KEYS = ['loginMax', 'loginWindowSeconds', 'refreshMax', 'apiMax', 'sensitiveMax', 'apiWindowSeconds', 'stopAllMax', 'stopAllWindowSeconds'] as const;
+export const RATE_LIMIT_KEYS = ['loginMax', 'loginWindowSeconds', 'refreshMax', 'apiMax', 'sensitiveMax', 'apiWindowSeconds'] as const;
 export type RateLimitKey = (typeof RATE_LIMIT_KEYS)[number];
 export interface RateLimitNumber {
   value: number;
@@ -273,7 +275,7 @@ export interface RateLimitNumber {
   min: number;
   max: number;
 }
-/** The switch and the eight numbers of the request limiters per address, each with where it comes from and its range. */
+/** The switch and the six numbers of the request limiters per address, each with where it comes from and its range. */
 export interface RateLimitsState {
   enabled: { value: boolean; source: SecuritySource };
   numbers: Record<RateLimitKey, RateLimitNumber>;
@@ -460,6 +462,8 @@ function parseSafety(raw: any): SecurityState['safety'] {
   const publish = raw.publishGlobalStop;
   if (!publish || typeof publish.value !== 'boolean' || !isSource(publish.source)) return null;
   const state: NonNullable<SecurityState['safety']> = { publishGlobalStop: { value: publish.value, source: publish.source } };
+  const latch = raw.latchGlobalStop;
+  if (latch && typeof latch.value === 'boolean' && isSource(latch.source)) state.latchGlobalStop = { value: latch.value, source: latch.source };
   const fram = raw.framErase;
   if (fram && typeof fram.value === 'boolean' && isSource(fram.source)) state.framErase = { value: fram.value, source: fram.source };
   const watch = raw.estopWatchMs;
@@ -862,14 +866,15 @@ export function jobExecutorGoesLive(current: NonNullable<SecurityState['jobDispa
   return next.jobDispatcher.executor?.live === true && !(current.executor?.live.value ?? false);
 }
 
-export type SafetyPatchBody = { safety: { publishGlobalStop?: boolean; framErase?: boolean; estopWatchMs?: number; confirm?: true } };
+export type SafetyPatchBody = { safety: { publishGlobalStop?: boolean; latchGlobalStop?: boolean; framErase?: boolean; estopWatchMs?: number; confirm?: true } };
 
 /** The request body for the options of the safety block: the announcement of a global stop on the MQTT bridge (off by default; announcing a stop is the safe direction and never asks), and,
  * only when given, the F-RAM erase of the kinematic brain (off by default; turning it on carries the confirmation the server asks for) and the interval of the emergency stop watch. */
-export function safetyPatch(publishGlobalStop: boolean | null, extra: { framErase?: boolean; estopWatchMs?: number } = {}): SafetyPatchBody {
+export function safetyPatch(publishGlobalStop: boolean | null, extra: { latchGlobalStop?: boolean; framErase?: boolean; estopWatchMs?: number } = {}): SafetyPatchBody {
   // null leaves the announcement out: a server that has it fixed by its environment refuses any request that names it
   const safety: SafetyPatchBody['safety'] = {};
   if (publishGlobalStop !== null) safety.publishGlobalStop = publishGlobalStop;
+  if (extra.latchGlobalStop !== undefined) safety.latchGlobalStop = extra.latchGlobalStop;
   if (extra.framErase !== undefined) {
     safety.framErase = extra.framErase;
     if (extra.framErase) safety.confirm = true;

@@ -143,7 +143,8 @@
     "physical_ready": "freigegeben",
     "physical_unknown": "nicht überwacht",
     "software_stopped": "aktiv",
-    "software_ready": "inaktiv"
+    "software_ready": "inaktiv",
+    "restored_after_restart": "Nach einem Server-Neustart gestoppt: Ein Administrator muss ihn freigeben"
   },
   "command_issue": {
     "title": "Befehl nicht zugestellt",
@@ -1309,6 +1310,8 @@
     "admin_security_stop_title": "Ankündigung des globalen Stopps",
     "admin_security_stop_label": "Einen globalen Stopp auf der MQTT-Brücke ankündigen (gehaltenes SAFE_STOP)",
     "admin_security_stop_help": "Standardmäßig aus. Die MQTT-Brücke muss eingeschaltet sein. Der Zustand bleibt, bis ein Administrator ihn freigibt.",
+    "admin_security_latch_label": "Solange der globale Stopp aktiv ist, jeden Befehl ablehnen, der einen Roboter bewegt",
+    "admin_security_latch_help": "Stopp und Deaktivieren funktionieren weiter. Nur ein Administrator kann den Stopp freigeben. Standardmäßig aus: Der globale Stopp hält die Befehle des Servers dann nicht zurück.",
     "admin_security_stop_save": "Stopp-Ankündigung speichern",
     "admin_security_jd_title": "Job-Dispatcher",
     "admin_security_jd_relay_label": "Die Stopp-Anfragen des Job-Dispatchers an die Roboter zustellen (standardmäßig aus)",
@@ -1429,8 +1432,6 @@
     "admin_security_rl_api_max": "Erlaubte API-Anfragen",
     "admin_security_rl_sensitive_max": "Erlaubte Anfragen auf Code- und Dienstrouten",
     "admin_security_rl_api_window": "API-Fenster (Sekunden)",
-    "admin_security_rl_stopall_max": "Erlaubte Anfragen für den globalen Stopp",
-    "admin_security_rl_stopall_window": "Fenster des globalen Stopps (Sekunden)",
     "admin_security_rl_save": "Limits speichern",
     "admin_security_rl_invalid": "Jede Zahl muss eine ganze Zahl in ihrem Bereich sein.",
     "admin_bridges_title": "Maschinenbrücken",
