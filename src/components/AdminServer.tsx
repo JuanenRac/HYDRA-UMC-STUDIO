@@ -36,7 +36,7 @@ import { IngestSwitchesPanel } from './IngestSwitchesPanel';
 import { DetectionHefPanel } from './DetectionHefPanel';
 import { LiveActivityPanel } from './LiveActivityPanel';
 import { DeveloperNodeStatusPanel } from './DeveloperNodeStatusPanel';
-import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, readOnlyPatch, readOnlyChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, nodeHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
+import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, tlsChangeNeedsConfirmation, trustedNetworksChangeNeedsConfirmation, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, readOnlyPatch, readOnlyChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, nodeHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
 
 type ServerConfigPatch = NonNullable<Parameters<typeof serverClient.putAdminServerConfig>[0]>['body'];
@@ -108,6 +108,8 @@ export function AdminServer() {
   const [pendingRobots, setPendingRobots] = useState(false);
   const [readOnlyOn, setReadOnlyOn] = useState(false);
   const [pendingReadOnly, setPendingReadOnly] = useState(false);
+  const [pendingTlsOff, setPendingTlsOff] = useState<Record<string, unknown> | null>(null);
+  const [pendingTrustedOff, setPendingTrustedOff] = useState(false);
   const [connectionsRecordAddress, setConnectionsRecordAddress] = useState(false);
   const [pendingConnections, setPendingConnections] = useState(false);
   const [productionRdp, setProductionRdp] = useState(false);
@@ -426,7 +428,13 @@ export function AdminServer() {
   const saveTls = () => {
     const patch = tlsPatch(tlsEnabled, tlsCert, tlsKey);
     if (!patch) { setError(t('ecosystem.admin_security_tls_paths_required')); return; }
+    if (security && tlsChangeNeedsConfirmation(security.tls.enabled, tlsEnabled)) { setPendingTlsOff(patch); return; }
     void saveSecurity(patch);
+  };
+
+  const saveTrustedNetworks = () => {
+    if (security?.trustedNetworks && trustedNetworksChangeNeedsConfirmation(security.trustedNetworks.enabled.value, trustedNetworksOn)) { setPendingTrustedOff(true); return; }
+    void saveSecurity(trustedNetworksPatch(trustedNetworksOn));
   };
 
   const sourceText = (source: 'env' | 'config' | 'default') => t(`ecosystem.admin_security_source_${source}`);
@@ -969,7 +977,7 @@ export function AdminServer() {
               </label>
               <span className="text-[10px] text-slate-500">{sourceText(security.trustedNetworks.enabled.source)}</span>
               <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_trusted_networks_help')}</div>
-              <button onClick={() => void saveSecurity(trustedNetworksPatch(trustedNetworksOn))} disabled={saving || isLocked(security.trustedNetworks.enabled.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-50 text-sky-300 border border-sky-500/30 rounded-lg text-xs font-bold transition-all">
+              <button onClick={saveTrustedNetworks} disabled={saving || isLocked(security.trustedNetworks.enabled.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-50 text-sky-300 border border-sky-500/30 rounded-lg text-xs font-bold transition-all">
                 <Save size={14} /> {t('ecosystem.admin_security_trusted_networks_save')}
               </button>
             </div>
@@ -1402,6 +1410,20 @@ export function AdminServer() {
         message={security?.jobDispatcher && pendingJd && jobExecutorGoesLive(security.jobDispatcher, pendingJd) ? t('ecosystem.admin_security_jd_exec_confirm') : t('ecosystem.admin_security_jd_confirm')}
         onConfirm={() => { const body = pendingJd; setPendingJd(null); if (body) void saveSecurity(body); }}
         onCancel={() => setPendingJd(null)}
+      />
+
+      <ConfirmDialog
+        open={pendingTlsOff !== null}
+        message={t('ecosystem.admin_security_tls_off_confirm')}
+        onConfirm={() => { const patch = pendingTlsOff; setPendingTlsOff(null); if (patch) void saveSecurity(patch); }}
+        onCancel={() => setPendingTlsOff(null)}
+      />
+
+      <ConfirmDialog
+        open={pendingTrustedOff}
+        message={t('ecosystem.admin_security_trusted_off_confirm')}
+        onConfirm={() => { setPendingTrustedOff(false); void saveSecurity(trustedNetworksPatch(trustedNetworksOn)); }}
+        onCancel={() => setPendingTrustedOff(false)}
       />
 
       <ConfirmDialog

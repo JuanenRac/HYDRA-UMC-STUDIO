@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_MODE_KEY,
+  affectedRobotIds,
   INITIAL_MODE_STATE,
   MODES_KEY,
   blockedBySim,
@@ -36,6 +37,28 @@ describe('Live or Sim', () => {
     for (const command of ['stop', 'pause', 'jogStep', 'vision', 'reset3D']) {
       expect(blockedBySim(sim, [1], command)).toBe(false);
     }
+  });
+
+  it('blocks the resume of a paused playback of a robot in Sim and not the pause itself', () => {
+    const sim = withMode(INITIAL_MODE_STATE, 1, 'sim');
+    expect(blockedBySim(sim, [1], 'pause', { paused: false })).toBe(true);
+    expect(blockedBySim(sim, [1], 'pause', { paused: true })).toBe(false);
+    expect(blockedBySim(sim, [1], 'pause')).toBe(false);
+  });
+
+  it('works out the robots a command reaches the way the server does', () => {
+    expect(affectedRobotIds('play', 1, [2, 3])).toEqual([1, 2, 3]);
+    expect(affectedRobotIds('jog', 1, [2])).toEqual([1, 2]);
+    expect(affectedRobotIds('valve', 1, undefined)).toEqual([1]);
+    for (const alone of ['trajectory', 'table', 'enable', 'disable']) expect(affectedRobotIds(alone, 1, [2])).toEqual([1]);
+    expect(affectedRobotIds('play', 1, [2], [1])).toEqual([1, 2]);
+    expect(affectedRobotIds('table', 1, [2], [1, 4])).toEqual([1, 4]);
+  });
+
+  it('a robot combined with one in Sim is stopped from moving even when the Live one is pressed', () => {
+    const sim = withMode(INITIAL_MODE_STATE, 2, 'sim');
+    expect(blockedBySim(sim, affectedRobotIds('play', 1, [2]), 'play')).toBe(true);
+    expect(blockedBySim(sim, affectedRobotIds('table', 1, [2]), 'table')).toBe(false);
   });
 
   it('only blocks the robots that are in Sim, and a group when any of its robots is', () => {

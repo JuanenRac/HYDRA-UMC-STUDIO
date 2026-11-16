@@ -8,6 +8,7 @@
 // the interface says so. STOP, pause and the harmless settings (step, camera, vision) still
 // go through, so a robot in Sim can always be stopped. The default is Live (what the app always did); the choice
 // is kept in this browser, per robot, and a browser can also start every robot it has not chosen for in Sim.
+// Sim belongs to this window only: the server knows nothing about it, so another window, the SUITE or a phone still move the robot.
 // =============================================================================
 
 export type RobotMode = 'live' | 'sim';
@@ -18,7 +19,26 @@ export const DEFAULT_MODE_KEY = 'hydra.defaultRobotMode';
 /** The commands that move a robot or switch something on: refused while the robot is in Sim. */
 export const REAL_COMMANDS: ReadonlySet<string> = new Set(['jog', 'table', 'play', 'reset', 'tool', 'valve', 'pump', 'trajectory', 'speed', 'joints']);
 
-export const isRealCommand = (command: string): boolean => REAL_COMMANDS.has(command);
+/**
+ * Whether a command moves the robot or switches something on. Resuming a paused playback (`pause` with `paused: false`) makes the robot move again,
+ * so it counts as real; pausing never does.
+ */
+export const isRealCommand = (command: string, params?: Record<string, unknown>): boolean =>
+  REAL_COMMANDS.has(command) || (command === 'pause' && params?.paused === false);
+
+/** The commands the server applies to one robot only; every other command reaches the robot and the robots combined with it. */
+const SINGLE_ROBOT_COMMANDS: ReadonlySet<string> = new Set(['trajectory', 'table', 'enable', 'disable']);
+
+/**
+ * The robots a command reaches, worked out the way the server does it: the target alone for a trajectory, a table move, enable and disable, and the
+ * target with the robots combined with it for everything else. `listed` are the robots the caller already named; they are kept.
+ */
+export function affectedRobotIds(command: string, targetId: number, combinedWith: readonly number[] | undefined, listed?: readonly number[]): number[] {
+  const ids = new Set<number>(listed && listed.length > 0 ? listed : [targetId]);
+  ids.add(targetId);
+  if (!SINGLE_ROBOT_COMMANDS.has(command)) for (const other of combinedWith ?? []) ids.add(other);
+  return [...ids];
+}
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 
@@ -36,8 +56,8 @@ export function modeOf(state: ModeState, robotId: number): RobotMode {
 }
 
 /** Whether a command is refused for a robot: a real command while the robot is in Sim. */
-export function blockedBySim(state: ModeState, robotIds: number[], command: string): boolean {
-  return isRealCommand(command) && robotIds.some((id) => modeOf(state, id) === 'sim');
+export function blockedBySim(state: ModeState, robotIds: number[], command: string, params?: Record<string, unknown>): boolean {
+  return isRealCommand(command, params) && robotIds.some((id) => modeOf(state, id) === 'sim');
 }
 
 export function withMode(state: ModeState, robotId: number, mode: RobotMode): ModeState {

@@ -290,6 +290,61 @@ export function buildPatch(form: SafetyForm, hard: HardLimits): FormResult {
   };
 }
 
+// ----- what a save changes and whether it lowers the protection ---------------------------------------------------------
+
+/** A text field raised or emptied (an emptied limit falls back to the default, which may be higher). */
+function raisedText(before: string, after: string): boolean {
+  const b = before.trim();
+  const a = after.trim();
+  if (b === '' || b === a) return false;
+  if (a === '') return true;
+  const nb = Number(b);
+  const na = Number(a);
+  return Number.isFinite(nb) && Number.isFinite(na) && na > nb;
+}
+
+/**
+ * Whether saving `after` instead of `before` lowers the protection: the jog no longer has to be armed or a reservation no longer has to name its controller,
+ * the arming lasts longer, a limit is raised or removed, or the audit of motion is taken less often.
+ */
+export function lowersProtection(before: SafetyForm, after: SafetyForm): boolean {
+  if (before.armRequired && !after.armRequired) return true;
+  if (before.requireControllerId && !after.requireControllerId) return true;
+  if (raisedText(before.armTtlSeconds, after.armTtlSeconds)) return true;
+  if (raisedText(before.auditMotionSeconds, after.auditMotionSeconds)) return true;
+  if (raisedText(before.defaultMaxAmount, after.defaultMaxAmount)) return true;
+  if (raisedText(before.defaultMaxAbsolute, after.defaultMaxAbsolute)) return true;
+  if (raisedText(before.defaultBedMaxC, after.defaultBedMaxC)) return true;
+  for (const row of before.rows) {
+    const key = modelKey(row.model);
+    const now = after.rows.find((r) => modelKey(r.model) === key);
+    const had = [row.maxAmount, row.maxAbsolute, row.bedMaxC].some((v) => v.trim() !== '');
+    if (!now) { if (had) return true; continue; }
+    if (raisedText(row.maxAmount, now.maxAmount) || raisedText(row.maxAbsolute, now.maxAbsolute) || raisedText(row.bedMaxC, now.bedMaxC)) return true;
+  }
+  return false;
+}
+
+const isPlainObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+
+/**
+ * Only what differs from `base` (the patch of the values the server reported): a save that changed the audit interval does not resend the jog arming, the
+ * reservation rule or the limits by model that the person did not touch. The `models` maps go whole when anything in them changed. Empty when nothing changed.
+ */
+export function changedOnly(base: Record<string, unknown>, next: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(next)) {
+    const before = base[key];
+    if (isPlainObject(value) && isPlainObject(before) && key !== 'models') {
+      const inner = changedOnly(before, value);
+      if (Object.keys(inner).length > 0) out[key] = inner;
+    } else if (JSON.stringify(before) !== JSON.stringify(value)) {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
 // ----- warnings of the server ---------------------------------------------------------------------------------------------
 
 export interface ServerWarning { code: string | null; field: string | null; message: string | null; requested: number | null; applied: number | null; robotId: number | null }

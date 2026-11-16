@@ -11,6 +11,7 @@ import { applyRobotCommandMutation, rollbackRobotCommand } from '../robotCommand
 import { type CommandIssue, type CommandResult } from '../lib/commandResult';
 import { type CommandSequence } from '../lib/commandSequence';
 import { guardCommand } from '../lib/motionGuard';
+import { affectedRobotIds } from '../lib/liveSim';
 import { getModeState, getSafetyState } from '../lib/accessStore';
 import { fetchRobot } from '../lib/accessApi';
 import { currentServerOrigin, listenOnlyActiveFor } from '../lib/listenOnlyGuard';
@@ -65,9 +66,12 @@ export function useRobotCommandSender({
     const ids = affectedIds && affectedIds.length > 0 ? affectedIds : [id];
     // The guard of every motion command (lib/motionGuard.ts): Sim mode, the size of a jog and of a table move. A STOP is
     // never refused. A refused command is not sent and the interface says which rule stopped it.
-    const target = command === 'jog' || command === 'table' ? controllersRef.current.flatMap((c) => c.robots).find((r) => r.id === id) : undefined;
+    const allRobots = controllersRef.current.flatMap((c) => c.robots);
+    const target = command === 'jog' || command === 'table' ? allRobots.find((r) => r.id === id) : undefined;
+    // The robots the server will move: the target and the robots combined with it, whatever the caller listed.
+    const guardIds = affectedRobotIds(command, id, allRobots.find((r) => r.id === id)?.combinedWith, ids);
     const verdict = guardCommand({
-      command, params, robotIds: ids, model: target?.model, limits: getSafetyState().limits, modes: getModeState(), listenOnly: listenOnlyActiveFor(currentServerOrigin()),
+      command, params, robotIds: guardIds, model: target?.model, limits: getSafetyState().limits, modes: getModeState(), listenOnly: listenOnlyActiveFor(currentServerOrigin()),
       tablePosition: { x: target?.xyTable?.pos?.x, y: target?.xyTable?.pos?.y, rz: target?.pos?.trz },
     });
     if (!verdict.ok) {

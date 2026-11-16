@@ -11,7 +11,7 @@
 //   2. a jog is bounded by the limits of the model the server reports;
 //   3. a table move is bounded by the same limits, as a whole;
 //   4. a single step that swings any joint a long way is not sent (guardJogStep).
-// The server checks all of it again; this only spares the trip and says why. A stop is never refused.
+// The server checks the limits again; Sim is only known to this window (the server has no such mode). A stop is never refused.
 // =============================================================================
 import { excessiveJogStep } from '../examples/jogSafety';
 import type { CommandIssue } from './commandResult';
@@ -52,7 +52,7 @@ export function guardCommand(request: GuardRequest): GuardVerdict {
   if (request.listenOnly && !LISTEN_ONLY_ALLOWED.has(command)) {
     return { ok: false, issue: { code: 'listen_only', command, robotIds, detail: null }, serverCode: 'listen-only' };
   }
-  if (blockedBySim(modes, robotIds, command)) {
+  if (blockedBySim(modes, robotIds, command, params)) {
     return { ok: false, issue: { code: 'sim_blocked', command, robotIds, detail: null }, serverCode: 'sim-mode' };
   }
   if (command === 'jog') {

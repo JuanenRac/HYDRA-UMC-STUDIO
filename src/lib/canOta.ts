@@ -396,7 +396,7 @@ export function isOlderVersion(a: { major: number; minor: number; patch: number 
 /** Why a flash over the real bus must not start, or null when it may. The hardware path sends the version and the hardware id of the image and the
  * installed version is compared first: an image without a hardware id (a local file) or without a version is refused instead of being sent as 0, an
  * older image needs the explicit downgrade choice, and the F-RAM erase is refused because the bridge has no command for it (the simulation alone honours it). */
-export type FlashRefusal = 'no_hardware_id' | 'no_version' | 'downgrade_blocked' | 'fram_erase_unsupported' | 'fram_erase_wrong_tier';
+export type FlashRefusal = 'no_hardware_id' | 'no_version' | 'installed_unknown' | 'downgrade_blocked' | 'fram_erase_unsupported' | 'fram_erase_wrong_tier';
 export function flashPreflight(input: { hardwareId?: string; versionTag?: string; installedVersion?: string; allowDowngrade: boolean; eraseFram: boolean; framEraseSupported?: boolean; tier?: CanOtaTier }): FlashRefusal | null {
   const id = input.hardwareId ? Number(input.hardwareId) : 0;
   if (!Number.isFinite(id) || id <= 0) return 'no_hardware_id';
@@ -408,6 +408,7 @@ export function flashPreflight(input: { hardwareId?: string; versionTag?: string
     if (input.tier !== undefined && input.tier !== 'kinematicBrain') return 'fram_erase_wrong_tier';
   }
   const installed = parseVersion(input.installedVersion);
+  if (!installed && !input.allowDowngrade) return 'installed_unknown';
   if (installed && isOlderVersion(image, installed) && !input.allowDowngrade) return 'downgrade_blocked';
   return null;
 }
