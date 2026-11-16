@@ -242,6 +242,16 @@ describe('the F-RAM erase and the emergency stop watch options', () => {
     expect(parseSecurityState({ ...answer, safety: { ...stop, estopWatchMs: { value: 1000, source: 'nowhere' } } })?.safety).toEqual(stop);
   });
 
+  it('reads the latch of the global stop when the server reports it, ignores a damaged one and sends it only when given', () => {
+    const latch = { ...stop, latchGlobalStop: { value: true, source: 'env' } };
+    expect(parseSecurityState({ ...answer, safety: latch })?.safety).toEqual(latch);
+    expect(parseSecurityState({ ...answer, safety: { ...stop, latchGlobalStop: { value: 'yes', source: 'default' } } })?.safety).toEqual(stop);
+    expect(parseSecurityState({ ...answer, safety: { ...stop, latchGlobalStop: { value: true, source: 'nowhere' } } })?.safety).toEqual(stop);
+    expect(safetyPatch(null, { latchGlobalStop: true })).toEqual({ safety: { latchGlobalStop: true } });
+    expect(safetyPatch(false, { latchGlobalStop: false })).toEqual({ safety: { publishGlobalStop: false, latchGlobalStop: false } });
+    expect(safetyPatch(false)).toEqual({ safety: { publishGlobalStop: false } });
+  });
+
   it('knows the interval the server accepts: 0 or a whole number from 500 to 60000', () => {
     for (const ok of [0, 500, 2000, 60000]) expect(validEstopWatchMs(ok)).toBe(true);
     for (const bad of [-1, 499, 60001, 1.5, NaN, '500', null, undefined]) expect(validEstopWatchMs(bad)).toBe(false);
@@ -496,17 +506,21 @@ describe('the request limits per address', () => {
     rateLimits: {
       enabled: { value: true, source: 'default' },
       loginMax: entry(5, 3, 100), loginWindowSeconds: entry(900, 60, 86400), refreshMax: entry(120, 10, 10000), apiMax: entry(600, 60, 100000),
-      sensitiveMax: entry(30, 5, 10000), apiWindowSeconds: entry(60, 10, 3600), stopAllMax: entry(60, 10, 10000, 'env'), stopAllWindowSeconds: entry(60, 10, 3600),
+      sensitiveMax: entry(30, 5, 10000, 'env'), apiWindowSeconds: entry(60, 10, 3600),
     },
   };
   const base = answer;
   const state = () => parseSecurityState({ ...base, ...reported })?.rateLimits ?? null;
   const texts = () => Object.fromEntries(RATE_LIMIT_KEYS.map(key => [key, String(state()!.numbers[key].value)])) as Record<(typeof RATE_LIMIT_KEYS)[number], string>;
 
-  it('reads the switch and the eight numbers, and is absent when the server predates them or reports one damaged', () => {
+  it('reads the switch and the six numbers, and is absent when the server predates them or reports one damaged', () => {
     expect(state()!.enabled).toEqual({ value: true, source: 'default' });
     expect(state()!.numbers.loginMax).toEqual({ value: 5, source: 'default', min: 3, max: 100 });
-    expect(state()!.numbers.stopAllMax.source).toBe('env');
+    expect(state()!.numbers.sensitiveMax.source).toBe('env');
+    expect(Object.keys(state()!.numbers).sort()).toEqual(['apiMax', 'apiWindowSeconds', 'loginMax', 'loginWindowSeconds', 'refreshMax', 'sensitiveMax']);
+    // a server that still reports the old numbers of the global stop is read the same: the global stop is never limited and they are ignored
+    const old = { ...reported.rateLimits, stopAllMax: entry(60, 10, 10000), stopAllWindowSeconds: entry(60, 10, 3600) };
+    expect(Object.keys(parseSecurityState({ ...base, rateLimits: old })!.rateLimits!.numbers)).not.toContain('stopAllMax');
     expect(parseSecurityState({ ...base })?.rateLimits).toBeNull();
     expect(parseSecurityState({ ...base, rateLimits: { ...reported.rateLimits, apiMax: { value: 'x', source: 'config', min: 60, max: 100000 } } })?.rateLimits).toBeNull();
     expect(parseSecurityState({ ...base, rateLimits: { ...reported.rateLimits, enabled: { value: 'yes', source: 'config' } } })?.rateLimits).toBeNull();
@@ -516,7 +530,7 @@ describe('the request limits per address', () => {
     expect(rateLimitsPatch(state()!, true, texts())).toBeNull();
     expect(rateLimitsPatch(state()!, false, texts())).toEqual({ rateLimits: { enabled: false } });
     expect(rateLimitsPatch(state()!, true, { ...texts(), loginMax: ' 10 ', apiMax: '900' })).toEqual({ rateLimits: { loginMax: 10, apiMax: 900 } });
-    expect(rateLimitsPatch(state()!, true, { ...texts(), stopAllMax: '90' })).toBeNull();
+    expect(rateLimitsPatch(state()!, true, { ...texts(), sensitiveMax: '90' })).toBeNull();
   });
 
   it('refuses numbers outside the range or that are not whole numbers', () => {

@@ -143,7 +143,8 @@
     "physical_ready": "解除済み",
     "physical_unknown": "未監視",
     "software_stopped": "オン",
-    "software_ready": "オフ"
+    "software_ready": "オフ",
+    "restored_after_restart": "サーバー再起動後に停止中:管理者による解除が必要です"
   },
   "command_issue": {
     "title": "コマンドが届いていません",
@@ -1309,6 +1310,8 @@
     "admin_security_stop_title": "グローバル停止の通知",
     "admin_security_stop_label": "MQTT ブリッジでグローバル停止を通知する(保持された SAFE_STOP)",
     "admin_security_stop_help": "既定ではオフ。MQTT ブリッジがオンである必要があります。管理者が解除するまで状態は保持されます。",
+    "admin_security_latch_label": "グローバル停止中は、ロボットを動かすすべてのコマンドを拒否する",
+    "admin_security_latch_help": "停止と無効化は引き続き使えます。停止を解除できるのは管理者だけです。既定ではオフで、その場合グローバル停止はサーバーのコマンドを止めません。",
     "admin_security_stop_save": "停止通知を保存",
     "admin_security_jd_title": "ジョブディスパッチャー",
     "admin_security_jd_relay_label": "ジョブディスパッチャーの停止要求をロボットに届ける（既定ではオフ）",
@@ -1429,8 +1432,6 @@
     "admin_security_rl_api_max": "許可する API リクエスト数",
     "admin_security_rl_sensitive_max": "コード・サービス系ルートで許可するリクエスト数",
     "admin_security_rl_api_window": "API のウィンドウ（秒）",
-    "admin_security_rl_stopall_max": "許可する全体停止リクエスト数",
-    "admin_security_rl_stopall_window": "全体停止のウィンドウ（秒）",
     "admin_security_rl_save": "制限を保存",
     "admin_security_rl_invalid": "各数値は範囲内の整数でなければなりません。",
     "admin_bridges_title": "マシンブリッジ",

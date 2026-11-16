@@ -143,7 +143,8 @@
     "physical_ready": "libertada",
     "physical_unknown": "não monitorizada",
     "software_stopped": "ativa",
-    "software_ready": "inativa"
+    "software_ready": "inativa",
+    "restored_after_restart": "Parado após o reinício do servidor: um administrador tem de o libertar"
   },
   "command_issue": {
     "title": "Comando não entregue",
@@ -1309,6 +1310,8 @@
     "admin_security_stop_title": "Anúncio da paragem global",
     "admin_security_stop_label": "Anunciar uma paragem global na ponte MQTT (SAFE_STOP retido)",
     "admin_security_stop_help": "Desativado por predefinição. Requer a ponte MQTT ativa. O estado mantém-se até um administrador o libertar.",
+    "admin_security_latch_label": "Enquanto a paragem global estiver ativa, recusar qualquer comando que mova um robô",
+    "admin_security_latch_help": "Parar e desativar continuam a funcionar. Só um administrador pode libertar a paragem. Desativado por predefinição: a paragem global não retém então os comandos do servidor.",
     "admin_security_stop_save": "Guardar anúncio de paragem",
     "admin_security_jd_title": "Despachante de trabalhos",
     "admin_security_jd_relay_label": "Entregar aos robôs os pedidos de paragem do despachante de trabalhos (desativado por predefinição)",
@@ -1429,8 +1432,6 @@
     "admin_security_rl_api_max": "Pedidos de API permitidos",
     "admin_security_rl_sensitive_max": "Pedidos permitidos nas rotas de código e de serviços",
     "admin_security_rl_api_window": "Janela da API (segundos)",
-    "admin_security_rl_stopall_max": "Pedidos de paragem global permitidos",
-    "admin_security_rl_stopall_window": "Janela da paragem global (segundos)",
     "admin_security_rl_save": "Guardar os limites",
     "admin_security_rl_invalid": "Cada número tem de ser um inteiro dentro do seu intervalo.",
     "admin_bridges_title": "Pontes de máquina",

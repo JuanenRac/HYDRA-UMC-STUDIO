@@ -65,6 +65,16 @@ export function StopStateBadge() {
     software: t(`stop_all.software_${snapshot.software === 'stopped' ? 'stopped' : 'ready'}`),
   });
   return (
+    <>
+    {snapshot.restoredAfterRestart && snapshot.software === 'stopped' && (
+      <span
+        data-testid="stop-restored-notice"
+        role="alert"
+        className="rounded-full border border-amber-400 bg-amber-950 px-3 py-1 text-xs font-bold text-amber-200 shrink-0"
+      >
+        {t('stop_all.restored_after_restart')}
+      </span>
+    )}
     <span
       data-testid="stop-state-badge"
       data-state={snapshot.state}
@@ -80,6 +90,7 @@ export function StopStateBadge() {
     >
       {t(`stop_all.state_${snapshot.state === 'STOPPED' ? 'stopped' : snapshot.state === 'READY' ? 'ready' : 'unknown'}`)}
     </span>
+    </>
   );
 }
 

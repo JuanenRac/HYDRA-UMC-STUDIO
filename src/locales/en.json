@@ -143,7 +143,8 @@
     "physical_ready": "released",
     "physical_unknown": "not monitored",
     "software_stopped": "on",
-    "software_ready": "off"
+    "software_ready": "off",
+    "restored_after_restart": "Stopped after a server restart: an administrator must release it"
   },
   "command_issue": {
     "title": "Command not delivered",
@@ -1309,6 +1310,8 @@
     "admin_security_stop_title": "Global stop announcement",
     "admin_security_stop_label": "Announce a global stop on the MQTT bridge (retained SAFE_STOP)",
     "admin_security_stop_help": "Off by default. Needs the MQTT bridge on. The state stays until an administrator releases it.",
+    "admin_security_latch_label": "While the global stop is on, refuse every command that moves a robot",
+    "admin_security_latch_help": "Stop and disable still work. Only an administrator can release the stop. Off by default: the global stop then does not hold back the commands of the server.",
     "admin_security_stop_save": "Save stop announcement",
     "admin_security_jd_title": "Job dispatcher",
     "admin_security_jd_relay_label": "Deliver the stop requests of the job dispatcher to the robots (off by default)",
@@ -1429,8 +1432,6 @@
     "admin_security_rl_api_max": "API requests allowed",
     "admin_security_rl_sensitive_max": "Requests allowed on code and service routes",
     "admin_security_rl_api_window": "API window (seconds)",
-    "admin_security_rl_stopall_max": "Global stop requests allowed",
-    "admin_security_rl_stopall_window": "Global stop window (seconds)",
     "admin_security_rl_save": "Save the limits",
     "admin_security_rl_invalid": "Every number must be a whole number inside its range.",
     "admin_bridges_title": "Machine bridges",

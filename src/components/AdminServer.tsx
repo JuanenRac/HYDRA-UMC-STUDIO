@@ -68,8 +68,6 @@ const RL_LABELS: Record<RateLimitKey, string> = {
   apiMax: 'ecosystem.admin_security_rl_api_max',
   sensitiveMax: 'ecosystem.admin_security_rl_sensitive_max',
   apiWindowSeconds: 'ecosystem.admin_security_rl_api_window',
-  stopAllMax: 'ecosystem.admin_security_rl_stopall_max',
-  stopAllWindowSeconds: 'ecosystem.admin_security_rl_stopall_window',
 };
 
 const RELOAD_POLL_MS = 2000;
@@ -129,6 +127,7 @@ export function AdminServer() {
   const [rulOn, setRulOn] = useState(false);
   const [safetyPublish, setSafetyPublish] = useState(false);
   const [framErase, setFramErase] = useState(false);
+  const [latchStop, setLatchStop] = useState(false);
   const [pendingFram, setPendingFram] = useState(false);
   const [estopWatchText, setEstopWatchText] = useState('');
   const [jdRelay, setJdRelay] = useState(false);
@@ -143,7 +142,7 @@ export function AdminServer() {
   const [install, setInstall] = useState<InstallValues>({ cameraCredentialsViaEnv: true, newInstallTls: true });
   const [pendingInstall, setPendingInstall] = useState<InstallPatchBody | null>(null);
   const [rlEnabled, setRlEnabled] = useState(true);
-  const [rlTexts, setRlTexts] = useState<Record<RateLimitKey, string>>({ loginMax: '', loginWindowSeconds: '', refreshMax: '', apiMax: '', sensitiveMax: '', apiWindowSeconds: '', stopAllMax: '', stopAllWindowSeconds: '' });
+  const [rlTexts, setRlTexts] = useState<Record<RateLimitKey, string>>({ loginMax: '', loginWindowSeconds: '', refreshMax: '', apiMax: '', sensitiveMax: '', apiWindowSeconds: '' });
   const [pendingRl, setPendingRl] = useState<RateLimitsPatchBody | null>(null);
   const [bridgeValues, setBridgeValues] = useState<Record<string, BridgeValue>>({});
   const [pendingBridges, setPendingBridges] = useState<BridgesPatchBody | null>(null);
@@ -183,6 +182,7 @@ export function AdminServer() {
       if (state.safety) {
         setSafetyPublish(state.safety.publishGlobalStop.value);
         setFramErase(state.safety.framErase?.value ?? false);
+        setLatchStop(state.safety.latchGlobalStop?.value ?? false);
         setEstopWatchText(state.safety.estopWatchMs ? String(state.safety.estopWatchMs.value) : '');
       }
       if (state.jobDispatcher) {
@@ -219,7 +219,8 @@ export function AdminServer() {
   const stopOptionsBody = () => {
     const safety = security?.safety;
     if (!safety) return null;
-    const extra: { framErase?: boolean; estopWatchMs?: number } = {};
+    const extra: { latchGlobalStop?: boolean; framErase?: boolean; estopWatchMs?: number } = {};
+    if (safety.latchGlobalStop && !isLocked(safety.latchGlobalStop.source) && latchStop !== safety.latchGlobalStop.value) extra.latchGlobalStop = latchStop;
     if (safety.framErase && !isLocked(safety.framErase.source) && framErase !== safety.framErase.value) extra.framErase = framErase;
     const watch = parseEstopWatchText(estopWatchText);
     if (safety.estopWatchMs && !isLocked(safety.estopWatchMs.source) && watch !== null && watch !== safety.estopWatchMs.value) extra.estopWatchMs = watch;
@@ -1212,6 +1213,22 @@ export function AdminServer() {
               </label>
               <span className="text-[10px] text-slate-500">{sourceText(security.safety.publishGlobalStop.source)}</span>
               <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_stop_help')}</div>
+              {security.safety.latchGlobalStop && (
+                <div className="space-y-1">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                    <input
+                      type="checkbox"
+                      data-testid="safety-latch-stop"
+                      checked={latchStop}
+                      disabled={saving || isLocked(security.safety.latchGlobalStop.source)}
+                      onChange={e => setLatchStop(e.target.checked)}
+                    />
+                    {t('ecosystem.admin_security_latch_label')}
+                  </label>
+                  <span className="text-[10px] text-slate-500">{sourceText(security.safety.latchGlobalStop.source)}</span>
+                  <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_latch_help')}</div>
+                </div>
+              )}
               {security.safety.framErase && (
                 <div className="space-y-1">
                   <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
@@ -1248,7 +1265,7 @@ export function AdminServer() {
                   {parseEstopWatchText(estopWatchText) === null && <div className="text-[10px] text-red-400" data-testid="safety-estop-watch-invalid">{t('ecosystem.admin_security_estop_watch_invalid')}</div>}
                 </div>
               )}
-              <button onClick={saveStopOptions} disabled={saving || (isLocked(security.safety.publishGlobalStop.source) && !security.safety.framErase && !security.safety.estopWatchMs) || parseEstopWatchText(estopWatchText) === null} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+              <button onClick={saveStopOptions} disabled={saving || (isLocked(security.safety.publishGlobalStop.source) && !security.safety.latchGlobalStop && !security.safety.framErase && !security.safety.estopWatchMs) || parseEstopWatchText(estopWatchText) === null} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
                 <Save size={14} /> {t('ecosystem.admin_security_stop_save')}
               </button>
             </div>
