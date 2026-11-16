@@ -7,14 +7,29 @@ import { describe, expect, it } from 'vitest';
 import { defaultCsp, injectCsp, resolveCsp } from '../scripts/csp';
 
 describe('the Content-Security-Policy of the built page', () => {
-  it('only lets scripts come from the page itself (plus the 3D decoder host), never inline', () => {
+  it('only lets scripts come from the page itself, never inline and never from a third-party host', () => {
     const policy = defaultCsp();
     const script = policy.split('; ').find((d) => d.startsWith('script-src '))!;
     expect(script).toContain("'self'");
     expect(script).not.toContain("'unsafe-inline'");
     expect(script).not.toContain("'unsafe-eval'");
+    expect(script).not.toContain('gstatic');
+    expect(script).not.toMatch(/https?:/);
     expect(policy).toContain("object-src 'none'");
     expect(policy).toContain("base-uri 'self'");
+  });
+  it('lets the page connect to itself and to the GitHub hosts of the firmware update, and to nothing else', () => {
+    const connect = defaultCsp().split('; ').find((d) => d.startsWith('connect-src '))!;
+    expect(connect).toBe("connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://objects.githubusercontent.com https://release-assets.githubusercontent.com blob: data:");
+    for (const wide of [' http:', ' https:', ' ws:', ' wss:', ' *']) expect(connect.endsWith(wide) || connect.includes(wide + ' ')).toBe(false);
+  });
+  it('adds the server of the build and its WebSocket, and ignores an address that is not http(s)', () => {
+    const connect = (apiBase?: string) => defaultCsp(apiBase).split('; ').find((d) => d.startsWith('connect-src '))!;
+    expect(connect('https://hydra.example:3443/api')).toContain('https://hydra.example:3443 wss://hydra.example:3443');
+    expect(connect('http://10.0.0.5:3000')).toContain('http://10.0.0.5:3000 ws://10.0.0.5:3000');
+    expect(connect('javascript:alert(1)')).toBe(connect(undefined));
+    expect(connect('not an address')).toBe(connect(undefined));
+    expect(resolveCsp('default', 'https://hydra.example:3443')).toContain('wss://hydra.example:3443');
   });
   it('is the default for an unset or "default" setting, absent for "off", and used as typed otherwise', () => {
     expect(resolveCsp(undefined)).toBe(defaultCsp());

@@ -27,7 +27,7 @@ import { FramPanel } from './FramPanel';
 import {
   chipNameFor, crc32, downloadGithubFirmware, fetchGithubFirmwareReleases, GITHUB_FIRMWARE_REPO,
   flashSigningOptions, FRAM_ERASE_WORD, hardwareFramOperation, hardwareQueryVersion, hardwareStartFlash, normalizeSignature, hasAdvancedExpansion, hopDescription, mockFlash, mockQueryVersion,
-  resolveHardwareTarget, slotLabel,
+  parseVersion, resolveHardwareTarget, slotLabel,
   flashPreflight, type CanOtaTarget, type CanOtaTier, type FlashPhase, type GithubFirmwareAsset,
 } from '../lib/canOta';
 import { useFleet, useServerStatus, useSession, useSettingsStore } from '../storeContexts';
@@ -234,6 +234,8 @@ export function Flasher({ tiers = ALL_TIERS }: { tiers?: CanOtaTier[] } = {}) {
         pushLog(t(`flasher.log.preflight_${refusal}`), 'error');
         return;
       }
+      // The installed version could not be read and the person ticked the downgrade choice: the flash goes on, and the log says it was not compared.
+      if (allowDowngrade && !parseVersion(boardState?.firmwareVersion)) pushLog(t('flasher.log.installed_unknown_allowed'));
       setFlashing(true);
       setPhase('connecting');
       setPercent(0);

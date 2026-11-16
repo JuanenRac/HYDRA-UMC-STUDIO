@@ -731,6 +731,16 @@ export function bridgeGatewayPatch(enabled: boolean): BridgeGatewayPatchBody {
   return { bridgeGateway: { enabled } };
 }
 
+/** Switching TLS off sends the session token and passwords in the clear: ask first. Switching it on never asks. */
+export function tlsChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
+  return current && !next;
+}
+
+/** Switching off the restriction to the house network and the VPN opens the administration to every address: ask first. Switching it on never asks. */
+export function trustedNetworksChangeNeedsConfirmation(current: boolean, next: boolean): boolean {
+  return current && !next;
+}
+
 export type TrustedNetworksPatchBody = { trustedNetworks: { enabled: boolean } };
 
 /** The request body for the option that refuses to administer the server from outside the house network and the VPN (off by default). */

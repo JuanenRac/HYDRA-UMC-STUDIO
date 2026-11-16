@@ -325,8 +325,15 @@ describe('flashPreflight', () => {
   const ok = { hardwareId: '0x48374334', versionTag: '0.3.1', installedVersion: '0.2.9', allowDowngrade: false, eraseFram: false };
   it('lets an image with a hardware id and a newer version go', () => {
     expect(flashPreflight(ok)).toBeNull();
-    expect(flashPreflight({ ...ok, installedVersion: undefined })).toBeNull();
     expect(flashPreflight({ ...ok, installedVersion: '0.3.1' })).toBeNull();
+  });
+  it('refuses an image when the installed version is not known unless the downgrade choice is ticked', () => {
+    for (const installedVersion of [undefined, '', 'unknown']) {
+      expect(flashPreflight({ ...ok, installedVersion })).toBe('installed_unknown');
+      expect(flashPreflight({ ...ok, installedVersion, allowDowngrade: true })).toBeNull();
+    }
+    // the image itself is still checked first
+    expect(flashPreflight({ ...ok, installedVersion: undefined, hardwareId: undefined })).toBe('no_hardware_id');
   });
   it('refuses an image without a hardware id instead of sending 0', () => {
     for (const hardwareId of [undefined, '', '0', '0x0', 'zz']) expect(flashPreflight({ ...ok, hardwareId })).toBe('no_hardware_id');

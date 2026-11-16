@@ -230,7 +230,8 @@ function StaticCadPart({ label, material }: { label: string; material: typeof fr
 }
 
 function useRealScaleGLB(url: string): THREE.BufferGeometry {
-  const { scene } = useGLTF(url);
+  // No Draco decoder: the models of the app are not Draco-compressed, and the default decoder is fetched from a third-party host.
+  const { scene } = useGLTF(url, false);
   return useMemo(() => {
     let geometry: THREE.BufferGeometry | undefined;
     scene.traverse((obj) => {
@@ -259,7 +260,7 @@ function preloadMachine(type: MachineKind) {
   for (const name of [...LINK_NAMES, ...[...BASE_STATIC_PARTS, ...Y_CARRIAGE_STATIC_PARTS, ...X_CARRIAGE_STATIC_PARTS].map(n=>'parts/'+n)]) {
     const url = machineAssetPath(type,name);
     if (MACHINE_ASSETS[type].format === 'stl') useLoader.preload(STLLoader,url);
-    else useGLTF.preload(url);
+    else useGLTF.preload(url, false);
   }
 }
 

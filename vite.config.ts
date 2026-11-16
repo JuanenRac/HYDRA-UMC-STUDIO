@@ -31,7 +31,7 @@ export default defineConfig({
       // hot reload. HYDRA_STUDIO_CSP=off omits it (see scripts/csp.ts).
       name: 'hydra-csp',
       apply: 'build',
-      transformIndexHtml: (html: string) => injectCsp(html, resolveCsp(process.env.HYDRA_STUDIO_CSP)),
+      transformIndexHtml: (html: string) => injectCsp(html, resolveCsp(process.env.HYDRA_STUDIO_CSP, process.env.VITE_API_BASE_URL)),
     },
   ],
   server: {

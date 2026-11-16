@@ -14,7 +14,8 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Save, ShieldAlert, Trash2, Undo2 } from 'lucide-react';
 import { setSafetyState, useSafetyState } from '../lib/accessStore';
 import { fetchSafetyLimits, putSafetyLimits } from '../lib/accessApi';
-import { buildPatch, formFromLimits, modelKey, type FormProblem, type SafetyForm } from '../lib/safetyLimits';
+import { buildPatch, changedOnly, formFromLimits, lowersProtection, modelKey, type FormProblem, type SafetyForm } from '../lib/safetyLimits';
+import { ConfirmDialog } from './ConfirmDialog';
 import { useFleet, useSession } from '../storeContexts';
 import { ToolArmsPanel } from './ToolArmsPanel';
 
@@ -33,6 +34,8 @@ export function AdminSafety() {
   // Whether the values on the screen are the ones the server reported (and not the prudent fallback of the store).
   const [loaded, setLoaded] = useState(false);
   const [newModel, setNewModel] = useState('');
+  // A save that lowers a protection waits here for the confirmation of the administrator.
+  const [pendingLower, setPendingLower] = useState<Record<string, unknown> | null>(null);
 
   // The values the server reports fill the form, unless the administrator has started to edit.
   useEffect(() => {
@@ -57,13 +60,10 @@ export function AdminSafety() {
 
   const problemText = (problem: FormProblem, field: string | undefined) => t(`safety.problem_${problem}`, { field: field ?? '' });
 
-  const save = async () => {
-    if (!loaded) return;
-    const built = buildPatch(form, state.hardLimits);
-    if (!built.ok || !built.patch) { setError(problemText(built.problem ?? 'number', built.field)); return; }
+  const send = async (patch: Record<string, unknown>) => {
     setBusy(true); setError(''); setNotice('');
     try {
-      const { result, state: saved } = await putSafetyLimits(built.patch);
+      const { result, state: saved } = await putSafetyLimits(patch);
       if (!result.ok || !saved) {
         setError(t('safety.save_failed', { detail: result.detail ?? `HTTP ${result.status}` }));
         return;
@@ -75,6 +75,19 @@ export function AdminSafety() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const save = async () => {
+    if (!loaded) return;
+    const built = buildPatch(form, state.hardLimits);
+    if (!built.ok || !built.patch) { setError(problemText(built.problem ?? 'number', built.field)); return; }
+    // Only what the person changed is sent, so a value they did not touch is never written over the server's.
+    const read = formFromLimits(state.limits);
+    const base = buildPatch(read, state.hardLimits);
+    const patch = base.ok && base.patch ? changedOnly(base.patch, built.patch) : built.patch;
+    if (Object.keys(patch).length === 0) { setDirty(false); setNotice(t('safety.nothing_changed')); return; }
+    if (lowersProtection(read, form)) { setPendingLower(patch); return; }
+    await send(patch);
   };
 
   const restoreDefaults = () => { setForm(formFromLimits(state.defaults)); setDirty(true); setNotice(''); setError(''); };
@@ -91,6 +104,12 @@ export function AdminSafety() {
 
   return (
     <div className="flex flex-col gap-4 overflow-y-auto pr-2 text-slate-300" data-testid="admin-safety">
+      <ConfirmDialog
+        open={pendingLower !== null}
+        message={t('safety.confirm_lower')}
+        onConfirm={() => { const patch = pendingLower; setPendingLower(null); if (patch) void send(patch); }}
+        onCancel={() => setPendingLower(null)}
+      />
       <div>
         <h2 className="text-lg font-black text-slate-100 flex items-center gap-2"><ShieldAlert size={20} className="text-amber-400" />{t('safety.title')}</h2>
         <p className="text-xs text-slate-400 max-w-3xl">{t('safety.intro')}</p>
