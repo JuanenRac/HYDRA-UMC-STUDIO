@@ -439,6 +439,18 @@ describe('the options of the job dispatcher', () => {
     for (const bad of ['arm-1', 'arm-1 = x', 'arm-1 = -1', 'arm-1 = 1.5', 'bad id = 1', '= 1', 'a = 1\na = 2', `${'x'.repeat(65)} = 1`]) expect(parseRobotMapText(bad), bad).toBeNull();
   });
 
+  it('reads the choice for a robot the server has not heard from, and sends it only when the server reports it', () => {
+    const withChoice = (value: unknown) => parseSecurityState({ ...answer, jobDispatcher: { ...server, stopRelay: { ...server.stopRelay, silentRobot: { value, source: 'default' } } } })?.jobDispatcher;
+    expect(withChoice('withhold')?.stopRelay.silentRobot).toBe('withhold');
+    expect(withChoice('server-state')?.stopRelay.silentRobot).toBe('server-state');
+    for (const odd of ['yes', '', 3, null, undefined]) expect(withChoice(odd)?.stopRelay.silentRobot, String(odd)).toBeUndefined();
+    expect(parseSecurityState({ ...answer, jobDispatcher: server })?.jobDispatcher?.stopRelay.silentRobot).toBeUndefined();
+    const input = { relayEnabled: false, robotMapText: '', replanEditable: false, allowUnconfirmed: false, timeoutText: '' };
+    expect(jobDispatcherPatch(input)).toEqual({ jobDispatcher: { stopRelay: { enabled: false, robotMap: {} } } });
+    expect(jobDispatcherPatch({ ...input, silentRobot: 'server-state' })).toEqual({ jobDispatcher: { stopRelay: { enabled: false, robotMap: {}, silentRobot: 'server-state' } } });
+    expect(knownWarnings(['job_stop_silent_server_state', 'nonsense'])).toEqual(['job_stop_silent_server_state']);
+  });
+
   it('builds the request, leaving the replanning out when the server cannot write the file of the dispatcher', () => {
     const input = { relayEnabled: true, robotMapText: 'arm-1 = 1', replanEditable: true, allowUnconfirmed: true, timeoutText: '45,5' };
     expect(jobDispatcherPatch(input)).toEqual({ jobDispatcher: { stopRelay: { enabled: true, robotMap: { 'arm-1': 1 } }, replan: { allowUnconfirmed: true, stopAckTimeoutSeconds: 45.5 } } });

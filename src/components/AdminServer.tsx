@@ -36,7 +36,7 @@ import { IngestSwitchesPanel } from './IngestSwitchesPanel';
 import { DetectionHefPanel } from './DetectionHefPanel';
 import { LiveActivityPanel } from './LiveActivityPanel';
 import { DeveloperNodeStatusPanel } from './DeveloperNodeStatusPanel';
-import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, tlsChangeNeedsConfirmation, trustedNetworksChangeNeedsConfirmation, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, readOnlyPatch, readOnlyChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, nodeHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody } from '../lib/serverSecurity';
+import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, tlsChangeNeedsConfirmation, trustedNetworksChangeNeedsConfirmation, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, readOnlyPatch, readOnlyChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, nodeHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody, SILENT_ROBOT_CHOICES, type SilentRobot } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
 
 type ServerConfigPatch = NonNullable<Parameters<typeof serverClient.putAdminServerConfig>[0]>['body'];
@@ -134,6 +134,7 @@ export function AdminServer() {
   const [estopWatchText, setEstopWatchText] = useState('');
   const [jdRelay, setJdRelay] = useState(false);
   const [jdMapText, setJdMapText] = useState('');
+  const [jdSilent, setJdSilent] = useState<SilentRobot>('withhold');
   const [jdAllow, setJdAllow] = useState(false);
   const [jdExecEnabled, setJdExecEnabled] = useState(false);
   const [jdExecLive, setJdExecLive] = useState(false);
@@ -190,6 +191,7 @@ export function AdminServer() {
       if (state.jobDispatcher) {
         setJdRelay(state.jobDispatcher.stopRelay.enabled.value);
         setJdMapText(robotMapToText(state.jobDispatcher.stopRelay.robotMap));
+        setJdSilent(state.jobDispatcher.stopRelay.silentRobot ?? 'withhold');
         setJdAllow(state.jobDispatcher.replan.allowUnconfirmed.value);
         setJdExecEnabled(state.jobDispatcher.executor?.enabled.value ?? false);
         setJdExecLive(state.jobDispatcher.executor?.live.value ?? false);
@@ -266,6 +268,7 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('mavlink_unsigned_allowed')) setWarning(t('ecosystem.admin_security_mavlink_unsigned_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_signing_off')) setWarning(t('ecosystem.admin_security_mavlink_off_warning'));
       if (knownWarnings(data.warnings).includes('job_stop_relay_on')) setWarning(t('ecosystem.admin_security_jd_warning_relay'));
+      if (knownWarnings(data.warnings).includes('job_stop_silent_server_state')) setWarning(t('ecosystem.admin_security_jd_warning_silent'));
       if (knownWarnings(data.warnings).includes('replan_unconfirmed_allowed')) setWarning(t('ecosystem.admin_security_jd_warning_replan'));
       if (knownWarnings(data.warnings).includes('job_executor_on')) setWarning(t('ecosystem.admin_security_jd_warning_exec'));
       if (knownWarnings(data.warnings).includes('job_executor_live')) setWarning(t('ecosystem.admin_security_jd_warning_exec_live'));
@@ -305,6 +308,7 @@ export function AdminServer() {
   const saveJobDispatcher = () => {
     if (!security?.jobDispatcher) return;
     const body = jobDispatcherPatch({ relayEnabled: jdRelay, robotMapText: jdMapText, replanEditable: security.jobDispatcher.replan.editable, allowUnconfirmed: jdAllow, timeoutText: jdTimeout,
+      silentRobot: security.jobDispatcher.stopRelay.silentRobot !== undefined ? jdSilent : undefined,
       executorEnabled: security.jobDispatcher.executor && !isLocked(security.jobDispatcher.executor.enabled.source) ? jdExecEnabled : undefined,
       executorLive: security.jobDispatcher.executor && !isLocked(security.jobDispatcher.executor.live.source) ? jdExecLive : undefined });
     if (!body) {
@@ -1302,6 +1306,19 @@ export function AdminServer() {
                 className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 font-mono outline-none"
               />
               <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_jd_map_help')}</div>
+              {security.jobDispatcher.stopRelay.silentRobot !== undefined && (
+                <>
+                  <label className="text-xs font-bold text-slate-200" htmlFor="admin-security-jd-silent">{t('ecosystem.admin_security_jd_silent_label')}</label>
+                  <select
+                    id="admin-security-jd-silent" data-testid="jd-silent" value={jdSilent} disabled={saving}
+                    onChange={e => setJdSilent(e.target.value as SilentRobot)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
+                  >
+                    {SILENT_ROBOT_CHOICES.map(choice => <option key={choice} value={choice}>{t(choice === 'withhold' ? 'ecosystem.admin_security_jd_silent_withhold' : 'ecosystem.admin_security_jd_silent_server_state')}</option>)}
+                  </select>
+                  <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_jd_silent_help')}</div>
+                </>
+              )}
               {security.jobDispatcher.executor && (
                 <>
                   <h5 className="text-xs font-bold text-slate-200">{t('ecosystem.admin_security_jd_exec_title')}</h5>
