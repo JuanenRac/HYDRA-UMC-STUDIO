@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- **The vendored server client and test answers follow the SDK contract again:** they now include the route that issues new recovery codes of the second factor, so the nightly family check finds no drift.
+- **The vendored server answers follow the SDK contract again:** they now include the answers of the route that issues new recovery codes of the second factor, so the nightly family check finds no drift.
 
 - **The Server Admin screen of Studio offers the choice for a robot the server has not heard from:** under the job dispatcher options there is a selector for what to do with the stop that the dispatcher asks for when the robot has been silent or was never heard, either leave it unacknowledged (the default) or acknowledge it from the state of the server, with its sentences in the eight languages and a warning when the second is saved; it is shown only when the server reports the choice.
 - **Sim covers the robots combined with the one pressed, and says it belongs to this window:** the check before a command leaves works out the robots it reaches the way the server does (the target and the robots combined with it, except for a trajectory, a table move, enable and disable), and resuming a paused playback of a robot in Sim is refused. The hint of the Sim mode (eight languages) now says that another window, the SUITE or a phone can still move the robot.
