@@ -53,7 +53,7 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 | Bereich | Stand | Was das hier bedeutet |
 |---|---|---|
 | Software | 🟡 | Funktioniert für seinen Hauptzweck; die Ehrlichkeitsprüfung in diesem README nennt, was noch fehlt |
-| Tests | 🟢 | 1776 automatische Tests, bei jeder Änderung ausgeführt |
+| Tests | 🟡 | 1776 automatische Tests vermerkt; die genaue Anzahl oder ein Workflow, der sie bei jeder Änderung ausführt, ist noch nicht bestätigt |
 | Echte Hardware | 🟡 | Auf einem Prüfstand gelaufen: die Ehrlichkeitsprüfung in diesem README sagt, welche Teile auf echter Hardware liefen |
 | Schnittstelle und Protokolle | 🟡 | Die angebotenen Routen oder Nachrichten sind dokumentiert und mit einem Client getestet; noch nicht jeder Client hat sie benutzt |
 | Integration | 🟡 | Seine Nachrichten und Routen werden gegen die gemeinsamen Verträge des SDK geprüft; es lief noch nicht zusammen mit der echten Ausrüstung |
