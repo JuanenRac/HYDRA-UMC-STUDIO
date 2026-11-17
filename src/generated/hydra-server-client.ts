@@ -1353,6 +1353,11 @@ export class HydraServerClient {
     return this.transport({ method: "POST", path: "/api/totp/confirm", query: {}, headers: {}, body: args?.body, access: "user" }) as Promise<TotpConfirmed>;
   }
 
+  /** POST /api/totp/recovery-codes (access: user) */
+  postTotpRecoveryCodes(args: { body: { password: string; code: string } }): Promise<TotpConfirmed> {
+    return this.transport({ method: "POST", path: "/api/totp/recovery-codes", query: {}, headers: {}, body: args?.body, access: "user" }) as Promise<TotpConfirmed>;
+  }
+
   /** POST /api/totp/disable (access: user) */
   postTotpDisable(args: { body: { password: string; code: string } }): Promise<Success> {
     return this.transport({ method: "POST", path: "/api/totp/disable", query: {}, headers: {}, body: args?.body, access: "user" }) as Promise<Success>;
@@ -1558,6 +1563,7 @@ export const HYDRA_CLIENT_OPERATIONS: readonly string[] = [
   "postToolArmsReset",
   "postTotpBegin",
   "postTotpConfirm",
+  "postTotpRecoveryCodes",
   "postTotpDisable",
   "getTotpStatus",
   "postTrajectoryProposalsVerify",

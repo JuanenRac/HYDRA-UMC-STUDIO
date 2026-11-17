@@ -11,6 +11,9 @@ import type { HydraServerClient } from '../generated/hydra-server-client';
 import { makeClient, ServerHttpError } from './serverClient';
 
 export interface TotpStatus { enabled: boolean; recoveryLeft: number }
+/** The point from which the screen suggests asking for new recovery codes. */
+export const RECOVERY_LOW = 2;
+
 export interface TotpEnrolment { secret: string; uri: string }
 
 /** Why a call did not work, in terms the screen can translate. */
@@ -95,6 +98,8 @@ export const totpApi = {
   status: (fetcher?: typeof fetch) => call(client => client.getTotpStatus(), parseStatus, fetcher),
   begin: (password: string, fetcher?: typeof fetch) => call(client => client.postTotpBegin({ body: { password } }), parseEnrolment, fetcher),
   confirm: (code: string, fetcher?: typeof fetch) => call(client => client.postTotpConfirm({ body: { code: normalizeCode(code) } }), parseRecoveryCodes, fetcher),
+  /** New one-time recovery codes: the old ones stop working. Asks for the password and a current or unused recovery code, like turning it off. */
+  regenerate: (password: string, code: string, fetcher?: typeof fetch) => call(client => client.postTotpRecoveryCodes({ body: { password, code: normalizeCode(code) } }), parseRecoveryCodes, fetcher, true),
   disable: (password: string, code: string, fetcher?: typeof fetch) => call(client => client.postTotpDisable({ body: { password, code: normalizeCode(code) } }), done, fetcher, true),
   reset: (username: string, fetcher?: typeof fetch) => call(client => client.deleteUsersByUsernameTotp({ path: { username } }), done, fetcher),
 };
