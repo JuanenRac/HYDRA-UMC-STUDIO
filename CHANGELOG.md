@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- **The SDK is pinned to its newest release and the generated server client follows it:** the vendored client now includes the route that issues new recovery codes of the second factor and the confirmation proof, and the continuous check compares it with the pinned release.
 - **The vendored server answers follow the SDK contract again:** they now include the answers of the route that issues new recovery codes of the second factor, so the nightly family check finds no drift.
 
 - **The Server Admin screen of Studio offers the choice for a robot the server has not heard from:** under the job dispatcher options there is a selector for what to do with the stop that the dispatcher asks for when the robot has been silent or was never heard, either leave it unacknowledged (the default) or acknowledge it from the state of the server, with its sentences in the eight languages and a warning when the second is saved; it is shown only when the server reports the choice.
