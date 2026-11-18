@@ -89,6 +89,15 @@ describe('the calls', () => {
     expect(await totpApi.disable('pw', '123456', reply(200, { success: true }))).toEqual({ ok: true, value: true });
   });
 
+  it('asks for new recovery codes with the password and a normalised code', async () => {
+    const ask = reply(200, { success: true, recoveryCodes: ['0a1b2-c3d4e'] });
+    expect(await totpApi.regenerate('pw', '123 456', ask)).toEqual({ ok: true, value: ['0a1b2-c3d4e'] });
+    expect((ask as any).mock.calls[0][0]).toContain('/api/totp/recovery-codes');
+    expect(JSON.parse((ask as any).mock.calls[0][1].body)).toEqual({ password: 'pw', code: '123456' });
+    expect(await totpApi.regenerate('bad', '123456', reply(401, { error: 'Invalid credentials' }))).toEqual({ ok: false, failure: { kind: 'password' } });
+    expect(await totpApi.regenerate('pw', '000000', reply(401, { error: 'A current code or an unused recovery code is required' }))).toEqual({ ok: false, failure: { kind: 'code' } });
+  });
+
   it('reports a wait with its seconds, a missing route and a dead network', async () => {
     expect(await totpApi.disable('pw', '1', reply(429, {}, { 'Retry-After': '60' }))).toEqual({ ok: false, failure: { kind: 'wait', seconds: 60 } });
     expect(await totpApi.status(reply(404, {}))).toEqual({ ok: false, failure: { kind: 'unsupported' } });

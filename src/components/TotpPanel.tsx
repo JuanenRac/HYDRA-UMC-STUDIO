@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyRound, ShieldCheck, ShieldOff } from 'lucide-react';
 import { encodeQr, qrSvgPath } from '../lib/qrCode';
-import { groupedKey, totpApi, type TotpEnrolment, type TotpFailure, type TotpStatus } from '../lib/totpApi';
+import { groupedKey, RECOVERY_LOW, totpApi, type TotpEnrolment, type TotpFailure, type TotpStatus } from '../lib/totpApi';
 
 type Step = 'loading' | 'unsupported' | 'off' | 'enrolling' | 'recovery' | 'on';
 
@@ -100,6 +100,14 @@ export function TotpPanel() {
     await refresh();
   };
 
+  const regenerate = async () => {
+    setBusy(true); setError(''); setNotice('');
+    const result = await totpApi.regenerate(password, code);
+    setBusy(false);
+    if (!result.ok) { say(result.failure); return; }
+    setPassword(''); setCode(''); setRecovery(result.value); setStep('recovery');
+  };
+
   const closeRecovery = () => { setRecovery([]); setNotice(t('totp.done_on')); void refresh(); };
 
   const copyKey = async () => {
@@ -159,11 +167,16 @@ export function TotpPanel() {
       {step === 'on' && (
         <div className="space-y-2">
           <p className="text-[10px] text-emerald-400">{t('totp.status_on', { count: status?.recoveryLeft ?? 0 })}</p>
+          {(status?.recoveryLeft ?? 0) <= RECOVERY_LOW && <p role="status" data-testid="totp-low-codes" className="text-[10px] text-amber-400">{t('totp.regenerate_hint', { count: status?.recoveryLeft ?? 0 })}</p>}
           <label className="text-xs font-bold text-slate-200" htmlFor="totp-password">{t('totp.password_label')}</label>
           <input id="totp-password" type="password" autoComplete="current-password" value={password} disabled={busy} onChange={e => setPassword(e.target.value)} className={inputClass} />
           <label className="text-xs font-bold text-slate-200" htmlFor="totp-code">{t('totp.turn_off_code')}</label>
           <input id="totp-code" autoComplete="one-time-code" value={code} disabled={busy} onChange={e => setCode(e.target.value)} className={inputClass} />
-          <button onClick={disable} disabled={busy || !password || !code.trim()} className={buttonClass}><ShieldOff size={14} /> {t('totp.turn_off')}</button>
+          <p className="text-[10px] text-slate-500">{t('totp.regenerate_help')}</p>
+          <div className="flex gap-2">
+            <button onClick={disable} disabled={busy || !password || !code.trim()} className={buttonClass}><ShieldOff size={14} /> {t('totp.turn_off')}</button>
+            <button onClick={regenerate} disabled={busy || !password || !code.trim()} className={buttonClass} data-testid="totp-regenerate"><KeyRound size={14} /> {t('totp.regenerate')}</button>
+          </div>
         </div>
       )}
     </div>

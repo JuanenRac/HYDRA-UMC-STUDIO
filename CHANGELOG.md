@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- **Two-step sign-in offers new recovery codes:** when two or fewer recovery codes are left the screen suggests generating new ones, and a button asks the server for ten new codes (it asks for the password and a current or unused recovery code; the old codes stop working). Available in the eight languages.
 - **The SDK is pinned to its newest release and the generated server client follows it:** the vendored client now includes the route that issues new recovery codes of the second factor and the confirmation proof, and the continuous check compares it with the pinned release.
 - **The vendored server answers follow the SDK contract again:** they now include the answers of the route that issues new recovery codes of the second factor, so the nightly family check finds no drift.
 
