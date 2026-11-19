@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **STUDIO tells you when a newer release of itself exists, and Server Admin has the switch that requires the Ed25519 signature of a flash:** a thin bar at the top reads the newest signed release that the server reports (`GET /api/admin/self-update`) and, when STUDIO is behind, says which version is out and links to the releases page; it only tells, STUDIO never installs a new version by itself from it. The notice is on by default, the bar can be hidden for one version, and Configuration, Updates has the switch "Tell me when a new version of STUDIO is available" (the switch that allows applying updates from here stays off by default). The Security tab of Server Admin shows `production.requireAsymmetricSignature` (off by default, locked when its environment variable fixes it), with its sentences in the eight languages and in the assistant's answer about updates. The SDK is pinned to its newest release.
+
 - **Two-step sign-in offers new recovery codes:** when two or fewer recovery codes are left the screen suggests generating new ones, and a button asks the server for ten new codes (it asks for the password and a current or unused recovery code; the old codes stop working). Available in the eight languages.
 - **The SDK is pinned to its newest release and the generated server client follows it:** the vendored client now includes the route that issues new recovery codes of the second factor and the confirmation proof, and the continuous check compares it with the pinned release.
 - **The vendored server answers follow the SDK contract again:** they now include the answers of the route that issues new recovery codes of the second factor, so the nightly family check finds no drift.

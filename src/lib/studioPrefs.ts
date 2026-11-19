@@ -17,6 +17,9 @@ export const originList: Validator<string[]> = (value) => {
   return [...new Set(value as string[])];
 };
 
+/** A short version text (or empty); anything else takes the default. */
+export const versionText: Validator<string> = (value) => (typeof value === 'string' && value.length <= 40 ? value : undefined);
+
 export const HELP_LEVELS = ['all', 'basic', 'advanced', 'technical'] as const;
 export const DENSITIES = ['comfortable', 'compact'] as const;
 export type StudioPrefs = {
@@ -29,10 +32,14 @@ export type StudioPrefs = {
   listenOnlyServers: string[];
   /** Applying updates of the programs of the machine from Configuration, Updates. Off: that section only looks (checks), it never installs or goes back. */
   selfUpdateApply: boolean;
+  /** Tell me when a newer release of STUDIO exists (on by default). It only tells: STUDIO never installs a new version of itself without the update section being allowed. */
+  updateNotice: boolean;
+  /** The version of STUDIO whose notice was hidden (empty: none), so the same version is not announced again. */
+  updateNoticeDismissed: string;
 };
 
 export const STUDIO_PREFS_KEY = 'hydra_studio_prefs';
-export const STUDIO_DEFAULTS: StudioPrefs = { helpLevel: 'all', density: 'comfortable', reduceMotion: false, listenOnly: false, listenOnlyServers: [], selfUpdateApply: false };
+export const STUDIO_DEFAULTS: StudioPrefs = { helpLevel: 'all', density: 'comfortable', reduceMotion: false, listenOnly: false, listenOnlyServers: [], selfUpdateApply: false, updateNotice: true, updateNoticeDismissed: '' };
 
 let prefs: Prefs<StudioPrefs> | null = null;
 
@@ -41,7 +48,7 @@ function store(): Prefs<StudioPrefs> {
     storage: browserStorage('localStorage'),
     key: STUDIO_PREFS_KEY,
     defaults: STUDIO_DEFAULTS,
-    schema: { helpLevel: oneOf(...HELP_LEVELS), density: oneOf(...DENSITIES), reduceMotion: bool, listenOnly: bool, listenOnlyServers: originList, selfUpdateApply: bool },
+    schema: { helpLevel: oneOf(...HELP_LEVELS), density: oneOf(...DENSITIES), reduceMotion: bool, listenOnly: bool, listenOnlyServers: originList, selfUpdateApply: bool, updateNotice: bool, updateNoticeDismissed: versionText },
   });
   return prefs;
 }
