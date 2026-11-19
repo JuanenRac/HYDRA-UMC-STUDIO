@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.8.2.3]
+
 - **Two-step sign-in offers new recovery codes:** when two or fewer recovery codes are left the screen suggests generating new ones, and a button asks the server for ten new codes (it asks for the password and a current or unused recovery code; the old codes stop working). Available in the eight languages.
 - **The SDK is pinned to its newest release and the generated server client follows it:** the vendored client now includes the route that issues new recovery codes of the second factor and the confirmation proof, and the continuous check compares it with the pinned release.
 - **The vendored server answers follow the SDK contract again:** they now include the answers of the route that issues new recovery codes of the second factor, so the nightly family check finds no drift.
@@ -24,6 +26,7 @@
 - **The README states the URTC bootloader check correctly and points to its own honesty check:** the shared safety notice no longer says that the URTC bootloaders behind the relay take a shared-key HMAC-SHA256 (the main board verifies an Ed25519 record and an expansion board installs only an image the main board confirmed), and the status lines no longer send the reader to a check "above" that is further down. README and its seven translations regenerated.
 - **The manual production-files build no longer refuses a four-component version:** `package.json` and `package-lock.json` must equal the first three components of the manifest version (npm has no fourth component) and agree with each other, and the archive keeps the name of the manifest version. The rule lives in `tools/extra_checks.py` (`dist-version`), the workflow runs it, and the validator tries it on made-up folders (three components equal, four components with a three-component `package.json`, and a different `package.json` or lock failing).
 
+- Build version synchronized with `hydra-umc.project.json` and the repository-native version source.
 
 ## [0.8.2.2]
 
