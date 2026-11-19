@@ -4,12 +4,10 @@
   "/api/ai/job-dispatcher/dispatch/eta",
   "/api/ai/semantic-planner/plan/simulate",
   "/api/ai/semantic-planner/plan/trajectory-check",
-  "/api/audit",
   "/api/camera/media/{p}/{p}/{p}",
   "/api/camera/{p}/stream",
   "/api/login",
   "/api/logout",
   "/api/refresh",
-  "/api/settings",
   "/api/stop-all"
 ]
