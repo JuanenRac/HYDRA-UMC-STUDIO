@@ -9,16 +9,14 @@
 // only what is live (commands, STOP) and the preferences of the person.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MutableRefObject } from 'react';
-import { apiUrl } from '../lib/apiBase';
-import { makeTokenClient, readSettings } from '../lib/serverClient';
+import { makeTokenClient, readSettings, settingsFetch } from '../lib/serverClient';
 import { saveConflictText } from '../lib/serverErrors';
-import { authHeaders } from '../lib/session';
 import { applyOverlay, loadOverlay } from '../lib/settingsScope';
 import { browserStorage } from '../lib/robotDetailHelpers';
 import { parseRobotDelta, deltaTargetExists, patchControllers } from '../lib/robotDelta';
 import { defaultSystemSettings } from '../lib/defaultSettings';
 import { controllersFromServer, currentHost, hostIntegrations, pickActiveControllerId, seedControllers } from '../lib/serverState';
-import { saveSettingsTree, type FetchLike } from '../lib/settingsConcurrency';
+import { saveSettingsTree } from '../lib/settingsConcurrency';
 import { type HydraController, type SystemSettings, defaultControllers } from '../store';
 
 /** The ETag of an answer of GET /api/settings, kept to send it back as If-Match when the tree is saved. */
@@ -99,9 +97,8 @@ export function useSharedConfig(inputs: SharedConfigInputs) {
   // Saves the whole tree with PUT /api/settings and the ETag read last (see lib/settingsConcurrency.ts). When the server's tree is
   // not the one this window received last, the server's version is shown instead and the person is told to apply the change again.
   const persistTree = useCallback((payloadJson: string, force: boolean) => saveSettingsTree({
-    fetchFn: fetch as unknown as FetchLike,
-    url: apiUrl('/api/settings'),
-    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    fetchFn: settingsFetch(),
+    headers: {},
     body: payloadJson,
     etag: settingsEtagRef.current,
     lastSyncedJson: lastPayloadJsonRef.current,

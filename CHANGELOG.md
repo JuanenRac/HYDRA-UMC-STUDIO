@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- **The audit record and the save of the shared settings go through the typed client of the SDK:** the audit screen reads the entries with `getAudit` and the lines for saving with `getAuditAsText`, and the save of the settings tree (`PUT`, and `POST` for an older server) uses `putSettingsWithHeaders` and `postSettingsWithHeaders`, so the `If-Match` it sends and the `ETag` it reads are the ones the contract declares; two routes leave the list of hand-written calls (`tests/fixtures/rest_routes.json` has 11 left, the relays of the AI services, the two camera addresses, sign-in and sign-out, and the stop of everything). Six new cases in `tests/serverClient.test.ts`.
 - **Two-step sign-in offers new recovery codes:** when two or fewer recovery codes are left the screen suggests generating new ones, and a button asks the server for ten new codes (it asks for the password and a current or unused recovery code; the old codes stop working). Available in the eight languages.
 - **The SDK is pinned to its newest release and the generated server client follows it:** the vendored client now includes the route that issues new recovery codes of the second factor and the confirmation proof, and the continuous check compares it with the pinned release.
 - **The vendored server answers follow the SDK contract again:** they now include the answers of the route that issues new recovery codes of the second factor, so the nightly family check finds no drift.
