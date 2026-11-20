@@ -36,7 +36,7 @@ import { IngestSwitchesPanel } from './IngestSwitchesPanel';
 import { DetectionHefPanel } from './DetectionHefPanel';
 import { LiveActivityPanel } from './LiveActivityPanel';
 import { DeveloperNodeStatusPanel } from './DeveloperNodeStatusPanel';
-import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, tlsChangeNeedsConfirmation, trustedNetworksChangeNeedsConfirmation, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, readOnlyPatch, readOnlyChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, nodeHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody, SILENT_ROBOT_CHOICES, type SilentRobot } from '../lib/serverSecurity';
+import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, tlsChangeNeedsConfirmation, trustedNetworksChangeNeedsConfirmation, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, readOnlyPatch, readOnlyChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, asymmetricSignaturePatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, nodeHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody, SILENT_ROBOT_CHOICES, type SilentRobot } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
 
 type ServerConfigPatch = NonNullable<Parameters<typeof serverClient.putAdminServerConfig>[0]>['body'];
@@ -113,6 +113,7 @@ export function AdminServer() {
   const [connectionsRecordAddress, setConnectionsRecordAddress] = useState(false);
   const [pendingConnections, setPendingConnections] = useState(false);
   const [productionRdp, setProductionRdp] = useState(false);
+  const [requireAsymmetric, setRequireAsymmetric] = useState(false);
   const [ingestVersion, setIngestVersion] = useState(0);
   const [pendingProduction, setPendingProduction] = useState(false);
   const [authAlgorithm, setAuthAlgorithm] = useState<JwtAlgorithm>('HS256');
@@ -173,7 +174,7 @@ export function AdminServer() {
       if (state.robots) setRobotsAllowEnable(state.robots.allowEnable.value);
       if (state.robots?.readOnly) setReadOnlyOn(state.robots.readOnly.value);
       if (state.connections) setConnectionsRecordAddress(state.connections.recordAddress.value);
-      if (state.production) setProductionRdp(state.production.rdpLevel.value === 1);
+      if (state.production) { setProductionRdp(state.production.rdpLevel.value === 1); setRequireAsymmetric(state.production.requireAsymmetricSignature?.value ?? false); }
       if (state.auth) { setAuthAlgorithm(state.auth.jwtAlgorithm.value); setAuthAcceptHs256(state.auth.acceptHs256.value); }
       if (state.health) setHealthOpen(state.health.open.value);
       if (state.ecosystemHealth) setEcosystemHealthOn(state.ecosystemHealth.enabled.value);
@@ -339,6 +340,11 @@ export function AdminServer() {
     if (!security?.production) return;
     if (productionChangeNeedsConfirmation(security.production.rdpLevel.value === 1, productionRdp)) setPendingProduction(true);
     else void saveSecurity(productionPatch(productionRdp));
+  };
+
+  const saveAsymmetric = () => {
+    if (!security?.production?.requireAsymmetricSignature) return;
+    void saveSecurity(asymmetricSignaturePatch(requireAsymmetric));
   };
 
   const authBody = () => {
@@ -818,6 +824,25 @@ export function AdminServer() {
               <button onClick={saveProduction} disabled={saving || isLocked(security.production.rdpLevel.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-bold">
                 <Save size={14} /> {t('ecosystem.admin_security_production_save')}
               </button>
+              {security.production.requireAsymmetricSignature && (
+                <div className="space-y-2 pt-2" data-testid="production-asymmetric-section">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                    <input
+                      type="checkbox"
+                      data-testid="production-require-asymmetric"
+                      checked={requireAsymmetric}
+                      disabled={saving || isLocked(security.production.requireAsymmetricSignature.source)}
+                      onChange={e => setRequireAsymmetric(e.target.checked)}
+                    />
+                    {t('ecosystem.admin_security_asymmetric_label')}
+                  </label>
+                  <span className="text-[10px] text-slate-500">{sourceText(security.production.requireAsymmetricSignature.source)}</span>
+                  <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_asymmetric_help')}</div>
+                  <button data-testid="production-asymmetric-save" onClick={saveAsymmetric} disabled={saving || isLocked(security.production.requireAsymmetricSignature.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-bold">
+                    <Save size={14} /> {t('ecosystem.admin_security_asymmetric_save')}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

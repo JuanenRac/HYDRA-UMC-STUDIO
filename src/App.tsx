@@ -9,6 +9,7 @@ import { HydraProvider } from './HydraProvider';
 import Dashboard from './Dashboard';
 import { GamepadController } from './components/GamepadController';
 import { AuthGate } from './components/AuthGate';
+import { UpdateNotice } from './components/UpdateNotice';
 import SplashSvg from './assets/HYDRA_UMC_SPLASHSCREEN.svg';
 
 /**
@@ -67,6 +68,7 @@ function App() {
     <HydraProvider>
       <AuthGate>
         <GamepadController />
+        {!hideUI && <UpdateNotice />}
         <Dashboard />
       </AuthGate>
     </HydraProvider>

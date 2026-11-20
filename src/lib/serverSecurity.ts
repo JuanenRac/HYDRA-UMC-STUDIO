@@ -64,6 +64,8 @@ export interface SecurityState {
   /** Absent when the server predates the read-out protection option of a production flash. */
   production: {
     rdpLevel: { value: 0 | 1; source: SecuritySource };
+    /** Refuse a firmware flash that does not carry the Ed25519 signature of its image; absent when the server predates the option. */
+    requireAsymmetricSignature?: { value: boolean; source: SecuritySource };
   } | null;
   /** Absent when the server predates the history of connections. */
   connections: {
@@ -198,7 +200,9 @@ function parseProduction(raw: any): SecurityState['production'] {
   if (!raw || typeof raw !== 'object') return null;
   const level = raw.rdpLevel;
   if (!level || (level.value !== 0 && level.value !== 1) || !isSource(level.source)) return null;
-  return { rdpLevel: { value: level.value, source: level.source } };
+  const asymmetric = raw.requireAsymmetricSignature;
+  const requireAsymmetricSignature = asymmetric && typeof asymmetric.value === 'boolean' && isSource(asymmetric.source) ? { value: asymmetric.value, source: asymmetric.source } : undefined;
+  return { rdpLevel: { value: level.value, source: level.source }, ...(requireAsymmetricSignature ? { requireAsymmetricSignature } : {}) };
 }
 
 function parseConnections(raw: any): SecurityState['connections'] {
@@ -681,6 +685,13 @@ export type ProductionPatchBody = { production: { rdpLevel: 0 | 1 } };
 /** The request body for the read-out protection level of a production flash: 1 turns it on, 0 off (the default; level 2 is permanent and never offered). */
 export function productionPatch(on: boolean): ProductionPatchBody {
   return { production: { rdpLevel: on ? 1 : 0 } };
+}
+
+export type AsymmetricSignaturePatchBody = { production: { requireAsymmetricSignature: boolean } };
+
+/** The request body of the switch that makes a firmware flash require the Ed25519 signature of its image (off by default). Turning it on never asks: it only refuses more. */
+export function asymmetricSignaturePatch(on: boolean): AsymmetricSignaturePatchBody {
+  return { production: { requireAsymmetricSignature: on } };
 }
 
 /** Turning the protection on is the change that cannot be taken back without erasing the chip: ask first. Turning it off never asks. */
