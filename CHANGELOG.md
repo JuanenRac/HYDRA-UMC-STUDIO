@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **The shared web kit is pinned to its newest release:** the dependency names the built archive of the current kit release by its https address and its integrity hash, so `npm ci --ignore-scripts` installs it again; the kit changes only the sign-in session (a view started from an address that carries a token no longer falls back to an earlier saved login), and its exports are unchanged.
+
 ## [0.8.2.3]
 
 - **Two-step sign-in offers new recovery codes:** when two or fewer recovery codes are left the screen suggests generating new ones, and a button asks the server for ten new codes (it asks for the password and a current or unused recovery code; the old codes stop working). Available in the eight languages.
