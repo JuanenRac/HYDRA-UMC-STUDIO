@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- **Server Admin can switch on the signed release of the global stop:** a switch (off by default) and a write-only key box next to the other stop options; the key is cleared from the screen as soon as it is sent and is never shown again. A server whose key file is named in its environment or security file shows it as fixed.
 - **The vendored files follow the SDK contract again:** the SDK is pinned to its newest release and the vendored server answers now include the routes of the watch release notice, so the nightly family check finds no drift.
 - **The flasher sends the header of format 2:** it reads `<image>.hdr2` and `<image>.sig2` from the release and passes both to the server, which the bootloaders of the HYDRA-UMC boards need; a release without `firmware_manifest.json` now lists its application images from those records.
 - **Watch notice of the phones:** Server Admin shows, read only, which phones say they tell their watch about a newer release of the app (hidden on a server without that route).
