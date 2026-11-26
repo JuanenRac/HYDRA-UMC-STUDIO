@@ -116,6 +116,8 @@ export interface SecurityState {
     framErase?: { value: boolean; source: SecuritySource };
     /** Every how many milliseconds the server reads the physical emergency stop from the SPI bridge (0: off). Absent when the server predates the option. */
     estopWatchMs?: { value: number; source: SecuritySource };
+    /** The signed release of the global stop. Never the key: only whether one is stored, and whether a key file of the server decides (`external`). Absent when the server predates it. */
+    globalStopSigning?: StopSigningState;
   } | null;
   /** Absent when the server predates the exposure options (camera pictures, token in the WebSocket address, blanking of secrets in the log, signature of a spoken confirmation). */
   exposure: {
@@ -481,6 +483,8 @@ function parseSafety(raw: any): SecurityState['safety'] {
   if (fram && typeof fram.value === 'boolean' && isSource(fram.source)) state.framErase = { value: fram.value, source: fram.source };
   const watch = raw.estopWatchMs;
   if (watch && validEstopWatchMs(watch.value) && isSource(watch.source)) state.estopWatchMs = { value: watch.value, source: watch.source };
+  const signing = raw.globalStopSigning;
+  if (signing && typeof signing.value === 'boolean' && isSource(signing.source)) state.globalStopSigning = { value: signing.value, source: signing.source, keyStored: signing.keyStored === true, external: signing.external === true };
   return state;
 }
 
@@ -918,6 +922,30 @@ export function framEraseChangeNeedsConfirmation(current: boolean, next: boolean
   return !current && next;
 }
 
+export interface StopSigningState { value: boolean; source: SecuritySource; keyStored: boolean; external: boolean }
+
+export type StopSigningPatchBody = { safety: { signGlobalStop?: boolean; globalStopKey?: string | null } };
+
+/** What the server accepts as the key of the signed release: 32 to 256 printable ASCII characters without spaces. */
+export function validStopKey(text: string): boolean {
+  return /^[\x21-\x7e]{32,256}$/.test(text);
+}
+
+/** The request for the switch and, when one was typed, the new key. null when there is nothing to send or it would be refused: a typed key that is not a key, or the switch on without any key. */
+export function stopSigningPatch(current: StopSigningState, sign: boolean, keyText: string): StopSigningPatchBody | null {
+  if (current.external || (keyText !== '' && !validStopKey(keyText))) return null;
+  if (sign && keyText === '' && !current.keyStored) return null;
+  const safety: StopSigningPatchBody['safety'] = {};
+  if (keyText !== '') safety.globalStopKey = keyText;
+  if (sign !== current.value) safety.signGlobalStop = sign;
+  return Object.keys(safety).length === 0 ? null : { safety };
+}
+
+/** Removing the stored key turns the switch off with it. */
+export function removeStopKeyPatch(): StopSigningPatchBody {
+  return { safety: { signGlobalStop: false, globalStopKey: null } };
+}
+
 export type MavlinkPatchBody = { mavlink: { signingKeyFile: string; signingAllowUnsigned: boolean } };
 
 /** The request body for the MAVLink signing options: only the path of the key file travels, never the key. */
@@ -934,6 +962,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'server_read_only_on', 'job_stop_silent_server_state', 'job_executor_on', 'job_executor_live', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'rate_limits_off', 'rate_limits_loose', 'bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'bridge_droids_confirmationRequired', 'bridge_uav_envelopeRequired', 'bridge_uav_confirmationRequired', 'bridge_uav_chainInFlight', 'bridge_uav_uploadGeofence', 'global_stop_published', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'jwt_eddsa_on', 'jwt_hs256_refused'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'server_read_only_on', 'job_stop_silent_server_state', 'job_executor_on', 'job_executor_live', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'rate_limits_off', 'rate_limits_loose', 'bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'bridge_droids_confirmationRequired', 'bridge_uav_envelopeRequired', 'bridge_uav_confirmationRequired', 'bridge_uav_chainInFlight', 'bridge_uav_uploadGeofence', 'global_stop_published', 'global_stop_signed', 'global_stop_unsigned', 'global_stop_key_stored', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'jwt_eddsa_on', 'jwt_hs256_refused'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }
