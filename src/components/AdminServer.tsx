@@ -35,8 +35,9 @@ import { ServiceIdentityPanel } from './ServiceIdentityPanel';
 import { IngestSwitchesPanel } from './IngestSwitchesPanel';
 import { DetectionHefPanel } from './DetectionHefPanel';
 import { LiveActivityPanel } from './LiveActivityPanel';
+import { WatchNoticePanel } from './WatchNoticePanel';
 import { DeveloperNodeStatusPanel } from './DeveloperNodeStatusPanel';
-import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, tlsChangeNeedsConfirmation, trustedNetworksChangeNeedsConfirmation, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, readOnlyPatch, readOnlyChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, nodeHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody, SILENT_ROBOT_CHOICES, type SilentRobot } from '../lib/serverSecurity';
+import { bridgeOptionId, bridgesPatch, bridgesChangeNeedsConfirmation, type BridgeValue, type BridgesPatchBody, RATE_LIMIT_KEYS, rateLimitsPatch, rateLimitsChangeNeedsConfirmation, rateLimitTextsValid, type RateLimitKey, type RateLimitsPatchBody, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, tlsPatch, tlsChangeNeedsConfirmation, trustedNetworksChangeNeedsConfirmation, mqttPatch, mqttChangeNeedsConfirmation, voicePatch, voiceChangeNeedsConfirmation, robotsPatch, robotsChangeNeedsConfirmation, readOnlyPatch, readOnlyChangeNeedsConfirmation, connectionsPatch, connectionsChangeNeedsConfirmation, productionPatch, asymmetricSignaturePatch, productionChangeNeedsConfirmation, healthPatch, bridgeGatewayPatch, trustedNetworksPatch, ecosystemHealthPatch, nodeHealthPatch, twinRelayPatch, rulPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, healthChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, JWT_ALGORITHMS, type JwtAlgorithm, safetyPatch, stopSigningPatch, removeStopKeyPatch, validStopKey, type StopSigningPatchBody, framEraseChangeNeedsConfirmation, parseEstopWatchText, mavlinkPatch, mavlinkChangeNeedsConfirmation, type VoicePatchBody, type ExposureValues, type ExposurePatchBody, type InstallValues, type InstallPatchBody, type MavlinkPatchBody, type BleMode, type MqttMode, type SecurityState, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, parseRobotMapText, robotMapToText, type JobDispatcherPatchBody, SILENT_ROBOT_CHOICES, type SilentRobot } from '../lib/serverSecurity';
 import { useSession } from '../storeContexts';
 
 type ServerConfigPatch = NonNullable<Parameters<typeof serverClient.putAdminServerConfig>[0]>['body'];
@@ -113,6 +114,7 @@ export function AdminServer() {
   const [connectionsRecordAddress, setConnectionsRecordAddress] = useState(false);
   const [pendingConnections, setPendingConnections] = useState(false);
   const [productionRdp, setProductionRdp] = useState(false);
+  const [requireAsymmetric, setRequireAsymmetric] = useState(false);
   const [ingestVersion, setIngestVersion] = useState(0);
   const [pendingProduction, setPendingProduction] = useState(false);
   const [authAlgorithm, setAuthAlgorithm] = useState<JwtAlgorithm>('HS256');
@@ -130,6 +132,8 @@ export function AdminServer() {
   const [safetyPublish, setSafetyPublish] = useState(false);
   const [framErase, setFramErase] = useState(false);
   const [latchStop, setLatchStop] = useState(false);
+  const [signStop, setSignStop] = useState(false);
+  const [stopKeyText, setStopKeyText] = useState('');
   const [pendingFram, setPendingFram] = useState(false);
   const [estopWatchText, setEstopWatchText] = useState('');
   const [jdRelay, setJdRelay] = useState(false);
@@ -173,7 +177,7 @@ export function AdminServer() {
       if (state.robots) setRobotsAllowEnable(state.robots.allowEnable.value);
       if (state.robots?.readOnly) setReadOnlyOn(state.robots.readOnly.value);
       if (state.connections) setConnectionsRecordAddress(state.connections.recordAddress.value);
-      if (state.production) setProductionRdp(state.production.rdpLevel.value === 1);
+      if (state.production) { setProductionRdp(state.production.rdpLevel.value === 1); setRequireAsymmetric(state.production.requireAsymmetricSignature?.value ?? false); }
       if (state.auth) { setAuthAlgorithm(state.auth.jwtAlgorithm.value); setAuthAcceptHs256(state.auth.acceptHs256.value); }
       if (state.health) setHealthOpen(state.health.open.value);
       if (state.ecosystemHealth) setEcosystemHealthOn(state.ecosystemHealth.enabled.value);
@@ -186,6 +190,7 @@ export function AdminServer() {
         setSafetyPublish(state.safety.publishGlobalStop.value);
         setFramErase(state.safety.framErase?.value ?? false);
         setLatchStop(state.safety.latchGlobalStop?.value ?? false);
+        setSignStop(state.safety.globalStopSigning?.value ?? false);
         setEstopWatchText(state.safety.estopWatchMs ? String(state.safety.estopWatchMs.value) : '');
       }
       if (state.jobDispatcher) {
@@ -237,6 +242,13 @@ export function AdminServer() {
     void saveSecurity(body);
   };
 
+  // The key leaves the box as soon as it is sent, whatever the server answers: it is never kept or shown again.
+  const saveStopSigning = (body: StopSigningPatchBody | null) => {
+    if (!body) return;
+    setStopKeyText('');
+    void saveSecurity(body);
+  };
+
   const saveSecurity = async (patch: Record<string, unknown>) => {
     setSaving(true); setError(''); setNotice(''); setWarning('');
     try {
@@ -265,6 +277,9 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).some(w => w.startsWith('bridge_'))) setWarning(t('ecosystem.admin_bridges_warning'));
       if (knownWarnings(data.warnings).includes('rate_limits_loose')) setWarning(t('ecosystem.admin_security_rl_loose_warning'));
       if (knownWarnings(data.warnings).includes('rate_limits_off')) setWarning(t('ecosystem.admin_security_rl_off_warning'));
+      if (knownWarnings(data.warnings).includes('global_stop_key_stored')) setWarning(t('ecosystem.admin_security_stopsign_warn_key'));
+      if (knownWarnings(data.warnings).includes('global_stop_signed')) setWarning(t('ecosystem.admin_security_stopsign_warn_on'));
+      if (knownWarnings(data.warnings).includes('global_stop_unsigned')) setWarning(t('ecosystem.admin_security_stopsign_warn_off'));
       if (knownWarnings(data.warnings).includes('mavlink_unsigned_allowed')) setWarning(t('ecosystem.admin_security_mavlink_unsigned_warning'));
       if (knownWarnings(data.warnings).includes('mavlink_signing_off')) setWarning(t('ecosystem.admin_security_mavlink_off_warning'));
       if (knownWarnings(data.warnings).includes('job_stop_relay_on')) setWarning(t('ecosystem.admin_security_jd_warning_relay'));
@@ -339,6 +354,11 @@ export function AdminServer() {
     if (!security?.production) return;
     if (productionChangeNeedsConfirmation(security.production.rdpLevel.value === 1, productionRdp)) setPendingProduction(true);
     else void saveSecurity(productionPatch(productionRdp));
+  };
+
+  const saveAsymmetric = () => {
+    if (!security?.production?.requireAsymmetricSignature) return;
+    void saveSecurity(asymmetricSignaturePatch(requireAsymmetric));
   };
 
   const authBody = () => {
@@ -818,6 +838,25 @@ export function AdminServer() {
               <button onClick={saveProduction} disabled={saving || isLocked(security.production.rdpLevel.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-bold">
                 <Save size={14} /> {t('ecosystem.admin_security_production_save')}
               </button>
+              {security.production.requireAsymmetricSignature && (
+                <div className="space-y-2 pt-2" data-testid="production-asymmetric-section">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                    <input
+                      type="checkbox"
+                      data-testid="production-require-asymmetric"
+                      checked={requireAsymmetric}
+                      disabled={saving || isLocked(security.production.requireAsymmetricSignature.source)}
+                      onChange={e => setRequireAsymmetric(e.target.checked)}
+                    />
+                    {t('ecosystem.admin_security_asymmetric_label')}
+                  </label>
+                  <span className="text-[10px] text-slate-500">{sourceText(security.production.requireAsymmetricSignature.source)}</span>
+                  <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_asymmetric_help')}</div>
+                  <button data-testid="production-asymmetric-save" onClick={saveAsymmetric} disabled={saving || isLocked(security.production.requireAsymmetricSignature.source)} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-bold">
+                    <Save size={14} /> {t('ecosystem.admin_security_asymmetric_save')}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -1002,6 +1041,7 @@ export function AdminServer() {
           <DeveloperNodeStatusPanel refreshKey={ingestVersion} />
           <DetectionHefPanel />
           <LiveActivityPanel />
+          <WatchNoticePanel />
 
           {security.rul && (
             <div className="space-y-2">
@@ -1280,6 +1320,54 @@ export function AdminServer() {
               <button onClick={saveStopOptions} disabled={saving || (isLocked(security.safety.publishGlobalStop.source) && !security.safety.latchGlobalStop && !security.safety.framErase && !security.safety.estopWatchMs) || parseEstopWatchText(estopWatchText) === null} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
                 <Save size={14} /> {t('ecosystem.admin_security_stop_save')}
               </button>
+              {security.safety.globalStopSigning && (
+                <div className="space-y-1" data-testid="stop-signing">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                    <input
+                      type="checkbox"
+                      data-testid="stop-signing-switch"
+                      checked={signStop}
+                      disabled={saving || security.safety.globalStopSigning.external}
+                      onChange={e => setSignStop(e.target.checked)}
+                    />
+                    {t('ecosystem.admin_security_stopsign_title')}
+                  </label>
+                  <span className="text-[10px] text-slate-500">{sourceText(security.safety.globalStopSigning.source)}</span>
+                  <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_stopsign_help')}</div>
+                  {security.safety.globalStopSigning.external ? (
+                    <div className="text-[10px] text-amber-400" data-testid="stop-signing-external">{t('ecosystem.admin_security_stopsign_external')}</div>
+                  ) : (
+                    <>
+                      <div className="text-[10px] text-slate-500" data-testid="stop-signing-stored">{t(security.safety.globalStopSigning.keyStored ? 'ecosystem.admin_security_stopsign_key_stored' : 'ecosystem.admin_security_stopsign_key_none')}</div>
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                        {t('ecosystem.admin_security_stopsign_key_label')}
+                        <input
+                          type="password"
+                          autoComplete="new-password"
+                          spellCheck={false}
+                          data-testid="stop-signing-key"
+                          value={stopKeyText}
+                          disabled={saving}
+                          onChange={e => setStopKeyText(e.target.value)}
+                          className="w-64 px-2 py-1 rounded bg-slate-950 border border-slate-700 text-xs font-mono text-slate-200"
+                        />
+                      </label>
+                      {stopKeyText !== '' && !validStopKey(stopKeyText) && <div className="text-[10px] text-red-400" data-testid="stop-signing-invalid">{t('ecosystem.admin_security_stopsign_key_invalid')}</div>}
+                      <div className="text-[10px] text-slate-500">{t('ecosystem.admin_security_stopsign_refused_http')}</div>
+                      <div className="flex gap-2">
+                        <button data-testid="stop-signing-save" onClick={() => saveStopSigning(stopSigningPatch(security.safety!.globalStopSigning!, signStop, stopKeyText))} disabled={saving || stopSigningPatch(security.safety.globalStopSigning, signStop, stopKeyText) === null} className="flex items-center gap-1.5 px-4 py-2 bg-sky-500/20 hover:bg-sky-500/30 disabled:opacity-40 text-sky-400 border border-sky-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors">
+                          <Save size={14} /> {t('ecosystem.admin_security_stopsign_save')}
+                        </button>
+                        {security.safety.globalStopSigning.keyStored && (
+                          <button data-testid="stop-signing-remove" onClick={() => saveStopSigning(removeStopKeyPatch())} disabled={saving} className="px-4 py-2 border border-slate-700 rounded-lg text-xs font-bold text-slate-300 disabled:opacity-40">
+                            {t('ecosystem.admin_security_stopsign_remove')}
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { productionPatch, productionChangeNeedsConfirmation, parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, validEstopWatchMs, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, nodeHealthPatch, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation } from '../src/lib/serverSecurity';
+import { productionPatch, productionChangeNeedsConfirmation, parseDispatcherReload, trustedNetworksPatch, bridgeGatewayPatch, rulPatch, ecosystemHealthPatch, bleChangeNeedsConfirmation, blePatch, infoAuthChangeNeedsConfirmation, isLocked, knownWarnings, parseSecurityState, robotsChangeNeedsConfirmation, robotsPatch, connectionsChangeNeedsConfirmation, connectionsPatch, healthChangeNeedsConfirmation, healthPatch, safetyPatch, framEraseChangeNeedsConfirmation, parseEstopWatchText, validEstopWatchMs, jobDispatcherPatch, jobDispatcherChangeNeedsConfirmation, jobExecutorGoesLive, nodeHealthPatch, parseRobotMapText, robotMapToText, tlsPatch, exposurePatch, exposureChangeNeedsConfirmation, installPatch, installChangeNeedsConfirmation, authPatch, authChangeNeedsConfirmation, removeStopKeyPatch, stopSigningPatch, validStopKey } from '../src/lib/serverSecurity';
 
 const answer = {
   port: 3000,
@@ -708,5 +708,44 @@ describe('the switch for the health of the controller boards', () => {
     expect(parseSecurityState({ ...withIt, nodeHealth: { enabled: { value: true, source: 'nowhere' } } })?.nodeHealth ?? null).toBeNull();
     expect(nodeHealthPatch(true)).toEqual({ nodeHealth: { enabled: true } });
     expect(nodeHealthPatch(false)).toEqual({ nodeHealth: { enabled: false } });
+  });
+});
+
+import { asymmetricSignaturePatch } from '../src/lib/serverSecurity';
+
+describe('the switch that requires the Ed25519 signature of a flash', () => {
+  const rdp = { value: 0, source: 'default' };
+
+  it('builds the request for both positions and never mixes it with the protection level', () => {
+    expect(asymmetricSignaturePatch(true)).toEqual({ production: { requireAsymmetricSignature: true } });
+    expect(asymmetricSignaturePatch(false)).toEqual({ production: { requireAsymmetricSignature: false } });
+  });
+
+  it('reads it when the server offers it and leaves it out for an older server or a damaged value', () => {
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: rdp, requireAsymmetricSignature: { value: false, source: 'default' } } })?.production?.requireAsymmetricSignature).toEqual({ value: false, source: 'default' });
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: rdp, requireAsymmetricSignature: { value: true, source: 'env' } } })?.production?.requireAsymmetricSignature).toEqual({ value: true, source: 'env' });
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: rdp } })?.production?.requireAsymmetricSignature).toBeUndefined();
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: rdp, requireAsymmetricSignature: { value: 'yes', source: 'default' } } })?.production?.requireAsymmetricSignature).toBeUndefined();
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: rdp, requireAsymmetricSignature: { value: true, source: 'nowhere' } } })?.production?.requireAsymmetricSignature).toBeUndefined();
+  });
+});
+
+describe('the signed release of the global stop', () => {
+  const key = 'k'.repeat(40);
+  const off = { value: false, source: 'default' as const, keyStored: false, external: false };
+
+  it('sends the switch and a typed key, and nothing that the server would refuse', () => {
+    expect(stopSigningPatch(off, true, key)).toEqual({ safety: { globalStopKey: key, signGlobalStop: true } });
+    expect(stopSigningPatch({ ...off, keyStored: true }, true, '')).toEqual({ safety: { signGlobalStop: true } });
+    expect(stopSigningPatch(off, true, '')).toBeNull();
+    expect(stopSigningPatch(off, false, '')).toBeNull();
+    expect(stopSigningPatch(off, false, 'short')).toBeNull();
+    expect(stopSigningPatch({ ...off, external: true }, true, key)).toBeNull();
+    expect(removeStopKeyPatch()).toEqual({ safety: { signGlobalStop: false, globalStopKey: null } });
+    expect(validStopKey('a b'.repeat(20))).toBe(false);
+  });
+
+  it('knows the warnings of the switch', () => {
+    expect(knownWarnings(['global_stop_signed', 'global_stop_unsigned', 'global_stop_key_stored'])).toHaveLength(3);
   });
 });

@@ -151,14 +151,19 @@ export const hasDetailLabel = (type: string, key: string): boolean => (type === 
 
 export interface AuditQuery { limit?: number; type?: string; robotId?: number; afterSeq?: number; verify?: boolean }
 
-/** The query string of GET /api/audit for a filter (limit 1 to 1000). */
+/** The query of GET /api/audit for a filter (limit 1 to 1000), as the named strings the typed client takes. */
+export function auditQueryObject(query: AuditQuery): { limit?: string; type?: string; robotId?: string; afterSeq?: string; verify?: string } {
+  const out: { limit?: string; type?: string; robotId?: string; afterSeq?: string; verify?: string } = {};
+  if (query.limit !== undefined) out.limit = String(Math.min(1000, Math.max(1, Math.floor(query.limit))));
+  if (query.type) out.type = query.type;
+  if (query.robotId !== undefined) out.robotId = String(query.robotId);
+  if (query.afterSeq !== undefined) out.afterSeq = String(query.afterSeq);
+  if (query.verify) out.verify = '1';
+  return out;
+}
+
+/** The query string of GET /api/audit for a filter. */
 export function auditQueryString(query: AuditQuery): string {
-  const params = new URLSearchParams();
-  if (query.limit !== undefined) params.set('limit', String(Math.min(1000, Math.max(1, Math.floor(query.limit)))));
-  if (query.type) params.set('type', query.type);
-  if (query.robotId !== undefined) params.set('robotId', String(query.robotId));
-  if (query.afterSeq !== undefined) params.set('afterSeq', String(query.afterSeq));
-  if (query.verify) params.set('verify', '1');
-  const joined = params.toString();
+  const joined = new URLSearchParams(auditQueryObject(query)).toString();
   return joined ? `?${joined}` : '';
 }

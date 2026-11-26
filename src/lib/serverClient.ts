@@ -9,6 +9,7 @@
 import { HydraServerClient, type HydraReply, type HydraRequest, type HydraTransport } from '../generated/hydra-server-client';
 import { apiUrl } from './apiBase';
 import { authFetch } from './session';
+import type { FetchLike } from './settingsConcurrency';
 
 /** The server answered with a status that is not a success; the body it sent (null when it was not JSON) and its Retry-After header stay with the error. */
 export class ServerHttpError extends Error {
@@ -85,6 +86,24 @@ export async function readSettings(client: HydraServerClient = serverClient): Pr
   if (status !== 200) return { status, data, etag: null };
   const reply = data as HydraReply<unknown> | null;
   return { status, data: reply?.body ?? null, etag: reply?.headers?.ETag ?? null };
+}
+
+/** The reads and saves of /api/settings through the typed client, in the shape `saveSettingsTree` takes: a GET, PUT (with its If-Match) or POST of the tree, the ETag of the answer in its headers and a refusal as a not-ok answer with its status. */
+export function settingsFetch(client: HydraServerClient = serverClient): FetchLike {
+  return async (_url, init = {}) => {
+    const method = init.method ?? 'GET';
+    const tree = init.body === undefined ? undefined : JSON.parse(init.body);
+    try {
+      const reply = method === 'GET' ? await client.getSettingsWithHeaders()
+        : method === 'PUT' ? await client.putSettingsWithHeaders({ headers: { 'If-Match': init.headers?.['If-Match'] ?? '' }, body: tree })
+          : await client.postSettingsWithHeaders({ body: tree });
+      const held = reply as HydraReply<unknown>;
+      return { ok: true, status: 200, headers: { get: (name: string) => held.headers?.[name] ?? null }, json: async () => held.body ?? null };
+    } catch (error) {
+      if (!(error instanceof ServerHttpError)) throw error;
+      return { ok: false, status: error.status, headers: { get: () => null }, json: async () => error.body ?? null };
+    }
+  };
 }
 
 /** A client whose requests carry the given bearer token, for the callers that are handed their token instead of reading the one of the session (without a token the request leaves with no Authorization header). */

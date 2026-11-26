@@ -11,7 +11,7 @@
 // documented, deliberately not just one:
 //
 //   - DEV (`npm run dev`, import.meta.env.DEV true): every call site below
-//     keeps using a RELATIVE path ('/api/settings', '/ws', '/WORKS/...').
+//     keeps using a RELATIVE path (the REST routes, '/ws', '/WORKS/...').
 //     vite.config.ts's own server.proxy transparently forwards those to
 //     http://localhost:3000 - no CORS involved, nothing for a developer to
 //     configure, and the exact same relative-path code that runs in
@@ -45,7 +45,7 @@ export const API_BASE: string = resolveApiBase({
   location: typeof window !== 'undefined' ? window.location : null,
 });
 
-/** Prefixes a backend path ('/api/settings', '/WORKS/Foo/index.json', ...)
+/** Prefixes a backend path (a REST route, '/WORKS/Foo/index.json', ...)
  * with API_BASE - relative in dev (proxied), absolute in prod. */
 export function apiUrl(path: string): string {
   // Only a path that starts with a slash goes through the kit; anything else (the empty path, a query) is appended as it always was.
