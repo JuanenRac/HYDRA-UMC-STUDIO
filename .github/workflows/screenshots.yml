@@ -1,0 +1,101 @@
+# =============================================================================
+# HYDRA-UMC-STUDIO - the screenshots of the README, taken on a GitHub runner
+# Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+# GPL-3.0-or-later - see LICENSE
+# =============================================================================
+# Started by hand only (workflow_dispatch): it never runs on a push or on a pull request. It builds Studio (3D meshes included) and the HYDRA-UMC SERVER, starts the server in a
+# throw-away folder with a made-up administrator and no robots, takes the screens of the README with the Chromium of Playwright (tools/capture_screenshots.mjs) and keeps the
+# pictures as the artifact "screenshots" for two weeks. It has no secrets, publishes nothing and changes nothing in the repository: download the artifact, look at the
+# pictures and copy the ones you want into images/screenshots.
+#
+#   gh workflow run screenshots.yml --repo JuanenRac/HYDRA-UMC-STUDIO --ref main
+
+name: Screenshots (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: screenshots-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  screenshots:
+    name: Take the screenshots of the README
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # the script looks for it next to Studio (HYDRA_UMC_SERVER_DIR names another place)
+      - name: Fetch the server it runs with
+        run: git clone --depth 1 https://github.com/JuanenRac/HYDRA-UMC-SERVER.git ../HYDRA-UMC-SERVER
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          # camera-controls 3.x declares Node.js 22 or newer.
+          node-version: "22"
+          cache: npm
+
+      - name: Cache the 3D mesh package
+        if: ${{ hashFiles('meshes.pack.json') != '' }}
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/hydra-umc/meshes
+          key: hydra-meshes-${{ hashFiles('meshes.pack.json') }}
+
+      - name: Fetch and verify the 3D meshes
+        if: ${{ hashFiles('meshes.pack.json') != '' }}
+        run: node scripts/mesh_pack.mjs ensure --source download
+
+      - name: Build Studio
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+
+      - name: Build the server
+        working-directory: ../HYDRA-UMC-SERVER
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+
+      - name: Install the browser
+        run: |
+          mkdir -p "$RUNNER_TEMP/playwright"
+          cd "$RUNNER_TEMP/playwright"
+          npm init -y >/dev/null
+          npm install --ignore-scripts @playwright/test@1.64.1
+          npx playwright install --with-deps chromium
+
+      - name: Take the screenshots
+        env:
+          HYDRA_SHOTS_CHANNEL: chromium
+          PLAYWRIGHT_DIR: ${{ runner.temp }}/playwright
+        run: node tools/capture_screenshots.mjs --out "$RUNNER_TEMP/screenshots"
+
+      - name: List the pictures
+        run: |
+          {
+            echo "### Screenshots"
+            echo
+            echo "| file | bytes |"
+            echo "| --- | --- |"
+            for picture in "$RUNNER_TEMP"/screenshots/*.png; do
+              echo "| $(basename "$picture") | $(stat -c %s "$picture") |"
+            done
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the pictures
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: screenshots
+          path: ${{ runner.temp }}/screenshots
+          retention-days: 14
+          if-no-files-found: error

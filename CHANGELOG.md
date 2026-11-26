@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **The screenshots of the README can be taken on a GitHub runner:** the manual workflow `screenshots.yml` (started by hand only, read-only token, no secrets) builds Studio and the server, takes the screens against the built-in sample machines and keeps the pictures as an artifact; `HYDRA_SHOTS_CHANNEL=chromium` makes the script take the Chromium of Playwright, and `docs/SCREENSHOTS.md` says how to start it and use them.
+
 ## [0.8.2.4] - Global stop switch, format 2 flasher and newer release notice
 
 - **Server Admin can switch on the signed release of the global stop:** a switch (off by default) and a write-only key box next to the other stop options; the key is cleared from the screen as soon as it is sent and is never shown again. A server whose key file is named in its environment or security file shows it as fixed.

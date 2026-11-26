@@ -8,7 +8,7 @@
  *   node tools/capture_screenshots.mjs              writes images/screenshots/<name>.png at 1920x1080
  *   node tools/capture_screenshots.mjs --out DIR    writes them in DIR instead, to look at them before they replace the ones in the repository
  *
- * It needs Edge (the one Windows has) and Playwright, which it takes from e2e/node_modules, or from PLAYWRIGHT_DIR (a folder that has node_modules/@playwright/test).
+ * It needs Edge (the one Windows has; HYDRA_SHOTS_CHANNEL=chromium takes the Chromium of Playwright instead) and Playwright, which it takes from e2e/node_modules, or from PLAYWRIGHT_DIR (a folder that has node_modules/@playwright/test).
  * The server listens on port 3000 (the port the Studio preview forwards to): stop whatever uses it first. It takes no mouse or keyboard of the desktop: the
  * browser has no window. Everything it starts is stopped at the end and its folder is deleted.
  */
@@ -51,7 +51,9 @@ try {
   const origin = `http://127.0.0.1:${studioPort}`;
   for (let tries = 0; tries < 120; tries += 1) { try { await fetch("http://127.0.0.1:3000/api/login", { method: "OPTIONS" }); await fetch(origin + "/"); break; } catch { await sleep(250); } }
 
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  // Edge on Windows by default; HYDRA_SHOTS_CHANNEL=chromium takes the Chromium that Playwright installs (a runner without Edge)
+  const channel = process.env.HYDRA_SHOTS_CHANNEL ?? "msedge";
+  browser = await chromium.launch(channel === "chromium" ? { headless: true } : { channel, headless: true });
   const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1, locale: "en-US" });
   const page = await context.newPage();
   await page.goto(origin + "/");
