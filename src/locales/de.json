@@ -2446,6 +2446,14 @@
     "confirm_message": "Der Erkennungsdienst nimmt die Meldungen an, die sagen, welche Modelle geladen sind. Schalten Sie das nur ein, wenn Sie den Maschinen vertrauen, die sie senden.",
     "confirm_button": "Annehmen"
   },
+  "watchNotice": {
+    "title": "Uhr-Hinweis auf eine neue App-Version",
+    "desc": "Was jedes Telefon darüber meldet, ob es seine Uhr informiert. Der Schalter ist am Telefon.",
+    "on": "informiert seine Uhr",
+    "off": "informiert seine Uhr nicht",
+    "none": "Noch hat kein Telefon etwas gemeldet.",
+    "load_error": "Die Liste konnte nicht gelesen werden."
+  },
   "liveActivity": {
     "title": "Live Activity auf dem Sperrbildschirm",
     "desc": "Die Karte eines Roboters, die ein iPhone während eines Auftrags auf dem Sperrbildschirm zeigt, aktualisiert über den Push-Dienst von Apple. Standardmäßig aus.",

@@ -2446,6 +2446,14 @@
     "confirm_message": "O serviço de deteção vai aceitar os relatórios que dizem quais os modelos carregados. Ative isto apenas se confiar nas máquinas que os enviam.",
     "confirm_button": "Aceitar"
   },
+  "watchNotice": {
+    "title": "Aviso ao relógio de uma versão nova da aplicação",
+    "desc": "O que cada telemóvel diz sobre avisar o seu relógio. O interruptor está no telemóvel.",
+    "on": "avisa o seu relógio",
+    "off": "não avisa o seu relógio",
+    "none": "Ainda nenhum telemóvel disse nada.",
+    "load_error": "Não foi possível ler a lista."
+  },
   "liveActivity": {
     "title": "Live Activity no ecrã de bloqueio",
     "desc": "O cartão de um robô que um iPhone mostra no ecrã de bloqueio enquanto um trabalho decorre, atualizado pelo serviço push da Apple. Desligado por predefinição.",
