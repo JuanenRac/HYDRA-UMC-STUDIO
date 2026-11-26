@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- **The audit record and the save of the shared settings go through the typed client of the SDK:** the audit screen reads the entries with `getAudit` and the lines for saving with `getAuditAsText`, and the save of the settings tree (`PUT`, and `POST` for an older server) uses `putSettingsWithHeaders` and `postSettingsWithHeaders`, so the `If-Match` it sends and the `ETag` it reads are the ones the contract declares; two routes leave the list of hand-written calls (`tests/fixtures/rest_routes.json` has 11 left, the relays of the AI services, the two camera addresses, sign-in and sign-out, and the stop of everything). Six new cases in `tests/serverClient.test.ts`.
 - **The shared web kit is pinned to its newest release:** the dependency names the built archive of the current kit release by its https address and its integrity hash, so `npm ci --ignore-scripts` installs it again; the kit changes only the sign-in session (a view started from an address that carries a token no longer falls back to an earlier saved login), and its exports are unchanged.
 
 ## [0.8.2.3]

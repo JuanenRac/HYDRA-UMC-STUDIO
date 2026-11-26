@@ -45,7 +45,8 @@ export function sameTree(lastSyncedJson: string | null, server: unknown): boolea
 
 export interface SaveSettingsOptions {
   fetchFn: FetchLike;
-  url: string;
+  /** The address handed to `fetchFn`; the one of the typed client does not need it. */
+  url?: string;
   headers: Record<string, string>;
   body: string;
   /** The ETag of the last GET (or of the last save); null when none is known yet. */
@@ -60,7 +61,7 @@ async function readLatest(o: SaveSettingsOptions): Promise<{ server: unknown; et
   try {
     const readHeaders = { ...o.headers };
     delete readHeaders['Content-Type'];
-    const r = await o.fetchFn(o.url, { headers: readHeaders });
+    const r = await o.fetchFn(o.url ?? '', { headers: readHeaders });
     if (!r.ok) return null;
     return { server: await r.json(), etag: r.headers.get('ETag') };
   } catch {
@@ -71,7 +72,7 @@ async function readLatest(o: SaveSettingsOptions): Promise<{ server: unknown; et
 /** The save of a server that has no PUT /api/settings yet: the whole tree, last writer wins, as before. */
 async function post(o: SaveSettingsOptions): Promise<SettingsSaveOutcome> {
   try {
-    const r = await o.fetchFn(o.url, { method: 'POST', headers: o.headers, body: o.body });
+    const r = await o.fetchFn(o.url ?? '', { method: 'POST', headers: o.headers, body: o.body });
     if (!r.ok) return { kind: 'failed', status: r.status };
     let body: unknown = null;
     try { body = await r.json(); } catch { /* an answer without a JSON body */ }
@@ -94,7 +95,7 @@ export async function saveSettingsTree(o: SaveSettingsOptions): Promise<Settings
     }
     let response;
     try {
-      response = await o.fetchFn(o.url, { method: 'PUT', headers: { ...o.headers, 'If-Match': etag }, body: o.body });
+      response = await o.fetchFn(o.url ?? '', { method: 'PUT', headers: { ...o.headers, 'If-Match': etag }, body: o.body });
     } catch {
       return { kind: 'failed', status: null };
     }
