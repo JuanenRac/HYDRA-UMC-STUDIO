@@ -10,7 +10,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it, vi, type Mock } from 'vitest';
 import { HydraServerClient } from '../src/generated/hydra-server-client';
-import { makeClient, makeTokenClient, makeTransport, readSettings, requestUrl, ServerHttpError } from '../src/lib/serverClient';
+import { makeClient, makeTokenClient, makeTransport, readSettings, requestUrl, ServerHttpError, settingsFetch } from '../src/lib/serverClient';
+import { fetchAudit, fetchAuditJsonl } from '../src/lib/auditApi';
 import { panelCall } from '../src/lib/panelApi';
 
 const ROOT = join(__dirname, '..');
@@ -157,5 +158,59 @@ describe('the reading of the shared settings', () => {
   it('reads an answer that is not JSON as no tree', async () => {
     const send = vi.fn<Send>(async () => ({ ok: true, status: 200, json: async () => { throw new Error('not json'); }, headers: new Headers() }) as unknown as Response);
     expect(await readSettings(makeClient(send))).toEqual({ status: 200, data: null, etag: null });
+  });
+});
+
+describe('the save of the shared settings through the typed client', () => {
+  const answer = (status: number, body: unknown, headers: Record<string, string> = {}) =>
+    vi.fn<Send>(async () => ({ ok: status < 300, status, json: async () => body, headers: new Headers(headers) }) as unknown as Response);
+
+  it('sends a PUT with the If-Match it is given and answers the new ETag', async () => {
+    const send = answer(200, { success: true }, { ETag: '"8"' });
+    const out = await settingsFetch(makeClient(send))('', { method: 'PUT', headers: { 'If-Match': '"7"' }, body: '{"a":1}' });
+    expect(send).toHaveBeenCalledWith('/api/settings', { method: 'PUT', headers: { 'If-Match': '"7"', 'Content-Type': 'application/json' }, body: expect.anything() });
+    expect(out.ok).toBe(true);
+    expect(out.headers.get('ETag')).toBe('"8"');
+    expect(await out.json()).toEqual({ success: true });
+  });
+
+  it('reads with a GET and a POST goes without If-Match', async () => {
+    const get = answer(200, { a: 1 }, { ETag: '"1"' });
+    expect(await (await settingsFetch(makeClient(get))('', {})).json()).toEqual({ a: 1 });
+    expect(get.mock.calls[0][1]).toEqual({ method: 'GET' });
+    const post = answer(200, { success: true });
+    await settingsFetch(makeClient(post))('', { method: 'POST', body: '{"a":2}' });
+    expect(post.mock.calls[0][1].method).toBe('POST');
+    expect(post.mock.calls[0][1].headers).toEqual({ 'Content-Type': 'application/json' });
+  });
+
+  it('turns a refusal into a not-ok answer with its status and body, and lets a network failure through', async () => {
+    const out = await settingsFetch(makeClient(answer(412, { error: 'stale' })))('', { method: 'PUT', headers: { 'If-Match': '"1"' }, body: '{}' });
+    expect(out.ok).toBe(false);
+    expect(out.status).toBe(412);
+    expect(await out.json()).toEqual({ error: 'stale' });
+    await expect(settingsFetch(makeClient(vi.fn<Send>(async () => { throw new Error('offline'); })))('', {})).rejects.toThrow('offline');
+  });
+});
+
+describe('the reading of the audit record through the typed client', () => {
+  it('asks for the filter as a query and reads the entries', async () => {
+    const send = vi.fn<Send>(async () => ({ ok: true, status: 200, json: async () => ({ enabled: true, entries: [] }) }) as unknown as Response);
+    const out = await fetchAudit({ limit: 50, type: 'claim', verify: true }, makeClient(send));
+    expect(send.mock.calls[0][0]).toBe('/api/audit?limit=50&type=claim&verify=1');
+    expect(out.read?.entries).toEqual([]);
+  });
+
+  it('keeps the refusal of a non-administrator and reads nothing', async () => {
+    const out = await fetchAudit({}, makeClient(reply(403, { error: 'admin' })));
+    expect(out.read).toBeNull();
+    expect(out.result.ok).toBe(false);
+  });
+
+  it('asks for the lines as text with format=jsonl and without the verification', async () => {
+    const send = vi.fn<Send>(async () => ({ ok: true, status: 200, text: async () => '{"seq":1}\n' }) as unknown as Response);
+    expect(await fetchAuditJsonl({ limit: 5, verify: true }, makeClient(send))).toBe('{"seq":1}\n');
+    expect(send.mock.calls[0][0]).toBe('/api/audit?limit=5&format=jsonl');
+    expect(await fetchAuditJsonl({}, makeClient(reply(500, {})))).toBeNull();
   });
 });
