@@ -710,3 +710,22 @@ describe('the switch for the health of the controller boards', () => {
     expect(nodeHealthPatch(false)).toEqual({ nodeHealth: { enabled: false } });
   });
 });
+
+import { asymmetricSignaturePatch } from '../src/lib/serverSecurity';
+
+describe('the switch that requires the Ed25519 signature of a flash', () => {
+  const rdp = { value: 0, source: 'default' };
+
+  it('builds the request for both positions and never mixes it with the protection level', () => {
+    expect(asymmetricSignaturePatch(true)).toEqual({ production: { requireAsymmetricSignature: true } });
+    expect(asymmetricSignaturePatch(false)).toEqual({ production: { requireAsymmetricSignature: false } });
+  });
+
+  it('reads it when the server offers it and leaves it out for an older server or a damaged value', () => {
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: rdp, requireAsymmetricSignature: { value: false, source: 'default' } } })?.production?.requireAsymmetricSignature).toEqual({ value: false, source: 'default' });
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: rdp, requireAsymmetricSignature: { value: true, source: 'env' } } })?.production?.requireAsymmetricSignature).toEqual({ value: true, source: 'env' });
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: rdp } })?.production?.requireAsymmetricSignature).toBeUndefined();
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: rdp, requireAsymmetricSignature: { value: 'yes', source: 'default' } } })?.production?.requireAsymmetricSignature).toBeUndefined();
+    expect(parseSecurityState({ ...answer, production: { rdpLevel: rdp, requireAsymmetricSignature: { value: true, source: 'nowhere' } } })?.production?.requireAsymmetricSignature).toBeUndefined();
+  });
+});

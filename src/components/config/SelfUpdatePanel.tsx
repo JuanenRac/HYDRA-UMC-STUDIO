@@ -105,6 +105,11 @@ export function SelfUpdatePanel() {
         <span><strong className="block">{t('selfupdate.switch_title')}</strong><span className="text-slate-500 text-[10px]">{t('selfupdate.switch_hint')}</span></span>
       </label>
 
+      <label className="flex items-start gap-3 text-xs text-slate-300">
+        <input type="checkbox" data-testid="selfupdate-notice-switch" checked={prefs.updateNotice} onChange={(e) => setStudioPrefs({ updateNotice: e.target.checked, updateNoticeDismissed: '' })} className="mt-0.5" />
+        <span><strong className="block">{t('selfupdate.notice_switch_title')}</strong><span className="text-slate-500 text-[10px]">{t('selfupdate.notice_switch_hint')}</span></span>
+      </label>
+
       {failure && <p role="alert" data-testid="selfupdate-error" className="text-xs text-amber-400">{failure === 'unsupported' ? t('selfupdate.unsupported') : t(panelFailureKey(failure))}</p>}
 
       {status && (
