@@ -2446,6 +2446,14 @@
     "confirm_message": "The detection service will accept the reports that tell which models are loaded. Turn this on only if you trust the machines that send them.",
     "confirm_button": "Accept"
   },
+  "watchNotice": {
+    "title": "Watch notice of a newer app release",
+    "desc": "What each phone says about telling its watch. The switch is on the phone.",
+    "on": "tells its watch",
+    "off": "does not tell its watch",
+    "none": "No phone has said anything yet.",
+    "load_error": "The list could not be read."
+  },
   "liveActivity": {
     "title": "Live Activity on the lock screen",
     "desc": "The card of a robot that an iPhone shows on its lock screen while a job runs, updated by the Apple push service. Off by default.",

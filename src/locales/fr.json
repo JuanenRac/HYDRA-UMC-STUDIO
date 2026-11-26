@@ -2446,6 +2446,14 @@
     "confirm_message": "Le service de détection acceptera les rapports qui disent quels modèles sont chargés. N'activez cela que si vous faites confiance aux machines qui les envoient.",
     "confirm_button": "Accepter"
   },
+  "watchNotice": {
+    "title": "Avis à la montre d'une nouvelle version de l'application",
+    "desc": "Ce que chaque téléphone indique sur l'avis envoyé à sa montre. L'interrupteur est sur le téléphone.",
+    "on": "prévient sa montre",
+    "off": "ne prévient pas sa montre",
+    "none": "Aucun téléphone n'a encore rien indiqué.",
+    "load_error": "La liste n'a pas pu être lue."
+  },
   "liveActivity": {
     "title": "Live Activity sur l'écran verrouillé",
     "desc": "La carte d'un robot qu'un iPhone affiche sur son écran verrouillé pendant qu'un travail tourne, mise à jour par le service push d'Apple. Désactivée par défaut.",

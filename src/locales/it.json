@@ -2446,6 +2446,14 @@
     "confirm_message": "Il servizio di rilevamento accetterà i rapporti che dicono quali modelli sono caricati. Attivalo solo se ti fidi delle macchine che li inviano.",
     "confirm_button": "Accetta"
   },
+  "watchNotice": {
+    "title": "Avviso all'orologio di una nuova versione dell'app",
+    "desc": "Che cosa dice ogni telefono sull'avvisare il proprio orologio. L'interruttore è sul telefono.",
+    "on": "avvisa il suo orologio",
+    "off": "non avvisa il suo orologio",
+    "none": "Nessun telefono ha ancora detto nulla.",
+    "load_error": "Non è stato possibile leggere l'elenco."
+  },
   "liveActivity": {
     "title": "Live Activity sulla schermata di blocco",
     "desc": "La scheda di un robot che un iPhone mostra sulla schermata di blocco mentre un lavoro è in corso, aggiornata dal servizio push di Apple. Spenta per impostazione predefinita.",

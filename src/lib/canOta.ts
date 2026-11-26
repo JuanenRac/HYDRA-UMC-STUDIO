@@ -353,6 +353,8 @@ export interface GithubFirmwareAsset {
   hardwareId?: string;
   /** The Ed25519 signature of the image (128 hexadecimal digits) when the manifest states one; the bootloaders of the HYDRA-UMC boards accept an image only with it. */
   signature?: string;
+  /** The 64-byte header of format 2 (<image>.hdr2 of the release, 128 hexadecimal digits): the bridge of a HYDRA-UMC board needs it with the signature. */
+  header?: string;
   /** The board the manifest says the image is built for (for example g474 or h745-cm7), when it names one. */
   target?: string;
   /** The oldest bootloader (major.minor.patch) the manifest says may take the image, when it names one. */
@@ -425,7 +427,8 @@ export function flashSigningOptions(
   installedVersion: string | undefined,
   signature: string | undefined | null,
   requirements: { target?: string; minBootloader?: string } = {},
-): { versionPatch: number; signature: string | null; downgradeFrom: string | null; target?: string; minBootloader?: string } {
+  header?: string,
+): { versionPatch: number; signature: string | null; downgradeFrom: string | null; target?: string; minBootloader?: string; header?: string } {
   const image = parseVersion(imageVersion);
   const installed = parseVersion(installedVersion);
   return {
@@ -434,6 +437,7 @@ export function flashSigningOptions(
     downgradeFrom: image && installed && isOlderVersion(image, installed) ? `${installed.major}.${installed.minor}.${installed.patch}` : null,
     ...(requirements.target ? { target: requirements.target } : {}),
     ...(requirements.minBootloader ? { minBootloader: requirements.minBootloader } : {}),
+    ...(header ? { header } : {}),
   };
 }
 
@@ -463,6 +467,57 @@ export function sha256FromDigest(digest: string | undefined | null): string | un
 const OCTET_STREAM = { Accept: 'application/octet-stream' } as const;
 const apiHeaders = (url: string): HeadersInit | undefined => (url.startsWith('https://api.github.com/') ? OCTET_STREAM : undefined);
 
+/** The 64 bytes of a record asset (<image>.hdr2 or <image>.sig2) as 128 hexadecimal digits; undefined when it is missing or has another size. */
+async function releaseRecord(asset: GithubReleaseAsset | undefined): Promise<string | undefined> {
+  if (!asset) return undefined;
+  const res = await fetch(asset.url, { headers: OCTET_STREAM });
+  if (!res.ok) return undefined;
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  if (bytes.length !== 64) return undefined;
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** The header and the signature of format 2 published next to an application image: both or nothing, since neither is of any use alone. */
+async function releaseRecords(byName: Map<string, GithubReleaseAsset>, binName: string): Promise<{ header: string; signature: string } | undefined> {
+  const stem = binName.replace(/\.bin$/i, '');
+  const header = await releaseRecord(byName.get(`${stem}.hdr2`));
+  const signature = await releaseRecord(byName.get(`${stem}.sig2`));
+  return header && signature ? { header, signature } : undefined;
+}
+
+/** The boards whose application images carry a header of format 2, by the hardware id the header states. */
+const HEADER_TIERS: Record<number, CanOtaTier> = { 0x47343031: 'controllerBoard', 0x48374334: 'kinematicBrain', 0x48374337: 'kinematicBrain' };
+
+/**
+ * A release without firmware_manifest.json: the application images that come with their .hdr2 and .sig2 describe themselves (the header names the board;
+ * the file name states the version). Bootloaders are never offered this way.
+ */
+async function listFromHeaders(byName: Map<string, GithubReleaseAsset>, tier: CanOtaTier, publishedAt: string): Promise<GithubFirmwareAsset[]> {
+  const assets: GithubFirmwareAsset[] = [];
+  for (const [name, image] of byName) {
+    const version = /^HYDRA_[A-Z0-9_]+_APP_v(\d+\.\d+\.\d+)\.bin$/.exec(name)?.[1];
+    if (!version) continue;
+    const records = await releaseRecords(byName, name);
+    if (!records || !records.header.startsWith('485944520200')) continue; // "HYDR", format 2
+    const little = records.header.slice(16, 24).match(/../g) ?? [];
+    const hardwareId = parseInt(little.reverse().join(''), 16);
+    if (HEADER_TIERS[hardwareId] !== tier) continue;
+    assets.push({
+      name,
+      url: image.url,
+      size: image.size ?? 0,
+      releaseTag: version,
+      publishedAt: publishedAt || image.updated_at || '',
+      sha256: sha256FromDigest(image.digest),
+      isBootloader: false,
+      hardwareId: `0x${hardwareId.toString(16).toUpperCase().padStart(8, '0')}`,
+      header: records.header,
+      signature: records.signature,
+    });
+  }
+  return assets;
+}
+
 /** Same listing, for a repo that publishes its images as release assets: manifest, images and their .sig files come from the latest release. */
 async function fetchReleaseAssetFirmware(
   repo: string,
@@ -478,7 +533,7 @@ async function fetchReleaseAssetFirmware(
   const release = await res.json() as { tag_name?: string; published_at?: string; assets?: GithubReleaseAsset[] };
   const byName = new Map<string, GithubReleaseAsset>((release.assets ?? []).map((a) => [a.name, a]));
   const manifestAsset = byName.get('firmware_manifest.json');
-  if (!manifestAsset) return [];
+  if (!manifestAsset) return listFromHeaders(byName, tier, release.published_at ?? '');
   const manifestRes = await fetch(manifestAsset.url, { headers: OCTET_STREAM });
   if (!manifestRes.ok) throw new Error(`GitHub release asset ${manifestRes.status} fetching firmware_manifest.json`);
   const manifest = await manifestRes.json() as FirmwareManifest;
@@ -498,7 +553,11 @@ async function fetchReleaseAssetFirmware(
       const sigRes = await fetch(sigAsset.url, { headers: OCTET_STREAM });
       if (sigRes.ok) signature = normalizeSignature(await sigRes.text()) ?? undefined;
     }
+    // The header and signature of format 2 win: they are what the bootloader of a HYDRA-UMC board verifies.
+    const records = await releaseRecords(byName, bin.filename);
+    if (records) signature = records.signature;
     assets.push({
+      header: records?.header,
       name: bin.filename,
       url: imageAsset.url,
       size: bin.size_bytes,
@@ -711,7 +770,7 @@ export async function hardwareStartFlash(
   versionMinor: number,
   authToken: string | null,
   hardwareId = 0,
-  signing: { versionPatch?: number; signature?: string | null; downgradeFrom?: string | null; target?: string; minBootloader?: string } = {},
+  signing: { versionPatch?: number; signature?: string | null; downgradeFrom?: string | null; target?: string; minBootloader?: string; header?: string } = {},
 ): Promise<HardwareFlashResult> {
   const resolved = resolveHardwareTarget(target);
   if (!resolved) {
@@ -728,6 +787,7 @@ export async function hardwareStartFlash(
   if (signing.versionPatch !== undefined) qs.set('version_patch', String(signing.versionPatch));
   const signature = normalizeSignature(signing.signature);
   if (signature) qs.set('signature', signature);
+  if (signing.header) qs.set('header', signing.header);
   if (signing.downgradeFrom && parseVersion(signing.downgradeFrom)) qs.set('downgrade_from', signing.downgradeFrom);
   // What the manifest says about the image: the relay passes them on and the bridge refuses a foreign board or an old bootloader.
   if (signing.target) qs.set('target', signing.target);
