@@ -10,12 +10,12 @@
 // and offers to look again. When the run ends with the server updated, the page reloads to load the new Studio.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { HardDrive, RefreshCw, Download, RotateCcw } from 'lucide-react';
+import { HardDrive, RefreshCw, Download, RotateCcw, Undo2 } from 'lucide-react';
 import { failureKey as panelFailureKey, type PanelFailure } from '../../lib/panelApi';
 import { useStudioPrefs } from '../../lib/studioPrefs';
 import {
-  SERVER_NEEDS_MB, applyFleet, diskLowForServer, errorKey, followFleet, planFleet, readFleet, reasonKey, resumable, resumeFleet, runActive, stepProgress, updatable,
-  type FleetRow, type FleetStatus,
+  SERVER_NEEDS_MB, applyFleet, confirmationOf, diskLowForServer, errorKey, followFleet, planFleet, readFleet, reasonKey, refusalKey, resumable, resumeFleet, rollbackFleet, runActive,
+  stepProgress, summary, updatable, type FleetRow, type FleetStatus,
 } from '../../lib/fleetUpdate';
 
 const RELOAD_AFTER_MS = 5000;
@@ -31,7 +31,8 @@ export function FleetUpdatePanel({ pollMs, silenceMs, reloadMs }: FleetUpdatePan
   const [looking, setLooking] = useState(false);
   const [silent, setSilent] = useState<number | null>(null);
   const [gaveUp, setGaveUp] = useState(false);
-  const [confirming, setConfirming] = useState<string[] | null>(null);
+  const [confirming, setConfirming] = useState<{ kind: 'update' | 'resume' | 'rollback'; names: string[] } | null>(null);
+  const [code, setCode] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [serverUpdated, setServerUpdated] = useState(false);
   const following = useRef(false);
@@ -92,20 +93,14 @@ export function FleetUpdatePanel({ pollMs, silenceMs, reloadMs }: FleetUpdatePan
     if (result.ok) { setStatus(result.status); setFailure(null); } else setMessage(t(`fleet.start_${result.reason}`));
   };
 
-  const start = async (names: string[]) => {
-    setConfirming(null); setMessage(null);
-    serverWasUpdating.current = names.includes('server');
-    const result = await applyFleet(names);
-    if (!alive.current) return;
-    if (!result.ok) { setMessage(t(`fleet.start_${result.reason}`)); return; }
-    setStatus(result.status);
-    void follow();
-  };
+  const ask = (kind: 'update' | 'resume' | 'rollback', names: string[]) => { setCode(''); setMessage(null); setConfirming({ kind, names }); };
+  const needsCode = report?.helper === 'root' && report.totpRequired;
 
-  const take = async (name: string) => {
-    setMessage(null);
-    serverWasUpdating.current = name === 'server';
-    const result = await resumeFleet(name);
+  const start = async (kind: 'update' | 'resume' | 'rollback', names: string[]) => {
+    const confirmation = confirmationOf(report, code);
+    setConfirming(null); setMessage(null); setCode('');
+    serverWasUpdating.current = names.includes('server');
+    const result = kind === 'update' ? await applyFleet(names, confirmation) : kind === 'resume' ? await resumeFleet(names[0], confirmation) : await rollbackFleet(names[0], confirmation);
     if (!alive.current) return;
     if (!result.ok) { setMessage(t(`fleet.start_${result.reason}`)); return; }
     setStatus(result.status);
@@ -113,7 +108,7 @@ export function FleetUpdatePanel({ pollMs, silenceMs, reloadMs }: FleetUpdatePan
   };
 
   const rowText = (row: FleetRow): string => {
-    if (row.state === 'running') return `${t(`fleet.step_${row.step || 'disk'}`)}${row.substeps > 0 ? ` (${row.substep})` : ''}${row.elapsedS > 0 ? ` - ${row.elapsedS} s` : ''}`;
+    if (row.state === 'running') return `${t(report?.helper === 'root' && row.step === 'fetching' ? 'fleet.step_fetching_package' : `fleet.step_${row.step || 'disk'}`)}${row.substeps > 0 ? ` (${row.substep})` : ''}${row.elapsedS > 0 ? ` - ${row.elapsedS} s` : ''}`;
     if (row.error) return t(errorKey(row.error), { free: row.freeMb ?? '?', need: row.needMb ?? '?' });
     return t(`fleet.state_${row.state}`);
   };
@@ -122,7 +117,7 @@ export function FleetUpdatePanel({ pollMs, silenceMs, reloadMs }: FleetUpdatePan
     <section className="space-y-4" data-testid="fleet-panel">
       <div>
         <h3 className="text-sm font-black text-sky-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2"><HardDrive size={16} /> {t('fleet.title')}</h3>
-        <p className="text-[10px] text-slate-600 leading-relaxed pt-2">{t('fleet.intro')}</p>
+        <p className="text-[10px] text-slate-600 leading-relaxed pt-2">{t(report?.helper === 'root' ? 'fleet.intro_root' : 'fleet.intro')}</p>
       </div>
 
       {failure && <p role="alert" data-testid="fleet-error" className="text-xs text-amber-400">{failure === 'unsupported' ? t('fleet.unsupported') : t(panelFailureKey(failure))}</p>}
@@ -133,9 +128,11 @@ export function FleetUpdatePanel({ pollMs, silenceMs, reloadMs }: FleetUpdatePan
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400" data-testid="fleet-run-state">{report ? (report.state === 'failed' ? t('fleet.run_failed', { name: report.stoppedAt || report.error }) : report.state === 'blocked' ? t('fleet.run_blocked', { name: report.stoppedAt || report.error }) : t(`fleet.run_${report.state}`)) : t('fleet.no_plan')}</span>
             <span className="flex gap-3">
               <button type="button" data-testid="fleet-look" onClick={() => void look()} disabled={looking || running} className="flex items-center gap-1 text-[10px] text-sky-400 disabled:opacity-40"><RefreshCw size={12} className={looking ? 'animate-spin' : ''} /> {looking ? t('fleet.looking') : t('fleet.look')}</button>
-              <button type="button" data-testid="fleet-update-all" onClick={() => setConfirming(todo.map((row) => row.name))} disabled={!canApply || todo.length === 0 || looking} className="flex items-center gap-1 text-[10px] text-sky-400 disabled:opacity-30"><Download size={12} /> {t('fleet.update_all')}</button>
+              <button type="button" data-testid="fleet-update-all" onClick={() => ask('update', todo.map((row) => row.name))} disabled={!canApply || todo.length === 0 || looking} className="flex items-center gap-1 text-[10px] text-sky-400 disabled:opacity-30"><Download size={12} /> {t('fleet.update_all')}</button>
             </span>
           </div>
+          {report && <p className="px-4 py-2 text-[10px] text-slate-500" data-testid="fleet-summary">{t('fleet.summary', summary(report))}</p>}
+          {report && refusalKey(report.error) && <p role="alert" className="px-4 py-2 text-[10px] text-amber-400" data-testid="fleet-refused">{t(refusalKey(report.error) as string)}</p>}
           {report && (
             <table className="w-full text-xs">
               <thead><tr className="text-left text-[9px] uppercase tracking-widest text-slate-600"><th className="px-4 py-2">{t('fleet.col_program')}</th><th className="px-4 py-2">{t('fleet.col_installed')}</th><th className="px-4 py-2">{t('fleet.col_latest')}</th><th className="px-4 py-2">{t('fleet.col_action')}</th><th className="px-4 py-2">{t('fleet.col_progress')}</th><th className="px-4 py-2" /></tr></thead>
@@ -143,7 +140,7 @@ export function FleetUpdatePanel({ pollMs, silenceMs, reloadMs }: FleetUpdatePan
                 {report.services.map((row) => (
                   <tr key={row.name} data-testid="fleet-row" data-state={row.state} className="border-t border-slate-800 text-slate-300 align-top">
                     <td className="px-4 py-2 font-mono">{row.name}</td>
-                    <td className="px-4 py-2 font-mono">{row.installed ?? '-'}</td>
+                    <td className="px-4 py-2 font-mono">{row.installed ?? '-'}{row.previous && <span className="block text-[9px] text-slate-500" data-testid={`fleet-previous-${row.name}`}>{t('fleet.kept', { version: row.previous })}</span>}</td>
                     <td className="px-4 py-2 font-mono">{row.latest ?? '-'}</td>
                     <td className="px-4 py-2">{t(`fleet.action_${row.action}`)}{reasonKey(row.reason) && <span className="block text-[9px] text-slate-500">{t(reasonKey(row.reason) as string)}</span>}{row.reason === 'needs_newer_rustc' && row.detail && <span className="block text-[9px] font-mono text-slate-500" data-testid={`fleet-needs-${row.name}`}>{row.detail}</span>}</td>
                     <td className="px-4 py-2" data-testid={`fleet-progress-${row.name}`}>
@@ -158,7 +155,8 @@ export function FleetUpdatePanel({ pollMs, silenceMs, reloadMs }: FleetUpdatePan
                       ) : null}
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
-                      {resumable(row) && <button type="button" data-testid={`fleet-resume-${row.name}`} disabled={!canApply} onClick={() => void take(row.name)} className="inline-flex items-center gap-1 text-[10px] text-sky-400 disabled:opacity-30"><RotateCcw size={12} /> {t('fleet.resume')}</button>}
+                      {resumable(row) && <button type="button" data-testid={`fleet-resume-${row.name}`} disabled={!canApply} onClick={() => (needsCode ? ask('resume', [row.name]) : void start('resume', [row.name]))} className="inline-flex items-center gap-1 text-[10px] text-sky-400 disabled:opacity-30"><RotateCcw size={12} /> {t('fleet.resume')}</button>}
+                      {report.helper === 'root' && row.previous && !running && <button type="button" data-testid={`fleet-rollback-${row.name}`} disabled={!canApply} onClick={() => ask('rollback', [row.name])} className="ml-3 inline-flex items-center gap-1 text-[10px] text-slate-400 disabled:opacity-30"><Undo2 size={12} /> {t('fleet.go_back')}</button>}
                     </td>
                   </tr>
                 ))}
@@ -172,11 +170,16 @@ export function FleetUpdatePanel({ pollMs, silenceMs, reloadMs }: FleetUpdatePan
       )}
 
       {confirming && (
-        <div role="alertdialog" aria-label={t('fleet.confirm_title')} data-testid="fleet-confirm" className="border border-amber-500/40 rounded-xl p-4 space-y-3 bg-slate-950">
-          <p className="text-xs text-slate-200">{t('fleet.confirm_body', { count: confirming.length, names: confirming.join(', ') })}</p>
-          {confirming.includes('server') && <p className="text-[10px] text-slate-500" data-testid="fleet-confirm-server">{t('fleet.confirm_server')}</p>}
+        <div role="alertdialog" aria-label={t(confirming.kind === 'rollback' ? 'fleet.confirm_rollback_title' : 'fleet.confirm_title')} data-testid="fleet-confirm" className="border border-amber-500/40 rounded-xl p-4 space-y-3 bg-slate-950">
+          <p className="text-xs text-slate-200">{confirming.kind === 'rollback' ? t('fleet.confirm_rollback_body', { names: confirming.names.join(', ') }) : confirming.kind === 'resume' ? t('fleet.confirm_resume_body', { names: confirming.names.join(', ') }) : t('fleet.confirm_body', { count: confirming.names.length, names: confirming.names.join(', ') })}</p>
+          {confirming.names.includes('server') && <p className="text-[10px] text-slate-500" data-testid="fleet-confirm-server">{t('fleet.confirm_server')}</p>}
+          {needsCode && (
+            <label className="block text-[10px] text-slate-400">{t('fleet.code_label')}
+              <input type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} data-testid="fleet-code" onChange={(event) => setCode(event.target.value.replace(/[^0-9]/g, ''))} className="mt-1 block w-32 rounded border border-slate-700 bg-slate-900 px-2 py-1 font-mono text-sm text-slate-200" />
+            </label>
+          )}
           <div className="flex gap-3">
-            <button type="button" data-testid="fleet-confirm-yes" onClick={() => void start(confirming)} className="px-3 py-1 rounded bg-sky-600 text-white text-xs">{t('fleet.confirm_yes')}</button>
+            <button type="button" data-testid="fleet-confirm-yes" disabled={needsCode && code.length !== 6} onClick={() => void start(confirming.kind, confirming.names)} className="px-3 py-1 rounded bg-sky-600 text-white text-xs disabled:opacity-40">{confirming.kind === 'rollback' ? t('fleet.go_back') : confirming.kind === 'resume' ? t('fleet.resume') : t('fleet.confirm_yes')}</button>
             <button type="button" data-testid="fleet-confirm-no" onClick={() => setConfirming(null)} className="px-3 py-1 rounded border border-slate-700 text-slate-300 text-xs">{t('fleet.confirm_no')}</button>
           </div>
         </div>

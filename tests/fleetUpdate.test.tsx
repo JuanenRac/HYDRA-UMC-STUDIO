@@ -319,3 +319,37 @@ describe('FleetUpdatePanel', () => {
     expect(screen.getByTestId('fleet-mode').textContent).toContain('switched off');
   });
 });
+
+describe('the root helper of the device', () => {
+  const root = (rows: unknown[], extra: Record<string, unknown> = {}) => report('planned', rows, { helper: 'root', planId: 'a'.repeat(32), totpRequired: true, ...extra });
+
+  it('asks for the one-time code, sends it with the identifier of the look and shows what is kept', async () => {
+    setStudioPrefs({ selfUpdateApply: true });
+    const seen = serve({
+      '/api/admin/fleet-update/resume': [{ status: 200, body: status(root([row('datalake', { previous: '0.0.9' })])) }],
+      '/api/admin/fleet-update/apply': [{ status: 200, body: status(root([row('datalake', { previous: '0.0.9' })])) }],
+      '/api/admin/fleet-update': [{ status: 200, body: status(root([row('datalake', { previous: '0.0.9' }), row('studio', { action: 'current' })])) }],
+    });
+    render(<FleetUpdatePanel pollMs={5} />);
+    expect((await screen.findByTestId('fleet-previous-datalake')).textContent).toContain('0.0.9');
+    expect(screen.getByTestId('fleet-summary').textContent).toContain('1');
+    fireEvent.click(screen.getByTestId('fleet-update-all'));
+    expect((screen.getByTestId('fleet-confirm-yes') as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.change(screen.getByTestId('fleet-code'), { target: { value: '12x3456' } });
+    await act(async () => { fireEvent.click(screen.getByTestId('fleet-confirm-yes')); });
+    const sent = seen.find((call) => call.url.includes('/apply'));
+    expect(JSON.parse(sent?.body ?? '{}')).toEqual({ services: ['datalake'], confirm: true, planId: 'a'.repeat(32), code: '123456' });
+    fireEvent.click(await screen.findByTestId('fleet-rollback-datalake'));
+    fireEvent.change(screen.getByTestId('fleet-code'), { target: { value: '654321' } });
+    await act(async () => { fireEvent.click(screen.getByTestId('fleet-confirm-yes')); });
+    const back = seen.find((call) => call.url.includes('/resume'));
+    expect(JSON.parse(back?.body ?? '{}')).toEqual({ service: 'datalake', confirm: true, rollback: true, planId: 'a'.repeat(32), code: '654321' });
+  });
+
+  it('says why the helper did nothing, and without the helper no code travels', async () => {
+    serve({ '/api/admin/fleet-update': [{ status: 200, body: status(root([row('datalake')], { error: 'totp_invalid' })) }] });
+    render(<FleetUpdatePanel />);
+    expect(await screen.findByTestId('fleet-refused')).toBeTruthy();
+    expect(parseFleetReport(planned())?.helper).toBeNull();
+  });
+});

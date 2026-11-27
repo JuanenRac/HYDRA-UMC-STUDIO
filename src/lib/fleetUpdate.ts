@@ -18,16 +18,23 @@ export const ROW_ACTIONS = ['update', 'current', 'skip', 'review'] as const;
 export type RowAction = (typeof ROW_ACTIONS)[number];
 /** The steps of one program, in the order the device goes through them. */
 export const FLEET_STEPS = ['disk', 'fetching', 'backup', 'building', 'installing', 'verifying', 'done'] as const;
-export const FLEET_ERRORS = ['low_disk', 'fetch_failed', 'tag_mismatch', 'tag_unsigned', 'checkout_failed', 'backup_failed', 'build_failed', 'installer_failed', 'version_mismatch', 'not_healthy', 'journal_errors', 'sdk_not_importable', 'interrupted', 'unexpected'] as const;
-export const FLEET_REASONS = ['special_stack', 'no_release', 'version_unreadable', 'installed_newer', 'unit_inactive', 'repo_dirty', 'goes_with_server', 'not_asked', 'no_checkout', 'migrated_needs_packages', 'migrated_no_package', 'own_package', 'needs_newer_rustc'] as const;
+export const FLEET_ERRORS = ['low_disk', 'fetch_failed', 'tag_mismatch', 'tag_unsigned', 'checkout_failed', 'backup_failed', 'build_failed', 'installer_failed', 'version_mismatch', 'not_healthy', 'journal_errors', 'sdk_not_importable', 'interrupted', 'unexpected',
+  // the root helper of the device (signed packages)
+  'signature_invalid', 'bad_package', 'wrong_python', 'missing_system_package', 'needs_first_setup', 'first_install_off', 'not_installed', 'not_newer', 'deploy_failed', 'restart_failed',
+  'units_failed', 'account_failed', 'migration_failed', 'write_failed', 'download_failed', 'layout_unknown', 'no_earlier_release', 'rollback_failed'] as const;
+/** Why the root helper did nothing with a request (the look on screen stays, with a new identifier). */
+export const FLEET_REFUSALS = ['confirmation_needed', 'plan_old', 'plan_changed', 'totp_not_set_up', 'totp_locked', 'totp_required', 'totp_invalid'] as const;
+export const FLEET_REASONS = ['special_stack', 'no_release', 'version_unreadable', 'installed_newer', 'unit_inactive', 'repo_dirty', 'goes_with_server', 'not_asked', 'no_checkout', 'migrated_needs_packages', 'migrated_no_package', 'own_package', 'needs_newer_rustc', 'no_signed_package', 'first_install'] as const;
 /** What the server needs free to build and install, in MB (the device checks the same numbers). */
 export const SERVER_NEEDS_MB = 2500;
 
 export interface FleetRow {
   name: string; kind: string; repo: string; installed: string | null; latest: string | null; action: RowAction; reason: string; state: RowState; step: string; substep: string; substeps: number;
   detail: string; error: string; elapsedS: number; freeMb: number | null; needMb: number | null; unitRestored: boolean | null; log: Array<{ at: string; text: string }>;
+  /** Root helper only: the version kept to go back to. */
+  previous: string | null;
 }
-export interface FleetReport { id: string; mode: 'plan' | 'run'; state: FleetState; updatedAt: string; error: string; stoppedAt: string; requireSignedTags: boolean; rootFreeMb: number | null; workspaceFreeMb: number | null; services: FleetRow[] }
+export interface FleetReport { id: string; mode: 'plan' | 'run'; state: FleetState; updatedAt: string; error: string; stoppedAt: string; requireSignedTags: boolean; rootFreeMb: number | null; workspaceFreeMb: number | null; services: FleetRow[]; helper: 'root' | null; planId: string; totpRequired: boolean }
 export interface FleetStatus { applyEnabled: boolean; busy: boolean; report: FleetReport | null }
 
 const oneOf = <T extends string>(list: readonly T[], value: unknown, fallback: T): T => (typeof value === 'string' && (list as readonly string[]).includes(value) ? (value as T) : fallback);
@@ -43,10 +50,12 @@ export function parseFleetReport(data: unknown): FleetReport | null {
     detail: String(row.detail ?? '').slice(0, 200), error: String(row.error ?? ''), elapsedS: whole(row.elapsedS) ?? 0, freeMb: whole(row.freeMb), needMb: whole(row.needMb),
     unitRestored: typeof row.unitRestored === 'boolean' ? row.unitRestored : null,
     log: Array.isArray(row.log) ? row.log.map((l) => asObject(l)).map((l) => ({ at: String(l.at ?? ''), text: String(l.text ?? '') })).slice(-30) : [],
+    previous: asText(row.previous),
   }));
   return {
     id: String(body.id ?? ''), mode: body.mode === 'run' ? 'run' : 'plan', state: oneOf(FLEET_STATES, body.state, 'planned'), updatedAt: String(body.updatedAt ?? ''), error: String(body.error ?? ''),
     stoppedAt: String(body.stoppedAt ?? ''), requireSignedTags: body.requireSignedTags === true, rootFreeMb: whole(disk.rootFreeMb), workspaceFreeMb: whole(disk.workspaceFreeMb), services,
+    helper: body.helper === 'root' ? 'root' : null, planId: String(body.planId ?? ''), totpRequired: body.helper === 'root' && body.totpRequired !== false,
   };
 }
 
@@ -56,8 +65,18 @@ export function parseFleetStatus(data: unknown): FleetStatus {
 }
 
 export const runActive = (report: FleetReport | null): boolean => report !== null && report.state === 'running';
-/** The programs the plan marks to update, in order. */
-export const updatable = (report: FleetReport | null): FleetRow[] => (report?.services ?? []).filter((row) => row.action === 'update' && row.kind !== 'frontend');
+/** The programs the plan marks to update, in order. The root helper updates Studio from its own package; the other tool updates it with the server. */
+export const updatable = (report: FleetReport | null): FleetRow[] => (report?.services ?? []).filter((row) => row.action === 'update' && (row.kind !== 'frontend' || report?.helper === 'root'));
+/** How many programs are up to date, to be updated and left alone. */
+export const summary = (report: FleetReport): { current: number; update: number; other: number } => {
+  const current = report.services.filter((row) => row.action === 'current').length;
+  const update = report.services.filter((row) => row.action === 'update').length;
+  return { current, update, other: report.services.length - current - update };
+};
+export const refusalKey = (code: string): string | null => ((FLEET_REFUSALS as readonly string[]).includes(code) ? `fleet.refused_${code}` : null);
+/** What the second step brings to the root helper: the identifier of the look shown and the one-time code. Empty for the other ways. */
+export interface FleetConfirmation { planId?: string; code?: string }
+export const confirmationOf = (report: FleetReport | null, code: string): FleetConfirmation => (report?.helper === 'root' ? { ...(report.planId ? { planId: report.planId } : {}), ...(code ? { code } : {}) } : {});
 /** A program that can be taken up again by itself. */
 export const resumable = (row: FleetRow): boolean => row.state === 'interrupted' || row.state === 'failed' || row.state === 'rolled_back' || row.state === 'blocked';
 /** How far a program is through its steps, 0 to 1. */
@@ -94,8 +113,19 @@ async function send(run: () => Promise<unknown>): Promise<Outcome> {
 }
 
 export const planFleet = (): Promise<Outcome> => send(() => serverClient.postAdminFleetUpdatePlan());
-export const applyFleet = (services: string[]): Promise<Outcome> => send(() => serverClient.postAdminFleetUpdateApply({ body: { services, confirm: true } }));
-export const resumeFleet = (service: string): Promise<Outcome> => send(() => serverClient.postAdminFleetUpdateResume({ body: { service, confirm: true } }));
+export const applyFleet = (services: string[], confirmation: FleetConfirmation = {}): Promise<Outcome> => {
+  const body = { services, confirm: true as const, ...confirmation };
+  return send(() => serverClient.postAdminFleetUpdateApply({ body }));
+};
+export const resumeFleet = (service: string, confirmation: FleetConfirmation = {}): Promise<Outcome> => {
+  const body = { service, confirm: true as const, ...confirmation };
+  return send(() => serverClient.postAdminFleetUpdateResume({ body }));
+};
+/** Back to the version kept (root helper only): the resume route with `rollback`. */
+export const rollbackFleet = (service: string, confirmation: FleetConfirmation = {}): Promise<Outcome> => {
+  const body = { service, confirm: true as const, rollback: true, ...confirmation };
+  return send(() => serverClient.postAdminFleetUpdateResume({ body }));
+};
 
 export type FleetRead = { kind: 'status'; status: FleetStatus } | { kind: 'wait' } | { kind: 'stop' };
 
