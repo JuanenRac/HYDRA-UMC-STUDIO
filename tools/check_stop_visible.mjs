@@ -61,6 +61,8 @@ try {
 
   browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, hasTouch: true, locale: "en-US" });
+  // the app asks for full screen on the first press, and a full-screen window of the browser cannot be resized
+  await context.addInitScript(() => { Element.prototype.requestFullscreen = () => Promise.resolve(); });
   const page = await context.newPage();
   await page.goto(origin + "/?skipSplash=true");
   await page.locator("input[type=password]").waitFor({ timeout: 60000 });
@@ -122,7 +124,7 @@ try {
   const underFloating = () => page.evaluate(() => {
     const stop = document.querySelector("[data-testid=stop-floating]")?.getBoundingClientRect();
     if (!stop) return 0;
-    return [...document.querySelectorAll("[data-stop-clear] > *")].filter(card => {
+    return [...document.querySelectorAll("[data-stop-clear] > :not([data-stop-clear])")].filter(card => {
       const box = card.getBoundingClientRect();
       return box.top < stop.bottom - 0.5 && box.bottom > stop.top && box.left < stop.right && box.right > stop.left;
     }).length;

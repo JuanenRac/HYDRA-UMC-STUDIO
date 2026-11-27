@@ -72,7 +72,6 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
     authToken,
     recordedPoints: robot.recordedPoints,
     selectedWorkFile,
-    t,
     onSaved: (fileName) => {
       setSelectedWorkFile(fileName);
       updateRobot(robot.id, { selectedWorkFile: fileName });
