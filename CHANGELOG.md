@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.8.2.5] - STOP button always reachable
 
 - **The STOP button can always be pressed:** the Help, Settings and About windows, the confirmation dialogs, the guided tour, the assistant, the notices and a narrow screen could cover the STOP buttons or leave them outside the screen. While none of them can be pressed one more STOP is now drawn at the top centre, above everything; full-screen windows leave that strip free, the notices open below it, and the report of a stop no longer sits on the STOP of the embedded view. The name of a saved trajectory is asked inside the page instead of with the browser's own prompt, which froze the page with the STOP in it. A browser check opens each window at several screen sizes and fails when the STOP is covered.
 
