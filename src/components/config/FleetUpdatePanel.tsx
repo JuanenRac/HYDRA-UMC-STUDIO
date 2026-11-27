@@ -145,7 +145,7 @@ export function FleetUpdatePanel({ pollMs, silenceMs, reloadMs }: FleetUpdatePan
                     <td className="px-4 py-2 font-mono">{row.name}</td>
                     <td className="px-4 py-2 font-mono">{row.installed ?? '-'}</td>
                     <td className="px-4 py-2 font-mono">{row.latest ?? '-'}</td>
-                    <td className="px-4 py-2">{t(`fleet.action_${row.action}`)}{reasonKey(row.reason) && <span className="block text-[9px] text-slate-500">{t(reasonKey(row.reason) as string)}</span>}</td>
+                    <td className="px-4 py-2">{t(`fleet.action_${row.action}`)}{reasonKey(row.reason) && <span className="block text-[9px] text-slate-500">{t(reasonKey(row.reason) as string)}</span>}{row.reason === 'needs_newer_rustc' && row.detail && <span className="block text-[9px] font-mono text-slate-500" data-testid={`fleet-needs-${row.name}`}>{row.detail}</span>}</td>
                     <td className="px-4 py-2" data-testid={`fleet-progress-${row.name}`}>
                       {row.action === 'update' || row.state !== 'waiting' ? (
                         <>

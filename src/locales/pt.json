@@ -2617,6 +2617,7 @@
     "reason_migrated_needs_packages": "corre a partir da ligação à sua release; só um pacote assinado o pode atualizar e está desligado",
     "reason_migrated_no_package": "corre a partir da ligação à sua release e a sua release não tem pacote assinado",
     "reason_own_package": "chega no seu próprio pacote assinado",
+    "reason_needs_newer_rustc": "a sua release precisa de um compilador de Rust mais recente do que o do dispositivo",
     "state_waiting": "à espera",
     "state_running": "em curso",
     "state_done": "concluído",

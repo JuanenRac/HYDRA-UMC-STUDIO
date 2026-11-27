@@ -2617,6 +2617,7 @@
     "reason_migrated_needs_packages": "runs from its release link; only a signed package may update it and that is switched off",
     "reason_migrated_no_package": "runs from its release link and its release has no signed package",
     "reason_own_package": "comes in its own signed package",
+    "reason_needs_newer_rustc": "its release needs a newer Rust compiler than the device has",
     "state_waiting": "waiting",
     "state_running": "in progress",
     "state_done": "done",

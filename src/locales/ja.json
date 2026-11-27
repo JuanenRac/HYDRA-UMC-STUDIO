@@ -2617,6 +2617,7 @@
     "reason_migrated_needs_packages": "リリースへのリンクから動作しています。署名付きパッケージのみで更新できますが、無効です",
     "reason_migrated_no_package": "リリースへのリンクから動作しており、そのリリースに署名付きパッケージがありません",
     "reason_own_package": "専用の署名付きパッケージで更新されます",
+    "reason_needs_newer_rustc": "このリリースには、デバイスより新しい Rust コンパイラーが必要です",
     "state_waiting": "待機中",
     "state_running": "実行中",
     "state_done": "完了",

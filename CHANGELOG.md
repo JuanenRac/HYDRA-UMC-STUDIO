@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **The update of the device says when a program needs a newer Rust compiler:** the table shows the reason in the eight languages, with the version needed and the one the device has, before anything is applied.
+
 - **Server Admin has the switch of the global stop retry of the orchestrator:** whether the orchestrator keeps asking the server to confirm a global stop. On by default, switching it off asks first and is warned about, and it can only be changed when the server knows the configuration file of the orchestrator. In the eight languages.
 
 - **The screenshots of the README can be taken on a GitHub runner:** the manual workflow `screenshots.yml` (started by hand only, read-only token, no secrets) builds Studio and the server, takes the screens against the built-in sample machines and keeps the pictures as an artifact; `HYDRA_SHOTS_CHANNEL=chromium` makes the script take the Chromium of Playwright, and `docs/SCREENSHOTS.md` says how to start it and use them.

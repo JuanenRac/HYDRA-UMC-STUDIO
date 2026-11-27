@@ -2617,6 +2617,7 @@
     "reason_migrated_needs_packages": "通过指向其发布版的链接运行;只能用签名软件包更新,而该功能已关闭",
     "reason_migrated_no_package": "通过指向其发布版的链接运行,且其发布版没有签名软件包",
     "reason_own_package": "使用其自己的签名软件包",
+    "reason_needs_newer_rustc": "它的发布版需要比设备上更新的 Rust 编译器",
     "state_waiting": "等待中",
     "state_running": "进行中",
     "state_done": "完成",
