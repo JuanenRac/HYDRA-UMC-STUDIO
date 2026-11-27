@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+- **Signing out revokes every refresh token of the page:** a login kept on the device and a login of the tab could both be stored, and only one was revoked on the server before both were erased. Each is now sent to `/api/logout`. Tests added.
+
 ## [0.8.2.6] - Updating the device from signed packages
 
 - **Updating the device from signed packages:** with the root helper of HYDRA-UMC-OS, the programs panel shows the installed, newest and kept version of every program with a summary, asks for the one-time code of the device to apply, take up or go back, and says why the helper did nothing. Nothing changes without that helper. Not tried on a CM5.

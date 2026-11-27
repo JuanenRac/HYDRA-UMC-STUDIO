@@ -9,6 +9,7 @@ import {
   TOKEN_KEY,
   authHeaders,
   clearTokens,
+  allRefreshTokens,
   extractLaunchToken,
   readRefreshToken,
   readToken,
@@ -170,5 +171,25 @@ describe('clearTokens and authHeaders', () => {
     expect(readToken(both)).toBe(null);
     expect(() => saveLoginTokens('x', 'y', both)).not.toThrow();
     expect(() => clearTokens(both)).not.toThrow();
+  });
+});
+
+describe('allRefreshTokens', () => {
+  it('lists the token of each storage once for the sign-out to revoke', () => {
+    const s = stores();
+    s.local.data.set(REFRESH_TOKEN_KEY, 'saved.refresh');
+    s.session.data.set(REFRESH_TOKEN_KEY, 'tab.refresh');
+    expect(allRefreshTokens(s.both)).toEqual(['tab.refresh', 'saved.refresh']);
+    s.local.data.set(REFRESH_TOKEN_KEY, 'tab.refresh');
+    expect(allRefreshTokens(s.both)).toEqual(['tab.refresh']);
+    clearTokens(s.both);
+    expect(allRefreshTokens(s.both)).toEqual([]);
+  });
+
+  it('does not list the saved login in a view started from a launch address', () => {
+    const s = stores();
+    s.local.data.set(REFRESH_TOKEN_KEY, 'saved.refresh');
+    saveLaunchToken('launch.jwt', s.both);
+    expect(allRefreshTokens(s.both)).toEqual([]);
   });
 });

@@ -13,7 +13,7 @@ import { clientHeader } from '../lib/connectionsApi';
 import studioPackage from '../../package.json';
 import { loginFailureText, totpNeededText, unreachableText } from '../lib/serverErrors';
 import { loginNeedsCode as loginNeedsCodeFrom, normalizeCode } from '../lib/totpApi';
-import { clearTokens, extractLaunchToken, readRefreshToken, readToken, replaceToken, saveLaunchToken, saveLoginTokens } from '../lib/session';
+import { allRefreshTokens, clearTokens, extractLaunchToken, readRefreshToken, readToken, replaceToken, saveLaunchToken, saveLoginTokens } from '../lib/session';
 import { settingsSaveAllowed } from '../lib/settingsSave';
 import { usernameFromToken } from '../lib/settingsScope';
 import { decodeJwtRole } from '../store';
@@ -124,8 +124,8 @@ export function useAuthSession() {
     // this tab is logging out either way), not just discard it client-side,
     // which would otherwise leave it silently valid for the rest of its
     // real TTL on server.ts. See refresh_tokens.ts's own revokeRefreshToken().
-    const refreshToken = readRefreshToken();
-    if (refreshToken) {
+    // every one the page holds, not only the one in use: clearTokens() below removes both storages
+    for (const refreshToken of allRefreshTokens()) {
       fetch(apiUrl('/api/logout'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
