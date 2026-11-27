@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.8.2.6] - Updating the device from signed packages
 
 - **Updating the device from signed packages:** with the root helper of HYDRA-UMC-OS, the programs panel shows the installed, newest and kept version of every program with a summary, asks for the one-time code of the device to apply, take up or go back, and says why the helper did nothing. Nothing changes without that helper. Not tried on a CM5.
 
