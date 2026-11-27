@@ -72,7 +72,7 @@ export function FramPanel({ authToken, supported, disabled = false, onResult }: 
       )}
 
       {asking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onKeyDown={(e) => { if (isDismissKey(e.key)) setAsking(false); }}>
+        <div data-stop-clear className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onKeyDown={(e) => { if (isDismissKey(e.key)) setAsking(false); }}>
           <div role="alertdialog" aria-modal="true" aria-labelledby={titleId} className="w-full max-w-md bg-slate-900 border border-red-800 rounded-xl p-5 space-y-3">
             <h4 id={titleId} className="flex items-center gap-2 text-sm font-bold text-red-300"><AlertTriangle size={16} /> {t('flasher.fram_erase_title')}</h4>
             <p className="text-xs text-slate-300">{t('flasher.fram_erase_body', { word: FRAM_ERASE_WORD })}</p>

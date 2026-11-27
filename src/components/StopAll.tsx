@@ -5,7 +5,7 @@
 //
 // The global STOP: ONE click, no confirmation, every robot (POST /api/stop-all through the store's emergencyStop()).
 //   - StopAllButton: the red STOP button. The header and the footer carry one, and the remote-control overlay of a robot has its
-//     own, so it is on screen whatever is open.
+//     own. When something covers them or they are off the screen, StopGuard.tsx draws one more on top of everything.
 //   - StopAllShortcut: the keyboard chord (Ctrl+Shift+Space) - a modifier chord that is not typed by accident and
 //     does not fire on a held key.
 //   - StopAllReportBanner: what the stop did, robot by robot. A failed robot or a stop the server could not save is
@@ -27,14 +27,16 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function StopAllButton({ variant = 'header' }: { variant?: 'header' | 'footer' }) {
+export function StopAllButton({ variant = 'header' }: { variant?: 'header' | 'footer' | 'floating' }) {
   const { t } = useTranslation();
   const { emergencyStop, stopAllPending, commandIssue } = useCommandFeedback();
   const unconfirmed = commandIssue?.code === 'estop_failed';
   return (
     <button
       type="button"
-      data-testid="stop-all"
+      data-testid={variant === 'floating' ? 'stop-floating' : 'stop-all'}
+      // The buttons the guard looks for; its own one is not marked, or it would hide itself.
+      data-stop-global={variant === 'floating' ? undefined : true}
       onClick={() => { void emergencyStop(); }}
       title={t('stop_all.tooltip', { shortcut: STOP_ALL_SHORTCUT_LABEL })}
       aria-label={t('stop_all.tooltip', { shortcut: STOP_ALL_SHORTCUT_LABEL })}
@@ -42,6 +44,7 @@ export function StopAllButton({ variant = 'header' }: { variant?: 'header' | 'fo
         'flex items-center justify-center gap-2 rounded-full bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-black uppercase tracking-widest border transition-all shrink-0',
         unconfirmed ? 'border-white animate-pulse shadow-[0_0_24px_rgba(255,255,255,0.7)]' : 'border-rose-300 shadow-[0_0_18px_rgba(244,63,94,0.7)]',
         variant === 'header' && 'px-6 py-2 text-base min-h-[44px]',
+        variant === 'floating' && 'px-8 py-2 text-base min-h-[48px] pointer-events-auto',
         variant === 'footer' && 'px-6 py-1 text-[11px]',
         stopAllPending && 'opacity-80',
       )}
@@ -124,7 +127,7 @@ export function StopAllReportBanner({ compact = false }: { compact?: boolean }) 
   // From the first moment the stop is on the wire it says so, and keeps saying it until an answer arrives.
   if (!stopAllReport && stopAllPending) {
     return (
-      <div className={cn('fixed inset-x-0 z-[95] flex justify-center p-2 pointer-events-none', compact ? 'bottom-0' : 'bottom-12')}>
+      <div className={cn('fixed inset-x-0 z-[95] flex justify-center p-2 pointer-events-none', compact ? 'top-[4.5rem]' : 'bottom-12')}>
         <div
           role="status"
           data-testid="stop-all-sent"
@@ -137,7 +140,7 @@ export function StopAllReportBanner({ compact = false }: { compact?: boolean }) 
   }
   if (!stopAllReport) return null;
   return (
-    <div className={cn('fixed inset-x-0 z-[95] flex justify-center p-2 pointer-events-none', compact ? 'bottom-0' : 'bottom-12')}>
+    <div className={cn('fixed inset-x-0 z-[95] flex justify-center p-2 pointer-events-none', compact ? 'top-[4.5rem]' : 'bottom-12')}>
       <div
         role={attention ? 'alert' : 'status'}
         aria-live={attention ? 'assertive' : 'polite'}

@@ -284,7 +284,7 @@ export function GamepadController() {
 
   if (!session.notice) return null;
   return (
-    <div role="alert" data-testid="gamepad-notice" className="fixed top-14 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 px-4 py-3 rounded-lg border border-rose-500/60 bg-rose-950/90 text-rose-100 shadow-2xl text-sm">
+    <div role="alert" data-testid="gamepad-notice" className="fixed top-[4.5rem] left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 px-4 py-3 rounded-lg border border-rose-500/60 bg-rose-950/90 text-rose-100 shadow-2xl text-sm">
       <AlertTriangle size={18} className="shrink-0 text-rose-300" />
       <span>{t(`gamepad_config.mode.notice_${session.notice}`)}</span>
       <button type="button" onClick={dismissGamepadNotice} aria-label={t('common.close')} className="p-1 rounded hover:bg-rose-800/60">

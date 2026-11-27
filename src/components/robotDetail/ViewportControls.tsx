@@ -173,6 +173,7 @@ export function ViewportActionOverlay({ t, robot, isStartAll, handleEmergencySto
       <button
         onClick={() => handleEmergencyStop()}
         className="flex items-center justify-center landscape:p-1.5 portrait:p-2.5 landscape:min-h-[36px] landscape:min-w-[36px] portrait:min-h-[44px] portrait:min-w-[44px] bg-slate-950/80 hover:bg-red-950 border border-slate-800 hover:border-red-800 text-red-400 rounded-lg transition-colors animate-pulse"
+        data-stop-global
         title={t('robot_detail.estop', 'STOP')}
       >
         <AlertOctagon size={18} />

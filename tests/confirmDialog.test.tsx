@@ -12,6 +12,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import '../src/i18n';
 import { ConfirmDialog } from '../src/components/ConfirmDialog';
+import { SaveNameDialog } from '../src/components/robotDetail/SaveNameDialog';
 
 afterEach(cleanup);
 
@@ -78,5 +79,24 @@ describe('ConfirmDialog', () => {
     rerender(<ConfirmDialog open={false} message="x" onConfirm={onConfirm} onCancel={onCancel} />);
     expect(document.activeElement).toBe(opener);
     opener.remove();
+  });
+});
+
+describe('SaveNameDialog', () => {
+  it('asks inside the page, focuses the name, takes Enter and Escape, and is closed without a name', () => {
+    const onChange = vi.fn();
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+    const view = render(<SaveNameDialog label="Filename" name="route" onChange={onChange} onConfirm={onConfirm} onCancel={onCancel} />);
+    const input = screen.getByTestId('save-name');
+    expect(document.activeElement).toBe(input);
+    fireEvent.change(input, { target: { value: 'route_2' } });
+    expect(onChange).toHaveBeenCalledWith('route_2');
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    view.rerender(<SaveNameDialog label="Filename" name={null} onChange={onChange} onConfirm={onConfirm} onCancel={onCancel} />);
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

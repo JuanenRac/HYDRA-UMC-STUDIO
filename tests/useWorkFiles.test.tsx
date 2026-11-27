@@ -58,12 +58,16 @@ describe('the save', () => {
   });
 
   it('posts the points with the bearer token, adds .json and reports the name after reading the listing again', async () => {
-    vi.spyOn(window, 'prompt').mockReturnValue('route_1');
+    const native = vi.spyOn(window, 'prompt');
     const spy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => (String(input).includes('upload-work') ? json(200, { ok: true }) : json(200, ['route_1.json'])));
     const saved: string[] = [];
     const { result } = renderHook(() => useWorkFiles({ ...base, onSaved: (name) => saved.push(name) }));
     await waitFor(() => expect(spy).toHaveBeenCalledTimes(1));
-    await act(async () => { await result.current.saveWorkFile(); });
+    act(() => { result.current.saveWorkFile(); });
+    expect(result.current.nameToSave).toBe('trayectoria_1');
+    act(() => { result.current.setNameToSave('route_1'); });
+    await act(async () => { await result.current.confirmSave(); });
+    expect(native).not.toHaveBeenCalled();
     const post = spy.mock.calls.find((c) => String(c[0]).includes('upload-work'))!;
     expect((post[1]?.headers as Record<string, string>).Authorization).toBe('Bearer tok');
     expect(JSON.parse(String(post[1]?.body))).toEqual({ folderPath: 'WORKS/ArmOne', fileName: 'route_1.json', content: base.recordedPoints });
@@ -71,13 +75,14 @@ describe('the save', () => {
     expect(result.current.workFiles).toEqual(['route_1.json']);
   });
 
-  it('keeps the name when the person cancels the prompt', async () => {
-    vi.spyOn(window, 'prompt').mockReturnValue(null);
+  it('saves nothing when the person cancels the question about the name', async () => {
     const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(json(200, []));
     const saved: string[] = [];
     const { result } = renderHook(() => useWorkFiles({ ...base, onSaved: (name) => saved.push(name) }));
     await waitFor(() => expect(spy).toHaveBeenCalledTimes(1));
-    await act(async () => { await result.current.saveWorkFile(); });
+    act(() => { result.current.saveWorkFile(); });
+    act(() => { result.current.cancelSave(); });
+    expect(result.current.nameToSave).toBeNull();
     expect(spy).toHaveBeenCalledTimes(1);
     expect(saved).toEqual([]);
   });

@@ -85,6 +85,7 @@ export function ConfirmDialog({
 
   return (
     <div
+      data-stop-clear
       className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
@@ -94,7 +95,7 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={messageId}
-        className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[420px] max-w-full overflow-hidden flex flex-col"
+        className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[420px] max-w-full max-h-full overflow-y-auto flex flex-col"
       >
         <div className="p-5 flex flex-col gap-3">
           <div id={titleId} className="flex items-center gap-2 text-slate-100 font-bold text-sm uppercase tracking-widest">

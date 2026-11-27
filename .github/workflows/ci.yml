@@ -79,3 +79,59 @@ jobs:
       - name: Build the production page
         if: ${{ hashFiles('package.json') != '' }}
         run: npm run build --if-present
+
+  stop-visible:
+    name: The STOP can always be pressed
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Fetch the server it runs with
+        # A fixed commit, so a change of the server cannot turn this check red by itself.
+        run: |
+          git init -q ../HYDRA-UMC-SERVER
+          git -C ../HYDRA-UMC-SERVER fetch -q --depth 1 https://github.com/JuanenRac/HYDRA-UMC-SERVER.git 22348c11726399a2a2e494b92fde82d875052868
+          git -C ../HYDRA-UMC-SERVER checkout -q FETCH_HEAD
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Cache the 3D mesh package
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/hydra-umc/meshes
+          key: hydra-meshes-${{ hashFiles('meshes.pack.json') }}
+      - name: Fetch and verify the 3D meshes
+        run: node scripts/mesh_pack.mjs ensure --source download
+      - name: Build Studio
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+      - name: Build the server
+        working-directory: ../HYDRA-UMC-SERVER
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+      - name: Install the browser
+        run: |
+          mkdir -p "$RUNNER_TEMP/playwright"
+          cd "$RUNNER_TEMP/playwright"
+          npm init -y >/dev/null
+          npm install --ignore-scripts @playwright/test@1.64.1
+          npx playwright install --with-deps chromium
+      - name: Open every window and press the STOP
+        env:
+          PLAYWRIGHT_DIR: ${{ runner.temp }}/playwright
+        run: node tools/check_stop_visible.mjs --out "$RUNNER_TEMP/stop-visible"
+      - name: Keep the pictures
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: stop-visible
+          path: ${{ runner.temp }}/stop-visible
+          retention-days: 14
+          if-no-files-found: warn

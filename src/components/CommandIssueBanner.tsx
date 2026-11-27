@@ -41,7 +41,7 @@ export function CommandIssueBanner() {
     : '';
 
   return (
-    <div className="fixed top-0 inset-x-0 z-[100] flex flex-col items-center gap-1 p-2 pointer-events-none">
+    <div className="fixed top-[4.5rem] inset-x-0 z-[100] flex flex-col items-center gap-1 p-2 pointer-events-none">
       {listenOnly && (
         <div role="status" data-testid="listen-only-banner" className="pointer-events-auto max-w-3xl w-full rounded-lg border border-amber-500/50 bg-amber-950/95 text-amber-200 text-xs font-bold px-4 py-2 shadow-2xl">
           {t('prefs.listen_only_banner')}

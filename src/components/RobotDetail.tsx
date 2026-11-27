@@ -25,6 +25,7 @@ import { useTrajectoryLoading } from '../hooks/useTrajectoryLoading';
 import { RobotAccessBar } from './RobotAccessBar';
 import { useCommandFeedback, useFleet, useSession, useSettingsStore } from '../storeContexts';
 import { useWorkFiles } from '../hooks/useWorkFiles';
+import { SaveNameDialog } from './robotDetail/SaveNameDialog';
 import { buildGCode, gcodeFileName } from '../lib/gcodeExport';
 
 /**
@@ -64,7 +65,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
   const [editingPointData, setEditingPointData] = useState<any>({});
 
   // The listing of this robot's WORKS folder, saving a trajectory to it and the G-code export live in hooks/useWorkFiles.ts and lib/gcodeExport.ts.
-  const { workFiles, fetchWorks, saveWorkFile: handleSaveWorkFile } = useWorkFiles({
+  const { workFiles, fetchWorks, saveWorkFile: handleSaveWorkFile, nameToSave, setNameToSave, confirmSave, cancelSave } = useWorkFiles({
     robotId: robot.id,
     robotName: robot.name,
     worksPaths: settings.worksPaths,
@@ -167,6 +168,7 @@ export function RobotDetail({ robot, viewportOnly = false, onNavigateToRobot }: 
 
   return (
     <div className="relative flex flex-col h-full bg-slate-950 text-slate-200">
+      <SaveNameDialog label={t('robot_detail.save_filename', 'Filename (without .json):')} name={nameToSave} onChange={setNameToSave} onConfirm={() => { void confirmSave(); }} onCancel={cancelSave} />
       <RobotDetailDialogs
         t={t} robotModel={robot.model} pendingAction={pendingAction} setPendingAction={setPendingAction} runPendingAction={runPendingAction}
         pendingPreview={pendingPreview} runPendingPreview={runPendingPreview} cancelPreview={cancelPreview}

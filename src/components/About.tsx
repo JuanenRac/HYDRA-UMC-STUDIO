@@ -43,8 +43,8 @@ export function About({ onClose }: { onClose: () => void }) {
   }, []);
 
   return (
-    <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[500px] max-w-full overflow-hidden flex flex-col">
+    <div data-stop-clear className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[500px] max-w-full max-h-full overflow-y-auto flex flex-col">
         <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Info className="text-sky-400" size={20} /> {t('dashboard.about_title')}</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-200 p-1" aria-label={t('dashboard.close', 'Close')}>&times;</button>
