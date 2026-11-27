@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Power, Save, Server as ServerIcon, Settings } from 'lucide-react';
 import { ServerHttpError, serverClient, settle } from '../lib/serverClient';
 import { ConfirmDialog } from './ConfirmDialog';
+import { OrchestratorStopRetry } from './OrchestratorStopRetry';
 import { TotpPanel } from './TotpPanel';
 import { ConnectorHubGatePanel } from './ConnectorHubGatePanel';
 import { PlannerIdentityPanel } from './PlannerIdentityPanel';
@@ -285,6 +286,7 @@ export function AdminServer() {
       if (knownWarnings(data.warnings).includes('job_stop_relay_on')) setWarning(t('ecosystem.admin_security_jd_warning_relay'));
       if (knownWarnings(data.warnings).includes('job_stop_silent_server_state')) setWarning(t('ecosystem.admin_security_jd_warning_silent'));
       if (knownWarnings(data.warnings).includes('replan_unconfirmed_allowed')) setWarning(t('ecosystem.admin_security_jd_warning_replan'));
+      if (knownWarnings(data.warnings).includes('orchestrator_stop_retry_off')) setWarning(t('ecosystem.admin_security_orch_warning'));
       if (knownWarnings(data.warnings).includes('job_executor_on')) setWarning(t('ecosystem.admin_security_jd_warning_exec'));
       if (knownWarnings(data.warnings).includes('job_executor_live')) setWarning(t('ecosystem.admin_security_jd_warning_exec_live'));
       setNotice(t('common.saved'));
@@ -1370,6 +1372,8 @@ export function AdminServer() {
               )}
             </div>
           )}
+
+          {security.orchestrator && <OrchestratorStopRetry options={security.orchestrator} saving={saving} onSave={body => void saveSecurity(body)} />}
 
           {security.jobDispatcher && (
             <div className="space-y-2">
