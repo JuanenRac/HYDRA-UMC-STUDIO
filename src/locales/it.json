@@ -2617,6 +2617,7 @@
     "reason_migrated_needs_packages": "gira dal link alla sua release; solo un pacchetto firmato può aggiornarlo ed è disattivato",
     "reason_migrated_no_package": "gira dal link alla sua release e la sua release non ha un pacchetto firmato",
     "reason_own_package": "arriva nel suo pacchetto firmato",
+    "reason_needs_newer_rustc": "la sua release richiede un compilatore Rust più recente di quello del dispositivo",
     "state_waiting": "in attesa",
     "state_running": "in corso",
     "state_done": "fatto",
