@@ -100,6 +100,8 @@ export interface SecurityState {
     enabled: { value: boolean; source: SecuritySource };
   } | null;
   /** Absent when the server predates the announcement of the global stop. */
+  /** Absent when the server predates the option of the orchestrator. */
+  orchestrator: OrchestratorOptions | null;
   /** Absent when the server predates the options of the job dispatcher. */
   jobDispatcher: {
     /** `silentRobot` is absent when the server predates the choice for a robot it has not heard from. */
@@ -254,6 +256,19 @@ function parseTrustedNetworks(raw: any): SecurityState['trustedNetworks'] {
   const enabled = raw.enabled;
   if (!enabled || typeof enabled.value !== 'boolean' || !isSource(enabled.source)) return null;
   return { enabled: { value: enabled.value, source: enabled.source } };
+}
+
+/** Whether the orchestrator keeps asking to confirm a global stop, and whether this server can change it. */
+export interface OrchestratorOptions {
+  retryServer: { value: boolean; source: SecuritySource };
+  editable: boolean;
+}
+
+export function parseOrchestrator(raw: any): OrchestratorOptions | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const retry = raw.retryServer;
+  if (!retry || typeof retry.value !== 'boolean' || !isSource(retry.source)) return null;
+  return { retryServer: { value: retry.value, source: retry.source }, editable: raw.editable === true };
 }
 
 function parseRul(raw: any): SecurityState['rul'] {
@@ -569,6 +584,7 @@ export function parseSecurityState(data: unknown): SecurityState | null {
     trustedNetworks: parseTrustedNetworks(raw.trustedNetworks),
     rul: parseRul(raw.rul),
     safety: parseSafety(raw.safety),
+    orchestrator: parseOrchestrator(raw.orchestrator),
     jobDispatcher: parseJobDispatcher(raw.jobDispatcher),
     exposure: parseExposure(raw),
     install: parseInstall(raw),
@@ -962,6 +978,6 @@ export function mavlinkChangeNeedsConfirmation(current: { signing: boolean; sign
 /** The warnings of a PUT answer that the screen knows how to say. */
 export function knownWarnings(warnings: unknown): string[] {
   if (!Array.isArray(warnings)) return [];
-  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'server_read_only_on', 'job_stop_silent_server_state', 'job_executor_on', 'job_executor_live', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'rate_limits_off', 'rate_limits_loose', 'bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'bridge_droids_confirmationRequired', 'bridge_uav_envelopeRequired', 'bridge_uav_confirmationRequired', 'bridge_uav_chainInFlight', 'bridge_uav_uploadGeofence', 'global_stop_published', 'global_stop_signed', 'global_stop_unsigned', 'global_stop_key_stored', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'jwt_eddsa_on', 'jwt_hs256_refused'];
+  const known = ['info_auth_off', 'ble_commands_unencrypted', 'mqtt_commands_on', 'voice_heard_text_on', 'voice_confidence_off', 'robot_enable_allowed', 'server_read_only_on', 'job_stop_silent_server_state', 'job_executor_on', 'job_executor_live', 'connection_address_recorded', 'health_open', 'bridge_gateway_on', 'trusted_networks_on', 'camera_open', 'ws_query_token_allowed', 'log_redaction_off', 'camera_credentials_in_arguments', 'new_install_tls_off', 'rate_limits_off', 'rate_limits_loose', 'bridge_uav_missionUploadEnabled', 'bridge_amr_zoneUnknown', 'bridge_droids_cutOnGlobalStop', 'bridge_droids_confirmationRequired', 'bridge_uav_envelopeRequired', 'bridge_uav_confirmationRequired', 'bridge_uav_chainInFlight', 'bridge_uav_uploadGeofence', 'global_stop_published', 'global_stop_signed', 'global_stop_unsigned', 'global_stop_key_stored', 'mavlink_unsigned_allowed', 'mavlink_signing_off', 'job_stop_relay_on', 'replan_unconfirmed_allowed', 'orchestrator_stop_retry_off', 'jwt_eddsa_on', 'jwt_hs256_refused'];
   return warnings.filter((item): item is string => typeof item === 'string' && known.includes(item));
 }

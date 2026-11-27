@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **Server Admin has the switch of the global stop retry of the orchestrator:** whether the orchestrator keeps asking the server to confirm a global stop. On by default, switching it off asks first and is warned about, and it can only be changed when the server knows the configuration file of the orchestrator. In the eight languages.
+
 - **The screenshots of the README can be taken on a GitHub runner:** the manual workflow `screenshots.yml` (started by hand only, read-only token, no secrets) builds Studio and the server, takes the screens against the built-in sample machines and keeps the pictures as an artifact; `HYDRA_SHOTS_CHANNEL=chromium` makes the script take the Chromium of Playwright, and `docs/SCREENSHOTS.md` says how to start it and use them.
 
 ## [0.8.2.4] - Global stop switch, format 2 flasher and newer release notice
