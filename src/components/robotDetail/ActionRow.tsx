@@ -43,6 +43,7 @@ export function ActionRow({ t, robot, isStartAll, isAndroidApp, fileInputRef, lo
       <button
         onClick={() => handleEmergencyStop()}
         className={cn("flex items-center justify-center gap-2 min-h-[48px] bg-red-600 hover:bg-red-500 text-white text-sm font-bold uppercase tracking-widest rounded-lg transition-all shadow-[0_0_20px_rgba(220,38,38,0.8)] border border-red-500 animate-pulse", isAndroidApp ? "px-3 py-2 min-h-[40px]" : "px-4 py-3")}
+        data-stop-global
         title={t('robot_detail.estop', 'STOP')}
       >
         <AlertOctagon size={16} /> {!isAndroidApp && t('robot_detail.estop', 'STOP')}

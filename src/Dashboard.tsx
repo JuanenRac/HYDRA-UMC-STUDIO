@@ -14,6 +14,7 @@ import { labelWithColon } from './lib/labelColon';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { CommandIssueBanner } from './components/CommandIssueBanner';
 import { StopAllButton, StopAllReportBanner, StopAllShortcut, StopStateBadge } from './components/StopAll';
+import { StopGuard } from './components/StopGuard';
 import { setSelectedRobotId, useSelectedRobotId } from './lib/selectedRobot';
 import { useGamepadSession } from './lib/gamepadSession';
 import type { CanOtaTier } from './lib/canOta';
@@ -200,6 +201,7 @@ export default function Dashboard() {
     <div className="w-full h-screen bg-slate-950 bg-electric-grid text-slate-200 flex flex-col font-sans overflow-hidden mx-auto touch-none relative">
       <CommandIssueBanner />
       <StopAllShortcut />
+      <StopGuard />
       <StopAllReportBanner compact={hideUI} />
 
       {isAboutOpen && <About onClose={() => setIsAboutOpen(false)} />}

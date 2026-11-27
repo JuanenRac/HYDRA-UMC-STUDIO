@@ -281,6 +281,22 @@ body[data-theme="HYDRA-UMC Studio Fasion"] input {
   border-color: #0a0b10;
 }
 
+/* The global STOP drawn over everything while the usual ones cannot be pressed (components/StopGuard.tsx). */
+.stop-floating {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  display: flex;
+  pointer-events: none;
+}
+
+/* A window that fills the screen leaves that strip free, so nothing of its own sits under the STOP. */
+[data-stop-clear] {
+  padding-top: 4.5rem !important;
+}
+
 /* Personal preferences of this browser (Config > Preferences): denser text, and animations reduced to nothing. */
 html[data-density="compact"] {
   font-size: 14px;

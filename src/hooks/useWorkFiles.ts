@@ -17,13 +17,14 @@ export interface UseWorkFilesInput {
   authToken: string | null;
   recordedPoints: unknown[];
   selectedWorkFile: string;
-  t: (key: string, fallback: string) => string;
   /** Called with the name of the file once the server has stored it and the listing was read again. */
   onSaved: (fileName: string) => void;
 }
 
-export function useWorkFiles({ robotId, robotName, worksPaths, authToken, recordedPoints, selectedWorkFile, t, onSaved }: UseWorkFilesInput) {
+export function useWorkFiles({ robotId, robotName, worksPaths, authToken, recordedPoints, selectedWorkFile, onSaved }: UseWorkFilesInput) {
   const [workFiles, setWorkFiles] = useState<string[]>([]);
+  // The name being asked for; null while no save is asked. Not window.prompt(): a native dialog freezes the page, STOP included.
+  const [nameToSave, setNameToSave] = useState<string | null>(null);
   // Guards against an out-of-order response: fetchWorks() is called both from
   // the effect below (whenever worksFolderPath changes) and manually after
   // save/upload - nothing stopped an OLDER in-flight request from resolving
@@ -62,11 +63,16 @@ export function useWorkFiles({ robotId, robotName, worksPaths, authToken, record
     fetchWorks(); // eslint-disable-line -- real fetch, not a derived-state reset
   }, [fetchWorks]);
 
-  const saveWorkFile = async () => {
+  const saveWorkFile = () => {
     if (recordedPoints.length === 0) return;
-    const defaultName = selectedWorkFile ? selectedWorkFile.replace('.json', '') : 'trayectoria_1';
-    let fileName = window.prompt(t('robot_detail.save_filename', 'Nombre del archivo (sin .json):'), defaultName);
-    if (!fileName) return;
+    setNameToSave(selectedWorkFile ? selectedWorkFile.replace('.json', '') : 'trayectoria_1');
+  };
+  const cancelSave = () => setNameToSave(null);
+
+  const confirmSave = async () => {
+    let fileName = nameToSave;
+    setNameToSave(null);
+    if (!fileName || recordedPoints.length === 0) return;
     if (!fileName.endsWith('.json')) fileName += '.json';
     
     try {
@@ -87,5 +93,5 @@ export function useWorkFiles({ robotId, robotName, worksPaths, authToken, record
   };
 
 
-  return { workFiles, fetchWorks, saveWorkFile, worksFolderPath };
+  return { workFiles, fetchWorks, saveWorkFile, nameToSave, setNameToSave, confirmSave, cancelSave, worksFolderPath };
 }

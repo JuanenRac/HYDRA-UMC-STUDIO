@@ -62,8 +62,8 @@ export function HelpModal({ onClose, initialTab, initialTopic, onGo, onStartTour
   const paragraphs = tab === 'guides' ? [] : t(`help.tabs.${tab}.paragraphs`, { returnObjects: true }) as string[];
 
   return (
-    <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[900px] max-w-full overflow-hidden flex flex-col h-[620px]">
+    <div data-stop-clear className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[900px] max-w-full overflow-hidden flex flex-col h-[620px] max-h-full">
         <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
             <HelpCircle className="text-sky-400" size={20} /> {t('help.title', 'Help')}

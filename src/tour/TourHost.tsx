@@ -87,8 +87,8 @@ export function TourHost({ view, setView }: { view: string; setView: (view: stri
       {!box && <div className="absolute inset-0 bg-slate-950/70 pointer-events-none" />}
       <section
         ref={card}
-        className={`absolute w-[360px] max-w-[calc(100vw-24px)] bg-slate-900 border border-sky-500/60 rounded-xl shadow-2xl p-5 space-y-3 ${centred ? 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2' : ''}`}
-        style={centred ? undefined : { left: placed.left, top: placed.top }}
+        className={`absolute w-[360px] max-w-[calc(100vw-24px)] max-h-[calc(100vh-9rem)] overflow-y-auto bg-slate-900 border border-sky-500/60 rounded-xl shadow-2xl p-5 space-y-3 ${centred ? 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2' : ''}`}
+        style={centred ? undefined : { left: placed.left, top: Math.max(placed.top, 72) /* under the strip of the floating STOP */ }}
         role="dialog" aria-modal="true" aria-labelledby="tour-title" aria-describedby="tour-body" tabIndex={-1} data-testid="tour-card"
       >
         <button onClick={() => stopTour()} className="absolute top-2 right-3 text-slate-400 hover:text-slate-200 text-lg leading-none" aria-label={t('tour.close')} title={t('tour.close')}>&times;</button>

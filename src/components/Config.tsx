@@ -87,8 +87,8 @@ export function Config({ onClose }: { onClose: () => void }) {
   ];
 
   return (
-    <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[850px] max-w-full overflow-hidden flex flex-col h-250 max-h-[95vh]">
+    <div data-stop-clear className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[850px] max-w-full overflow-hidden flex flex-col h-250 max-h-full">
         <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
           <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Settings className="text-sky-400" size={20} /> {t('config.title')}</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-200 p-1" aria-label={t('dashboard.close', 'Close')}>&times;</button>

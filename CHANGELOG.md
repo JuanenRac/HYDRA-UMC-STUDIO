@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **The STOP button can always be pressed:** the Help, Settings and About windows, the confirmation dialogs, the guided tour, the assistant, the notices and a narrow screen could cover the STOP buttons or leave them outside the screen. While none of them can be pressed one more STOP is now drawn at the top centre, above everything; full-screen windows leave that strip free, the notices open below it, and the report of a stop no longer sits on the STOP of the embedded view. The name of a saved trajectory is asked inside the page instead of with the browser's own prompt, which froze the page with the STOP in it. A browser check opens each window at several screen sizes and fails when the STOP is covered.
+
 - **The update of the device says when a program needs a newer Rust compiler:** the table shows the reason in the eight languages, with the version needed and the one the device has, before anything is applied.
 
 - **Server Admin has the switch of the global stop retry of the orchestrator:** whether the orchestrator keeps asking the server to confirm a global stop. On by default, switching it off asks first and is warned about, and it can only be changed when the server knows the configuration file of the orchestrator. In the eight languages.
