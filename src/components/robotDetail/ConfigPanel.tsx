@@ -406,7 +406,7 @@ export function ConfigPanel(props: ConfigPanelProps) {
                 </div>
               ) : (
                 <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-500">
-                  {t('robot_detail.controller_board_unknown', 'No version known - query it from HYDRA-UMC â†’ Tester.')}
+                  {t('robot_detail.controller_board_unknown', 'No version known - query it from HYDRA-UMC → Tester.')}
                 </div>
               )}
             </div>

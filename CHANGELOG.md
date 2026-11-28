@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **The floating jog windows show the degree sign and the fold arrows again:** they came out as unreadable characters, and so did the arrow in the notice of a controller board with no known version. A test now fails on any source or interface text saved with the wrong encoding.
+
 - **The configuration is a screen with four groups:** Mine, People and notices, My cell and System, with the same tabs inside (the two remote access tabs share one button), reached from the top bar or the menu. The STOP of the top bar stays in sight and pressable. With the classic menu switched on it is the window it was. In the eight languages.
 
 - **The shared web kit is pinned to its newest release:** which tokens a sign-out revokes is now answered by the kit itself, with the same rules as before.

@@ -90,6 +90,15 @@ describe('JointControlsOverlay', () => {
     expect(knobs[0].getAttribute('data-max')).toBe('500');
   });
 
+  it('draws the degree sign and the fold arrows as themselves', () => {
+    mount();
+    expect(screen.getByText('10.0\u00b0')).toBeTruthy();
+    const fold = screen.getAllByRole('button')[0];
+    expect(fold.textContent).toBe('\u25be');
+    fireEvent.click(fold);
+    expect(fold.textContent).toBe('\u25b8');
+  });
+
   it('collapses to its title bar', () => {
     mount();
     fireEvent.click(screen.getAllByRole('button')[0]);
