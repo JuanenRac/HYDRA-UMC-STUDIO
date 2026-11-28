@@ -181,7 +181,7 @@ export function useRobotCommands({ robot, jogStep, sendRobotCommand, updateRobot
   // client (Android's embedded WebView included) now remounts the 3D view
   // on every OTHER connected client too, not just the one pressed. Real
   // request from live testing ("verse en studio... y viceversa, asi se ve
-  // sincronizaciÃ³n").
+  // sincronización").
   const handleReset3D = () => {
     sendRobotCommand(robot.id, 'reset3D', undefined, () => ({ reset3DTrigger: Date.now() }));
   };

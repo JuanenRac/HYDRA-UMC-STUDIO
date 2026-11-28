@@ -63,7 +63,7 @@ export function JointControlsOverlay({
       >
         <span className="text-[10px] font-bold text-sky-400 uppercase tracking-widest">{t('robot_detail.joint_controls_overlay', 'Joint Controls')}</span>
         <button onClick={() => setCollapsed(c => !c)} className="text-slate-400 hover:text-white transition-colors text-[10px] font-bold px-2">
-          {collapsed ? 'â–¸' : 'â–¾'}
+          {collapsed ? '▸' : '▾'}
         </button>
       </div>
 
@@ -99,7 +99,7 @@ export function JointControlsOverlay({
                 <div key={j} className="flex flex-col gap-1 bg-slate-900/80 p-2 rounded-lg border border-slate-800">
                   <div className="flex justify-between items-center">
                     <span className="text-[9px] font-bold text-slate-400 uppercase">{j}</span>
-                    <span className="text-[9px] font-mono text-sky-400">{robot.joints[j]?.toFixed(1)}Â°</span>
+                    <span className="text-[9px] font-mono text-sky-400">{robot.joints[j]?.toFixed(1)}°</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <RotaryKnob min={jMin} max={jMax} value={robot.joints[j]} onChange={val => onJointChange(j, val)} size={26} step={jogStep} />
@@ -154,7 +154,7 @@ export function JoystickOverlay({
       >
         <span className="text-[10px] font-bold text-sky-400 uppercase tracking-widest">{t('robot_detail.xyz_jog', 'XYZ Jog')} ({jogStep})</span>
         <button onClick={() => setCollapsed(c => !c)} className="text-slate-400 hover:text-white transition-colors text-[10px] font-bold px-2">
-          {collapsed ? 'â–¸' : 'â–¾'}
+          {collapsed ? '▸' : '▾'}
         </button>
       </div>
       {!collapsed && (
@@ -170,7 +170,7 @@ export function JoystickOverlay({
               <RotateCcw size={14} />
             </button>
             <span className="text-[9px] font-mono text-sky-400 shrink-0 w-14 text-center" title={t('robot_detail.base_rotation', 'Base (J1)')}>
-              J1 {j1Value.toFixed(1)}Â°
+              J1 {j1Value.toFixed(1)}°
             </span>
             <button
               onClick={() => onJ1Jog(1)}
@@ -221,7 +221,7 @@ export function XYTableOverlay({
       >
         <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">{t('robot_detail.xy_table_controls', 'XY Table Controls')}</span>
         <button onClick={() => setCollapsed(c => !c)} className="text-slate-400 hover:text-white transition-colors text-[10px] font-bold px-2">
-          {collapsed ? 'â–¸' : 'â–¾'}
+          {collapsed ? '▸' : '▾'}
         </button>
       </div>
       {!collapsed && (
