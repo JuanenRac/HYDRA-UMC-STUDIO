@@ -311,7 +311,7 @@
     "factory_reset_upper": "WERKSEINSTELLUNG",
     "classic_can": "Klassisches CAN",
     "can_ota": "CAN-OTA",
-    "can_ota_desc": "Einstellungen für die Module Flasher/Tester (Shared Resources > URTC): Firmware-Flashing und Diagnose über die Kette CM5 -> SPI -> STM32H745 -> FDCAN1 -> Robotersteuerplatine -> CAN -> URTC-Werkzeugkopf. Siehe docs/architecture.md in HYDRA-UMC für das vollständige Adressierungsschema.",
+    "can_ota_desc": "Einstellungen für die Module Flasher/Tester (Platinen und Firmware > URTC): Firmware-Flashing und Diagnose über die Kette CM5 -> SPI -> STM32H745 -> FDCAN1 -> Robotersteuerplatine -> CAN -> URTC-Werkzeugkopf. Siehe docs/architecture.md in HYDRA-UMC für das vollständige Adressierungsschema.",
     "can_ota_transport": "Transport",
     "can_ota_transport_mock": "Simuliert (Mock) - keine Hardware nötig",
     "can_ota_transport_hardware": "Echte Hardware (SPI zum STM32H745)",
@@ -717,7 +717,7 @@
         "paragraphs": [
           "HYDRA-UMC STUDIO ist ein zentrales Bedienpanel für Roboter, CNC-Maschinen, Lasergravierer, 3D-Drucker-Betten und Pick-and-Place-Stationen. Ein Dashboard, mehrere Maschinen, alles in Echtzeit synchronisiert.",
           "Beginnen Sie mit dem Hinzufügen eines Controllers (Auswahlfeld oben rechts oder Config > Controller): Jeder Controller steht für eine physische HYDRA-UMC-Platine, erreichbar über Ethernet/IP. \"Knoten Hinzufügen\" drücken und Name und IP-Adresse eingeben.",
-          "Ist ein Controller gewählt, stehen seine Roboter in der Seitenleiste. Einen Roboter anklicken, um sein vollständiges Bedienfeld zu öffnen: Jog-Schieberegler, Beispiele, aufgezeichnete Trajektorien und seine eigene 3D-Live-Ansicht.",
+          "Ist ein Controller gewählt, stehen seine Roboter unter Betrieb > Roboter. Einen Roboter anklicken, um sein vollständiges Bedienfeld zu öffnen: Jog-Schieberegler, Beispiele, aufgezeichnete Trajektorien und seine eigene 3D-Live-Ansicht.",
           "Alles, was Sie konfigurieren - Robindernamen, benutzerdefinierte Modelle, gespeicherte Trajektorien, zugewiesene Werkzeuge - wird automatisch im data/-Verzeichnis des Servers gespeichert und bleibt so über Neustarts hinweg erhalten und wird von jedem Browser geteilt, der das Dashboard öffnet."
         ]
       },
@@ -768,7 +768,7 @@
         "label": "Firmware & Einstellungen",
         "heading": "Platinen flashen und das Dashboard konfigurieren",
         "paragraphs": [
-          "Flasher und Tester (Shared Resources > URTC) erreichen die eigene Controller-Platine eines Roboters und dahinter dessen URTC-Werkzeugkopf ausschließlich über CAN-OTA - keine JTAG/SWD-Sonde, kein USB-CAN-Adapter. Flasher lädt ein .bin-Firmware-Image hoch und führt dieselbe seitenweise Übertragung, CRC32/HMAC-Prüfung und Anti-Rollback-Kontrollen aus, die der URTC-Bootloader bereits implementiert; Tester fragt Live-Versionsinformationen, F-RAM-Status und Werkzeug-Telemetrie ab, dazu einen sicheren Selbsttest, der nie mit nennenswerter Leistung aktoriert.",
+          "Flasher und Tester (Platinen und Firmware im Menü) erreichen die eigene Controller-Platine eines Roboters und dahinter dessen URTC-Werkzeugkopf ausschließlich über CAN-OTA - keine JTAG/SWD-Sonde, kein USB-CAN-Adapter. Flasher lädt ein .bin-Firmware-Image hoch und führt dieselbe seitenweise Übertragung, CRC32/HMAC-Prüfung und Anti-Rollback-Kontrollen aus, die der URTC-Bootloader bereits implementiert; Tester fragt Live-Versionsinformationen, F-RAM-Status und Werkzeug-Telemetrie ab, dazu einen sicheren Selbsttest, der nie mit nennenswerter Leistung aktoriert.",
           "Config (obere Leiste) öffnet die Systemkonfiguration: Controller verwalten (Name, IP, Hinzufügen/Auto-Suche), UI & Themes (Theme, Sprache - dieses Hilfemenü folgt derselben Sprache), Robindernamen und benutzerdefinierte Modelle, Software-Integrationen, Arbeitspfade (wo die Works jedes Roboters gespeichert werden) und Gamepad-Zuordnung.",
           "Unter Config > CAN-OTA wählen Sie den Transport (eine vollständige eingebaute Simulation oder echte Hardware), tragen den MCU der Roboter-Controllerplatine nach der Bestätigung ein und legen die Pfade der Firmware-Dateien fest, in denen der Flasher sucht. Solange der Transport der simulierte ist, zeigt der Flasher einen Hinweis SIMULATION, sendet nichts an die Platinen und ändert nie die gespeicherte Version.",
           "Factory Reset in Config setzt die gesamte gespeicherte Konfiguration auf die Werkseinstellungen zurück - mit Vorsicht verwenden, dies kann nicht rückgängig gemacht werden."
@@ -788,10 +788,10 @@
         "label": "Ökosystem",
         "heading": "STUDIO als Frontend des gesamten Ökosystems",
         "paragraphs": [
-          "Das HYDRA-UMC-Menü (linke Seitenleiste) betrifft nicht nur die eigenen Roboter dieses Deployments - es zeigt auch das gesamte HYDRA-UMC-*-Ökosystem, das dieser Server sehen kann: welche Nachbarprojekte existieren, ob ihr eigener Dienst tatsächlich erreichbar ist, wer verbunden ist und was der Server selbst tut.",
-          "HYDRA-UMC > Services listet jedes benachbarte HYDRA-UMC-*-Projekt neben diesem Server, mit einer echten Live-Prüfung (TCP/HTTP) für alle, die einen eigenen Port deklarieren - ein grüner oder roter Punkt, nicht nur ein Reifegrad-Label. Start/Stopp gibt es hier noch nicht: derzeit existiert im gesamten Ökosystem kein Prozess-Supervisor.",
-          "HYDRA-UMC > Telemetry führt echte Roh- oder Aggregatabfragen gegen die eigenen gespeicherten Messwerte von HYDRA-UMC-DATALAKE aus. HYDRA-UMC > AI Family grenzt denselben Services-Scan auf die Knoten Vision AI (Hailo-8, heutige Kamera-/Erkennungspipeline) und Cognitive AI (Hailo-10 8GB, geplant) ein - siehe Konfiguration > KI/Hailo, um festzuhalten, welcher Chip tatsächlich auf diesem Deployment installiert ist und wo kompilierte Modelle liegen.",
-          "Verbundene Apps, Server-Logs und Server-Admin (HYDRA-UMC-Menü, nur Admin-Konten) spiegeln dieselbe Admin-API wider, die das eigene Referenz-Admin-Panel dieses Servers bereits nutzt: jede aktuell offene Verbindung, ein Tail der eigenen Log-Datei des Servers sowie dessen Listen-Port plus ein grazöser Neustart."
+          "Die Gruppe Ökosystem im Seitenmenü betrifft nicht nur die eigenen Roboter dieses Deployments - es zeigt auch das gesamte HYDRA-UMC-*-Ökosystem, das dieser Server sehen kann: welche Nachbarprojekte existieren, ob ihr eigener Dienst tatsächlich erreichbar ist, wer verbunden ist und was der Server selbst tut.",
+          "Ökosystem > Dienste listet jedes benachbarte HYDRA-UMC-*-Projekt neben diesem Server, mit einer echten Live-Prüfung (TCP/HTTP) für alle, die einen eigenen Port deklarieren - ein grüner oder roter Punkt, nicht nur ein Reifegrad-Label. Start/Stopp gibt es hier noch nicht: derzeit existiert im gesamten Ökosystem kein Prozess-Supervisor.",
+          "Ökosystem > Telemetrie führt echte Roh- oder Aggregatabfragen gegen die eigenen gespeicherten Messwerte von HYDRA-UMC-DATALAKE aus. Ökosystem > Künstliche Intelligenz grenzt denselben Services-Scan auf die Knoten Vision AI (Hailo-8, heutige Kamera-/Erkennungspipeline) und Cognitive AI (Hailo-10 8GB, geplant) ein - siehe Konfiguration > KI/Hailo, um festzuhalten, welcher Chip tatsächlich auf diesem Deployment installiert ist und wo kompilierte Modelle liegen.",
+          "Verbundene Apps, Server-Logs und Server-Admin (Menügruppe Verwaltung, nur Admin-Konten) spiegeln dieselbe Admin-API wider, die das eigene Referenz-Admin-Panel dieses Servers bereits nutzt: jede aktuell offene Verbindung, ein Tail der eigenen Log-Datei des Servers sowie dessen Listen-Port plus ein grazöser Neustart."
         ]
       }
     },
@@ -2294,7 +2294,7 @@
     "step_controller": "Ein Controller ist angelegt",
     "step_controller_hint": "Config > Controller > Knoten hinzufügen, mit Name und IP-Adresse der Platine.",
     "step_robot": "Ein Roboter ist eingerichtet",
-    "step_robot_hint": "Einen Roboter des Controllers in der Seitenleiste wählen und Modell und Werkzeug festlegen.",
+    "step_robot_hint": "Einen Roboter des Controllers unter Betrieb > Roboter wählen und Modell und Werkzeug festlegen.",
     "step_second_factor": "Die Anmeldung in zwei Schritten ist für Ihr Konto aktiv",
     "step_second_factor_hint": "Config > Sicherheit. Optional und aus, bis Sie es einschalten.",
     "next": "Nächster Schritt: {{step}}.",
@@ -2337,14 +2337,14 @@
     "not_shown": "Dieser Teil ist jetzt nicht auf dem Bildschirm (vielleicht braucht er eine andere Rolle oder Einstellung).",
     "name_welcome": "Willkommen",
     "name_overview": "Übersicht",
-    "name_cameras": "Vision-Zentrum",
+    "name_cameras": "Kameras",
     "welcome_0_t": "Willkommen bei HYDRA-UMC STUDIO",
     "welcome_0_b": "Diese kurze Tour zeigt, wo alles ist. Sie können sie jederzeit mit Esc verlassen und über die Hilfe erneut starten.",
     "welcome_1_t": "Das Menü",
     "welcome_1_b": "Von hier aus erreichen Sie alles: die Übersicht, jeden Roboter, das Vision-Zentrum, die Werkzeuge und das Ökosystem.",
     "welcome_2_t": "Übersicht",
     "welcome_2_b": "Der Zustand jedes Roboters auf einen Blick: seine Verbindung, sein Werkzeug, seine Position und seine Alarme.",
-    "welcome_3_t": "Vision-Zentrum",
+    "welcome_3_t": "Kameras",
     "welcome_3_b": "Die Kameras der Roboter live, mit den Bedienelementen jeder einzelnen.",
     "welcome_4_t": "Einstellungen",
     "welcome_4_b": "Die Konfiguration des Servers, die Benutzer, die Sicherheit und Ihre persönlichen Einstellungen.",
@@ -2356,7 +2356,7 @@
     "overview_0_b": "Klicken Sie hier, um jederzeit zur Übersicht zurückzukehren.",
     "overview_1_t": "Die Roboter",
     "overview_1_b": "Jede Karte ist ein Roboter mit seinem Zustand: ob er verbunden ist, sein Werkzeug und was er gerade tut.",
-    "cameras_0_t": "Vision-Zentrum",
+    "cameras_0_t": "Kameras",
     "cameras_0_b": "Klicken Sie hier, um die Kameras der Roboter zu öffnen.",
     "cameras_1_t": "Die Bilder",
     "cameras_1_b": "Jedes Bild kommt live von einer Kamera eines Roboters."
@@ -2383,7 +2383,9 @@
     "listen_only_hint": "Zeigt die Roboter und ihre Daten, sendet aber keinen Befehl: die Bedienelemente tun nichts, außer STOP und dem Abschalten des abgesicherten Modus, die immer funktionieren. Standardmäßig aus; wird in diesem Browser gespeichert. Auch auf den Server wird nichts geschrieben (Dienste, Kameras, Einstellungen, Benutzer, Dateien).",
     "listen_only_server": "Nur zuhören für diesen Server ({{server}})",
     "listen_only_server_hint": "Sendet von diesem Browser aus keinen Befehl an diesen Server, außer STOP und das Abschalten des sicheren Modus, die immer funktionieren. Standardmäßig aus; wird nur für diesen Server in diesem Browser gespeichert. Andere Server sind nicht betroffen.",
-    "listen_only_banner": "Nur Zuhören: Befehle sind deaktiviert. STOP funktioniert weiterhin."
+    "listen_only_banner": "Nur Zuhören: Befehle sind deaktiviert. STOP funktioniert weiterhin.",
+    "classic_menu": "Klassisches Menü",
+    "classic_menu_hint": "Das frühere Seitenmenü mit Untermenüs und die Konfiguration als Fenster. Es bleibt zwei Versionen lang erhalten."
   },
   "notify": {
     "title": "Push-Benachrichtigungen",
@@ -2710,5 +2712,42 @@
     "refused_totp_locked": "Nichts wurde getan: zu viele falsche Codes. Warten Sie und versuchen Sie es erneut.",
     "refused_totp_required": "Nichts wurde getan: Der Einmalcode ist erforderlich.",
     "refused_totp_invalid": "Nichts wurde getan: Der Einmalcode ist ungültig."
+  },
+  "nav": {
+    "menu": "Hauptmenü",
+    "screens_of": "Ansichten dieses Eintrags",
+    "pick_robot": "Roboter wählen",
+    "group_operate": "Betrieb",
+    "group_work": "Arbeit",
+    "group_equipment": "Ausrüstung",
+    "group_boards": "Platinen und Firmware",
+    "group_ecosystem": "Ökosystem",
+    "group_admin": "Verwaltung",
+    "robots": "Roboter",
+    "cameras": "Kameras",
+    "recordings": "Aufnahmen",
+    "pickandplace": "Pick & Place",
+    "cnc": "CNC",
+    "laser": "Laser",
+    "catalog": "Roboterkatalog",
+    "xytable": "XY-Tisch",
+    "toolchanger": "Werkzeugwechsler",
+    "rack": "Lagerregal",
+    "vacuumtable": "Vakuumtisch",
+    "heatedbed": "Heizbett",
+    "hydra_firmware": "HYDRA-Firmware",
+    "hydra_tests": "HYDRA-Tests",
+    "kinematic": "Kinematikstufe",
+    "urtc_firmware": "URTC-Firmware",
+    "urtc_tests": "URTC-Tests",
+    "map": "Karte",
+    "health": "Zustand",
+    "planning": "Planung",
+    "ai": "Künstliche Intelligenz",
+    "connections": "Verbindungen",
+    "logs_audit": "Protokolle und Audit",
+    "safety": "Sicherheitsgrenzen",
+    "server": "Server und Supervisor",
+    "settings": "Konfiguration"
   }
 }

@@ -13,7 +13,7 @@ import { TOURS, placeCard, stepKey, tourById, tourForView } from '../src/tour/to
 const LANGUAGES = ['en', 'es', 'de', 'fr', 'it', 'ja', 'zh', 'pt'];
 const catalogue = (language: string): { tour: Record<string, string> } => JSON.parse(readFileSync(`src/locales/${language}.json`, 'utf8'));
 // the shell is split in several files: the marks of the tours are looked for in all of them
-const dashboard = ['src/Dashboard.tsx', 'src/shell/AppHeader.tsx', 'src/nav/ClassicSidebar.tsx'].map((file) => readFileSync(file, 'utf8')).join(' ');
+const dashboard = ['src/Dashboard.tsx', 'src/shell/AppHeader.tsx', 'src/nav/ClassicSidebar.tsx', 'src/nav/GroupedSidebar.tsx', 'src/nav/navModel.ts'].map((file) => readFileSync(file, 'utf8')).join(' ');
 
 describe('the tours', () => {
   it('have a name and the title and the body of every step in the eight languages', () => {
@@ -42,6 +42,7 @@ describe('the tours', () => {
   it('light up only parts that the dashboard marks with data-tour', () => {
     const marked = new Set([...dashboard.matchAll(/data-tour="([a-z-]+)"/g)].map((match) => match[1]));
     for (const match of dashboard.matchAll(/\btour="([a-z-]+)"/g)) marked.add(match[1]);
+    for (const match of dashboard.matchAll(/\btour: '([a-z-]+)'/g)) marked.add(match[1]);
     for (const item of TOURS) for (const step of item.steps) if (step.target) expect(marked.has(step.target), `${item.id}: ${step.target}`).toBe(true);
   });
 

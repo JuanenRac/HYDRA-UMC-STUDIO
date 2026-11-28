@@ -23,6 +23,10 @@ import { Config } from './components/Config';
 import { Assistant } from './assistant/Assistant';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ClassicSidebar } from './nav/ClassicSidebar';
+import { GroupedSidebar } from './nav/GroupedSidebar';
+import { ScreenChooser } from './nav/ScreenChooser';
+import { entryOf } from './nav/navModel';
+import { useStudioPrefs } from './lib/studioPrefs';
 import { ScreenHost } from './nav/ScreenHost';
 import { AppHeader } from './shell/AppHeader';
 import { AppFooter } from './shell/AppFooter';
@@ -51,6 +55,8 @@ export default function Dashboard() {
   const openHelp = (tab?: string, topic?: string) => { setHelpStart({ tab, topic }); setIsHelpOpen(true); };
   const goToView = (view: string) => { if (view === 'settings') setIsSettingsOpen(true); else setActiveTab(view); };
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { classicMenu } = useStudioPrefs();
+  const current = classicMenu ? undefined : entryOf(activeTab);
 
   const hideUI = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -105,11 +111,13 @@ export default function Dashboard() {
 
       {isSettingsOpen && <Config onClose={() => setIsSettingsOpen(false)} />}
 
-      {!hideUI && <AppHeader onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} onSettings={() => setIsSettingsOpen(true)} onHelp={() => openHelp()} onAbout={() => setIsAboutOpen(true)} />}
+      {!hideUI && <AppHeader title={current && { group: `nav.group_${current.group}`, screen: current.label }} onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} onSettings={() => setIsSettingsOpen(true)} onHelp={() => openHelp()} onAbout={() => setIsAboutOpen(true)} />}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Nav */}
-        {!hideUI && <ClassicSidebar open={isSidebarOpen} view={activeTab} setView={setActiveTab} selectedRobotId={selectedRobotId} />}
+        {!hideUI && (classicMenu
+          ? <ClassicSidebar open={isSidebarOpen} view={activeTab} setView={setActiveTab} selectedRobotId={selectedRobotId} />
+          : <GroupedSidebar open={isSidebarOpen} view={activeTab} go={goToView} />)}
 
         {/* Main Content Area */}
         <main data-tour="stage" className={cn(
@@ -121,9 +129,10 @@ export default function Dashboard() {
               switching away from a panel that crashed to any OTHER panel
               would keep showing the stale fallback forever instead of
               actually trying to render the newly-selected one. */}
+          {!hideUI && !classicMenu && <ScreenChooser view={activeTab} setView={setActiveTab} selectedRobotId={selectedRobotId} />}
           <ErrorBoundary key={activeTab}>
           <React.Suspense fallback={<PanelLoadingFallback />}>
-            <div className={cn("w-full h-full overflow-hidden flex flex-col", !hideUI && "pt-8 px-8 pb-4")}>
+            <div className={cn("w-full flex-1 min-h-0 overflow-hidden flex flex-col", !hideUI && "pt-8 px-8 pb-4")}>
               <ScreenHost view={activeTab} selectedRobotId={selectedRobotId} hideUI={hideUI} onNavigateToRobot={(id) => { setSelectedRobotId(id); setActiveTab('robot'); }} />
             </div>
           </React.Suspense>

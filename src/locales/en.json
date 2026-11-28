@@ -311,7 +311,7 @@
     "factory_reset_upper": "FACTORY RESET",
     "classic_can": "Classic CAN",
     "can_ota": "CAN-OTA",
-    "can_ota_desc": "Settings shared by BOTH Flasher/Tester pairs: Shared Resources > URTC (Tool Head + its Advanced Expansion Board only) and Shared Resources > HYDRA-UMC (Kinematic Brain + Robot Controller Board only). Same underlying transport for the full chain: CM5 -> SPI -> STM32H745 -> FDCAN1 -> Robot Controller Board -> CAN -> URTC Tool Head -> I2C -> Advanced Expansion Board. See HYDRA-UMC's own docs/architecture.md, docs/CANBUS_STM32H745.TXT and docs/CANBUS_STM32G474.TXT.",
+    "can_ota_desc": "Settings shared by BOTH Flasher/Tester pairs: Boards and firmware > URTC (Tool Head + its Advanced Expansion Board only) and Boards and firmware > HYDRA (Kinematic Brain + Robot Controller Board only). Same underlying transport for the full chain: CM5 -> SPI -> STM32H745 -> FDCAN1 -> Robot Controller Board -> CAN -> URTC Tool Head -> I2C -> Advanced Expansion Board. See HYDRA-UMC's own docs/architecture.md, docs/CANBUS_STM32H745.TXT and docs/CANBUS_STM32G474.TXT.",
     "can_ota_transport": "Transport",
     "can_ota_transport_mock": "Simulated (mock) - no hardware needed",
     "can_ota_transport_hardware": "Real hardware (SPI to STM32H745)",
@@ -717,7 +717,7 @@
         "paragraphs": [
           "HYDRA-UMC STUDIO is a centralized control dashboard for robots, CNC machines, laser engravers, 3D-printer beds, and pick-and-place stations. One dashboard, several machines, all synchronized in real time.",
           "Start by adding a Controller (top-right selector, or Config > Controllers) - each controller represents one physical HYDRA-UMC board, reachable over Ethernet/IP. Press \"Add Node\" and enter its name and IP address.",
-          "Once a controller is selected, its robots are listed in the sidebar. Click a robot to open its full control panel: jog sliders, examples, recorded trajectories, and its own live 3D view.",
+          "Once a controller is selected, its robots are listed under Operate > Robots. Click a robot to open its full control panel: jog sliders, examples, recorded trajectories, and its own live 3D view.",
           "Everything you configure - robot names, custom models, saved trajectories, tool assignments - is saved automatically to the server's data/ directory, so it survives restarts and is shared by every browser that opens the dashboard."
         ]
       },
@@ -768,7 +768,7 @@
         "label": "Firmware & Settings",
         "heading": "Flashing boards and configuring the dashboard",
         "paragraphs": [
-          "Flasher and Tester (Shared Resources > URTC) reach a robot's own Controller Board, and its URTC Tool Head beyond it, over CAN-OTA only - no JTAG/SWD probe, no USB-CAN dongle. Flasher uploads a .bin firmware image and runs the same page-by-page transfer, CRC32/HMAC verify, and anti-rollback checks the URTC bootloader already implements; Tester queries live version info, F-RAM state, and per-tool telemetry, plus a safe self-test that never actuates at meaningful power.",
+          "Flasher and Tester (Boards and firmware in the menu) reach a robot's own Controller Board, and its URTC Tool Head beyond it, over CAN-OTA only - no JTAG/SWD probe, no USB-CAN dongle. Flasher uploads a .bin firmware image and runs the same page-by-page transfer, CRC32/HMAC verify, and anti-rollback checks the URTC bootloader already implements; Tester queries live version info, F-RAM state, and per-tool telemetry, plus a safe self-test that never actuates at meaningful power.",
           "Config (top bar) opens System Configuration: manage Controllers (name, IP, add/auto-search), UI & Themes (theme, language - this Help menu follows the same language), Robot Names and Custom Models, Software Integrations, Work Paths (where each robot's Works are stored), and Gamepad mapping.",
           "Config > CAN-OTA lets you pick the transport (a full built-in simulation, or real hardware), record the Robot Controller Board's own MCU once it's confirmed, and set the firmware-file paths Flasher looks in. While the transport is the simulated one, Flasher shows a SIMULATION banner, sends nothing to the boards and never changes the saved version.",
           "Factory Reset, inside Config, wipes all saved configuration back to defaults - use with care, it cannot be undone."
@@ -788,10 +788,10 @@
         "label": "Ecosystem",
         "heading": "STUDIO as the whole ecosystem's frontend",
         "paragraphs": [
-          "The HYDRA-UMC menu (left sidebar) is not only about this deployment's own robots - it also surfaces the whole HYDRA-UMC-* ecosystem this Server can see: which sibling projects exist, whether their own service is actually reachable, who's connected, and what the Server itself is doing.",
-          "HYDRA-UMC > Services lists every sibling HYDRA-UMC-* project checked out next to this Server, with a real live probe (TCP/HTTP) for whichever ones declare their own port - a green or red dot, not just a maturity label. There's no start/stop here yet: no process supervisor exists anywhere in the ecosystem today.",
-          "HYDRA-UMC > Telemetry runs real raw or aggregated queries against HYDRA-UMC-DATALAKE's own stored readings. HYDRA-UMC > AI Family narrows that same Services scan to the Vision AI (Hailo-8, today's camera/detection pipeline) and Cognitive AI (Hailo-10 8GB, planned) nodes - see Config > AI/Hailo to record which chip is actually installed on this deployment and where compiled models live.",
-          "Connected Apps, Server Logs and Server Admin (HYDRA-UMC menu, admin accounts only) mirror the same admin API this Server's own reference admin panel uses: every live connection right now, a tail of the Server's own log file, and its listen port plus a graceful restart."
+          "The Ecosystem group of the side menu is not only about this deployment's own robots - it also surfaces the whole HYDRA-UMC-* ecosystem this Server can see: which sibling projects exist, whether their own service is actually reachable, who's connected, and what the Server itself is doing.",
+          "Ecosystem > Services lists every sibling HYDRA-UMC-* project checked out next to this Server, with a real live probe (TCP/HTTP) for whichever ones declare their own port - a green or red dot, not just a maturity label. There's no start/stop here yet: no process supervisor exists anywhere in the ecosystem today.",
+          "Ecosystem > Telemetry runs real raw or aggregated queries against HYDRA-UMC-DATALAKE's own stored readings. Ecosystem > Artificial intelligence narrows that same Services scan to the Vision AI (Hailo-8, today's camera/detection pipeline) and Cognitive AI (Hailo-10 8GB, planned) nodes - see Config > AI/Hailo to record which chip is actually installed on this deployment and where compiled models live.",
+          "Connected Apps, Server Logs and Server Admin (Administration group of the menu, admin accounts only) mirror the same admin API this Server's own reference admin panel uses: every live connection right now, a tail of the Server's own log file, and its listen port plus a graceful restart."
         ]
       }
     },
@@ -2294,7 +2294,7 @@
     "step_controller": "A controller is added",
     "step_controller_hint": "Config > Controllers > Add Node, with the name and IP address of the board.",
     "step_robot": "A robot is set up",
-    "step_robot_hint": "Pick a robot slot of the controller in the sidebar and choose its model and tool.",
+    "step_robot_hint": "Pick a robot slot of the controller under Operate > Robots and choose its model and tool.",
     "step_second_factor": "Two-step sign-in is on for your account",
     "step_second_factor_hint": "Config > Security. It is optional and off until you turn it on.",
     "next": "Next step: {{step}}.",
@@ -2337,14 +2337,14 @@
     "not_shown": "This part is not on the screen now (it may need another role or setting).",
     "name_welcome": "Welcome",
     "name_overview": "Overview",
-    "name_cameras": "Vision center",
+    "name_cameras": "Cameras",
     "welcome_0_t": "Welcome to HYDRA-UMC STUDIO",
     "welcome_0_b": "This short tour shows where things are. You can leave it at any time with Esc and start it again from the Help.",
     "welcome_1_t": "The menu",
     "welcome_1_b": "Everything is reached from here: the overview, each robot, the vision center, the tools and the ecosystem.",
     "welcome_2_t": "Overview",
     "welcome_2_b": "The state of every robot at a glance: its connection, its tool, its position and its alarms.",
-    "welcome_3_t": "Vision center",
+    "welcome_3_t": "Cameras",
     "welcome_3_b": "The cameras of the robots, live, with the controls of each one.",
     "welcome_4_t": "Settings",
     "welcome_4_b": "The configuration of the server, the users, the security and your personal preferences.",
@@ -2356,7 +2356,7 @@
     "overview_0_b": "Click here to come back to the overview whenever you want.",
     "overview_1_t": "The robots",
     "overview_1_b": "Each card is one robot with its state: whether it is connected, its tool and what it is doing.",
-    "cameras_0_t": "Vision center",
+    "cameras_0_t": "Cameras",
     "cameras_0_b": "Click here to open the cameras of the robots.",
     "cameras_1_t": "The pictures",
     "cameras_1_b": "Each picture comes live from one camera of a robot."
@@ -2383,7 +2383,9 @@
     "listen_only_hint": "Shows the robots and their data but sends no command: the controls do nothing, except STOP and the safe-mode disable, which always work. Off by default; kept in this browser. Nothing is written to the server either (services, cameras, settings, users, files).",
     "listen_only_server": "Listen only for this server ({{server}})",
     "listen_only_server_hint": "Sends no command to this server from this browser, except STOP and the safe-mode disable, which always work. Off by default; kept in this browser for this server only. Other servers are not affected.",
-    "listen_only_banner": "Listen only: commands are disabled. STOP still works."
+    "listen_only_banner": "Listen only: commands are disabled. STOP still works.",
+    "classic_menu": "Classic menu",
+    "classic_menu_hint": "The earlier side menu, with its submenus, and the configuration as a window. It will be kept for two versions."
   },
   "notify": {
     "title": "Push notifications",
@@ -2710,5 +2712,42 @@
     "refused_totp_locked": "Nothing was done: too many wrong codes. Wait and try again.",
     "refused_totp_required": "Nothing was done: the one-time code is needed.",
     "refused_totp_invalid": "Nothing was done: the one-time code is not valid."
+  },
+  "nav": {
+    "menu": "Main menu",
+    "screens_of": "Screens of this entry",
+    "pick_robot": "Choose a robot",
+    "group_operate": "Operate",
+    "group_work": "Work",
+    "group_equipment": "Equipment",
+    "group_boards": "Boards and firmware",
+    "group_ecosystem": "Ecosystem",
+    "group_admin": "Administration",
+    "robots": "Robots",
+    "cameras": "Cameras",
+    "recordings": "Recordings",
+    "pickandplace": "Pick & Place",
+    "cnc": "CNC",
+    "laser": "Laser",
+    "catalog": "Robot catalogue",
+    "xytable": "XY table",
+    "toolchanger": "Tool changer",
+    "rack": "Rack",
+    "vacuumtable": "Vacuum table",
+    "heatedbed": "Heated bed",
+    "hydra_firmware": "HYDRA firmware",
+    "hydra_tests": "HYDRA tests",
+    "kinematic": "Kinematic stage",
+    "urtc_firmware": "URTC firmware",
+    "urtc_tests": "URTC tests",
+    "map": "Map",
+    "health": "Health",
+    "planning": "Planning",
+    "ai": "Artificial intelligence",
+    "connections": "Connections",
+    "logs_audit": "Logs and audit",
+    "safety": "Safety limits",
+    "server": "Server and supervisor",
+    "settings": "Configuration"
   }
 }

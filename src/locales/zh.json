@@ -311,7 +311,7 @@
     "factory_reset_upper": "恢复出厂设置",
     "classic_can": "经典 CAN",
     "can_ota": "CAN-OTA",
-    "can_ota_desc": "此设置由 Flasher/Tester 两对工具共同使用：共享资源 > URTC（仅工具头及其高级扩展板）与共享资源 > HYDRA-UMC（仅运动大脑与机器人控制器板）。整条链路使用相同的底层传输方式：CM5 -> SPI -> STM32H745 -> FDCAN1 -> 机器人控制器板 -> CAN -> URTC 工具头 -> I2C -> 高级扩展板。参见 HYDRA-UMC 自身的 docs/architecture.md、docs/CANBUS_STM32H745.TXT 与 docs/CANBUS_STM32G474.TXT。",
+    "can_ota_desc": "此设置由 Flasher/Tester 两对工具共同使用：主板与固件 > URTC（仅工具头及其高级扩展板）与主板与固件 > HYDRA（仅运动大脑与机器人控制器板）。整条链路使用相同的底层传输方式：CM5 -> SPI -> STM32H745 -> FDCAN1 -> 机器人控制器板 -> CAN -> URTC 工具头 -> I2C -> 高级扩展板。参见 HYDRA-UMC 自身的 docs/architecture.md、docs/CANBUS_STM32H745.TXT 与 docs/CANBUS_STM32G474.TXT。",
     "can_ota_transport": "传输方式",
     "can_ota_transport_mock": "模拟（虚拟）——无需硬件",
     "can_ota_transport_hardware": "真实硬件（SPI 连接 STM32H745）",
@@ -717,7 +717,7 @@
         "paragraphs": [
           "HYDRA-UMC STUDIO 是面向机器人、CNC 机床、激光雕刻机、3D 打印机热床和拾取放置工作站的集中控制仪表盘。一个仪表盘，多台机器，全部实时同步。",
           "先添加一个控制器（右上角选择器，或“配置 > 控制器”）：每个控制器代表一块可通过 Ethernet/IP 访问的实体 HYDRA-UMC 主板。点击“添加节点”，输入名称和 IP 地址。",
-          "选中控制器后，它的机器人会列在侧边栏中。点击机器人即可打开完整的控制面板：点动滑块、示例、已录制的轨迹以及它自己的实时 3D 视图。",
+          "选中控制器后，它的机器人会列在“操作 > 机器人”中。点击机器人即可打开完整的控制面板：点动滑块、示例、已录制的轨迹以及它自己的实时 3D 视图。",
           "你所配置的一切——机器人名称、自定义型号、已保存的轨迹、工具分配——都会自动保存到服务器的 data/ 目录中，因此重启后依然保留，并会被所有打开此仪表盘的浏览器共享。"
         ]
       },
@@ -768,7 +768,7 @@
         "label": "固件与设置",
         "heading": "刷写板卡与配置仪表盘",
         "paragraphs": [
-          "Flasher 与 Tester（共享资源 > URTC）仅通过 CAN-OTA 访问机器人自身的控制器板及其之外的 URTC 工具头——无需 JTAG/SWD 探针，无需 USB-CAN 适配器。Flasher 上传一个 .bin 固件镜像，并运行与 URTC 引导程序自身已实现的相同的逐页传输、CRC32/HMAC 校验及防回滚检查；Tester 查询实时版本信息、F-RAM 状态及各工具遥测数据，并提供一次安全的自检——绝不会以有意义的功率驱动执行器。",
+          "Flasher 与 Tester（菜单中的“主板与固件”）仅通过 CAN-OTA 访问机器人自身的控制器板及其之外的 URTC 工具头——无需 JTAG/SWD 探针，无需 USB-CAN 适配器。Flasher 上传一个 .bin 固件镜像，并运行与 URTC 引导程序自身已实现的相同的逐页传输、CRC32/HMAC 校验及防回滚检查；Tester 查询实时版本信息、F-RAM 状态及各工具遥测数据，并提供一次安全的自检——绝不会以有意义的功率驱动执行器。",
           "顶部栏中的“设置”打开系统配置：管理控制器（名称、IP、添加/自动搜索）、界面与主题（主题、语言——此帮助菜单会跟随相同的语言设置）、机器人名称与自定义型号、软件集成、工作路径（每个机器人的“工作”存储位置），以及手柄映射。",
           "“配置 > CAN-OTA”可选择传输方式（完整的内置模拟，或真实硬件）、在确认后记录机器人控制板的 MCU，并设置刷写器查找固件文件的路径。当传输为模拟时，刷写器会显示“模拟”提示，不会向板卡发送任何内容，也绝不更改已保存的版本。",
           "“设置”内的“恢复出厂设置”会将所有已保存的配置清空为默认值——请谨慎使用，此操作无法撤销。"
@@ -788,10 +788,10 @@
         "label": "生态系统",
         "heading": "STUDIO 作为整个生态系统的前端",
         "paragraphs": [
-          "HYDRA-UMC 菜单(左侧边栏)不仅涉及此部署自身的机器人 - 它还展示了此服务器能看到的整个 HYDRA-UMC-* 生态系统:存在哪些同级项目、它们自身的服务是否真的可以访问、谁已连接,以及服务器本身正在做什么。",
-          "HYDRA-UMC > Services 列出了此服务器旁边检出的每一个同级 HYDRA-UMC-* 项目,并对声明了自己端口的项目进行真实的实时探测(TCP/HTTP)- 一个绿点或红点,而不仅仅是成熟度标签。目前这里还没有启动/停止功能:整个生态系统目前都没有进程监督程序。",
-          "HYDRA-UMC > Telemetry 对 HYDRA-UMC-DATALAKE 自身存储的读数执行真实的原始或聚合查询。HYDRA-UMC > AI Family 将同一个 Services 扫描结果缩小到 Vision AI(Hailo-8,当前的摄像头/检测流水线)和 Cognitive AI(Hailo-10 8GB,规划中)节点 - 请前往“配置 > AI/Hailo”记录此部署上实际安装的芯片以及编译模型的存放位置。",
-          "已连接的应用、服务器日志和服务器管理(HYDRA-UMC 菜单,仅限管理员账户)反映了此服务器自身参考管理面板已经使用的同一套管理 API:当前每一个活动连接、服务器自身日志文件的尾部内容,以及其监听端口加上一次平滑重启。"
+          "侧边菜单的“生态系统”分组不仅涉及此部署自身的机器人 - 它还展示了此服务器能看到的整个 HYDRA-UMC-* 生态系统:存在哪些同级项目、它们自身的服务是否真的可以访问、谁已连接,以及服务器本身正在做什么。",
+          "生态系统 > 服务 列出了此服务器旁边检出的每一个同级 HYDRA-UMC-* 项目,并对声明了自己端口的项目进行真实的实时探测(TCP/HTTP)- 一个绿点或红点,而不仅仅是成熟度标签。目前这里还没有启动/停止功能:整个生态系统目前都没有进程监督程序。",
+          "生态系统 > 遥测 对 HYDRA-UMC-DATALAKE 自身存储的读数执行真实的原始或聚合查询。生态系统 > 人工智能 将同一个 Services 扫描结果缩小到 Vision AI(Hailo-8,当前的摄像头/检测流水线)和 Cognitive AI(Hailo-10 8GB,规划中)节点 - 请前往“配置 > AI/Hailo”记录此部署上实际安装的芯片以及编译模型的存放位置。",
+          "已连接的应用、服务器日志和服务器管理(菜单的“管理”分组,仅限管理员账户)反映了此服务器自身参考管理面板已经使用的同一套管理 API:当前每一个活动连接、服务器自身日志文件的尾部内容,以及其监听端口加上一次平滑重启。"
         ]
       }
     },
@@ -2294,7 +2294,7 @@
     "step_controller": "已添加控制器",
     "step_controller_hint": "配置 > 控制器 > 添加节点，填入主板的名称和 IP 地址。",
     "step_robot": "已设置机器人",
-    "step_robot_hint": "在侧边栏选择控制器的一个机器人，并选定其型号和工具。",
+    "step_robot_hint": "在“操作 > 机器人”中选择控制器的一个机器人，并选定其型号和工具。",
     "step_second_factor": "你的账户已开启两步登录",
     "step_second_factor_hint": "配置 > 安全。可选项，开启前保持关闭。",
     "next": "下一步：{{step}}。",
@@ -2337,14 +2337,14 @@
     "not_shown": "此部分当前不在屏幕上（可能需要其他角色或设置）。",
     "name_welcome": "欢迎",
     "name_overview": "概览",
-    "name_cameras": "视觉中心",
+    "name_cameras": "摄像头",
     "welcome_0_t": "欢迎使用 HYDRA-UMC STUDIO",
     "welcome_0_b": "这个简短的游览会告诉您各项功能的位置。您可以随时按 Esc 退出，并在帮助中重新开始。",
     "welcome_1_t": "菜单",
     "welcome_1_b": "所有功能都从这里进入：概览、每台机器人、视觉中心、工具和生态系统。",
     "welcome_2_t": "概览",
     "welcome_2_b": "一眼查看每台机器人的状态：连接、工具、位置和报警。",
-    "welcome_3_t": "视觉中心",
+    "welcome_3_t": "摄像头",
     "welcome_3_b": "实时查看机器人的摄像头，并使用每个摄像头的控件。",
     "welcome_4_t": "设置",
     "welcome_4_b": "服务器配置、用户、安全以及您的个人偏好。",
@@ -2356,7 +2356,7 @@
     "overview_0_b": "点击这里可随时回到概览。",
     "overview_1_t": "机器人",
     "overview_1_b": "每张卡片是一台机器人及其状态：是否已连接、所用工具和正在做的事。",
-    "cameras_0_t": "视觉中心",
+    "cameras_0_t": "摄像头",
     "cameras_0_b": "点击这里打开机器人的摄像头。",
     "cameras_1_t": "画面",
     "cameras_1_b": "每个画面都实时来自机器人的一个摄像头。"
@@ -2383,7 +2383,9 @@
     "listen_only_hint": "显示机器人及其数据，但不发送任何命令：控件不起作用，只有 STOP 和安全模式的关闭始终有效。默认关闭，保存在此浏览器中。也不会向服务器写入任何内容（服务、摄像头、设置、用户、文件）。",
     "listen_only_server": "此服务器仅监听（{{server}}）",
     "listen_only_server_hint": "此浏览器不会向该服务器发送任何命令，但 STOP 和安全模式的解除始终有效。默认关闭；仅为该服务器保存在此浏览器中。其他服务器不受影响。",
-    "listen_only_banner": "仅监听：命令已禁用。STOP 仍然有效。"
+    "listen_only_banner": "仅监听：命令已禁用。STOP 仍然有效。",
+    "classic_menu": "经典菜单",
+    "classic_menu_hint": "之前带子菜单的侧边菜单，配置以窗口形式显示。将保留两个版本。"
   },
   "notify": {
     "title": "推送通知",
@@ -2710,5 +2712,42 @@
     "refused_totp_locked": "未执行任何操作:错误验证码过多。请稍后再试。",
     "refused_totp_required": "未执行任何操作:需要一次性验证码。",
     "refused_totp_invalid": "未执行任何操作:一次性验证码无效。"
+  },
+  "nav": {
+    "menu": "主菜单",
+    "screens_of": "此项目的页面",
+    "pick_robot": "选择机器人",
+    "group_operate": "操作",
+    "group_work": "作业",
+    "group_equipment": "设备",
+    "group_boards": "主板与固件",
+    "group_ecosystem": "生态系统",
+    "group_admin": "管理",
+    "robots": "机器人",
+    "cameras": "摄像头",
+    "recordings": "录像",
+    "pickandplace": "取放",
+    "cnc": "CNC",
+    "laser": "激光",
+    "catalog": "机器人目录",
+    "xytable": "XY 工作台",
+    "toolchanger": "换刀装置",
+    "rack": "料架",
+    "vacuumtable": "真空吸附台",
+    "heatedbed": "热床",
+    "hydra_firmware": "HYDRA 固件",
+    "hydra_tests": "HYDRA 测试",
+    "kinematic": "运动学级",
+    "urtc_firmware": "URTC 固件",
+    "urtc_tests": "URTC 测试",
+    "map": "地图",
+    "health": "健康状况",
+    "planning": "规划",
+    "ai": "人工智能",
+    "connections": "连接",
+    "logs_audit": "日志与审计",
+    "safety": "安全限值",
+    "server": "服务器与监管器",
+    "settings": "配置"
   }
 }

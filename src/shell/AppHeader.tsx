@@ -17,9 +17,11 @@ type Props = {
   onSettings: () => void;
   onHelp: () => void;
   onAbout: () => void;
+  /** The catalogue keys of the group and the screen shown (not in the classic menu). */
+  title?: { group: string; screen: string };
 };
 
-export function AppHeader({ onToggleSidebar, onSettings, onHelp, onAbout }: Props) {
+export function AppHeader({ onToggleSidebar, onSettings, onHelp, onAbout, title }: Props) {
   const { t } = useTranslation();
   const { serverReachable, settingsSaveError, settingsLocalOnly } = useServerStatus();
   const { flushSettingsSave } = useSettingsStore();
@@ -31,6 +33,11 @@ export function AppHeader({ onToggleSidebar, onSettings, onHelp, onAbout }: Prop
         <button onClick={onToggleSidebar} className="p-2 -ml-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"><Menu size={24} /></button>
         <img src={HydraIcon} alt={t('dashboard.logo_alt')} className="w-8 h-8 object-contain" />
         <h1 className="text-2xl font-bold tracking-wider text-slate-100">HYDRA<span className="text-emerald-500">-UM</span><span className="text-rose-500">C</span> <span className="text-sky-400 font-medium">Studio</span></h1>
+        {title && (
+          <p data-testid="screen-title" className="hidden 2xl:block ml-8 truncate text-sm text-slate-500 uppercase">
+            {t(title.group)} / <strong className="text-slate-100 normal-case text-base">{t(title.screen)}</strong>
+          </p>
+        )}
       </div>
       <div className="flex items-center gap-4">
         {/* The global STOP: one click, every robot, always in sight (Ctrl+Shift+Space does the same). */}

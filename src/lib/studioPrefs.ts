@@ -36,10 +36,12 @@ export type StudioPrefs = {
   updateNotice: boolean;
   /** The version of STUDIO whose notice was hidden (empty: none), so the same version is not announced again. */
   updateNoticeDismissed: string;
+  /** The earlier side menu with submenus, and the configuration as a window. Kept for two versions of the grouped menu. */
+  classicMenu: boolean;
 };
 
 export const STUDIO_PREFS_KEY = 'hydra_studio_prefs';
-export const STUDIO_DEFAULTS: StudioPrefs = { helpLevel: 'all', density: 'comfortable', reduceMotion: false, listenOnly: false, listenOnlyServers: [], selfUpdateApply: false, updateNotice: true, updateNoticeDismissed: '' };
+export const STUDIO_DEFAULTS: StudioPrefs = { helpLevel: 'all', density: 'comfortable', reduceMotion: false, listenOnly: false, listenOnlyServers: [], selfUpdateApply: false, updateNotice: true, updateNoticeDismissed: '', classicMenu: false };
 
 let prefs: Prefs<StudioPrefs> | null = null;
 
@@ -48,7 +50,7 @@ function store(): Prefs<StudioPrefs> {
     storage: browserStorage('localStorage'),
     key: STUDIO_PREFS_KEY,
     defaults: STUDIO_DEFAULTS,
-    schema: { helpLevel: oneOf(...HELP_LEVELS), density: oneOf(...DENSITIES), reduceMotion: bool, listenOnly: bool, listenOnlyServers: originList, selfUpdateApply: bool, updateNotice: bool, updateNoticeDismissed: versionText },
+    schema: { helpLevel: oneOf(...HELP_LEVELS), density: oneOf(...DENSITIES), reduceMotion: bool, listenOnly: bool, listenOnlyServers: originList, selfUpdateApply: bool, updateNotice: bool, updateNoticeDismissed: versionText, classicMenu: bool },
   });
   return prefs;
 }
