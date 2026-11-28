@@ -10,7 +10,7 @@ import { setSelectedRobotId } from '../lib/selectedRobot';
 import { useFleet } from '../storeContexts';
 import { VIEW_TABS, entryOf } from './navModel';
 
-const chip = (active: boolean) => cn("shrink-0 min-h-11 px-4 rounded-xl border text-xs font-bold flex items-center gap-2 transition-colors", active ? "bg-sky-500/15 border-sky-500/50 text-slate-100" : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600");
+const chip = (active: boolean) => cn("shrink-0 min-h-11 px-4 rounded-xl border text-xs font-bold flex items-center gap-2 transition-colors", active ? "bg-sky-500 border-sky-300 text-slate-950" : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600");
 
 type Props = { view: string; setView: (view: string) => void; selectedRobotId: number };
 

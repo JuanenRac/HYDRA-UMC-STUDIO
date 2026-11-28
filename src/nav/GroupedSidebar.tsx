@@ -69,8 +69,8 @@ export function GroupedSidebar({ open, view, go }: Props) {
               return (
                 <button key={item.id} type="button" data-nav={item.id} data-tour={item.tour} aria-current={active ? 'page' : undefined}
                   onClick={() => { if (!active) go(item.views[0]!); }}
-                  className={cn("w-full min-h-11 flex items-center gap-3 px-3 rounded-xl border text-left text-sm font-semibold transition-colors", active ? "bg-sky-500/15 border-sky-500/50 text-slate-100" : "border-transparent text-slate-400 hover:bg-slate-800 hover:text-slate-200")}>
-                  <Icon size={16} className={cn("shrink-0", active ? "text-sky-300" : "text-sky-500/80")} />
+                  className={cn("w-full min-h-11 flex items-center gap-3 px-3 rounded-xl border text-left text-sm font-semibold transition-colors", active ? "bg-sky-500 border-sky-300 text-slate-950" : "border-transparent text-slate-400 hover:bg-slate-800 hover:text-slate-200")}>
+                  <Icon size={16} className={cn("shrink-0", active ? "text-slate-950" : "text-sky-500/80")} />
                   <span className="truncate">{t(item.label)}</span>
                 </button>
               );
