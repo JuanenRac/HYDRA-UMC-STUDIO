@@ -22,7 +22,7 @@
     "@react-three/fiber": "^9.8.2",
     "@tailwindcss/vite": "^4.3.5",
     "clsx": "^2.1.1",
-    "hydra-umc-studio-kit": "https://github.com/JuanenRac/HYDRA-UMC-STUDIO-KIT/releases/download/v0.0.5/hydra-umc-studio-kit-0.0.5.tgz",
+    "hydra-umc-studio-kit": "https://github.com/JuanenRac/HYDRA-UMC-STUDIO-KIT/releases/download/v0.0.6/hydra-umc-studio-kit-0.0.6.tgz",
     "i18next": "^26.5.11",
     "lucide-react": "^1.76.0",
     "motion": "^14.14.0",

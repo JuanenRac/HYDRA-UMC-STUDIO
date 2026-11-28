@@ -21,10 +21,8 @@
 import {
   DEFAULT_REFRESH_TOKEN_KEY,
   DEFAULT_TOKEN_KEY,
-  browserStorage,
   createSession,
   extractLaunchToken as kitExtractLaunchToken,
-  safeGet,
   type SessionStores,
 } from 'hydra-umc-studio-kit';
 
@@ -51,12 +49,7 @@ export function readRefreshToken(stores?: Stores): string | null {
  * `readRefreshToken()` answers only one. In a view started from a launch address the saved login of the browser is not listed.
  */
 export function allRefreshTokens(stores?: Stores): string[] {
-  const used = stores ?? { local: browserStorage('localStorage'), session: browserStorage('sessionStorage') };
-  const own = safeGet(used.session, REFRESH_TOKEN_KEY);
-  // a launch view answers readRefreshToken() from the session storage only: the saved token is then somebody else's login
-  const launched = safeGet(used.session, `${TOKEN_KEY}.launch`) !== null;
-  const saved = launched ? null : safeGet(used.local, REFRESH_TOKEN_KEY);
-  return [...new Set([own, saved].filter((token): token is string => token !== null && token !== ''))];
+  return sessionOf(stores).allRefreshTokens();
 }
 
 /**
