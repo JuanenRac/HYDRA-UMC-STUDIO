@@ -2714,6 +2714,10 @@
     "refused_totp_invalid": "No se hizo nada: el código de un solo uso no es válido."
   },
   "nav": {
+    "settings_mine": "Lo mío",
+    "settings_people": "Personas y avisos",
+    "settings_cell": "Mi célula",
+    "settings_system": "Sistema",
     "menu": "Menú principal",
     "screens_of": "Pantallas de esta entrada",
     "pick_robot": "Elegir un robot",

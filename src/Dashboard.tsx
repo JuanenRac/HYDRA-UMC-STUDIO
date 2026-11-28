@@ -53,9 +53,16 @@ export default function Dashboard() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [helpStart, setHelpStart] = useState<{ tab?: string; topic?: string }>({});
   const openHelp = (tab?: string, topic?: string) => { setHelpStart({ tab, topic }); setIsHelpOpen(true); };
-  const goToView = (view: string) => { if (view === 'settings') setIsSettingsOpen(true); else setActiveTab(view); };
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { classicMenu } = useStudioPrefs();
+  // the configuration is a window in the classic menu and a screen in the grouped one
+  const openSettings = () => { if (classicMenu) setIsSettingsOpen(true); else setActiveTab('settings'); };
+  const goToView = (view: string) => { if (view === 'settings') openSettings(); else setActiveTab(view); };
+  // the classic menu switched on from the configuration screen: the same configuration goes on in its window
+  if (classicMenu && activeTab === 'settings') {
+    setActiveTab('overview');
+    setIsSettingsOpen(true);
+  }
   const current = classicMenu ? undefined : entryOf(activeTab);
 
   const hideUI = useMemo(() => {
@@ -107,11 +114,11 @@ export default function Dashboard() {
 
       {!hideUI && <TourHost view={activeTab} setView={setActiveTab} />}
 
-      {!hideUI && <Assistant view={activeTab} go={goToView} openHelp={openHelp} openSettings={() => setIsSettingsOpen(true)} />}
+      {!hideUI && <Assistant view={activeTab} go={goToView} openHelp={openHelp} openSettings={openSettings} />}
 
       {isSettingsOpen && <Config onClose={() => setIsSettingsOpen(false)} />}
 
-      {!hideUI && <AppHeader title={current && { group: `nav.group_${current.group}`, screen: current.label }} onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} onSettings={() => setIsSettingsOpen(true)} onHelp={() => openHelp()} onAbout={() => setIsAboutOpen(true)} />}
+      {!hideUI && <AppHeader title={current && { group: `nav.group_${current.group}`, screen: current.label }} onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} onSettings={openSettings} onHelp={() => openHelp()} onAbout={() => setIsAboutOpen(true)} />}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Nav */}

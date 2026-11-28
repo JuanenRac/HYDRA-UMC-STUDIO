@@ -36,7 +36,6 @@ describe('the list of screens', () => {
   it('draws every screen', () => {
     const host = read('src/nav/ScreenHost.tsx');
     for (const view of VIEW_IDS) {
-      if (view === 'settings') continue;
       expect(host.includes(`view === '${view}'`) || host.includes(`  ${view}: () =>`), view).toBe(true);
     }
   });

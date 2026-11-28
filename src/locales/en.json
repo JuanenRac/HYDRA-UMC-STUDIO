@@ -2714,6 +2714,10 @@
     "refused_totp_invalid": "Nothing was done: the one-time code is not valid."
   },
   "nav": {
+    "settings_mine": "Mine",
+    "settings_people": "People and notices",
+    "settings_cell": "My cell",
+    "settings_system": "System",
     "menu": "Main menu",
     "screens_of": "Screens of this entry",
     "pick_robot": "Choose a robot",

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **The configuration is a screen with four groups:** Mine, People and notices, My cell and System, with the same tabs inside (the two remote access tabs share one button), reached from the top bar or the menu. The STOP of the top bar stays in sight and pressable. With the classic menu switched on it is the window it was. In the eight languages.
+
 - **A side menu with groups:** every screen is in one list, in six groups that fold and are remembered (Operate, Work, Equipment, Boards and firmware, Ecosystem, Administration), with targets for a finger and the group and screen named in the top bar. The robots are chosen in a row over the robot panel; the AI screens, the logs and the audit record, and the server and supervisor share an entry each. When the whole menu does not fit, only Operate and the current group start open. Preferences has the switch of the classic menu, which will be kept for two versions. In the eight languages; the assistant and the Help name the new places.
 
 - **Every screen is explained by its own tab of the Help:** the module screens (XY table, tool changer, rack, pick and place, CNC, laser, vacuum table, heated bed), the robot catalogue, the ecosystem map, the safety limits and the audit record made the assistant explain "getting started". One list of screens now feeds the menu, the screen switch and the Help, and a test fails when a screen is missing from it. The shell of the dashboard is split into smaller files; nothing else changes on screen.
