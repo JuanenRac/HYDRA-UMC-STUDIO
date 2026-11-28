@@ -2714,6 +2714,10 @@
     "refused_totp_invalid": "Non è stato fatto nulla: il codice monouso non è valido."
   },
   "nav": {
+    "settings_mine": "Per me",
+    "settings_people": "Persone e avvisi",
+    "settings_cell": "La mia cella",
+    "settings_system": "Sistema",
     "menu": "Menu principale",
     "screens_of": "Schermate di questa voce",
     "pick_robot": "Scegli un robot",

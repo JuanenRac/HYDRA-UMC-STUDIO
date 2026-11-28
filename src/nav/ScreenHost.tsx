@@ -8,6 +8,7 @@ import React from 'react';
 import type { CanOtaTier } from '../lib/canOta';
 import type { ViewId } from './navModel';
 import { OverviewView } from '../views/OverviewView';
+import { Config } from '../components/Config';
 import { useFleet } from '../storeContexts';
 
 // Stable module-level references for the `tiers` prop passed to Flasher/Tester below -
@@ -50,8 +51,8 @@ const AdminAudit = React.lazy(() => import('../components/AdminAudit').then(m =>
 const AdminServer = React.lazy(() => import('../components/AdminServer').then(m => ({ default: m.AdminServer })));
 const SystemSupervisor = React.lazy(() => import('../components/SystemSupervisor').then(m => ({ default: m.SystemSupervisor })));
 
-/** The screens that need nothing from the shell. `robot` is drawn apart (it needs the selected robot), the configuration is a window. */
-const PANELS: Record<Exclude<ViewId, 'overview' | 'robot' | 'settings'>, () => React.ReactNode> = {
+/** The screens that need nothing from the shell. `robot` is drawn apart (it needs the selected robot). In the classic menu the configuration is a window instead. */
+const PANELS: Record<Exclude<ViewId, 'overview' | 'robot'>, () => React.ReactNode> = {
   cameras: () => <CamerasView />,
   cameraMedia: () => <CameraMediaView />,
   robots: () => <RobotsCatalogView />,
@@ -81,6 +82,7 @@ const PANELS: Record<Exclude<ViewId, 'overview' | 'robot' | 'settings'>, () => R
   adminSafety: () => <AdminSafety />,
   adminAudit: () => <AdminAudit />,
   systemSupervisor: () => <SystemSupervisor />,
+  settings: () => <Config variant="screen" />,
 };
 
 type Props = {

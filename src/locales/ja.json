@@ -2714,6 +2714,10 @@
     "refused_totp_invalid": "何もしていません。ワンタイムコードが正しくありません。"
   },
   "nav": {
+    "settings_mine": "自分用",
+    "settings_people": "ユーザーと通知",
+    "settings_cell": "自分のセル",
+    "settings_system": "システム",
     "menu": "メインメニュー",
     "screens_of": "この項目の画面",
     "pick_robot": "ロボットを選択",

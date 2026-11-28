@@ -2714,6 +2714,10 @@
     "refused_totp_invalid": "Rien n'a été fait : le code à usage unique n'est pas valide."
   },
   "nav": {
+    "settings_mine": "Pour moi",
+    "settings_people": "Personnes et avis",
+    "settings_cell": "Ma cellule",
+    "settings_system": "Système",
     "menu": "Menu principal",
     "screens_of": "Écrans de cette entrée",
     "pick_robot": "Choisir un robot",

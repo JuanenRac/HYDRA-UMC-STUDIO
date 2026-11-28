@@ -2714,6 +2714,10 @@
     "refused_totp_invalid": "未执行任何操作:一次性验证码无效。"
   },
   "nav": {
+    "settings_mine": "我的",
+    "settings_people": "人员与通知",
+    "settings_cell": "我的工作单元",
+    "settings_system": "系统",
     "menu": "主菜单",
     "screens_of": "此项目的页面",
     "pick_robot": "选择机器人",

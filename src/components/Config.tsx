@@ -49,7 +49,16 @@ function PanelLoadingFallback() {
 
 type ConfigTab = 'identity' | 'controllers' | 'ui' | 'robots' | 'cameras' | 'models' | 'integrations' | 'remoteaccess' | 'users' | 'paths' | 'canota' | 'aihailo' | 'gamepad' | 'updates' | 'security' | 'installation' | 'remotesetup' | 'preferences' | 'notifications' | 'history';
 
-export function Config({ onClose }: { onClose: () => void }) {
+/** The four groups of the configuration as a screen. A tab listed after "+" shares the button of the one before it. */
+export const CONFIG_GROUPS: ReadonlyArray<{ id: string; tabs: ReadonlyArray<ConfigTab | readonly [ConfigTab, ConfigTab]> }> = [
+  { id: 'mine', tabs: ['ui', 'preferences', 'gamepad'] },
+  { id: 'people', tabs: ['users', 'security', 'notifications', ['remoteaccess', 'remotesetup']] },
+  { id: 'cell', tabs: ['identity', 'controllers', 'robots', 'cameras', 'models', 'paths', 'aihailo', 'integrations'] },
+  { id: 'system', tabs: ['updates', 'canota', 'installation', 'history'] },
+];
+
+/** `window`: over the dashboard, closed with a button (the classic menu). `screen`: a screen of its own, with its tabs in groups. */
+export function Config({ onClose = () => undefined, variant = 'window' }: { onClose?: () => void; variant?: 'window' | 'screen' }) {
   const { t } = useTranslation();
   const [confirmHardwareTransport, setConfirmHardwareTransport] = useState(false);
   const { authToken } = useSession();
@@ -86,75 +95,55 @@ export function Config({ onClose }: { onClose: () => void }) {
     { id: 'history', label: t('config.history') },
   ];
 
-  return (
-    <div data-stop-clear className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[850px] max-w-full overflow-hidden flex flex-col h-250 max-h-full">
-        <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
-          <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Settings className="text-sky-400" size={20} /> {t('config.title')}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200 p-1" aria-label={t('dashboard.close', 'Close')}>&times;</button>
+  const content = (
+    <div className="flex-1 min-w-0 p-6 overflow-y-auto custom-scrollbar bg-slate-900">
+      {configTab === 'identity' && <IdentityTab />}
+
+      {configTab === 'controllers' && <ControllersTab />}
+
+      {configTab === 'ui' && <UiTab />}
+
+      {configTab === 'robots' && <RobotsTab />}
+
+      {configTab === 'cameras' && <CamerasTab tools={cameraTools} />}
+
+      {configTab === 'models' && <ModelsTab />}
+
+      {configTab === 'integrations' && <IntegrationsTab tests={connectionTests} />}
+
+      {configTab === 'remoteaccess' && <RemoteAccessTab />}
+
+      {configTab === 'users' && <UsersPanel />}
+
+      {configTab === 'paths' && <PathsTab />}
+
+      {configTab === 'canota' && <CanOtaTab onChooseHardware={() => setConfirmHardwareTransport(true)} />}
+
+      {configTab === 'aihailo' && <AiHailoTab />}
+
+      {configTab === 'updates' && <UpdatesTab />}
+
+      {configTab === 'security' && <SecurityTab />}
+
+      {configTab === 'installation' && <InstallationTab />}
+
+      {configTab === 'remotesetup' && <RemoteAccessSetupTab />}
+
+      {configTab === 'preferences' && <PreferencesTab />}
+
+      {configTab === 'notifications' && <NotificationsTab />}
+
+      {configTab === 'history' && <HistoryTab />}
+
+      {configTab === 'gamepad' && (
+        <div className="animate-in zoom-in-95 fade-in duration-500">
+          <React.Suspense fallback={<PanelLoadingFallback />}><GamepadConfig /></React.Suspense>
         </div>
-
-        <div className="flex flex-1 overflow-hidden">
-          <div className="w-52 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0">
-            {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setConfigTab(tab.id)} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === tab.id ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>{tab.label}</button>
-            ))}
-            <div className="mt-auto border-t border-slate-800 p-4">
-              <button onClick={() => setShowResetConfirm(true)} className="w-full px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"><RefreshCw size={14} /> {t('config.factory_reset_upper')}</button>
-            </div>
-          </div>
-
-          <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-900">
-            {configTab === 'identity' && <IdentityTab />}
-
-            {configTab === 'controllers' && <ControllersTab />}
-
-            {configTab === 'ui' && <UiTab />}
-
-            {configTab === 'robots' && <RobotsTab />}
-
-            {configTab === 'cameras' && <CamerasTab tools={cameraTools} />}
-
-            {configTab === 'models' && <ModelsTab />}
-
-            {configTab === 'integrations' && <IntegrationsTab tests={connectionTests} />}
-
-            {configTab === 'remoteaccess' && <RemoteAccessTab />}
-
-            {configTab === 'users' && <UsersPanel />}
-
-            {configTab === 'paths' && <PathsTab />}
-
-            {configTab === 'canota' && <CanOtaTab onChooseHardware={() => setConfirmHardwareTransport(true)} />}
-
-            {configTab === 'aihailo' && <AiHailoTab />}
-
-            {configTab === 'updates' && <UpdatesTab />}
-
-            {configTab === 'security' && <SecurityTab />}
-
-            {configTab === 'installation' && <InstallationTab />}
-
-            {configTab === 'remotesetup' && <RemoteAccessSetupTab />}
-
-            {configTab === 'preferences' && <PreferencesTab />}
-
-            {configTab === 'notifications' && <NotificationsTab />}
-
-            {configTab === 'history' && <HistoryTab />}
-
-            {configTab === 'gamepad' && (
-              <div className="animate-in zoom-in-95 fade-in duration-500">
-                <React.Suspense fallback={<PanelLoadingFallback />}><GamepadConfig /></React.Suspense>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="p-4 border-t border-slate-800 flex justify-end bg-slate-950 shrink-0">
-          <button onClick={onClose} className="px-12 py-3 text-sm bg-sky-500 text-slate-950 font-black rounded-xl shadow-[0_0_30px_rgba(0,229,255,0.4)] border border-sky-400 uppercase hover:bg-sky-400 transition-all tracking-[0.2em]">{t('config.commit_close')}</button>
-        </div>
-      </div>
+      )}
+    </div>
+  );
+  const dialogs = (
+    <>
       <ConfirmDialog
         open={confirmHardwareTransport}
         message={t('config.confirm_hardware_transport')}
@@ -170,6 +159,74 @@ export function Config({ onClose }: { onClose: () => void }) {
         onConfirm={() => { setShowResetConfirm(false); factoryReset(); }}
         onCancel={() => setShowResetConfirm(false)}
       />
+    </>
+  );
+  const factoryButton = (
+    <button onClick={() => setShowResetConfirm(true)} className="w-full min-h-11 px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"><RefreshCw size={14} /> {t('config.factory_reset_upper')}</button>
+  );
+
+  if (variant === 'screen') {
+    const label = (id: ConfigTab) => tabs.find((tab) => tab.id === id)!.label;
+    const button = (active: boolean) => cn("w-full shrink-0 min-h-11 px-3 rounded-xl border text-left text-sm font-semibold transition-colors", active ? "bg-sky-500/15 border-sky-500/50 text-slate-100" : "border-transparent text-slate-400 hover:bg-slate-800");
+    const pair = CONFIG_GROUPS.flatMap((group) => group.tabs).find((item): item is readonly [ConfigTab, ConfigTab] => typeof item !== 'string' && item.includes(configTab));
+    return (
+      <div data-testid="config-screen" className="w-full h-full min-h-0 flex rounded-xl border border-slate-800 overflow-hidden bg-slate-900">
+        <div className="w-60 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto custom-scrollbar p-2">
+          {CONFIG_GROUPS.map((group) => (
+            <div key={group.id} role="group" aria-label={t(`nav.settings_${group.id}`)} className="shrink-0 flex flex-col pb-2">
+              <div className="px-2 pt-2 pb-1 text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">{t(`nav.settings_${group.id}`)}</div>
+              {group.tabs.map((item) => {
+                const ids: readonly ConfigTab[] = typeof item === 'string' ? [item] : item;
+                const active = ids.includes(configTab);
+                return (
+                  <button key={ids[0]} data-config-tab={ids[0]} aria-current={active ? 'page' : undefined} onClick={() => { if (!active) setConfigTab(ids[0]!); }} className={button(active)}>{label(ids[0]!)}</button>
+                );
+              })}
+            </div>
+          ))}
+          <div className="mt-auto shrink-0 border-t border-slate-800 pt-3 p-2">{factoryButton}</div>
+        </div>
+        <div className="flex-1 min-w-0 flex flex-col">
+          {pair && (
+            <div role="group" aria-label={label(pair[0])} className="shrink-0 flex gap-2 px-6 pt-4">
+              {pair.map((id) => (
+                <button key={id} data-config-tab={id} aria-pressed={configTab === id} onClick={() => setConfigTab(id)} className={cn(button(configTab === id), "w-auto")}>{label(id)}</button>
+              ))}
+            </div>
+          )}
+          {content}
+        </div>
+        {dialogs}
+      </div>
+    );
+  }
+
+  return (
+    <div data-stop-clear className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-[850px] max-w-full overflow-hidden flex flex-col h-250 max-h-full">
+        <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 shrink-0">
+          <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2"><Settings className="text-sky-400" size={20} /> {t('config.title')}</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-200 p-1" aria-label={t('dashboard.close', 'Close')}>&times;</button>
+        </div>
+
+        <div className="flex flex-1 overflow-hidden">
+          <div className="w-52 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0">
+            {tabs.map(tab => (
+              <button key={tab.id} onClick={() => setConfigTab(tab.id)} className={cn("px-4 py-3 text-xs font-bold uppercase tracking-widest text-left transition-colors", configTab === tab.id ? 'bg-slate-800 text-sky-400 border-l-2 border-sky-400' : 'text-slate-500 hover:bg-slate-900')}>{tab.label}</button>
+            ))}
+            <div className="mt-auto border-t border-slate-800 p-4">
+              {factoryButton}
+            </div>
+          </div>
+
+          {content}
+        </div>
+
+        <div className="p-4 border-t border-slate-800 flex justify-end bg-slate-950 shrink-0">
+          <button onClick={onClose} className="px-12 py-3 text-sm bg-sky-500 text-slate-950 font-black rounded-xl shadow-[0_0_30px_rgba(0,229,255,0.4)] border border-sky-400 uppercase hover:bg-sky-400 transition-all tracking-[0.2em]">{t('config.commit_close')}</button>
+        </div>
+      </div>
+      {dialogs}
     </div>
   );
 }
