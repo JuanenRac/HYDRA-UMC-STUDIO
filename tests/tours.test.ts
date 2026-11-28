@@ -12,7 +12,8 @@ import { TOURS, placeCard, stepKey, tourById, tourForView } from '../src/tour/to
 
 const LANGUAGES = ['en', 'es', 'de', 'fr', 'it', 'ja', 'zh', 'pt'];
 const catalogue = (language: string): { tour: Record<string, string> } => JSON.parse(readFileSync(`src/locales/${language}.json`, 'utf8'));
-const dashboard = readFileSync('src/Dashboard.tsx', 'utf8');
+// the shell is split in several files: the marks of the tours are looked for in all of them
+const dashboard = ['src/Dashboard.tsx', 'src/shell/AppHeader.tsx', 'src/nav/ClassicSidebar.tsx'].map((file) => readFileSync(file, 'utf8')).join(' ');
 
 describe('the tours', () => {
   it('have a name and the title and the body of every step in the eight languages', () => {

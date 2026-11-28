@@ -16,6 +16,12 @@ import path from 'node:path';
 
 const FILES = [
   'Dashboard.tsx',
+  'nav/ClassicSidebar.tsx',
+  'nav/ScreenHost.tsx',
+  'shell/AppHeader.tsx',
+  'shell/AppFooter.tsx',
+  'shell/SystemMetricsBar.tsx',
+  'views/OverviewView.tsx',
   'HydraProvider.tsx',
   'components/Config.tsx',
   'components/About.tsx',

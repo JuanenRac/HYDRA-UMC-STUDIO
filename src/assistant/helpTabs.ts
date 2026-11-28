@@ -3,20 +3,14 @@
  * Copyright (C) 2026 JuanenRac (Electro Hobby 3D). GPL-3.0
  */
 import type { TFunction } from 'i18next';
+import { screenOf } from '../nav/navModel';
 
 export const HELP_TABS = ['start', 'robots', 'trajectories', 'modules', 'cameras_gamepad', 'firmware_settings', 'accounts_access', 'ecosystem'] as const;
 export type HelpTab = typeof HELP_TABS[number];
 
-/** The Help tab that explains a Dashboard screen. */
+/** The Help tab that explains a Dashboard screen: each screen names its own in the list of navigation. */
 export function helpTabOf(view: string): HelpTab {
-  switch (view) {
-    case 'robot': return 'robots';
-    case 'cameras': case 'cameraMedia': return 'cameras_gamepad';
-    case 'flasher': case 'tester': case 'hydraFlasher': case 'hydraTester': case 'kinematicBrainStage': case 'settings': return 'firmware_settings';
-    case 'adminClients': case 'adminLogs': case 'adminServer': return 'accounts_access';
-    case 'ecosystemServices': case 'ecosystemHealth': case 'ecosystemPlanning': case 'ecosystemTelemetry': case 'aiFamilyStatus': case 'aiDashboard': case 'systemSupervisor': return 'ecosystem';
-    default: return 'start';
-  }
+  return screenOf(view)?.help ?? 'start';
 }
 
 /** The paragraphs of a Help tab in the language of the interface (empty when the tab has none). */
