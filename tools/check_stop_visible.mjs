@@ -94,7 +94,8 @@ try {
     "stop-report": () => press(page.locator("[data-stop-global]").or(page.getByTestId("stop-all"))),
     "stop-not-confirmed": async () => { await page.route("**/api/stop-all", route => route.abort()); await press(page.locator("[data-stop-global]").or(page.getByTestId("stop-all"))); await page.waitForTimeout(1500); },
     "robot-screen": robot,
-    "menu-all-groups": async () => { for (const group of await page.locator('[data-nav-group][aria-expanded="false"]').all()) await group.evaluate(element => element.click()); },
+    // all the folded groups at once: the list of folded ones changes with each click
+    "menu-all-groups": () => page.evaluate(() => { for (const group of document.querySelectorAll('[data-nav-group][aria-expanded="false"]')) group.click(); }),
     "classic-menu": classic,
     "classic-settings": async () => { await classic(); await settings(); },
     "classic-robot": async () => { await classic(); await press(button(/Robot A1/)); },
