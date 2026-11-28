@@ -167,7 +167,7 @@ export function Config({ onClose = () => undefined, variant = 'window' }: { onCl
 
   if (variant === 'screen') {
     const label = (id: ConfigTab) => tabs.find((tab) => tab.id === id)!.label;
-    const button = (active: boolean) => cn("w-full shrink-0 min-h-11 px-3 rounded-xl border text-left text-sm font-semibold transition-colors", active ? "bg-sky-500/15 border-sky-500/50 text-slate-100" : "border-transparent text-slate-400 hover:bg-slate-800");
+    const button = (active: boolean) => cn("w-full shrink-0 min-h-11 px-3 rounded-xl border text-left text-sm font-semibold transition-colors", active ? "bg-sky-500 border-sky-300 text-slate-950" : "border-transparent text-slate-400 hover:bg-slate-800");
     const pair = CONFIG_GROUPS.flatMap((group) => group.tabs).find((item): item is readonly [ConfigTab, ConfigTab] => typeof item !== 'string' && item.includes(configTab));
     return (
       <div data-testid="config-screen" className="w-full h-full min-h-0 flex rounded-xl border border-slate-800 overflow-hidden bg-slate-900">
