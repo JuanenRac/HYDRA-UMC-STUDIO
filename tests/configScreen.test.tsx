@@ -53,7 +53,8 @@ describe('Config as a screen', () => {
   it('shows four groups and no button that closes it, and saves like the window', () => {
     const { updateSettings } = renderScreen();
     expect(screen.getByTestId('config-screen')).toBeTruthy();
-    expect(screen.getAllByRole('group')).toHaveLength(4);
+    // the four groups of the list (a tab may have field groups of its own, which carry no role attribute)
+    expect(document.querySelectorAll('[role="group"]')).toHaveLength(4);
     expect(screen.queryByRole('button', { name: /close/i })).toBeNull();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'My bench' } });
     expect(updateSettings).toHaveBeenCalledWith({ serverName: 'My bench' });
