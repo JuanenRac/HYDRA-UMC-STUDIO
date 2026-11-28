@@ -104,6 +104,6 @@ describe('the forms of the words are put by the screen', () => {
     const config = readFileSync('src/components/robotDetail/ConfigPanel.tsx', 'utf8');
     expect(config).toMatch(/uppercase[^\n]*\n?[^\n]*\{t\('common\.endstops'\)\}/);
     expect(readFileSync('src/components/robotDetail/FloatingJogOverlays.tsx', 'utf8')).toMatch(/uppercase[^\n]*\{labelWithColon\(t\('common\.speed'\)\)\}/);
-    expect(readFileSync('src/Dashboard.tsx', 'utf8')).toContain("labelWithColon(t('common.role'))");
+    expect(readFileSync('src/views/OverviewView.tsx', 'utf8')).toContain("labelWithColon(t('common.role'))");
   });
 });
