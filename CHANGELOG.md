@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **A side menu with groups:** every screen is in one list, in six groups that fold and are remembered (Operate, Work, Equipment, Boards and firmware, Ecosystem, Administration), with targets for a finger and the group and screen named in the top bar. The robots are chosen in a row over the robot panel; the AI screens, the logs and the audit record, and the server and supervisor share an entry each. When the whole menu does not fit, only Operate and the current group start open. Preferences has the switch of the classic menu, which will be kept for two versions. In the eight languages; the assistant and the Help name the new places.
+
 - **Every screen is explained by its own tab of the Help:** the module screens (XY table, tool changer, rack, pick and place, CNC, laser, vacuum table, heated bed), the robot catalogue, the ecosystem map, the safety limits and the audit record made the assistant explain "getting started". One list of screens now feeds the menu, the screen switch and the Help, and a test fails when a screen is missing from it. The shell of the dashboard is split into smaller files; nothing else changes on screen.
 
 - **Signing out revokes every refresh token of the page:** a login kept on the device and a login of the tab could both be stored, and only one was revoked on the server before both were erased. Each is now sent to `/api/logout`. Tests added.

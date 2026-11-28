@@ -64,18 +64,20 @@ try {
   await page.getByText(/^overview$/i).first().waitFor({ timeout: 30000 });
   const hideBanner = () => page.evaluate(() => { for (const element of document.querySelectorAll("*")) if (element.children.length === 0 && /^Showing sample data/.test(element.textContent ?? "")) element.parentElement?.style.setProperty("visibility", "hidden"); });
   const shot = async (file, action) => { if (action) await action(); await page.waitForTimeout(3500); await hideBanner(); await page.mouse.move(1000, 1075); await page.screenshot({ path: path.join(out, file + ".png") }); console.log("wrote", path.join(out, file + ".png")); };
-  const click = text => () => page.locator("button").filter({ hasText: new RegExp(text, "i") }).first().evaluate(element => element.click());
 
-  const group = async (name, item) => { await click(name)(); await page.waitForTimeout(800); await click(item)(); };
-  const root = async () => { await click("BACK TO ROOT")(); await page.waitForTimeout(500); };
+  // a screen of the grouped menu: its group is opened first when it is closed
+  const open = (group, view) => async () => {
+    const heading = page.locator(`[data-nav-group="${group}"]`);
+    if ((await heading.getAttribute("aria-expanded")) === "false") await heading.evaluate(element => element.click());
+    await page.locator(`[data-nav="${view}"]`).evaluate(element => element.click());
+  };
   await shot("overview", async () => { await page.waitForTimeout(3000); });
-  await shot("robot-view", click("Robot A1"));
-  await shot("xy-table", () => group("INDUSTRIAL", "^XY TABLE$"));
-  await root();
-  await shot("flasher-studio", () => group("URTC", "^FLASHER STUDIO$"));
-  await shot("tester-center", click("^TESTER CENTER$"));
-  await root();
-  await shot("safety-limits", () => group("HYDRA-UMC", "^SAFETY LIMITS$"));} finally {
+  await shot("robot-view", open("operate", "robot"));
+  await shot("xy-table", open("equipment", "xytable"));
+  await shot("flasher-studio", open("boards", "flasher"));
+  await shot("tester-center", open("boards", "tester"));
+  await shot("safety-limits", open("admin", "adminSafety"));
+} finally {
   await browser?.close();
   for (const child of children) try { child.kill(); } catch { /* already gone */ }
   await sleep(500);

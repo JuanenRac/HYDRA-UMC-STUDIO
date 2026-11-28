@@ -56,3 +56,65 @@ export const VIEW_IDS = Object.keys(SCREENS) as ViewId[];
 export function screenOf(view: string): Entry | undefined {
   return Object.prototype.hasOwnProperty.call(SCREENS, view) ? SCREENS[view as ViewId] : undefined;
 }
+
+export type MenuEntry = {
+  /** The id of the entry; the screen it opens first is the first of `views`. */
+  id: string;
+  group: NavGroup;
+  /** The catalogue key of its name. */
+  label: string;
+  /** The screens it holds; with more than one, the screen shows a row to choose among them. */
+  views: readonly ViewId[];
+  /** The part of the page the tours light up. */
+  tour?: string;
+};
+
+const entry = (group: NavGroup, label: string, ...views: [ViewId, ...ViewId[]]): MenuEntry => ({ id: views[0], group, label, views });
+
+/** The grouped side menu, in order. */
+export const MENU: readonly MenuEntry[] = [
+  { ...entry('operate', 'dashboard.overview', 'overview'), tour: 'nav-overview' },
+  entry('operate', 'nav.robots', 'robot'),
+  { ...entry('operate', 'nav.cameras', 'cameras'), tour: 'nav-cameras' },
+  entry('operate', 'nav.recordings', 'cameraMedia'),
+  entry('work', 'nav.pickandplace', 'pickandplace'),
+  entry('work', 'nav.cnc', 'cnc'),
+  entry('work', 'nav.laser', 'laser'),
+  entry('equipment', 'nav.catalog', 'robots'),
+  entry('equipment', 'nav.xytable', 'xytable'),
+  entry('equipment', 'nav.toolchanger', 'atctools'),
+  entry('equipment', 'nav.rack', 'rack'),
+  entry('equipment', 'nav.vacuumtable', 'vacuumtable'),
+  entry('equipment', 'nav.heatedbed', 'heatedbed'),
+  entry('boards', 'nav.hydra_firmware', 'hydraFlasher'),
+  entry('boards', 'nav.hydra_tests', 'hydraTester'),
+  entry('boards', 'nav.kinematic', 'kinematicBrainStage'),
+  entry('boards', 'nav.urtc_firmware', 'flasher'),
+  entry('boards', 'nav.urtc_tests', 'tester'),
+  entry('ecosystem', 'common.services', 'ecosystemServices'),
+  entry('ecosystem', 'nav.map', 'ecosystemMap'),
+  entry('ecosystem', 'nav.health', 'ecosystemHealth'),
+  entry('ecosystem', 'nav.planning', 'ecosystemPlanning'),
+  entry('ecosystem', 'common.telemetry', 'ecosystemTelemetry'),
+  entry('ecosystem', 'nav.ai', 'aiFamilyStatus', 'aiDashboard'),
+  entry('admin', 'nav.connections', 'adminClients'),
+  entry('admin', 'nav.logs_audit', 'adminLogs', 'adminAudit'),
+  entry('admin', 'nav.safety', 'adminSafety'),
+  entry('admin', 'nav.server', 'adminServer', 'systemSupervisor'),
+  entry('admin', 'nav.settings', 'settings'),
+];
+
+/** The names of the screens that share an entry, for the row that chooses among them. */
+export const VIEW_TABS: Partial<Record<ViewId, string>> = {
+  aiFamilyStatus: 'ecosystem.menu_ai_family',
+  aiDashboard: 'ecosystem.menu_ai_dashboard',
+  adminLogs: 'ecosystem.menu_logs',
+  adminAudit: 'ecosystem.menu_audit',
+  adminServer: 'ecosystem.menu_admin',
+  systemSupervisor: 'ecosystem.menu_supervisor',
+};
+
+/** The entry of the menu that holds a screen. */
+export function entryOf(view: string): MenuEntry | undefined {
+  return MENU.find((item) => (item.views as readonly string[]).includes(view));
+}

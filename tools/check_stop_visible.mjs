@@ -76,7 +76,9 @@ try {
   const button = text => page.locator("button").filter({ hasText: text });
   const help = () => press(page.locator('[data-tour="help"]'));
   const settings = () => press(page.locator('[data-tour="settings"]'));
-  const robot = () => press(button(/Robot A1/));
+  const robot = async () => { await press(page.locator('[data-nav="robot"]')); await press(page.getByTestId("robot-chooser").locator("button").filter({ hasText: /Robot A1/ })); };
+  // the earlier menu and the configuration window, still offered in the preferences
+  const classic = async () => { await page.evaluate(() => localStorage.setItem("hydra_studio_prefs", JSON.stringify({ classicMenu: true }))); await page.reload(); await page.locator("main").waitFor({ timeout: 30000 }); };
 
   const open = {
     "main-screen": async () => {},
@@ -92,6 +94,10 @@ try {
     "stop-report": () => press(page.locator("[data-stop-global]").or(page.getByTestId("stop-all"))),
     "stop-not-confirmed": async () => { await page.route("**/api/stop-all", route => route.abort()); await press(page.locator("[data-stop-global]").or(page.getByTestId("stop-all"))); await page.waitForTimeout(1500); },
     "robot-screen": robot,
+    "menu-all-groups": async () => { for (const group of await page.locator('[data-nav-group][aria-expanded="false"]').all()) await group.evaluate(element => element.click()); },
+    "classic-menu": classic,
+    "classic-settings": async () => { await classic(); await settings(); },
+    "classic-robot": async () => { await classic(); await press(button(/Robot A1/)); },
     "robot-confirm": async () => { await robot(); await press(page.locator('button[title="HOME"]')); await page.getByRole("dialog").waitFor(); },
     // any window added later: something that covers the whole page, known by nothing in Studio
     "unknown-overlay": () => page.evaluate(() => { const cover = document.createElement("div"); cover.id = "unknown-overlay"; cover.style.cssText = "position:fixed;inset:0;z-index:100000;background:rgba(80,0,120,.55)"; document.body.appendChild(cover); }),
@@ -149,7 +155,7 @@ try {
     try {
       await page.unroute("**/api/stop-all");
       await page.setViewportSize({ width, height });
-      await page.evaluate(() => localStorage.removeItem("hydra_assistant_prefs"));
+      await page.evaluate(() => { for (const key of ["hydra_assistant_prefs", "hydra_studio_prefs", "hydra_nav_closed"]) localStorage.removeItem(key); });
       await page.goto(origin + address);
       await page.locator("main").waitFor({ timeout: 30000 });
       await page.waitForTimeout(700);

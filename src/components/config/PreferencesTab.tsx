@@ -58,6 +58,11 @@ export function PreferencesTab() {
       </label>
 
       <label className="flex items-start gap-3 bg-slate-950 rounded-xl border border-slate-800 p-4 text-xs text-slate-300">
+        <input type="checkbox" data-testid="prefs-classic-menu" checked={prefs.classicMenu} onChange={(e) => setStudioPrefs({ classicMenu: e.target.checked })} className="mt-0.5" />
+        <span><strong className="block text-slate-200">{t('prefs.classic_menu')}</strong><span className="text-[10px] text-slate-500">{t('prefs.classic_menu_hint')}</span></span>
+      </label>
+
+      <label className="flex items-start gap-3 bg-slate-950 rounded-xl border border-slate-800 p-4 text-xs text-slate-300">
         <input type="checkbox" data-testid="prefs-tours" checked={tourPrefs.tours} onChange={(e) => setTourPrefs({ tours: e.target.checked })} className="mt-0.5" />
         <span><strong className="block text-slate-200">{t('prefs.tours')}</strong><span className="text-[10px] text-slate-500">{t('prefs.tours_hint')}</span></span>
       </label>
