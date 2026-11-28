@@ -2714,6 +2714,10 @@
     "refused_totp_invalid": "Nada foi feito: o código de utilização única não é válido."
   },
   "nav": {
+    "settings_mine": "Pessoal",
+    "settings_people": "Pessoas e avisos",
+    "settings_cell": "A minha célula",
+    "settings_system": "Sistema",
     "menu": "Menu principal",
     "screens_of": "Ecrãs desta entrada",
     "pick_robot": "Escolher um robô",

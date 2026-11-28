@@ -77,6 +77,7 @@ try {
   await shot("flasher-studio", open("boards", "flasher"));
   await shot("tester-center", open("boards", "tester"));
   await shot("safety-limits", open("admin", "adminSafety"));
+  await shot("configuration", open("admin", "settings"));
 } finally {
   await browser?.close();
   for (const child of children) try { child.kill(); } catch { /* already gone */ }

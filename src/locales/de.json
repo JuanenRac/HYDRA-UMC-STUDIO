@@ -2714,6 +2714,10 @@
     "refused_totp_invalid": "Nichts wurde getan: Der Einmalcode ist ungültig."
   },
   "nav": {
+    "settings_mine": "Persönlich",
+    "settings_people": "Personen und Meldungen",
+    "settings_cell": "Meine Zelle",
+    "settings_system": "System",
     "menu": "Hauptmenü",
     "screens_of": "Ansichten dieses Eintrags",
     "pick_robot": "Roboter wählen",
